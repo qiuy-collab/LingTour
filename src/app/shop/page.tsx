@@ -1,76 +1,6 @@
 import Link from "next/link";
-
-const collections = [
-  {
-    title: "Guangfu Craft Desk",
-    route: "Craft, Stage, and Family Halls",
-    href: "/routes/craft-stage-family-halls",
-    image:
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Nanfeng%20Kiln%2039101-Foshan%20%2849021028018%29.jpg?width=1600",
-    body: "Objects inspired by Foshan ceramics, lion dance color, opera stages, and the tactility of workshop culture.",
-  },
-  {
-    title: "Chaoshan Tea Table",
-    route: "Where Drums, Tea, and Tides Meet",
-    href: "/routes/drums-tea-and-tides",
-    image:
-      "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=1400&q=82",
-    body: "Tea-led gifts for visitors who want to carry the ritual pace of eastern Guangdong home.",
-  },
-  {
-    title: "Hakka Home Archive",
-    route: "Behind the Walled Village",
-    href: "/routes/behind-the-walled-village",
-    image:
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=82",
-    body: "Memory objects shaped by walled villages, mountain tables, migration stories, and family rituals.",
-  },
-];
-
-const products = [
-  {
-    name: "Shiwan Clay Travel Cup",
-    collection: "Guangfu Craft Desk",
-    price: "RMB 168",
-    tag: "Ceramic",
-    story: "A compact ceramic cup inspired by Shiwan kiln texture, designed for tea, hotel rooms, and slow route pauses.",
-  },
-  {
-    name: "Lion Dance Color Postcard Set",
-    collection: "Guangfu Craft Desk",
-    price: "RMB 48",
-    tag: "Paper goods",
-    story: "A set of route postcards using lion dance color blocks, temple-stage motifs, and Foshan movement notes.",
-  },
-  {
-    name: "Gongfu Tea Starter Cloth",
-    collection: "Chaoshan Tea Table",
-    price: "RMB 96",
-    tag: "Tea ritual",
-    story: "A soft table cloth printed with a simple gongfu tea sequence for visitors learning the rhythm for the first time.",
-  },
-  {
-    name: "Harbor Letter Notebook",
-    collection: "Chaoshan Tea Table",
-    price: "RMB 58",
-    tag: "Notebook",
-    story: "A notebook for route stamps and travel notes, inspired by Shantou harbor memory and overseas family letters.",
-  },
-  {
-    name: "Hakka Walled House Puzzle",
-    collection: "Hakka Home Archive",
-    price: "RMB 138",
-    tag: "Object",
-    story: "A small assembly object that explains courtyard, enclosure, family, and mountain settlement through play.",
-  },
-  {
-    name: "Southern Sea Market Tote",
-    collection: "Coastal Route Goods",
-    price: "RMB 88",
-    tag: "Travel utility",
-    story: "A durable market tote for seafood streets, island walks, and the everyday coastal rhythm of western Guangdong.",
-  },
-];
+import { ProductActions } from "@/components/store/ProductActions";
+import { formatStorePrice, storeCollections, storeProducts } from "@/data/store";
 
 const bundles = [
   {
@@ -118,7 +48,7 @@ export default function ShopPage() {
           </Link>
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
-          {collections.map((collection) => (
+          {storeCollections.map((collection) => (
             <Link key={collection.title} href={collection.href} className="group relative min-h-[32rem] overflow-hidden bg-[var(--night)] text-white">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-72 transition duration-700 group-hover:scale-105"
@@ -145,26 +75,28 @@ export default function ShopPage() {
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-8 text-[var(--muted)]">
-              These are front-end product concepts for the MVP store. Later each item can become a
-              product detail page with inventory, checkout, and fulfillment rules.
+              These are front-end product concepts for the MVP store. Add to cart stores a local
+              basket preview; buy now opens the payment-style checkout.
             </p>
           </div>
 
           <div className="grid gap-px overflow-hidden border border-[var(--line)] bg-[var(--line)] md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <article key={product.name} className="bg-[var(--paper)] p-6">
+            {storeProducts.map((product) => (
+              <article key={product.slug} className="bg-[var(--paper)] p-6">
+                <div
+                  className="mb-6 h-44 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${product.image})` }}
+                />
                 <div className="flex items-start justify-between gap-4">
                   <p className="text-label text-[var(--muted)]">{product.tag}</p>
-                  <p className="text-sm text-[var(--cinnabar)]">{product.price}</p>
+                  <p className="text-sm text-[var(--cinnabar)]">{formatStorePrice(product)}</p>
                 </div>
                 <h3 className="mt-6 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
                   {product.name}
                 </h3>
                 <p className="mt-2 text-sm text-[var(--muted)]">{product.collection}</p>
                 <p className="mt-5 min-h-28 text-sm leading-7 text-[var(--muted)]">{product.story}</p>
-                <button type="button" className="mt-7 w-full border border-[var(--line)] bg-white px-5 py-3 text-sm transition hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]">
-                  Add to basket preview
-                </button>
+                <ProductActions product={product} />
               </article>
             ))}
           </div>
@@ -199,8 +131,8 @@ export default function ShopPage() {
             </h2>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/interpreting" className="bg-[var(--cinnabar)] px-6 py-4 text-center text-sm text-white">
-              Book a route
+            <Link href="/checkout" className="bg-[var(--cinnabar)] px-6 py-4 text-center text-sm text-white">
+              Checkout cart
             </Link>
             <Link href="/culture" className="border border-white/16 px-6 py-4 text-center text-sm text-white/82">
               Read city culture
