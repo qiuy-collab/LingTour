@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ProductActions } from "@/components/store/ProductActions";
-import { formatStorePrice, storeCollections, storeProducts } from "@/data/store";
+import { StoreProductCard } from "@/components/store/StoreProductCard";
+import { EditorialIntro } from "@/components/ui/EditorialIntro";
+import { storeCollections, storeProducts } from "@/data/store";
 
 const bundles = [
   {
@@ -21,18 +22,11 @@ export default function ShopPage() {
   return (
     <div>
       <section className="border-b border-[var(--line)] py-20 lg:py-28">
-        <div className="site-container grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-          <div>
-            <p className="text-label text-[var(--cinnabar)]">Lingnan store</p>
-            <h1 className="mt-5 max-w-5xl font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)] md:text-7xl">
-              Cultural products that continue the route after travel.
-            </h1>
-          </div>
-          <p className="max-w-2xl text-lg leading-8 text-[var(--muted)]">
-            The store is not separated from travel. Each product is attached to a city culture,
-            story route, or visitor use case, so buying becomes another way to remember Guangdong.
-          </p>
-        </div>
+        <EditorialIntro
+          eyebrow="Lingnan store"
+          title="Cultural products that continue the route after travel."
+          description="The store is not separated from travel. Each product is attached to a city culture, story route, or visitor use case, so buying becomes another way to remember Guangdong."
+        />
       </section>
 
       <section className="site-container py-16 lg:py-24">
@@ -69,35 +63,25 @@ export default function ShopPage() {
         <div className="site-container">
           <div className="mb-10 grid gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
-              <p className="text-label text-[var(--cinnabar)]">Product shelf</p>
+              <p className="text-label text-[var(--cinnabar)]">Recommended shelf</p>
               <h2 className="mt-4 font-[family:var(--font-display)] text-4xl text-[var(--river-deep)] md:text-5xl">
                 Starter cultural objects.
               </h2>
             </div>
-            <p className="max-w-2xl text-base leading-8 text-[var(--muted)]">
-              These are front-end product concepts for the MVP store. Add to cart stores a local
-              basket preview; buy now opens the payment-style checkout.
-            </p>
+            <div className="max-w-2xl">
+              <p className="text-base leading-8 text-[var(--muted)]">
+                A small recommendation shelf for visitors who want a fast starting point. Open all
+                products when you need search, collection filters, or a fuller view.
+              </p>
+              <Link href="/shop/products" className="mt-5 inline-block text-sm font-semibold text-[var(--cinnabar)]">
+                View all products
+              </Link>
+            </div>
           </div>
 
-          <div className="grid gap-px overflow-hidden border border-[var(--line)] bg-[var(--line)] md:grid-cols-2 lg:grid-cols-3">
-            {storeProducts.map((product) => (
-              <article key={product.slug} className="bg-[var(--paper)] p-6">
-                <div
-                  className="mb-6 h-44 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${product.image})` }}
-                />
-                <div className="flex items-start justify-between gap-4">
-                  <p className="text-label text-[var(--muted)]">{product.tag}</p>
-                  <p className="text-sm text-[var(--cinnabar)]">{formatStorePrice(product)}</p>
-                </div>
-                <h3 className="mt-6 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
-                  {product.name}
-                </h3>
-                <p className="mt-2 text-sm text-[var(--muted)]">{product.collection}</p>
-                <p className="mt-5 min-h-28 text-sm leading-7 text-[var(--muted)]">{product.story}</p>
-                <ProductActions product={product} />
-              </article>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {storeProducts.slice(0, 3).map((product) => (
+              <StoreProductCard key={product.slug} product={product} />
             ))}
           </div>
         </div>

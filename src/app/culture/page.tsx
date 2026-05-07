@@ -4,18 +4,30 @@ import { cityCultures } from "@/data/culture";
 export default function CulturePage() {
   return (
     <div>
-      <section className="border-b border-[var(--line)] bg-[var(--night)] py-20 text-white lg:py-28">
-        <div className="site-container grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+      <section className="border-b border-white/10 bg-[var(--night)] text-white">
+        <div className="site-container grid min-h-[34rem] items-center gap-12 py-16 md:min-h-[39rem] lg:grid-cols-[minmax(0,0.82fr)_minmax(22rem,0.48fr)] lg:py-24">
           <div>
             <p className="text-label text-white/52">City culture</p>
-            <h1 className="mt-5 max-w-5xl font-[family:var(--font-display)] text-5xl leading-tight md:text-7xl">
-              Read Guangdong city by city.
+            <h1 className="mt-6 max-w-[9.8ch] font-[family:var(--font-display)] text-[4rem] leading-[0.94] text-white md:text-[6rem] lg:text-[6.75rem]">
+              Guangdong, city by city
             </h1>
           </div>
-          <p className="max-w-2xl text-lg leading-8 text-white/70">
-            Culture here is organized by region, because the homepage map is the first entrance.
-            Choose a city to understand its food, rituals, craft, landscape, and related story route.
-          </p>
+
+          <div className="max-w-xl border-l border-white/18 pl-6 md:pl-8">
+            <p className="font-[family:var(--font-display)] text-2xl leading-snug text-white/88 md:text-3xl">
+              Every route begins with a place, then opens into food, ritual, craft, and landscape.
+            </p>
+            <p className="mt-6 text-base leading-8 text-white/64">
+              Choose a city to read the cultural layer behind its journeys, from neighborhood customs
+              to the stories that shape each route.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-2 text-xs uppercase tracking-[0.18em] text-white/54">
+              <span className="border border-white/14 px-3 py-2">Food</span>
+              <span className="border border-white/14 px-3 py-2">Ritual</span>
+              <span className="border border-white/14 px-3 py-2">Craft</span>
+              <span className="border border-white/14 px-3 py-2">Route notes</span>
+            </div>
+          </div>
         </div>
       </section>
 

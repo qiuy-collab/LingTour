@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import guangdongCities from "@/data/guangdong-cities.json";
 import { regionShowcase } from "@/data/home";
 
 type Position = [number, number];
@@ -27,8 +28,8 @@ type GuangdongGeoJson = {
 
 type ActivePanel = "city" | "route";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const focusCityByCode = new Map(regionShowcase.map((city) => [city.adcode, city]));
+const initialFeatures = (guangdongCities as unknown as GuangdongGeoJson).features;
 
 const routeLabelTargets = new Map<
   number,
@@ -121,31 +122,10 @@ function featureToPath(feature: CityFeature, project: (point: Position) => Posit
 
 export function GuangdongMapSection() {
   const router = useRouter();
-  const [features, setFeatures] = useState<CityFeature[]>([]);
+  const [features] = useState<CityFeature[]>(initialFeatures);
   const [activeCode, setActiveCode] = useState(regionShowcase[0].adcode);
   const [activePanel, setActivePanel] = useState<ActivePanel>("city");
   const [slideIndex, setSlideIndex] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(`${basePath}/data/guangdong-cities.geojson`)
-      .then((response) => response.json() as Promise<GuangdongGeoJson>)
-      .then((data) => {
-        if (!cancelled) {
-          setFeatures(data.features);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setFeatures([]);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const activeCity = focusCityByCode.get(activeCode) ?? regionShowcase[0];
   const activeGallery = activeCity.gallery.length ? activeCity.gallery : [activeCity.image];

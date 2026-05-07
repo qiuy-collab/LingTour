@@ -34,7 +34,7 @@ export function ProductActions({ product }: ProductActionsProps) {
     <div className="mt-7 grid gap-2 sm:grid-cols-2">
       <button
         type="button"
-        className="border border-[var(--line)] bg-white px-5 py-3 text-sm transition hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
+        className="border border-white/72 bg-white/10 px-5 py-3 text-sm text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
         onClick={() => persistCart(false)}
       >
         {added ? "Added to cart" : "Add to cart"}

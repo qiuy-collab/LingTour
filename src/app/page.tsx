@@ -1,13 +1,16 @@
 import Link from "next/link";
+import { CultureGallery } from "@/components/home/CultureGallery";
+import { FeaturedRoutesCarousel } from "@/components/home/FeaturedRoutesCarousel";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
+import { Reveal } from "@/components/ui/Reveal";
+import { SpotlightPanel } from "@/components/ui/SpotlightPanel";
 import {
-  cultureHighlights,
-  featuredRoutes,
   homeEntryCards,
   serviceSteps,
   testimonials,
   trustMetrics,
 } from "@/data/home";
+import { formatStorePrice, storeProducts } from "@/data/store";
 
 export default function Home() {
   return (
@@ -61,99 +64,49 @@ export default function Home() {
       </section>
 
       <section className="site-container py-16 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
-          <div>
+        <div className="grid gap-8 border-l border-[var(--cinnabar)]/30 pl-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(22rem,0.58fr)] lg:items-start lg:pl-8">
+          <div className="max-w-3xl">
             <p className="text-label text-[var(--cinnabar)]">Platform entrances</p>
-            <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
+            <h2 className="mt-4 max-w-[16ch] font-[family:var(--font-display)] text-4xl leading-[1.1] text-[var(--river-deep)] md:text-[2.85rem]">
               Start from culture, route, service, or store.
             </h2>
           </div>
-          <p className="max-w-2xl text-base leading-8 text-[var(--muted)]">
+          <p className="max-w-2xl pt-1 text-base leading-8 text-[var(--muted)] lg:pt-12">
             The homepage works as a gateway: learn the culture, choose a story route, book language
             support, or browse products linked to Lingnan memory.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-px overflow-hidden border border-[var(--line)] bg-[var(--line)] md:grid-cols-2 xl:grid-cols-4">
-          {homeEntryCards.map((card) => (
-            <Link
-              key={card.href}
-              href={card.href}
-              className="group min-h-[17rem] bg-[var(--paper)] p-6 transition hover:bg-white"
-            >
-              <p className="text-label text-[var(--muted)]">{card.id}</p>
-              <h3 className="mt-8 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-                {card.title}
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{card.body}</p>
-              <p className="mt-8 text-sm font-medium text-[var(--cinnabar)] transition group-hover:translate-x-1">
-                Enter
-              </p>
-            </Link>
+        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {homeEntryCards.map((card, index) => (
+            <Reveal key={card.href} delay={index * 90}>
+              <Link href={card.href} className="group block">
+                <SpotlightPanel className="lux-card min-h-[18rem] border border-[var(--line)] bg-[var(--paper)] p-6">
+                  <p className="text-label text-[var(--muted)]">{card.id}</p>
+                  <h3 className="mt-8 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] transition group-hover:translate-x-1">
+                    {card.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{card.body}</p>
+                  <p className="mt-8 text-sm font-medium text-[var(--cinnabar)] transition group-hover:translate-x-2">
+                    Enter
+                  </p>
+                </SpotlightPanel>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <GuangdongMapSection />
 
-      <section className="site-container py-16 lg:py-20">
-        <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-label text-[var(--cinnabar)]">Featured story routes</p>
-            <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
-              Routes shaped like stories, not attraction lists.
-            </h2>
-          </div>
-          <Link href="/routes" className="text-sm font-medium text-[var(--cinnabar)] hover:text-[var(--cinnabar-deep)]">
-            View all routes
-          </Link>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-3">
-          {featuredRoutes.map((route) => (
-            <article key={route.slug} className="border border-[var(--line)] bg-[var(--paper)] p-6">
-              <p className="text-label text-[var(--gold)]">{route.theme}</p>
-              <h3 className="mt-5 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
-                {route.title}
-              </h3>
-              <p className="mt-5 text-sm leading-7 text-[var(--muted)]">{route.description}</p>
-              <div className="mt-8 flex flex-wrap gap-2 text-xs text-[var(--muted)]">
-                <span className="border border-[var(--line)] bg-white px-3 py-1">{route.duration}</span>
-                <span className="border border-[var(--line)] bg-white px-3 py-1">{route.audience}</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-[var(--river-deep)] py-16 text-white lg:py-20">
-        <div className="site-container grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
-            <p className="text-label text-white/52">Lingnan culture</p>
-            <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight md:text-5xl">
-              Three culture lines hold the platform together.
-            </h2>
-          </div>
-
-          <div className="grid gap-px overflow-hidden bg-white/12 md:grid-cols-3">
-            {cultureHighlights.map((item) => (
-              <article key={item.slug} className="bg-[rgba(255,255,255,0.06)] p-6">
-                <h3 className="font-[family:var(--font-display)] text-3xl">{item.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-white/68">{item.body}</p>
-                <Link href="/culture" className="mt-7 inline-block text-sm text-white hover:text-white/72">
-                  Read culture notes
-                </Link>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedRoutesCarousel />
+      <CultureGallery />
 
       <section className="site-container py-16 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
           <div>
             <p className="text-label text-[var(--cinnabar)]">Interpreting service</p>
-            <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
+            <h2 className="mt-4 max-w-[17ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
               Practical support, carried by cultural context.
             </h2>
             <Link
@@ -164,15 +117,17 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {serviceSteps.map((step) => (
-              <article key={step.step} className="grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-5 sm:grid-cols-[4rem_1fr]">
-                <p className="font-[family:var(--font-display)] text-3xl text-[var(--cinnabar)]">{step.step}</p>
-                <div>
-                  <h3 className="text-lg font-semibold text-[var(--ink)]">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{step.description}</p>
-                </div>
-              </article>
+          <div className="grid gap-4">
+            {serviceSteps.map((step, index) => (
+              <Reveal key={step.step} delay={index * 80}>
+                <SpotlightPanel className="lux-card grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-5 sm:grid-cols-[4rem_1fr]">
+                  <p className="font-[family:var(--font-display)] text-3xl text-[var(--cinnabar)]">{step.step}</p>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[var(--ink)]">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{step.description}</p>
+                  </div>
+                </SpotlightPanel>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -182,25 +137,37 @@ export default function Home() {
         <div className="site-container grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-label text-[var(--cinnabar)]">Lingnan store</p>
-            <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
+            <h2 className="mt-4 max-w-[18ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
               Let the journey continue through objects.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-8 text-[var(--muted)]">
               The store should feel closer to a museum shop than a discount marketplace: fewer products,
               stronger stories, clearer cultural origin.
             </p>
-            <Link href="/shop" className="mt-8 inline-block bg-[var(--cinnabar)] px-6 py-4 text-sm font-medium text-white">
+            <Link href="/shop" className="kinetic-link mt-8 inline-block bg-[var(--cinnabar)] px-6 py-4 text-sm font-medium text-white">
               Enter store
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-px bg-[var(--line)]">
-            {["Tea set", "Opera pattern", "City postcard", "Craft object"].map((item) => (
-              <div key={item} className="aspect-square bg-[var(--paper)] p-5">
-                <div className="flex h-full flex-col justify-between border border-[var(--line)] p-4">
-                  <p className="text-label text-[var(--muted)]">Selected</p>
-                  <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{item}</p>
+          <div className="grid grid-cols-2 gap-4">
+            {storeProducts.slice(0, 4).map((product) => (
+              <Link
+                key={product.slug}
+                href={`/checkout?product=${product.slug}`}
+                className="group lux-card relative aspect-square overflow-hidden bg-[var(--night)] text-white shadow-[var(--shadow-soft)]"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center opacity-78 transition duration-700 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${product.image})` }}
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.08),rgba(17,25,35,0.82))]" />
+                <div className="relative z-10 flex h-full flex-col justify-end p-5">
+                  <p className="text-label text-white/62">{product.tag}</p>
+                  <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight">{product.name}</h3>
+                  <p className="mt-2 translate-y-4 text-sm text-white/0 transition duration-300 group-hover:translate-y-0 group-hover:text-white/82">
+                    {formatStorePrice(product)}
+                  </p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -209,17 +176,21 @@ export default function Home() {
       <section className="site-container py-16 lg:py-20">
         <div className="mb-8 max-w-3xl">
           <p className="text-label text-[var(--cinnabar)]">Visitor voices</p>
-          <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
+          <h2 className="mt-4 max-w-[18ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
             Short proof that the story route idea lands.
           </h2>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-3">
-          {testimonials.map((item) => (
-            <blockquote key={item.name} className="border-l-2 border-[var(--cinnabar)] bg-[var(--paper)] p-6">
-              <p className="text-lg leading-8 text-[var(--ink)]">&quot;{item.quote}&quot;</p>
-              <footer className="mt-5 text-sm text-[var(--muted)]">{item.name}</footer>
-            </blockquote>
+          {testimonials.map((item, index) => (
+            <Reveal key={item.name} delay={index * 90}>
+              <SpotlightPanel className="lux-card min-h-full border-l-2 border-[var(--cinnabar)] bg-[var(--paper)] p-6">
+                <blockquote>
+                  <p className="text-lg leading-8 text-[var(--ink)]">&quot;{item.quote}&quot;</p>
+                  <footer className="mt-5 text-sm text-[var(--muted)]">{item.name}</footer>
+                </blockquote>
+              </SpotlightPanel>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -229,12 +200,12 @@ export default function Home() {
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="max-w-3xl">
               <p className="text-label text-white/48">Start your Guangdong story</p>
-              <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight md:text-5xl">
+              <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-4xl leading-[1.12] md:text-[2.85rem]">
                 Pick a city, follow a story, and book the support you need.
               </h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/routes" className="bg-white px-6 py-4 text-center text-sm font-medium text-[var(--night)]">
+              <Link href="/routes" className="bg-white px-6 py-4 text-center text-sm font-semibold text-[#111923] shadow-sm transition hover:bg-[var(--paper-deep)]">
                 View routes
               </Link>
               <Link

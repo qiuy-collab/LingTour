@@ -1,5 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { CarouselRuntime } from "@/components/layout/CarouselRuntime";
+import { FavoriteRuntime } from "@/components/layout/FavoriteRuntime";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
@@ -17,6 +19,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <CarouselRuntime />
+        <FavoriteRuntime />
         <div className="min-h-screen text-[var(--ink)]">
           <SiteHeader />
           <main>{children}</main>

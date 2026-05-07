@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EditorialIntro } from "@/components/ui/EditorialIntro";
 import { regionShowcase } from "@/data/home";
 import { storyRoutes } from "@/data/routes";
 
@@ -71,29 +72,23 @@ export default function InterpretingPage() {
     <div>
       <section className="relative overflow-hidden bg-[var(--night)] py-20 text-white lg:py-28">
         <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_65%_35%,rgba(182,66,53,0.32),transparent_36%),linear-gradient(120deg,transparent,rgba(124,155,134,0.24))] lg:block" />
-        <div className="site-container relative grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
-          <div>
-            <p className="text-label text-white/52">Interpreting service</p>
-            <h1 className="mt-5 max-w-4xl font-[family:var(--font-display)] text-5xl leading-tight md:text-7xl">
-              Travel Guangdong with someone who can explain the story.
-            </h1>
-          </div>
-          <div className="max-w-2xl">
-            <p className="text-lg leading-8 text-white/72">
-              LingTour interpreting connects practical travel help with cultural explanation: city
-              movement, menus, tickets, etiquette, route storytelling, and on-site communication for
-              international visitors.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <EditorialIntro
+          className="relative"
+          tone="dark"
+          eyebrow="Interpreting service"
+          title="Travel Guangdong with someone who can explain the story."
+          description="LingTour interpreting connects practical travel help with cultural explanation: city movement, menus, tickets, etiquette, route storytelling, and on-site communication for international visitors."
+          actions={
+            <>
               <a href="#booking" className="bg-[var(--cinnabar)] px-6 py-4 text-center text-sm text-white">
                 Start a booking request
               </a>
               <Link href="/routes" className="border border-white/18 px-6 py-4 text-center text-sm text-white/82">
                 Browse story routes
               </Link>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
       </section>
 
       <section className="site-container py-16 lg:py-24">

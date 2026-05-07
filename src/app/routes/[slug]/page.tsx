@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FavoriteButton } from "@/components/account/FavoriteButton";
 import { cityCultures } from "@/data/culture";
 import { getStoryRoute, storyRoutes } from "@/data/routes";
 
@@ -46,13 +47,14 @@ export default async function RouteDetailPage({
       >
         <div className="site-container relative">
           <p className="text-label text-white/58">{route.culture} story route</p>
-          <h1 className="mt-5 max-w-5xl font-[family:var(--font-display)] text-5xl leading-tight md:text-7xl">
+          <h1 className="mt-5 max-w-[18ch] font-[family:var(--font-display)] text-4xl leading-[1.08] md:text-6xl">
             {route.title}
           </h1>
           <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/76">
             <span className="border border-white/24 bg-white/10 px-4 py-2">{route.city}</span>
             <span className="border border-white/24 bg-white/10 px-4 py-2">{route.duration}</span>
             <span className="border border-white/24 bg-white/10 px-4 py-2">{route.audience}</span>
+            <FavoriteButton id={route.slug} type="route" title={route.title} variant="dark" />
           </div>
         </div>
       </section>

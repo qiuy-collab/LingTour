@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { siteNavigation } from "@/data/navigation";
+import { AccountNavLink } from "@/components/layout/AccountNavLink";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
 
 function isActivePath(pathname: string, href: string) {
@@ -28,6 +31,10 @@ export function SiteHeader() {
         <nav className="hidden items-center justify-start gap-1 md:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
             const active = isActivePath(pathname, item.href);
+
+            if (item.href === "/routes") {
+              return <RoutesMegaMenu key={item.href} active={active} />;
+            }
 
             return (
               <Link
@@ -56,6 +63,7 @@ export function SiteHeader() {
         </Link>
 
         <div className="hidden items-center justify-end gap-1 md:flex">
+          <LanguageToggle />
           <nav className="flex items-center gap-1" aria-label="Secondary navigation">
             {rightNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -76,17 +84,12 @@ export function SiteHeader() {
               );
             })}
           </nav>
+          <AccountNavLink />
           <Link
-            href="/login"
-            className="px-3 py-3 text-sm text-[var(--muted)] transition hover:text-[var(--ink)]"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/interpreting"
+            href="/interpreting#booking"
             className="ml-1 bg-[var(--cinnabar)] px-4 py-2.5 text-sm text-white transition hover:bg-[var(--cinnabar-deep)]"
           >
-            Book
+            Reserve
           </Link>
         </div>
 
@@ -128,19 +131,16 @@ export function SiteHeader() {
               );
             })}
             <div className="mt-2 grid grid-cols-2 gap-2">
+              <AccountNavLink onNavigate={() => setIsOpen(false)} />
+              <LanguageToggle />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
               <Link
-                href="/login"
-                className="border border-[var(--line)] bg-white px-4 py-3 text-center text-sm text-[var(--ink)]"
-                onClick={() => setIsOpen(false)}
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/interpreting"
+                href="/interpreting#booking"
                 className="bg-[var(--cinnabar)] px-4 py-3 text-center text-sm text-white"
                 onClick={() => setIsOpen(false)}
               >
-                Book
+                Reserve
               </Link>
             </div>
           </Container>

@@ -30,7 +30,7 @@ export default async function CityCulturePage({
       >
         <div className="site-container relative">
           <p className="text-label text-white/58">{city.label}</p>
-          <h1 className="mt-5 max-w-4xl font-[family:var(--font-display)] text-6xl leading-none md:text-8xl">
+          <h1 className="mt-5 max-w-[16ch] font-[family:var(--font-display)] text-5xl leading-[1.04] md:text-7xl">
             {city.name}
           </h1>
           <p className="mt-7 max-w-2xl text-xl leading-8 text-white/76">{city.narrative}</p>
@@ -70,8 +70,8 @@ export default async function CityCulturePage({
               <Link href={city.routeHref} className="bg-[var(--river-deep)] px-6 py-4 text-center text-sm text-white">
                 Follow related story route
               </Link>
-              <Link href="/interpreting" className="border border-[var(--line)] px-6 py-4 text-center text-sm">
-                Book interpreting support
+              <Link href="/routes" className="border border-[var(--line)] px-6 py-4 text-center text-sm">
+                View all story routes
               </Link>
             </div>
           </div>
