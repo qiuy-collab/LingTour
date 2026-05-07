@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f2eee6;
+  --foreground: #17202a;
+  --paper: #f8f4ec;
+  --paper-deep: #e8ded0;
+  --ink: #17202a;
+  --muted: #66717d;
+  --line: rgba(23, 32, 42, 0.13);
+  --river: #24535e;
+  --river-deep: #14343d;
+  --cinnabar: #b64235;
+  --cinnabar-deep: #842b23;
+  --jade: #7c9b86;
+  --gold: #b98a46;
+  --night: #111923;
+  --shadow-soft: 0 22px 70px rgba(17, 25, 35, 0.12);
+  --site-max-width: 82rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(23, 32, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(23, 32, 42, 0.03) 1px, transparent 1px),
+    var(--background);
+  background-size: 44px 44px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  border: 0;
+  font: inherit;
+}
+
+.site-container {
+  margin-inline: auto;
+  width: min(100%, var(--site-max-width));
+  padding-inline: 1.25rem;
+}
+
+.text-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.image-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 34%),
+    linear-gradient(0deg, rgba(17, 25, 35, 0.52), rgba(17, 25, 35, 0.04) 56%, rgba(17, 25, 35, 0.22));
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .site-container {
+    padding-inline: 2.5rem;
+  }
 }
