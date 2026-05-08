@@ -40,32 +40,6 @@ const fallbackUser: LocalUser = {
   travelStyle: "Culture routes and food walks",
 };
 
-function readUser() {
-  const stored = window.localStorage.getItem("lingtour-user");
-  if (stored) {
-    return JSON.parse(stored) as LocalUser;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const email = params.get("email");
-
-  if (!email) {
-    window.localStorage.setItem("lingtour-user", JSON.stringify(fallbackUser));
-    return fallbackUser;
-  }
-
-  const userFromLogin: LocalUser = {
-    name: params.get("name") || "Maya Chen",
-    email,
-    country: params.get("country") || "Singapore",
-    travelStyle: params.get("travelStyle") || "Culture routes and food walks",
-  };
-
-  window.localStorage.setItem("lingtour-user", JSON.stringify(userFromLogin));
-  window.history.replaceState(null, "", "/account");
-  return userFromLogin;
-}
-
 function readFavorites() {
   const stored = window.localStorage.getItem("lingtour-favorites");
   if (!stored) {
@@ -100,14 +74,24 @@ function getInitials(name: string) {
 }
 
 export function AccountDashboard() {
-  const [user, setUser] = useState<LocalUser | null>(fallbackUser);
+  const [user, setUser] = useState<LocalUser | null>(null);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const featuredRoutes = storyRoutes.slice(0, 3);
   const recentOrders = storeProducts.slice(0, 2);
 
   useEffect(() => {
     function syncAccount() {
-      setUser(readUser() ?? fallbackUser);
+      // 仅从 localStorage 读取，不自动创建默认用户
+      const stored = window.localStorage.getItem("lingtour-user");
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
       setFavorites(readFavorites());
     }
 
@@ -126,12 +110,6 @@ export function AccountDashboard() {
   const savedRoutes = useMemo(() => favorites.filter((item) => item.type === "route"), [favorites]);
   const savedProducts = useMemo(() => favorites.filter((item) => item.type === "product"), [favorites]);
 
-  function logOut() {
-    window.localStorage.removeItem("lingtour-user");
-    window.dispatchEvent(new Event("lingtour-auth"));
-    setUser(null);
-  }
-
   if (!user) {
     return (
       <div>
@@ -147,7 +125,7 @@ export function AccountDashboard() {
           <div className="site-container relative grid min-h-[30rem] items-center py-16 lg:py-20">
             <div className="max-w-3xl">
               <p className="text-label text-white/52">Personal center</p>
-              <h1 className="mt-5 max-w-[14ch] font-[family:var(--font-display)] text-5xl leading-[1.04] md:text-6xl">
+              <h1 className="mt-5 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[1.04] sm:text-5xl md:text-6xl">
                 Sign in before opening your travel desk.
               </h1>
               <p className="mt-7 max-w-xl border-l border-white/18 pl-6 text-base leading-8 text-white/70">
@@ -197,12 +175,12 @@ export function AccountDashboard() {
         <div className="site-container grid gap-10 py-16 lg:grid-cols-[0.72fr_1.08fr] lg:items-end lg:py-20">
           <div>
             <p className="text-label text-white/52">Personal center</p>
-            <div className="mt-6 flex items-center gap-5">
-              <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-3xl shadow-[0_20px_60px_rgba(182,66,53,0.34)]">
+            <div className="mt-6 flex items-center gap-4 sm:gap-5">
+              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-2xl shadow-[0_20px_60px_rgba(182,66,53,0.34)] sm:h-20 sm:w-20 sm:text-3xl">
                 {getInitials(user.name)}
               </div>
               <div className="min-w-0">
-                <h1 className="font-[family:var(--font-display)] text-5xl leading-none md:text-6xl">
+                <h1 className="font-[family:var(--font-display)] text-4xl leading-none sm:text-5xl md:text-6xl">
                   {user.name}
                 </h1>
                 <p className="mt-3 truncate text-sm text-white/58">{user.email}</p>
@@ -237,13 +215,6 @@ export function AccountDashboard() {
             <h2 className="mt-4 max-w-[15ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
               Move from saved interest to a real plan.
             </h2>
-            <button
-              type="button"
-              className="mt-8 border border-[var(--line)] bg-white px-6 py-4 text-sm font-semibold text-[var(--muted)] transition hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
-              onClick={logOut}
-            >
-              Log out
-            </button>
           </div>
 
           <div className="grid gap-px overflow-hidden border border-[var(--line)] bg-[var(--line)] md:grid-cols-3">
@@ -285,7 +256,7 @@ export function AccountDashboard() {
               <article key={`${booking.city}-${booking.date}`} className="grid gap-4 border border-[var(--line)] bg-white p-6 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
                   <p className="text-label text-[var(--muted)]">{booking.status}</p>
-                  <h3 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+                  <h3 className="mt-3 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] sm:text-3xl">
                     {booking.city} / {booking.service}
                   </h3>
                   <p className="mt-3 text-sm text-[var(--muted)]">Preferred date: {booking.date}</p>
@@ -312,23 +283,56 @@ export function AccountDashboard() {
           </Link>
         </div>
 
-        <div data-account-favorites-empty className="grid gap-6 border border-[var(--line)] bg-[var(--paper)] p-7 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">No favorites yet.</p>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">
-              Save routes or cultural products from detail pages, then return here to compare them.
-            </p>
+        {favorites.length === 0 ? (
+          <div className="grid gap-6 border border-[var(--line)] bg-[var(--paper)] p-7 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">No favorites yet.</p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">
+                Save routes or cultural products from detail pages, then return here to compare them.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/routes" className="bg-[var(--river-deep)] px-5 py-3 text-center text-sm text-white">
+                Browse routes
+              </Link>
+              <Link href="/shop/products" className="border border-[var(--line)] bg-white px-5 py-3 text-center text-sm">
+                Browse objects
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/routes" className="bg-[var(--river-deep)] px-5 py-3 text-center text-sm text-white">
-              Browse routes
-            </Link>
-            <Link href="/shop/products" className="border border-[var(--line)] bg-white px-5 py-3 text-center text-sm">
-              Browse objects
-            </Link>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {favorites.map((item) => {
+              const href = item.type === "route" ? `/routes/${item.id}` : `/checkout?product=${item.id}`;
+              return (
+                <article key={`${item.type}-${item.id}`} className="grid gap-5 border border-[var(--line)] bg-[var(--paper)] p-6 transition hover:bg-white">
+                  <div>
+                    <p className="text-label text-[var(--cinnabar)]">{item.type === "route" ? "Saved route" : "Saved object"}</p>
+                    <h3 className="mt-4 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] sm:text-3xl">{item.title}</h3>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Link href={href} className="bg-[var(--river-deep)] px-5 py-3 text-center text-sm font-semibold text-white">Open</Link>
+                    <button
+                      type="button"
+                      className="border border-[var(--line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--muted)] transition hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
+                      onClick={() => {
+                        const storageKey = "lingtour-favorites";
+                        const stored = window.localStorage.getItem(storageKey);
+                        const all: FavoriteItem[] = stored ? JSON.parse(stored) : [];
+                        const next = all.filter((f: FavoriteItem) => !(f.id === item.id && f.type === item.type));
+                        window.localStorage.setItem(storageKey, JSON.stringify(next));
+                        window.dispatchEvent(new Event("lingtour-favorites"));
+                        setFavorites(next);
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
-        </div>
-        <div data-account-favorites-list hidden className="grid gap-4 md:grid-cols-2" />
+        )}
       </section>
 
       <section className="site-container pb-16 lg:pb-24">

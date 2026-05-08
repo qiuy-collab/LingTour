@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type FavoriteButtonProps = {
   id: string;
@@ -17,36 +17,28 @@ type FavoriteItem = {
 
 const storageKey = "lingtour-favorites";
 
-function readFavorites() {
-  if (typeof window === "undefined") {
-    return [] as FavoriteItem[];
-  }
-
-  const stored = window.localStorage.getItem(storageKey);
-  if (!stored) {
-    return [] as FavoriteItem[];
-  }
-
+function readFavorites(): FavoriteItem[] {
+  if (typeof window === "undefined") return [];
   try {
-    const parsed = JSON.parse(stored);
-    if (!Array.isArray(parsed)) {
-      return [] as FavoriteItem[];
-    }
-
-    return parsed.filter(
-      (item): item is FavoriteItem =>
-        Boolean(item) &&
-        typeof item.id === "string" &&
-        (item.type === "route" || item.type === "product") &&
-        typeof item.title === "string",
-    );
+    const raw = window.localStorage.getItem(storageKey);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return [] as FavoriteItem[];
+    return [];
+  }
+}
+
+function writeFavorites(items: FavoriteItem[]) {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(items));
+    window.dispatchEvent(new Event("lingtour-favorites"));
+  } catch {
+    // localStorage unavailable
   }
 }
 
 export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteButtonProps) {
-  const [saved, setSaved] = useState(() => readFavorites().some((item) => item.id === id && item.type === type));
+  const [saved, setSaved] = useState(false);
   const isDark = variant === "dark";
 
   useEffect(() => {
@@ -54,6 +46,7 @@ export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteB
       setSaved(readFavorites().some((item) => item.id === id && item.type === type));
     }
 
+    syncSaved();
     window.addEventListener("storage", syncSaved);
     window.addEventListener("lingtour-favorites", syncSaved);
 
@@ -63,19 +56,30 @@ export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteB
     };
   }, [id, type]);
 
+  const handleClick = useCallback(() => {
+    const favorites = readFavorites();
+    const exists = favorites.some((item) => item.id === id && item.type === type);
+    const next = exists
+      ? favorites.filter((item) => !(item.id === id && item.type === type))
+      : [...favorites, { id, type, title }];
+    writeFavorites(next);
+  }, [id, type, title]);
+
   return (
     <button
       type="button"
       aria-pressed={saved}
       data-favorite-button="true"
+      data-react-favorite="true"
       data-favorite-id={id}
       data-favorite-type={type}
       data-favorite-title={title}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition ${
+      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition ${
         isDark
           ? "border-white/30 bg-white/10 text-white hover:bg-white hover:text-[var(--night)]"
           : "border-[var(--line)] bg-white/82 text-[var(--ink)] hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
       }`}
+      onClick={handleClick}
     >
       <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"}>
         <path

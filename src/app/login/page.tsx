@@ -20,13 +20,13 @@ export default function LoginPage() {
         />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(17,25,35,0.98),rgba(17,25,35,0.78)_52%,rgba(17,25,35,0.42))]" />
 
-        <div className="site-container relative z-10 grid min-h-[calc(100vh-73px)] gap-10 py-10 lg:grid-cols-[0.82fr_0.58fr] lg:items-center lg:py-20">
+        <div className="site-container relative z-10 grid min-h-[calc(100svh-73px)] gap-8 py-8 lg:grid-cols-[0.82fr_0.58fr] lg:items-center lg:gap-10 lg:py-20">
           <div className="order-2 max-w-3xl lg:order-1">
             <p className="text-label text-white/54">Account access</p>
-            <h1 className="mt-5 max-w-[13ch] font-[family:var(--font-display)] text-5xl leading-[1.04] md:text-6xl">
+            <h1 className="mt-5 max-w-[13ch] font-[family:var(--font-display)] text-4xl leading-[1.04] sm:text-5xl md:text-6xl">
               Keep your Guangdong plans in one place.
             </h1>
-            <p className="mt-7 max-w-xl border-l border-white/18 pl-6 text-base leading-8 text-white/70">
+            <p className="mt-6 max-w-xl border-l border-white/18 pl-5 text-base leading-8 text-white/70 sm:mt-7 sm:pl-6">
               Sign in to collect routes, review saved objects, and return to interpreting drafts
               without rebuilding the trip from memory.
             </p>

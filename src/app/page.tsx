@@ -15,7 +15,7 @@ import { formatStorePrice, storeProducts } from "@/data/store";
 export default function Home() {
   return (
     <div>
-      <section className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-[var(--night)] text-white">
+      <section className="relative min-h-[calc(100svh-73px)] overflow-hidden bg-[var(--night)] text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-72"
           style={{
@@ -26,10 +26,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(17,25,35,0.94),rgba(17,25,35,0.55)_48%,rgba(17,25,35,0.18))]" />
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-[linear-gradient(0deg,var(--background),transparent)]" />
 
-        <div className="site-container relative flex min-h-[calc(100vh-73px)] flex-col justify-between py-12">
-          <div className="max-w-4xl pt-10 lg:pt-20">
+        <div className="site-container relative flex min-h-[calc(100svh-73px)] flex-col justify-between py-10 md:py-12">
+          <div className="max-w-4xl pt-6 lg:pt-20">
             <p className="text-label text-white/62">Guangdong cultural travel service</p>
-            <h1 className="mt-5 font-[family:var(--font-display)] text-6xl leading-[0.98] text-white md:text-7xl lg:text-8xl">
+            <h1 className="mt-5 font-[family:var(--font-display)] text-[3.4rem] leading-[0.98] text-white sm:text-6xl md:text-7xl lg:text-8xl">
               LingTour Guangdong
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-white/78 md:text-xl">
@@ -52,10 +52,10 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid gap-3 border-t border-white/14 pt-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-3 border-t border-white/14 pt-6 sm:grid-cols-3">
             {trustMetrics.map((item) => (
               <div key={item.label}>
-                <p className="font-[family:var(--font-display)] text-4xl">{item.value}</p>
+                <p className="font-[family:var(--font-display)] text-3xl sm:text-4xl">{item.value}</p>
                 <p className="mt-1 text-label text-white/52">{item.label}</p>
               </div>
             ))}
@@ -63,7 +63,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="site-container py-16 lg:py-20">
+      <section className="site-container py-12 lg:py-20">
         <div className="grid gap-8 border-l border-[var(--cinnabar)]/30 pl-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(22rem,0.58fr)] lg:items-start lg:pl-8">
           <div className="max-w-3xl">
             <p className="text-label text-[var(--cinnabar)]">Platform entrances</p>
@@ -83,7 +83,7 @@ export default function Home() {
               <Link href={card.href} className="group block">
                 <SpotlightPanel className="lux-card min-h-[18rem] border border-[var(--line)] bg-[var(--paper)] p-6">
                   <p className="text-label text-[var(--muted)]">{card.id}</p>
-                  <h3 className="mt-8 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] transition group-hover:translate-x-1">
+                  <h3 className="mt-8 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] transition group-hover:translate-x-1 sm:text-3xl">
                     {card.title}
                   </h3>
                   <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{card.body}</p>
@@ -160,10 +160,10 @@ export default function Home() {
                   style={{ backgroundImage: `url(${product.image})` }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.08),rgba(17,25,35,0.82))]" />
-                <div className="relative z-10 flex h-full flex-col justify-end p-5">
+                <div className="relative z-10 flex h-full flex-col justify-end p-4 sm:p-5">
                   <p className="text-label text-white/62">{product.tag}</p>
-                  <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight">{product.name}</h3>
-                  <p className="mt-2 translate-y-4 text-sm text-white/0 transition duration-300 group-hover:translate-y-0 group-hover:text-white/82">
+                  <h3 className="mt-2 font-[family:var(--font-display)] text-xl leading-tight sm:text-2xl">{product.name}</h3>
+                  <p className="mt-2 translate-y-0 text-sm text-white/82 transition duration-300 md:translate-y-4 md:text-white/0 md:group-hover:translate-y-0 md:group-hover:text-white/82">
                     {formatStorePrice(product)}
                   </p>
                 </div>

@@ -19,14 +19,18 @@ export function FavoriteRuntime() {
             }
 
             function writeFavorites(items) {
-              window.localStorage.setItem(key, JSON.stringify(items));
-              window.dispatchEvent(new Event("lingtour-favorites"));
+              try {
+                window.localStorage.setItem(key, JSON.stringify(items));
+                window.dispatchEvent(new Event("lingtour-favorites"));
+              } catch {
+                // localStorage unavailable
+              }
             }
 
             function isSaved(button, items) {
               const id = button.getAttribute("data-favorite-id");
               const type = button.getAttribute("data-favorite-type");
-              return items.some((item) => item && item.id === id && item.type === type);
+              return items.some(function (item) { return item && item.id === id && item.type === type; });
             }
 
             function paintButton(button, saved) {
@@ -39,7 +43,7 @@ export function FavoriteRuntime() {
 
             function syncButtons() {
               const favorites = readFavorites();
-              document.querySelectorAll('[data-favorite-button="true"]').forEach((button) => {
+              document.querySelectorAll('[data-favorite-button="true"]').forEach(function (button) {
                 paintButton(button, isSaved(button, favorites));
               });
             }
@@ -62,7 +66,7 @@ export function FavoriteRuntime() {
               const empty = document.querySelector("[data-account-favorites-empty]");
               if (!list || !empty) return;
 
-              const favorites = readFavorites().filter((item) => {
+              const favorites = readFavorites().filter(function (item) {
                 return item && typeof item.id === "string" && typeof item.title === "string" && (item.type === "route" || item.type === "product");
               });
 
@@ -75,13 +79,13 @@ export function FavoriteRuntime() {
 
               empty.hidden = true;
               list.hidden = false;
-              list.innerHTML = favorites.map((item) => {
+              list.innerHTML = favorites.map(function (item) {
                 const label = item.type === "route" ? "Saved route" : "Saved object";
                 const href = favoriteHref(item);
                 return '<article class="grid gap-5 border border-[var(--line)] bg-[var(--paper)] p-6 transition hover:bg-white">' +
                   '<div>' +
                     '<p class="text-label text-[var(--cinnabar)]">' + label + '</p>' +
-                    '<h3 class="mt-4 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">' + escapeHtml(item.title) + '</h3>' +
+                    '<h3 class="mt-4 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] sm:text-3xl">' + escapeHtml(item.title) + '</h3>' +
                   '</div>' +
                   '<div class="flex flex-col gap-3 sm:flex-row">' +
                     '<a href="' + escapeHtml(href) + '" class="bg-[var(--river-deep)] px-5 py-3 text-center text-sm font-semibold text-white">Open</a>' +
@@ -96,29 +100,40 @@ export function FavoriteRuntime() {
               renderAccountFavorites();
             }
 
-            document.addEventListener("click", (event) => {
+            document.addEventListener("click", function (event) {
               const target = event.target;
-              const button = target && target.closest ? target.closest('[data-favorite-button="true"]') : null;
-              const removeButton = target && target.closest ? target.closest('[data-account-favorite-remove="true"]') : null;
-              if (!button && !removeButton) return;
+              const removeBtn = target && target.closest ? target.closest('[data-account-favorite-remove="true"]') : null;
 
-              event.preventDefault();
-              event.stopPropagation();
+              if (removeBtn) {
+                event.preventDefault();
+                const id = removeBtn.getAttribute("data-favorite-id");
+                const type = removeBtn.getAttribute("data-favorite-type");
+                if (id && (type === "route" || type === "product")) {
+                  const favorites = readFavorites();
+                  const next = favorites.filter(function (item) { return !(item.id === id && item.type === type); });
+                  writeFavorites(next);
+                  syncFavorites();
+                }
+                return;
+              }
 
-              const source = button || removeButton;
-              const id = source.getAttribute("data-favorite-id");
-              const type = source.getAttribute("data-favorite-type");
-              const title = source.getAttribute("data-favorite-title") || "";
-              if (!id || (type !== "route" && type !== "product")) return;
-
-              const favorites = readFavorites();
-              const exists = favorites.some((item) => item && item.id === id && item.type === type);
-              const next = removeButton || exists
-                ? favorites.filter((item) => !(item && item.id === id && item.type === type))
-                : [...favorites, { id, type, title }];
-
-              writeFavorites(next);
-              syncFavorites();
+              const favBtn = target && target.closest ? target.closest('[data-favorite-button="true"]') : null;
+              if (favBtn && !favBtn.hasAttribute("data-react-favorite")) {
+                event.preventDefault();
+                event.stopPropagation();
+                const id = favBtn.getAttribute("data-favorite-id");
+                const type = favBtn.getAttribute("data-favorite-type");
+                const title = favBtn.getAttribute("data-favorite-title") || "";
+                if (id && (type === "route" || type === "product")) {
+                  const favorites = readFavorites();
+                  const exists = favorites.some(function (item) { return item && item.id === id && item.type === type; });
+                  const next = exists
+                    ? favorites.filter(function (item) { return !(item && item.id === id && item.type === type); })
+                    : favorites.concat([{ id: id, type: type, title: title }]);
+                  writeFavorites(next);
+                  syncFavorites();
+                }
+              }
             }, true);
 
             window.addEventListener("storage", syncFavorites);

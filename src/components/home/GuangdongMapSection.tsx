@@ -162,7 +162,7 @@ export function GuangdongMapSection() {
   const panelLead = activePanel === "route" ? activeCity.routeName : activeCity.summary;
 
   return (
-    <section className="py-16 lg:py-24">
+    <section className="py-12 lg:py-24">
       <div className="site-container">
         <div className="mb-9 grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
@@ -177,10 +177,10 @@ export function GuangdongMapSection() {
           </p>
         </div>
 
-        <div className="relative min-h-[46rem] overflow-hidden border border-[var(--line)] bg-[#fdfaf3] shadow-[var(--shadow-soft)]">
+        <div className="relative overflow-hidden border border-[var(--line)] bg-[#fdfaf3] shadow-[var(--shadow-soft)] lg:min-h-[46rem]">
           <Link
             href={activePanel === "route" ? activeCity.routeHref : `/culture/${activeCity.slug}`}
-            className="group relative z-10 m-5 block w-[min(100%,16.5rem)] overflow-hidden bg-[rgba(17,25,35,0.92)] text-white shadow-[0_22px_70px_rgba(17,25,35,0.22)] backdrop-blur-md lg:absolute lg:left-7 lg:top-8 lg:m-0"
+            className="group relative z-10 m-4 block overflow-hidden bg-[rgba(17,25,35,0.92)] text-white shadow-[0_22px_70px_rgba(17,25,35,0.22)] backdrop-blur-md sm:w-[min(100%,16.5rem)] lg:absolute lg:left-7 lg:top-8 lg:m-0"
           >
             <div
               className="image-sheen flex h-[8.75rem] items-end bg-cover bg-center p-4 transition duration-500 group-hover:scale-[1.02]"
@@ -209,7 +209,7 @@ export function GuangdongMapSection() {
             </div>
           </Link>
 
-          <div className="absolute inset-0">
+          <div className="relative h-[25rem] lg:absolute lg:inset-0 lg:h-auto">
             <div className="h-full w-full p-4 lg:p-8">
               {mapData ? (
                 <svg
@@ -232,11 +232,14 @@ export function GuangdongMapSection() {
                       <path
                         key={city.adcode}
                         d={city.path}
-                        fill={isActive ? "#b64235" : hasContent ? "#9fb39e" : "#d8d0c2"}
                         stroke="#fffaf1"
                         strokeWidth={isActive ? 2.4 : 1.2}
-                        className={hasContent ? "cursor-pointer transition duration-200" : "transition duration-200"}
                         opacity={hasContent || isActive ? 1 : 0.72}
+                        style={{
+                          fill: isActive ? "#b64235" : hasContent ? "#9fb39e" : "#d8d0c2",
+                          cursor: hasContent ? "pointer" : "default",
+                          transition: "fill 200ms",
+                        }}
                         onMouseEnter={() => {
                           if (hasContent) {
                             setActiveCode(city.adcode);
@@ -266,12 +269,16 @@ export function GuangdongMapSection() {
                     const linePath = routeLeaderPath([x, y], [labelX, labelY], labelConfig.line);
                     const isActive = activeCode === city.adcode;
                     const lineColor = isActive && activePanel === "route" ? "#d42621" : "#b9b8b2";
+                    const dotColor = isActive && activePanel === "route" ? "#d42621" : "#9d9b95";
+                    const textColor = isActive && activePanel === "route" ? "#d42621" : "#8f908d";
+                    const textWeight = isActive && activePanel === "route" ? "bold" : "600";
+                    const textSize = isActive && activePanel === "route" ? "12px" : "11px";
 
                     return (
                       <Link
                         key={`${city.adcode}-route`}
                         href={focusCity.routeHref}
-                        className="cursor-pointer"
+                        style={{ cursor: "pointer" }}
                         onMouseEnter={() => {
                           setActiveCode(city.adcode);
                           setActivePanel("route");
@@ -285,25 +292,21 @@ export function GuangdongMapSection() {
                           <path
                             d={linePath}
                             fill="none"
-                            stroke={lineColor}
                             strokeWidth={isActive && activePanel === "route" ? 1.7 : 1}
                             opacity={isActive && activePanel === "route" ? 0.96 : 0.7}
+                            style={{ stroke: lineColor, transition: "stroke 200ms" }}
                           />
                           <circle
                             cx={x}
                             cy={y}
                             r={isActive && activePanel === "route" ? 4.5 : 3.2}
-                            fill={isActive && activePanel === "route" ? "#d42621" : "#9d9b95"}
+                            style={{ fill: dotColor, transition: "fill 200ms" }}
                           />
                           <text
                             x={labelX}
                             y={labelConfig.line === "horizontal" ? y + 4 : labelY + 4}
                             textAnchor={labelConfig.anchor}
-                            className={
-                              isActive && activePanel === "route"
-                                ? "fill-[#d42621] text-[12px] font-bold"
-                                : "fill-[#8f908d] text-[11px] font-semibold"
-                            }
+                            style={{ fill: textColor, fontSize: textSize, fontWeight: textWeight, transition: "fill 200ms" }}
                           >
                             {focusCity.routeShort}
                           </text>
@@ -325,7 +328,7 @@ export function GuangdongMapSection() {
                         <text
                           x={x + 8}
                           y={y - 8}
-                          className="fill-[var(--night)] text-[12px] font-semibold"
+                          style={{ fill: "var(--night)", fontSize: "12px", fontWeight: "600" }}
                         >
                           {focusCity.name}
                         </text>

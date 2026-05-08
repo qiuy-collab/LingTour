@@ -21,14 +21,14 @@ export function EditorialIntro({
 
   return (
     <div
-      className={`site-container grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,0.68fr)] lg:items-center ${className}`}
+      className={`site-container grid gap-7 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,0.68fr)] lg:items-center lg:gap-10 ${className}`}
     >
       <div className="max-w-4xl">
         <p className={`text-label ${isDark ? "text-white/56" : "text-[var(--cinnabar)]"}`}>
           {eyebrow}
         </p>
         <h1
-          className={`mt-5 max-w-[16ch] font-[family:var(--font-display)] text-4xl leading-[1.08] md:text-5xl lg:text-6xl ${
+          className={`mt-5 max-w-[16ch] font-[family:var(--font-display)] text-[2.35rem] leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl ${
             isDark ? "text-white" : "text-[var(--river-deep)]"
           }`}
         >
@@ -37,7 +37,7 @@ export function EditorialIntro({
       </div>
 
       <div
-        className={`max-w-2xl border-l pl-6 md:pl-8 ${
+        className={`max-w-2xl border-l pl-5 md:pl-8 ${
           isDark ? "border-white/18" : "border-[var(--cinnabar)]/28"
         }`}
       >

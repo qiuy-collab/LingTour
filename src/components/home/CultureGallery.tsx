@@ -58,10 +58,10 @@ export function CultureGallery() {
         data-carousel-root
         data-carousel-index="0"
         data-carousel-max={maxIndex}
-        data-carousel-step="21.25rem"
+        data-carousel-step="auto"
         data-carousel-copy-step="100%"
       >
-        <div className="relative overflow-hidden pr-16">
+        <div className="relative overflow-hidden pr-10 sm:pr-16">
           <div
             data-carousel-track
             className="flex gap-5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -71,19 +71,19 @@ export function CultureGallery() {
               <Link
                 key={item.slug}
                 href={item.href}
-                className="group relative h-[34rem] w-[20rem] shrink-0 overflow-hidden bg-black text-white"
+                className="group relative h-[28rem] w-[17.5rem] shrink-0 overflow-hidden bg-black text-white sm:h-[34rem] sm:w-[20rem]"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center opacity-82 transition duration-700 group-hover:scale-105"
                   style={{ backgroundImage: `url(${item.image})` }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.26)_42%,rgba(0,0,0,0.88))]" />
-                <div className="relative z-10 flex h-full flex-col justify-between p-6">
+                <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
                   <p className="self-end text-sm font-bold uppercase">{item.place}</p>
                   <div>
                     <p className="text-sm font-bold uppercase text-white/80">Lingnan culture</p>
-                    <h3 className="mt-3 font-[family:var(--font-display)] text-4xl leading-tight">{item.title}</h3>
-                    <div className="mt-4 max-h-0 translate-y-8 overflow-hidden opacity-0 transition-all duration-500 group-hover:max-h-64 group-hover:translate-y-0 group-hover:opacity-100">
+                    <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl">{item.title}</h3>
+                    <div className="mt-4 max-h-64 translate-y-0 overflow-hidden opacity-100 transition-all duration-500 md:max-h-0 md:translate-y-8 md:opacity-0 md:group-hover:max-h-64 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       <p className="text-sm leading-7 text-white/82">{item.body}</p>
                       <span className="mt-5 inline-block border border-white/70 px-5 py-3 text-sm font-semibold">
                         Read culture notes
@@ -133,7 +133,7 @@ export function CultureGallery() {
           </button>
         </div>
 
-        <div className="relative -ml-4 overflow-hidden lg:-ml-12">
+        <div className="relative overflow-hidden lg:pl-4">
           <div className="absolute -right-24 top-16 hidden h-80 w-80 rounded-[45%] border border-white/8 lg:block" />
           <div
             data-carousel-copy-track
@@ -141,17 +141,17 @@ export function CultureGallery() {
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
             {galleryItems.map((item, index) => (
-              <div key={item.slug} className="w-full shrink-0 pl-2">
+              <div key={item.slug} className="w-full shrink-0">
                 <p className="text-label text-white/54">
                   {index === 0 ? "Lingnan culture" : item.place}
                 </p>
-                <h2 className="mt-7 max-w-[15ch] font-[family:var(--font-display)] text-4xl leading-[1.08] text-white md:text-5xl">
-                  {index === 0 ? "Three culture lines" : item.title}
+                <h2 className="mt-5 max-w-[15ch] font-[family:var(--font-display)] text-4xl leading-[1.08] text-white md:mt-7 md:text-5xl">
+                  {index === 0 ? "Culture lines" : item.title}
                 </h2>
-                <p className="mt-10 max-w-sm border-l border-white/16 pl-7 text-base leading-9 text-white/72">{item.body}</p>
+                <p className="mt-6 max-w-sm border-l border-white/16 pl-5 text-base leading-8 text-white/72 md:mt-10 md:pl-7 md:leading-9">{item.body}</p>
                 <Link
                   href={item.href}
-                  className="mt-12 inline-block border border-white/24 px-6 py-4 text-sm font-semibold text-white transition hover:bg-white hover:text-[var(--night)]"
+                  className="mt-8 inline-block border border-white/24 px-6 py-4 text-sm font-semibold text-white transition hover:bg-white hover:text-[var(--night)] md:mt-12"
                 >
                   Read culture notes
                 </Link>

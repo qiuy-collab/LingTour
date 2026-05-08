@@ -32,10 +32,12 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  overflow-x: hidden;
   background:
     linear-gradient(90deg, rgba(23, 32, 42, 0.035) 1px, transparent 1px),
     linear-gradient(180deg, rgba(23, 32, 42, 0.03) 1px, transparent 1px),
@@ -58,7 +60,7 @@ button {
 .site-container {
   margin-inline: auto;
   width: min(100%, var(--site-max-width));
-  padding-inline: 1.25rem;
+  padding-inline: 1rem;
 }
 
 .text-label {
@@ -185,5 +187,16 @@ button {
 @media (min-width: 1024px) {
   .site-container {
     padding-inline: 2.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+  }
+
+  .lux-card:hover {
+    transform: none;
   }
 }

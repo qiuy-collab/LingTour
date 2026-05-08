@@ -109,7 +109,7 @@ export function SiteHeader() {
       </Container>
 
       {isOpen ? (
-        <div className="border-t border-[var(--line)] bg-[var(--paper)] md:hidden">
+        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper)] md:hidden">
           <Container className="grid gap-2 py-4">
             {siteNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -130,7 +130,7 @@ export function SiteHeader() {
                 </Link>
               );
             })}
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/70 [&>button]:py-3">
               <AccountNavLink onNavigate={() => setIsOpen(false)} />
               <LanguageToggle />
             </div>

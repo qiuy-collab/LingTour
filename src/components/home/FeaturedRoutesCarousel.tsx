@@ -25,7 +25,7 @@ export function FeaturedRoutesCarousel() {
         data-carousel-root
         data-carousel-index="0"
         data-carousel-max={maxIndex}
-        data-carousel-step={`${cardStepRem}rem`}
+        data-carousel-step="auto"
         data-carousel-copy-step="100%"
       >
         <div className="relative overflow-hidden">
@@ -51,7 +51,7 @@ export function FeaturedRoutesCarousel() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden pr-16">
+        <div className="relative overflow-hidden pr-10 sm:pr-16">
           <div
             data-carousel-track
             className="flex gap-5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
@@ -61,21 +61,21 @@ export function FeaturedRoutesCarousel() {
               <Link
                 key={route.slug}
                 href={`/routes/${route.slug}`}
-                className="group relative h-[34rem] w-[20rem] shrink-0 overflow-hidden bg-black text-white"
+                className="group relative h-[28rem] w-[17.5rem] shrink-0 overflow-hidden bg-black text-white sm:h-[34rem] sm:w-[20rem]"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center opacity-82 transition duration-700 group-hover:scale-105"
                   style={{ backgroundImage: `url(${route.image})` }}
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.14),rgba(0,0,0,0.34)_45%,rgba(0,0,0,0.88))]" />
-                <div className="relative z-10 flex h-full flex-col justify-between p-6">
+                <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
                   <p className="self-end text-sm font-bold uppercase">{route.duration}</p>
                   <div>
                     <p className="text-sm font-bold uppercase text-white/80">{route.culture}</p>
-                    <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight">
+                    <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight sm:text-3xl">
                       {route.title}
                     </h3>
-                    <div className="mt-4 max-h-0 translate-y-8 overflow-hidden opacity-0 transition-all duration-500 group-hover:max-h-64 group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="mt-4 max-h-64 translate-y-0 overflow-hidden opacity-100 transition-all duration-500 md:max-h-0 md:translate-y-8 md:opacity-0 md:group-hover:max-h-64 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       <p className="text-sm leading-7 text-white/82">{route.summary}</p>
                       <span className="mt-5 inline-block border border-white/70 px-5 py-3 text-sm font-semibold">
                         Explore trip

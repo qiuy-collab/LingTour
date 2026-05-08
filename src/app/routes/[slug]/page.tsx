@@ -38,7 +38,7 @@ export default async function RouteDetailPage({
   return (
     <div>
       <section
-        className="relative overflow-hidden bg-[var(--night)] py-24 text-white lg:py-32"
+        className="relative overflow-hidden bg-[var(--night)] py-16 text-white lg:py-32"
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(17,25,35,0.92), rgba(17,25,35,0.5)), url(${route.image})`,
           backgroundPosition: "center",
@@ -59,7 +59,7 @@ export default async function RouteDetailPage({
         </div>
       </section>
 
-      <section className="site-container py-14 lg:py-20">
+      <section className="site-container py-12 lg:py-20">
         <div className="mb-14 grid gap-8 border-b border-[var(--line)] pb-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
           <div>
             <p className="text-label text-[var(--cinnabar)]">Route axis</p>
@@ -92,7 +92,7 @@ export default async function RouteDetailPage({
                 key={`${stop.time}-${stop.stop}`}
                 className="relative grid gap-5 md:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)] md:items-center"
               >
-                <div className="relative min-h-[31rem] overflow-hidden rounded-[2.2rem] bg-[var(--night)] text-white shadow-[0_28px_80px_rgba(17,25,35,0.18)]">
+                <div className="relative min-h-[25rem] overflow-hidden rounded-[1.4rem] bg-[var(--night)] text-white shadow-[0_28px_80px_rgba(17,25,35,0.18)] sm:min-h-[31rem] sm:rounded-[2.2rem]">
                   <div
                     className="absolute inset-x-0 bottom-0 h-[62%] bg-cover bg-center opacity-80"
                     style={{
@@ -105,9 +105,9 @@ export default async function RouteDetailPage({
                     className="absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(180deg,transparent,rgba(17,25,35,0.86))]"
                     aria-hidden="true"
                   />
-                  <div className="relative z-10 flex min-h-[31rem] flex-col justify-start p-6 lg:p-8">
+                  <div className="relative z-10 flex min-h-[25rem] flex-col justify-start p-5 sm:min-h-[31rem] sm:p-6 lg:p-8">
                     <p className="text-label text-white/62">Story line</p>
-                    <h3 className="mt-4 max-w-xl font-[family:var(--font-display)] text-4xl leading-tight">
+                    <h3 className="mt-4 max-w-xl font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl">
                       {stop.chapter?.title ?? stop.stop}
                     </h3>
                     <p className="mt-5 max-w-2xl text-base leading-8 text-white/80">{stop.chapter?.story ?? stop.story}</p>
@@ -117,7 +117,7 @@ export default async function RouteDetailPage({
                 <div className="relative flex items-center justify-center md:block">
                   <div className="relative z-10 grid min-h-28 place-items-center bg-[var(--background)] px-3 text-center md:absolute md:left-1/2 md:top-1/2 md:w-28 md:-translate-x-1/2 md:-translate-y-1/2">
                     <div>
-                      <p className="font-[family:var(--font-display)] text-5xl leading-none text-[var(--cinnabar)]">
+                      <p className="font-[family:var(--font-display)] text-4xl leading-none text-[var(--cinnabar)] sm:text-5xl">
                         {String(index + 1).padStart(2, "0")}
                       </p>
                       <div className="mx-auto my-3 h-3 w-3 rounded-full bg-[var(--river-deep)] ring-4 ring-[var(--paper-deep)]" />
@@ -127,7 +127,7 @@ export default async function RouteDetailPage({
                   </div>
                 </div>
 
-                <div className="relative min-h-[31rem] overflow-hidden rounded-[2.2rem] bg-[var(--paper)] shadow-[0_28px_80px_rgba(17,25,35,0.1)]">
+                <div className="relative min-h-[25rem] overflow-hidden rounded-[1.4rem] bg-[var(--paper)] shadow-[0_28px_80px_rgba(17,25,35,0.1)] sm:min-h-[31rem] sm:rounded-[2.2rem]">
                   <div
                     className="absolute inset-x-0 bottom-0 h-[58%] bg-cover bg-center opacity-28"
                     style={{
@@ -137,10 +137,10 @@ export default async function RouteDetailPage({
                     }}
                   />
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(255,255,255,0.88),transparent_42%),linear-gradient(180deg,rgba(248,244,236,0.98),rgba(248,244,236,0.9))]" />
-                  <div className="relative z-10 flex min-h-[31rem] flex-col justify-between p-6 lg:p-8">
+                  <div className="relative z-10 flex min-h-[25rem] flex-col justify-between p-5 sm:min-h-[31rem] sm:p-6 lg:p-8">
                     <div>
                       <p className="text-label text-[var(--cinnabar)]">{stop.time}</p>
-                      <h3 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)]">
+                      <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] sm:text-4xl">
                         {stop.stop}
                       </h3>
                       <p className="mt-2 text-sm text-[var(--muted)]">{stop.chapter?.place}</p>

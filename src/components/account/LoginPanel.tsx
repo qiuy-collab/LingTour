@@ -1,58 +1,52 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function LoginPanel() {
   const [mode, setMode] = useState<"signin" | "register">("signin");
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem("lingtour-user");
-    if (!stored) {
-      window.localStorage.setItem(
-        "lingtour-user",
-        JSON.stringify({
-          name: "Maya Chen",
-          email: "guest@lingtour.cn",
-          country: "Singapore",
-          travelStyle: "Culture routes and food walks",
-        }),
-      );
-      window.dispatchEvent(new Event("lingtour-auth"));
-    }
-  }, []);
+  function handleSignIn() {
+    const form = formRef.current;
+    if (!form) return;
+    const formData = new FormData(form);
 
-  function signIn(formData: FormData) {
     const email = String(formData.get("email") || "guest@lingtour.cn");
     const name = String(formData.get("name") || "Maya Chen");
     const country = String(formData.get("country") || "Singapore");
     const travelStyle = String(formData.get("travelStyle") || "Culture routes and food walks");
 
-    window.localStorage.setItem(
-      "lingtour-user",
-      JSON.stringify({
-        name,
-        email,
-        country,
-        travelStyle,
-      }),
-    );
-    window.dispatchEvent(new Event("lingtour-auth"));
-    window.location.assign("/account");
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    signIn(new FormData(event.currentTarget));
+    try {
+      window.localStorage.setItem(
+        "lingtour-user",
+        JSON.stringify({
+          name,
+          email,
+          country,
+          travelStyle,
+        }),
+      );
+      window.dispatchEvent(new Event("lingtour-auth"));
+      router.push("/account");
+    } catch {
+      router.push("/account");
+    }
   }
 
   return (
     <form
+      ref={formRef}
       id="lingtour-login-form"
-      action="/account/"
-      method="get"
       className="overflow-hidden border border-white/12 bg-[var(--night)] text-white shadow-[0_30px_90px_rgba(17,25,35,0.22)]"
-      onSubmit={handleSubmit}
+      onSubmit={(e) => e.preventDefault()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleSignIn();
+        }
+      }}
     >
       <div className="grid grid-cols-2 border-b border-white/12 bg-white/4">
         {(["signin", "register"] as const).map((item) => (
@@ -69,7 +63,7 @@ export function LoginPanel() {
           </button>
         ))}
       </div>
-      <div className="grid gap-4 p-6">
+      <div className="grid gap-4 p-5 sm:p-6">
           <div
             data-register-fields
             className={`${mode === "register" ? "grid" : "hidden"} gap-4 md:grid-cols-2`}
@@ -123,7 +117,7 @@ export function LoginPanel() {
             <option>Interpreting support for groups</option>
           </select>
         </label>
-        <div className="flex items-center justify-between gap-4 text-sm">
+        <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <label className="flex items-center gap-2 text-white/62">
             <input type="checkbox" defaultChecked className="h-4 w-4 accent-[var(--cinnabar)]" />
             Keep me signed in
@@ -132,7 +126,7 @@ export function LoginPanel() {
             Forgot password
           </button>
         </div>
-        <button type="submit" className="bg-[var(--cinnabar)] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[var(--cinnabar-deep)]">
+        <button type="button" className="bg-[var(--cinnabar)] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[var(--cinnabar-deep)]" onClick={handleSignIn}>
           {mode === "signin" ? "Sign in and open account" : "Create account and continue"}
         </button>
         <p className="text-xs leading-6 text-white/48">
@@ -140,43 +134,6 @@ export function LoginPanel() {
           avatar; real auth can connect later.
         </p>
       </div>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (() => {
-              const form = document.getElementById("lingtour-login-form");
-              if (!form || form.dataset.nativeLoginReady === "true") return;
-              form.dataset.nativeLoginReady = "true";
-              form.addEventListener("submit", (event) => {
-                event.preventDefault();
-                const data = new FormData(form);
-                const user = {
-                  name: String(data.get("name") || "Maya Chen"),
-                  email: String(data.get("email") || "guest@lingtour.cn"),
-                  country: String(data.get("country") || "Singapore"),
-                  travelStyle: String(data.get("travelStyle") || "Culture routes and food walks")
-                };
-                window.localStorage.setItem("lingtour-user", JSON.stringify(user));
-                window.dispatchEvent(new Event("lingtour-auth"));
-                window.location.assign("/account/");
-              });
-              const registerFields = form.querySelector("[data-register-fields]");
-              form.querySelectorAll("[data-auth-tab]").forEach((button) => {
-                button.addEventListener("click", () => {
-                  const isRegister = button.dataset.authTab === "register";
-                  registerFields?.classList.toggle("hidden", !isRegister);
-                  registerFields?.classList.toggle("grid", isRegister);
-                  form.querySelectorAll("[data-auth-tab]").forEach((tab) => {
-                    tab.classList.toggle("bg-[var(--paper)]", tab === button);
-                    tab.classList.toggle("text-[var(--river-deep)]", tab === button);
-                    tab.classList.toggle("text-white/62", tab !== button);
-                  });
-                });
-              });
-            })();
-          `,
-        }}
-      />
     </form>
   );
 }

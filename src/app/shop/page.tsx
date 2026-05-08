@@ -29,7 +29,7 @@ export default function ShopPage() {
         />
       </section>
 
-      <section className="site-container py-16 lg:py-24">
+      <section className="site-container py-12 lg:py-24">
         <div className="mb-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
           <div>
             <p className="text-label text-[var(--cinnabar)]">Collections</p>
@@ -43,15 +43,15 @@ export default function ShopPage() {
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
           {storeCollections.map((collection) => (
-            <Link key={collection.title} href={collection.href} className="group relative min-h-[32rem] overflow-hidden bg-[var(--night)] text-white">
+            <Link key={collection.title} href={collection.href} className="group relative min-h-[25rem] overflow-hidden bg-[var(--night)] text-white sm:min-h-[32rem]">
               <div
                 className="absolute inset-0 bg-cover bg-center opacity-72 transition duration-700 group-hover:scale-105"
                 style={{ backgroundImage: `url(${collection.image})` }}
               />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.1),rgba(17,25,35,0.9))]" />
-              <div className="relative z-10 flex min-h-[32rem] flex-col justify-end p-7">
+              <div className="relative z-10 flex min-h-[25rem] flex-col justify-end p-5 sm:min-h-[32rem] sm:p-7">
                 <p className="text-label text-white/58">{collection.route}</p>
-                <h3 className="mt-4 font-[family:var(--font-display)] text-4xl leading-tight">{collection.title}</h3>
+                <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl">{collection.title}</h3>
                 <p className="mt-5 text-sm leading-7 text-white/74">{collection.body}</p>
               </div>
             </Link>

@@ -20,7 +20,21 @@ export function CarouselRuntime() {
               if (next > max) next = 0;
               if (next < 0) next = max;
               root.setAttribute("data-carousel-index", String(next));
-              track.style.transform = "translateX(calc(-" + next + " * " + step + "))";
+
+              if (step === "auto") {
+                const cards = Array.from(track.children);
+                const first = cards[0];
+                const second = cards[1];
+                const measuredStep = first && second
+                  ? second.offsetLeft - first.offsetLeft
+                  : first
+                    ? first.getBoundingClientRect().width
+                    : 0;
+                track.style.transform = "translateX(-" + (next * measuredStep) + "px)";
+              } else {
+                track.style.transform = "translateX(calc(-" + next + " * " + step + "))";
+              }
+
               if (copyTrack) {
                 copyTrack.style.transform = "translateX(calc(-" + next + " * " + copyStep + "))";
               }

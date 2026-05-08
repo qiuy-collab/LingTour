@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cityCultures, getCityCulture } from "@/data/culture";
+import { Reveal } from "@/components/ui/Reveal";
 
 export function generateStaticParams() {
   return cityCultures.map((city) => ({ slug: city.slug }));
@@ -40,40 +41,50 @@ export default async function CityCulturePage({
       <section className="site-container py-16 lg:py-24">
         <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr]">
           <aside className="space-y-8">
-            <div className="border-l-2 border-[var(--cinnabar)] pl-6">
-              <p className="text-label text-[var(--muted)]">Culture tags</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {city.tags.map((tag) => (
-                  <span key={tag} className="border border-[var(--line)] bg-[var(--paper)] px-3 py-1 text-sm">
-                    {tag}
-                  </span>
-                ))}
+            <Reveal>
+              <div className="border-l-2 border-[var(--cinnabar)] pl-6">
+                <p className="text-label text-[var(--muted)]">Culture tags</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {city.tags.map((tag) => (
+                    <span key={tag} className="border border-[var(--line)] bg-[var(--paper)] px-3 py-1 text-sm">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="border border-[var(--line)] bg-[var(--paper)] p-6">
-              <p className="text-label text-[var(--cinnabar)]">Food note</p>
-              <p className="mt-4 text-lg leading-8 text-[var(--ink)]">{city.food}</p>
-            </div>
+            </Reveal>
+            <Reveal delay={80}>
+              <div className="border border-[var(--line)] bg-[var(--paper)] p-6 lux-card">
+                <p className="text-label text-[var(--cinnabar)]">Food note</p>
+                <p className="mt-4 text-lg leading-8 text-[var(--ink)]">{city.food}</p>
+              </div>
+            </Reveal>
           </aside>
 
           <div>
-            <p className="max-w-3xl text-xl leading-9 text-[var(--ink)]">{city.summary}</p>
+            <Reveal>
+              <p className="max-w-3xl text-xl leading-9 text-[var(--ink)]">{city.summary}</p>
+            </Reveal>
             <div className="mt-12 grid gap-px overflow-hidden border border-[var(--line)] bg-[var(--line)] md:grid-cols-3">
-              {city.sections.map((section) => (
-                <article key={section.title} className="bg-[var(--paper)] p-6">
-                  <p className="text-label text-[var(--cinnabar)]">{section.title}</p>
-                  <p className="mt-5 text-sm leading-7 text-[var(--muted)]">{section.body}</p>
-                </article>
+              {city.sections.map((section, index) => (
+                <Reveal key={section.title} delay={index * 100}>
+                  <article className="bg-[var(--paper)] p-6 lux-card">
+                    <p className="text-label text-[var(--cinnabar)]">{section.title}</p>
+                    <p className="mt-5 text-sm leading-7 text-[var(--muted)]">{section.body}</p>
+                  </article>
+                </Reveal>
               ))}
             </div>
-            <div className="mt-10 grid gap-3 sm:grid-cols-2">
-              <Link href={city.routeHref} className="bg-[var(--river-deep)] px-6 py-4 text-center text-sm text-white">
-                Follow related story route
-              </Link>
-              <Link href="/routes" className="border border-[var(--line)] px-6 py-4 text-center text-sm">
-                View all story routes
-              </Link>
-            </div>
+            <Reveal delay={300}>
+              <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                <Link href={city.routeHref} className="bg-[var(--river-deep)] px-6 py-4 text-center text-sm text-white kinetic-link">
+                  Follow related story route
+                </Link>
+                <Link href="/routes" className="border border-[var(--line)] px-6 py-4 text-center text-sm">
+                  View all story routes
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
