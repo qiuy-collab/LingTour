@@ -1,0 +1,78 @@
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  Index,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { StoreCollection } from './store-collection.entity';
+
+@Entity('store_products')
+export class StoreProduct {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 120, unique: true })
+  slug: string;
+
+  @Column({ type: 'jsonb' })
+  name: { en: string; zh: string };
+
+  @Index()
+  @Column({ type: 'uuid', name: 'collection_id', nullable: true })
+  collectionId: string | null;
+
+  @ManyToOne(() => StoreCollection, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'collection_id' })
+  collection: StoreCollection | null;
+
+  @Column({ type: 'numeric', precision: 10, scale: 2 })
+  price: number;
+
+  @Column({ type: 'varchar', length: 10, default: 'SGD' })
+  currency: string;
+
+  @Column({ type: 'jsonb' })
+  tag: { en: string; zh: string };
+
+  @Column({ type: 'varchar', length: 500 })
+  image: string;
+
+  @Column({ type: 'jsonb' })
+  story: { en: string; zh: string };
+
+  @Column({ type: 'jsonb', nullable: true })
+  material: { en: string; zh: string } | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  dimensions: { en: string; zh: string } | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  origin: { en: string; zh: string } | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  care: { en: string; zh: string } | null;
+
+  @Column({ type: 'jsonb', default: [] })
+  gallery: string[];
+
+  @Column({ type: 'int', default: 0 })
+  stock: number;
+
+  @Column({ type: 'boolean', default: false })
+  published: boolean;
+
+  @DeleteDateColumn({ type: 'timestamptz', name: 'deleted_at' })
+  deletedAt: Date | null;
+
+  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  updatedAt: Date;
+}

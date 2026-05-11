@@ -1,0 +1,22 @@
+# NestJS compiled output
+dist/
+node_modules/
+
+# Environment
+.env
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

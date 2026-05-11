@@ -1,0 +1,111 @@
+export const home = {
+  en: {
+    "home.hero.title": "Travel beyond the guidebook.",
+    "home.hero.subtitle": "LingTour connects you to Guangdong culture through story-driven routes, live interpreting, and objects that carry meaning.",
+    "home.hero.scroll": "Scroll to explore",
+
+    "home.heroStats.0.label": "Culture Lines",
+    "home.heroStats.0.hint": "from coast to mountain",
+    "home.heroStats.1.label": "Story Routes",
+    "home.heroStats.1.hint": "written with local guides",
+    "home.heroStats.2.label": "Interpreting",
+    "home.heroStats.2.hint": "English and Chinese on the go",
+    "home.heroStats.3.label": "Shop",
+    "home.heroStats.3.hint": "objects with a story",
+
+    "home.entryCards.0.title": "Culture Lines",
+    "home.entryCards.0.body": "Explore cities through their cultural identity — Guangfu, Chaoshan, Hakka.",
+    "home.entryCards.1.title": "Story Routes",
+    "home.entryCards.1.body": "Full-day itineraries written as narratives, not checklists.",
+    "home.entryCards.2.title": "Interpreting",
+    "home.entryCards.2.body": "Live English support for markets, meals, meetings, and travel.",
+    "home.entryCards.3.title": "Shop",
+    "home.entryCards.3.body": "Products rooted in Lingnan craft and daily life.",
+
+    "home.map.title": "Choose a city,",
+    "home.map.subtitle": "then follow the story behind it.",
+    "home.map.cta": "Explore their culture",
+
+    "home.featuredRoutes.title": "Featured story routes",
+    "home.featuredRoutes.viewRoute": "View full journey",
+
+    "home.culture.title": "Culture lines",
+    "home.culture.subtitle": "Guangdong culture divides into three main traditions. Each shapes the food, dialect, and daily rhythm of its cities.",
+    "home.culture.explore": "Explore their culture",
+
+    "home.interpreting.title": "Travel with someone who can explain",
+    "home.interpreting.subtitle": "Live English interpreting for markets, meals, meetings — in person or remote.",
+    "home.interpreting.cta": "Learn more about interpreting",
+
+    "home.shop.title": "Objects that carry a story",
+    "home.shop.subtitle": "From the Zhanjiang coast — volcanic soil pottery, maritime tools, and everyday objects shaped by the landscape.",
+    "home.shop.cta": "Browse the shop",
+
+    "home.testimonials.0.name": "Maya, Singapore",
+    "home.testimonials.0.text": "I arrived knowing nothing about Zhanjiang. I left understanding why every dish on the table mattered. The route is really well designed.",
+    "home.testimonials.1.name": "James, UK",
+    "home.testimonials.1.text": "Having an interpreter for the seafood market made all the difference. I would have missed half the stories without it.",
+    "home.testimonials.2.name": "Lin, Shanghai",
+    "home.testimonials.2.text": "The shop feels like a real connection to the place. I bought the tea cloth and it is one of my favourite things at home.",
+
+    "home.trust.cities": "cities",
+    "home.trust.routes": "curated route",
+    "home.trust.lines": "culture line",
+    "home.trust.products": "product",
+  },
+
+  zh: {
+    "home.hero.title": "旅行不止于指南。",
+    "home.hero.subtitle": "岭风译游通过故事化的路线、现场口译和承载意义的文创好物，带你走进广东文化。",
+    "home.hero.scroll": "向下滚动探索",
+
+    "home.heroStats.0.label": "文化线路",
+    "home.heroStats.0.hint": "从海岸到山地",
+    "home.heroStats.1.label": "故事路线",
+    "home.heroStats.1.hint": "与本地向导共同编写",
+    "home.heroStats.2.label": "口译服务",
+    "home.heroStats.2.hint": "一路中英随行",
+    "home.heroStats.3.label": "文创商城",
+    "home.heroStats.3.hint": "有故事的好物",
+
+    "home.entryCards.0.title": "文化线路",
+    "home.entryCards.0.body": "通过广府、潮汕、客家三大文化带认识每座城市。",
+    "home.entryCards.1.title": "故事路线",
+    "home.entryCards.1.body": "全日行程如同阅读一篇叙事，而非看完一张清单。",
+    "home.entryCards.2.title": "口译服务",
+    "home.entryCards.2.body": "市场、餐饮、商务、旅行——现场英语支持。",
+    "home.entryCards.3.title": "文创商城",
+    "home.entryCards.3.body": "根植于岭南手工艺与日常之美的好物。",
+
+    "home.map.title": "选择一座城市，",
+    "home.map.subtitle": "聆听它背后的故事。",
+    "home.map.cta": "探索文化",
+
+    "home.featuredRoutes.title": "精选故事路线",
+    "home.featuredRoutes.viewRoute": "查看完整旅程",
+
+    "home.culture.title": "文化线路",
+    "home.culture.subtitle": "广东文化分为三大传统，各自塑造了沿途城市的风味、方言与生活节律。",
+    "home.culture.explore": "探索文化",
+
+    "home.interpreting.title": "有人替你解释，旅途大不相同",
+    "home.interpreting.subtitle": "市场、餐饮、商务——现场或远程英语口译服务。",
+    "home.interpreting.cta": "了解口译服务",
+
+    "home.shop.title": "承载故事的好物",
+    "home.shop.subtitle": "来自湛江海岸——火山陶器、航海工具、被地貌塑造的日常器物。",
+    "home.shop.cta": "浏览文创",
+
+    "home.testimonials.0.name": "Maya，新加坡",
+    "home.testimonials.0.text": "来之前我对湛江一无所知，离开时却明白了桌上每一道菜背后的故事。路线设计得真好。",
+    "home.testimonials.1.name": "James，英国",
+    "home.testimonials.1.text": "在海鲜市场有口译员陪着，体验完全不同。没有他我大概会错过一半的故事。",
+    "home.testimonials.2.name": "林小姐，上海",
+    "home.testimonials.2.text": "文创给我的感觉是和这个地方真实地连接在一起。买了那块茶巾，现在是我在家最喜欢的物件之一。",
+
+    "home.trust.cities": "座城市",
+    "home.trust.routes": "条精选路线",
+    "home.trust.lines": "条文化线路",
+    "home.trust.products": "件商品",
+  },
+};
