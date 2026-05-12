@@ -26,9 +26,9 @@ export function CultureGallery({ highlights = [] }: Props) {
         const gallery = defaultGallery.find((item) => item.slug === culture.slug);
         return {
           ...culture,
-          href: gallery?.href ?? "/culture",
-          image: gallery?.image ?? "https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1200&q=82",
-          place: gallery?.place ?? "Lingnan culture",
+          href: culture.href || gallery?.href || `/culture/${culture.slug}`,
+          image: gallery?.image || "https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1200&q=82",
+          place: culture.title || gallery?.place || "Lingnan culture",
         };
       })
     : defaultGallery.map((item) => ({
@@ -40,31 +40,26 @@ export function CultureGallery({ highlights = [] }: Props) {
         place: item.place,
       }));
 
-  const maxIndex = galleryItems.length - 1;
+  const total = galleryItems.length;
+  const maxIndex = total - 1;
 
   function showNext() {
     setActiveIndex((current) => (current >= maxIndex ? 0 : current + 1));
   }
 
   function showPrevious() {
-    setActiveIndex((current) => Math.max(current - 1, 0));
+    setActiveIndex((current) => (current <= 0 ? maxIndex : current - 1));
   }
 
   return (
     <section className="overflow-hidden bg-[var(--river-deep)] py-16 text-white lg:py-24">
       <div
         className="site-container grid gap-10 lg:grid-cols-[0.62fr_0.38fr] lg:items-center"
-        data-carousel-root
-        data-carousel-index="0"
-        data-carousel-max={maxIndex}
-        data-carousel-step="auto"
-        data-carousel-copy-step="100%"
       >
-        <div className="relative flex justify-end overflow-hidden pl-10 sm:pl-16">
+        <div className="relative flex justify-start overflow-hidden pl-10 sm:pl-16">
           <div
-            data-carousel-track
-            className="flex flex-row-reverse gap-5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            style={{ transform: `translateX(${activeIndex * 21.25}rem)` }}
+            className="flex gap-5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{ transform: `translateX(-${activeIndex * 21.25}rem)` }}
           >
             {galleryItems.map((item) => (
               <Link
@@ -96,58 +91,50 @@ export function CultureGallery({ highlights = [] }: Props) {
             ))}
           </div>
 
-          <button
-            type="button"
-            data-carousel-prev
-            hidden={activeIndex <= 0}
-            aria-label="Show previous culture"
-            className="absolute right-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
-            onClick={showPrevious}
-          >
-            <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M8 5L15 12L8 19"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+          {total > 1 && (
+            <>
+              {activeIndex > 0 && (
+                <button
+                  type="button"
+                  aria-label="Show previous culture"
+                  className="absolute right-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
+                  onClick={showPrevious}
+                >
+                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 5L15 12L8 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
 
-          <button
-            type="button"
-            data-carousel-next
-            aria-label="Show next culture"
-            className="absolute left-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
-            onClick={showNext}
-          >
-            <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M16 5L9 12L16 19"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+              {activeIndex < maxIndex && (
+                <button
+                  type="button"
+                  aria-label="Show next culture"
+                  className="absolute left-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
+                  onClick={showNext}
+                >
+                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+                    <path d="M16 5L9 12L16 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
+            </>
+          )}
         </div>
 
         <div className="relative overflow-hidden">
           <div className="absolute -right-24 top-16 hidden h-80 w-80 rounded-[45%] border border-white/8 lg:block" />
           <div
-            data-carousel-copy-track
             className="relative z-10 flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
-            {galleryItems.map((item, index) => (
+            {galleryItems.map((item) => (
               <div key={item.slug} className="w-full shrink-0">
                 <p className="text-label text-white/54">
-                  {index === 0 ? "Lingnan culture" : item.place}
+                  {item.place}
                 </p>
                 <h2 className="mt-5 max-w-[15ch] font-[family:var(--font-display)] text-4xl leading-[1.08] text-white md:mt-7 md:text-5xl">
-                  {index === 0 ? "Culture lines" : item.title}
+                  {item.title}
                 </h2>
                 <p className="mt-6 max-w-sm border-l border-white/16 pl-5 text-base leading-8 text-white/72 md:mt-10 md:pl-7 md:leading-9">
                   {item.body}

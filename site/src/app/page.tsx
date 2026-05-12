@@ -45,6 +45,9 @@ export default function Home() {
 
   const storeProducts = products ?? [];
   const storyRoutes = allRoutes ?? [];
+  
+  // Debug log to ensure routes are present
+  console.log("Rendering home with routes:", storyRoutes.map(r => r.slug));
 
   return (
     <div>

@@ -17,10 +17,10 @@ export function GuangdongMapSection({ cities }: Props) {
   const focusCityByCode = useMemo(() => new Map(showcase.map((city) => [city.adcode, city])), [showcase]);
   const router = useRouter();
   const [features] = useState<CityFeature[]>(initialFeatures);
-  const [activeCode, setActiveCode] = useState(showcase[0]?.adcode ?? 440800);
+  const [activeCode, setActiveCode] = useState<number | null>(null);
   const [slideIndex, setSlideIndex] = useState(0);
 
-  const activeCity = focusCityByCode.get(activeCode) ?? showcase[0] ?? { slug: "zhanjiang", name: "Zhanjiang", label: "Southern coast", summary: "", image: "", tags: [], adcode: 440800, gallery: [] };
+  const activeCity = focusCityByCode.get(activeCode ?? -1) ?? showcase[0] ?? { slug: "zhanjiang", name: "Zhanjiang", label: "Southern coast", summary: "", image: "", tags: [], adcode: 440800, gallery: [] };
   const activeGallery = activeCity.gallery && activeCity.gallery.length ? activeCity.gallery : [activeCity.image];
   const activeImage = activeGallery[slideIndex % activeGallery.length];
 

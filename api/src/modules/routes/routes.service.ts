@@ -48,7 +48,7 @@ export class RoutesService {
     const [data, total] = await qb
       .skip((page - 1) * limit)
       .take(limit)
-      .orderBy('route.createdAt', 'DESC')
+      .orderBy('route.createdAt', 'ASC')
       .getManyAndCount();
 
     // Attach stop count

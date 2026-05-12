@@ -24,17 +24,34 @@ export class CitiesService {
   async findAllPublished(
     page = 1,
     limit = 20,
-  ): Promise<{ data: City[]; total: number }> {
+  ): Promise<{ data: any[]; total: number }> {
     const [data, total] = await this.cityRepository.findAndCount({
       where: { published: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
     });
-    return { data, total };
+
+    // Enriched with routes
+    const enriched = await Promise.all(
+      data.map(async (city) => {
+        const routes = await this.cityRepository.manager.query(
+          `SELECT r.slug FROM story_routes r
+           INNER JOIN route_city_links l ON l.route_id = r.id
+           WHERE l.city_id = $1 AND r.published = true`,
+          [city.id],
+        );
+        return {
+          ...city,
+          routes: routes.map((r: any) => ({ slug: r.slug })),
+        };
+      }),
+    );
+
+    return { data: enriched, total };
   }
 
-  async findBySlugPublished(slug: string): Promise<City> {
+  async findBySlugPublished(slug: string): Promise<any> {
     const city = await this.cityRepository.findOne({
       where: { slug, published: true },
       relations: ['sections'],
@@ -44,7 +61,19 @@ export class CitiesService {
     }
     // Sort sections by sortOrder
     city.sections.sort((a, b) => a.sortOrder - b.sortOrder);
-    return city;
+
+    // Load linked routes
+    const routes = await this.cityRepository.manager.query(
+      `SELECT r.slug FROM story_routes r
+       INNER JOIN route_city_links l ON l.route_id = r.id
+       WHERE l.city_id = $1 AND r.published = true`,
+      [city.id],
+    );
+
+    return {
+      ...city,
+      routes: routes.map((r: any) => ({ slug: r.slug })),
+    };
   }
 
   // ── Admin CRUD ──

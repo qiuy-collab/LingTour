@@ -61,6 +61,12 @@ export function CultureDetailClient({ slug }: { slug: string }) {
     { id: "section-route", label: "Route" },
   ];
 
+  // Parse summary for optional markdown-like title
+  const summaryParts = city.summary.split("\n\n");
+  const hasSummaryTitle = summaryParts[0].startsWith("## ");
+  const displaySummaryTitle = hasSummaryTitle ? summaryParts[0].replace("## ", "") : null;
+  const displaySummaryBody = hasSummaryTitle ? summaryParts.slice(1).join("\n\n") : city.summary;
+
   return (
     <div>
       <style>{`
@@ -99,8 +105,13 @@ export function CultureDetailClient({ slug }: { slug: string }) {
           <Reveal>
             <div className="border-l-2 border-[var(--cinnabar)] pl-6 lg:pl-8">
               <p className="text-label text-[var(--muted)]">Introduction</p>
-              <p className="mt-6 font-[family:var(--font-display)] text-2xl leading-[1.3] text-[var(--river-deep)] md:text-3xl">
-                {city.summary}
+              {displaySummaryTitle && (
+                <h3 className="mt-6 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] md:text-4xl">
+                  {displaySummaryTitle}
+                </h3>
+              )}
+              <p className={`mt-6 ${displaySummaryTitle ? 'text-lg leading-8 text-[var(--muted)]' : 'font-[family:var(--font-display)] text-2xl leading-[1.3] text-[var(--river-deep)] md:text-3xl'}`}>
+                {displaySummaryBody}
               </p>
             </div>
           </Reveal>

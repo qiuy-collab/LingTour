@@ -432,15 +432,12 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       ]
     : [];
 
-  const cultureHighlights: CultureFeature[] = firstCity
-    ? [
-        {
-          slug: firstCity.slug,
-          title: firstCity.label,
-          body: firstCity.summary,
-        },
-      ]
-    : [];
+  const cultureHighlights: CultureFeature[] = cities.map((city) => ({
+    slug: city.slug,
+    title: city.label,
+    body: city.summary,
+    href: `/culture/${city.slug}`,
+  }));
 
   return {
     regionShowcase,
