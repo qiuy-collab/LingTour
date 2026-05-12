@@ -125,6 +125,11 @@ export class CreateCityDto {
   @IsString({ each: true })
   foodImages?: string[];
 
+  @ApiPropertyOptional({ example: 440800 })
+  @IsOptional()
+  @IsInt()
+  adcode?: number;
+
   @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()

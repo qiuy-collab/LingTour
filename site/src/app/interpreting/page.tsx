@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useLocale } from "@/lib/locale-context";
-import { fetchRoutes, fetchCities } from "@/lib/api-data";
-import { useApiQuery } from "@/lib/use-api-query";
+import { fetchRoutes, fetchCities, fetchInterpreting } from "@/lib/api-data";
+import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { EditorialIntro } from "@/components/ui/EditorialIntro";
 import { Reveal } from "@/components/ui/Reveal";
 import { ImageParallax } from "@/components/culture/ImageParallax";
@@ -17,34 +17,6 @@ import { InterpreterFlipCard } from "@/components/interpreting/InterpreterFlipCa
 import { InterpreterShowcase, type InterpreterProfile } from "@/components/interpreting/InterpreterShowcase";
 import { MultiStepForm } from "@/components/interpreting/MultiStepForm";
 import { MobileStickyActions } from "@/components/layout/MobileStickyActions";
-
-const serviceModes = [
-  {
-    title: "City companion interpreting",
-    price: "From RMB 680 / half day",
-    bestFor: "Best for independent visitors",
-    body: "English support for the practical side of travel: transport, ordering, ticketing, local etiquette — and the small explanations that turn confusion into confidence.",
-    includes: ["English city support", "Restaurant and transit help", "Local etiquette notes"],
-    accent: "light",
-  },
-  {
-    title: "Story route guided support",
-    price: "From RMB 1,280 / day",
-    bestFor: "Best for route-based travel",
-    body: "For visitors following a LingTour route. The interpreter manages the practical side of the day while keeping the cultural thread clear across every stop, meal, and neighbourhood.",
-    includes: ["Route pacing", "Stop-by-stop storytelling", "Photo and menu help"],
-    accent: "dark",
-    featured: true,
-  },
-  {
-    title: "Group and study visit",
-    price: "Custom quote",
-    bestFor: "Best for delegations and campus visits",
-    body: "For universities, exchange groups, research visits, and cultural programmes. Prepared schedules, bilingual coordination, and one person who keeps the day on track.",
-    includes: ["Pre-trip planning", "Group coordination", "Workshop and campus support"],
-    accent: "light",
-  },
-] as const;
 
 const matchingScenarios = [
   {
@@ -62,27 +34,6 @@ const matchingScenarios = [
   {
     title: "Light practical support",
     body: "A shorter booking: station pickup, hotel check-in, restaurant ordering, or one key cultural stop. For when a full day is more than you need.",
-  },
-];
-
-const interpreterProfiles = [
-  {
-    name: "Culture Route Lead",
-    language: "English / Mandarin / Cantonese support",
-    focus: "Guangdong city history, neighbourhood reading, food context, and keeping a route's story clear from the first stop to the last.",
-    helps: ["Museum visits", "Historic streets", "Route pacing"],
-  },
-  {
-    name: "Food & Local Life Host",
-    language: "English / Mandarin support",
-    focus: "Markets, ordering, tea etiquette, menu translation, snack streets. The small daily interactions most visitors cannot access alone.",
-    helps: ["Menus", "Tea culture", "Market walks"],
-  },
-  {
-    name: "Study Visit Coordinator",
-    language: "English / Mandarin support",
-    focus: "Student groups, company visits, workshops, timetable control. Bilingual coordination across several venues in one day.",
-    helps: ["Schedules", "Check-ins", "Group movement"],
   },
 ];
 
@@ -117,81 +68,35 @@ const requestChecklist = [
   "Any mobility or scheduling constraints",
 ];
 
-const faqs = [
-  {
-    question: "Is this a tour guide service or an interpreting service?",
-    answer:
-      "It is cultural interpreting plus travel support. The focus is on clear communication, route pacing, local etiquette, food and venue navigation, and making the story of a place accessible to international visitors.",
-  },
-  {
-    question: "Can I book only restaurant or transport support?",
-    answer:
-      "Yes. Not every visit needs a full-day route. Short support is available for food streets, hotel check-in, station transfer, or one key cultural stop when you only need local help for part of the day.",
-  },
-  {
-    question: "Do I need to follow a LingTour route exactly?",
-    answer:
-      "No. The published routes are starting points. You can follow one closely, simplify it, combine ideas from several routes, or ask for support around your own schedule and interests.",
-  },
-  {
-    question: "What makes this different from hiring a generic translator?",
-    answer:
-      "The value goes beyond language. It is local pacing, etiquette, route logic, food context, and knowing what matters culturally at each stop — so the day feels connected rather than improvised.",
-  },
-];
-
-const progressSections = [
-  { id: "interpreting-hero", label: "Overview" },
-  { id: "interpreting-modes", label: "Modes" },
-  { id: "interpreting-match", label: "Match" },
-  { id: "interpreting-process", label: "Process" },
-  { id: "interpreting-booking", label: "Booking" },
-  { id: "interpreting-faq", label: "FAQ" },
-];
-
-const showcaseProfiles: InterpreterProfile[] = [
-  {
-    id: "guide-heritage",
-    name: "Maya Chen",
-    specialty: "History & Heritage",
-    languages: "English / Cantonese / Mandarin",
-    serviceCount: 120,
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
-    needsPrefill: "I prefer a guide with heritage expertise — museum visits, historic streets, and architectural walks with cultural context.",
-  },
-  {
-    id: "guide-food",
-    name: "David Li",
-    specialty: "Food & Local Life",
-    languages: "English / Mandarin",
-    serviceCount: 85,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
-    needsPrefill: "Food-led day — markets, seafood restaurants, tea etiquette, and the stories behind each dish.",
-  },
-  {
-    id: "guide-coordinator",
-    name: "Sophie Wang",
-    specialty: "Study & Group Coordination",
-    languages: "English / Mandarin / Japanese",
-    serviceCount: 64,
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
-    needsPrefill: "Group and study visit support — prepared schedules, venue coordination, bilingual logistics.",
-  },
-];
-
 export default function InterpretingPage() {
   const { locale } = useLocale();
 
-  const { data: routesData } = useApiQuery(
+  const { data: routesData, loading: routesLoading, error: routesError } = useApiQuery(
     () => fetchRoutes(locale),
     [locale],
   );
-  const { data: citiesData } = useApiQuery(
+  const { data: citiesData, loading: citiesLoading, error: citiesError } = useApiQuery(
     () => fetchCities(locale),
+    [locale],
+  );
+  const { data: interpretingData, loading: interpLoading, error: interpError, refetch } = useApiQuery(
+    () => fetchInterpreting(locale),
     [locale],
   );
 
   const [prefillNeeds, setPrefillNeeds] = useState<string | undefined>(undefined);
+
+  if (routesLoading || citiesLoading || interpLoading) {
+    return <LoadingSpinner text="Preparing interpreting support…" />;
+  }
+
+  if (routesError || citiesError || interpError) {
+    return <ErrorState message="Could not load interpreting data" onRetry={refetch} />;
+  }
+
+  if (!interpretingData) return null;
+
+  const { serviceModes, profiles, faqs } = interpretingData;
 
   const regionShowcase = (citiesData ?? []).map((c) => ({
     slug: c.slug,
@@ -204,11 +109,50 @@ export default function InterpretingPage() {
     image: r.image,
   }));
 
+  const progressSections = [
+    { id: "interpreting-hero", label: "Overview" },
+    { id: "interpreting-modes", label: "Modes" },
+    { id: "interpreting-match", label: "Match" },
+    { id: "interpreting-process", label: "Process" },
+    { id: "interpreting-booking", label: "Booking" },
+    { id: "interpreting-faq", label: "FAQ" },
+  ];
+
+  const showcaseProfiles: InterpreterProfile[] = [
+    {
+      id: "guide-heritage",
+      name: "Maya Chen",
+      specialty: "History & Heritage",
+      languages: "English / Cantonese / Mandarin",
+      serviceCount: 120,
+      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80",
+      needsPrefill: "I prefer a guide with heritage expertise — museum visits, historic streets, and architectural walks with cultural context.",
+    },
+    {
+      id: "guide-food",
+      name: "David Li",
+      specialty: "Food & Local Life",
+      languages: "English / Mandarin",
+      serviceCount: 85,
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
+      needsPrefill: "Food-led day — markets, seafood restaurants, tea etiquette, and the stories behind each dish.",
+    },
+    {
+      id: "guide-coordinator",
+      name: "Sophie Wang",
+      specialty: "Study & Group Coordination",
+      languages: "English / Mandarin / Japanese",
+      serviceCount: 64,
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80",
+      needsPrefill: "Group and study visit support — prepared schedules, venue coordination, bilingual logistics.",
+    },
+  ];
+
 const heroMetrics = [
   { value: regionShowcase.length, suffix: regionShowcase.length > 1 ? " cities" : " city", label: "live service template" },
-  { value: 3, suffix: " modes", label: "from half-day to group support" },
+  { value: serviceModes?.length ?? 0, suffix: " modes", label: "from half-day to group support" },
   { value: 4, suffix: " languages", label: "with local context and etiquette" },
-  { value: storyRoutes.length, suffix: storyRoutes.length > 1 ? " routes" : " route", label: "matched to culture and food stories" },
+  { value: storyRoutes?.length ?? 0, suffix: (storyRoutes?.length ?? 0) > 1 ? " routes" : " route", label: "matched to culture and food stories" },
 ];
 
   const featuredRoute = storyRoutes[0];
@@ -357,7 +301,7 @@ const heroMetrics = [
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {serviceModes.map((mode, index) => {
-            const featured = "featured" in mode && mode.featured;
+            const featured = mode.featured;
             const dark = mode.accent === "dark";
 
             return (
@@ -687,7 +631,7 @@ const heroMetrics = [
                       </p>
                     </div>
                     <div className="grid gap-4">
-                      {interpreterProfiles.map((profile, idx) => (
+                      {profiles.map((profile) => (
                         <div key={profile.name} className="group border-b border-white/10 pb-4">
                           <p className="text-sm font-bold text-white transition-colors group-hover:text-[var(--gold)]">{profile.name}</p>
                           <p className="mt-1 text-[10px] uppercase tracking-widest text-white/30">{profile.language}</p>

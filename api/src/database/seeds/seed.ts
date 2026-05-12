@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
 async function seed() {
   const dataSource = new DataSource({
@@ -13,10 +13,20 @@ async function seed() {
     username: process.env.DB_USERNAME ?? 'lingtour',
     password: process.env.DB_PASSWORD ?? 'lingtour_dev',
     database: process.env.DB_DATABASE ?? 'lingtour',
+    synchronize: true,
   });
 
   await dataSource.initialize();
   console.log('📦 Connected to database. Seeding...\n');
+
+  // Ensure adcode column exists
+  await dataSource.query('ALTER TABLE cities ADD COLUMN IF NOT EXISTS adcode integer;');
+
+  // ═══════════════════════════════════════════════════════
+  // 0. Clean
+  // ═══════════════════════════════════════════════════════
+  await dataSource.query('TRUNCATE users, cities, story_routes, store_collections, store_products, interpreting_service_modes, interpreter_profiles, interpreting_faqs CASCADE;');
+  console.log('✅ Existing data truncated');
 
   // ═══════════════════════════════════════════════════════
   // 1. Admin user
@@ -34,7 +44,7 @@ async function seed() {
   // 2. City: Zhanjiang
   // ═══════════════════════════════════════════════════════
   const cityResult = await dataSource.query(
-    `INSERT INTO cities (slug, name, region_label, hero_image, hero_narrative, tags, editor_intro, gallery_images, food_title, food_description, food_images, published) VALUES
+    `INSERT INTO cities (slug, name, region_label, hero_image, hero_narrative, tags, editor_intro, gallery_images, food_title, food_description, food_images, adcode, published) VALUES
      (
        'zhanjiang',
        $1,
@@ -43,19 +53,11 @@ async function seed() {
        $3,
        $4,
        $5,
-       ARRAY[
-         'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-         'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
-         'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80'
-       ],
        $6,
        $7,
-       ARRAY[
-         'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80',
-         'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-         'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80',
-         'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80'
-       ],
+       $8,
+       $9,
+       440800,
        true
      )
      RETURNING id;`,
@@ -75,11 +77,22 @@ async function seed() {
         en: '## Zhanjiang: Where the coast comes first\n\nZhanjiang sits at the southern tip of mainland China, facing the South China Sea across 1,243 km of coastline. At the southern tip of mainland China, Zhanjiang faces the open sea. Its rhythm is set by tides and auctions, not highways. Volcanic crater lakes, fishing harbours, and colonial streets sit within a single day\'s reach.',
         zh: '## 湛江：海岸线第一\n\n湛江位于中国大陆最南端，面朝南海，拥有 1,243 公里海岸线。在中国大陆最南端，湛江直面开阔的南海。这里的节奏由潮汐和拍卖决定，而非红绿灯。火山口湖、渔港和法式殖民街道，一天之内皆可抵达。',
       }),
+      JSON.stringify([
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80'
+      ]),
       JSON.stringify({ en: 'Flavours of Zhanjiang', zh: '湛江风味' }),
       JSON.stringify({
         en: 'From dawn seafood markets to volcanic soil farms, Zhanjiang\'s table tells the story of the southern coast.',
         zh: '从清晨的海鲜市场到火山土壤农田，湛江的餐桌讲述着南部海岸的故事。',
       }),
+      JSON.stringify([
+        'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80'
+      ]),
     ],
   );
 
@@ -96,48 +109,48 @@ async function seed() {
        ($1, $8, $9, 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80', $10, $11, $12, $13, 1),
        ($1, $14, $15, 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80', $16, $17, $18, $19, 2);`,
       [
+        cityId,
         // Section 0: Southern coast
-        JSON.stringify({ en: 'Southern coast', zh: '南方海岸' }),
+        JSON.stringify({ en: 'Southern coast', zh: '南方海岸' }), // $2
         JSON.stringify({
           en: 'Zhanjiang sits at the southern tip of mainland China, facing the South China Sea across 1,243 km of coastline. It is not the Pearl River Delta. There are no factory clusters or expressway networks here. Instead: beaches that run for kilometres without a high-rise in sight, black basalt headlands carved into platforms by the surf, mangrove estuaries, and more than 100 offshore islands — Naozhou, Donghai, Leizhou among them.\n\nThe coast follows a daily rhythm. Dawn belongs to fishing boats motoring out through sheltered channels. Mid-morning, the catch moves to market. Midday, the city eats. Late afternoon fills the beaches with swimmers. By dusk, the coast returns to the sea.\n\nFor a visitor, this is not a drive-by destination. It is a place to walk, eat, and watch. The southern coast marks the line where Guangdong stops being a river civilisation and becomes an ocean one.',
           zh: '湛江位于中国大陆最南端，面朝南海，拥有 1,243 公里海岸线。它不是珠三角。这里没有工厂集群和高速路网，取而代之的是绵延数公里、不见高楼的海滩，被海浪削平成为平台的黑色玄武岩岬角，红树林河口，以及 100 多座离岛——硇洲岛、东海岛、雷州岛。\n\n海岸遵循着日常节奏。黎明属于渔船，穿过避风航道驶向大海。上午，渔获进入市场。正午，全城开饭。午后，海滩上满是在游泳的人。黄昏时分，海岸归还给海洋。\n\n对旅行者而言，这不是一个驱车一瞥的目的地。这是一个需要你行走、品尝和凝视的地方。南方海岸标记着广东从河流文明变成海洋文明的那条分界线。',
-        }),
-        JSON.stringify({ en: '1,243 km of coastline · 100+ offshore islands · 3 national nature reserves', zh: '1,243 公里海岸线 · 100+ 座离岛 · 3 个国家级自然保护区' }),
-        JSON.stringify({ en: 'Coastline', zh: '海岸线' }),
-        JSON.stringify({ en: 'Breathing coastal air — the South China Sea on one side, volcanic soil on the other.', zh: '呼吸着海岸的空气——一边是南海，一边是火山土壤。' }),
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80',
+        }), // $3
+        JSON.stringify({ en: '1,243 km of coastline · 100+ offshore islands · 3 national nature reserves', zh: '1,243 公里海岸线 · 100+ 座离岛 · 3 个国家级自然保护区' }), // $4
+        JSON.stringify({ en: 'Coastline', zh: '海岸线' }), // $5
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80', // $6
         JSON.stringify({
           en: '"This is not a shoreline you photograph once. It is a daily rhythm: tides, wet-market cries, the salt-sweet smell of the morning haul."',
           zh: '"这不是一条你拍一张照片就够的海岸线。它是一个日常节奏：潮汐、市场的叫卖声、清晨渔获的咸甜气味。"',
-        }),
+        }), // $7
 
         // Section 1: Fishing communities
-        JSON.stringify({ en: 'Fishing communities', zh: '渔村' }),
+        JSON.stringify({ en: 'Fishing communities', zh: '渔村' }), // $8
         JSON.stringify({
           en: 'Fishing is not an exhibit in Zhanjiang. It is the economy, the calendar, and the social fabric. Along nearly every inlet and river mouth, a fishing village faces the water. Houses are built from coral stone or concrete. The day begins before sunrise, when boats motor out through the channel, their lights still visible in the dark.\n\nThese villages run on their own logic. Men go out on boats. Women sort the catch, sell it, and preserve the rest. Children learn fish names before street names. The village elder reads weather patterns the way a city person reads a metro map.\n\nThe market is the best place to understand this world. It is not designed for visitors. The floor is wet. Ice glistens. Bargaining happens in Leizhou Min, a dialect unintelligible to Mandarin speakers. Walking through, you read the coast through what sits on the table: silver mackerel, pink prawns, dark green seaweed — the colours of last night\'s voyage.\n\nThese communities are under pressure. Younger people are moving to cities. Industrial fleets compete with traditional boats. Climate shifts are altering fish stocks. To visit now is to see a way of life that is still alive but not guaranteed.',
           zh: '在湛江，渔业不是展览品。它是经济结构、日历和社会织体。几乎每条水道和河口都有一个面朝大海的渔村。房屋用珊瑚石或混凝土建成。日出之前一天就开始了——渔船穿过水道，船灯在夜色中闪烁。\n\n这些渔村有自己的运行逻辑。男人出海；女人分拣渔获、销售、腌制储存；小孩学鱼名的年龄比学路名还早。村长识别天气模式就像城里人看地铁图一样自然。\n\n市场是理解这个世界的最佳场所。它不是为游客设计的。地面是湿的，碎冰在发光。讨价还价用雷州闽语进行——一种连粤语使用者都听不懂的语言。穿过市场，你通过餐桌上的东西来阅读海岸：银色鲭鱼、粉色虾、深绿色海藻——昨夜航行的色彩。\n\n这些社区正面临压力。年轻人在往城市迁徙；工业船队与传统渔船竞争；气候变化正在改变鱼群分布。此刻到访，你看到的是一种仍然活着但不保证会永远持续的生活方式。',
-        }),
-        JSON.stringify({ en: '100+ fishing villages · 10,000+ families living from the sea', zh: '100+ 个渔村 · 10,000+ 个以海为生的家庭' }),
-        JSON.stringify({ en: 'Fishing villages', zh: '渔村' }),
-        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1400&q=80',
+        }), // $9
+        JSON.stringify({ en: '100+ fishing villages · 10,000+ families living from the sea', zh: '100+ 个渔村 · 10,000+ 个以海为生的家庭' }), // $10
+        JSON.stringify({ en: 'Fishing villages', zh: '渔村' }), // $11
+        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1400&q=80', // $12
         JSON.stringify({
           en: '"What arrives on the table tonight was in open water this morning. Zhanjiang does not sit beside the sea — it lives on it."',
           zh: '"今晚餐桌上的东西，今早还在开阔的海水中。湛江不坐在海边——它活在海上。"',
-        }),
+        }), // $13
 
         // Section 2: Volcanic landscape
-        JSON.stringify({ en: 'Volcanic landscape', zh: '火山地貌' }),
+        JSON.stringify({ en: 'Volcanic landscape', zh: '火山地貌' }), // $14
         JSON.stringify({
           en: 'Few travellers expect to find volcanoes in Guangdong, but the Leizhou Peninsula — the southern half of Zhanjiang\'s territory — was shaped by eruptions over the past several million years. The result is a landscape that feels nothing like the rest of the province: black basalt outcrops, dark fertile soil, and a coastline where lava once met the sea.\n\nThe best place to see this is Naozhou Island, where hexagonal basalt columns rise from the water. Formed by the slow cooling of lava, they stand in geometric ranks, like a pipe organ built for the ocean. Walking this shore, you can feel the deep time of the place: tectonic collision, molten rock, and the long weathering that turned fire into soil.\n\nThat volcanic soil powers Zhanjiang\'s farms. Pineapple plantations, sugarcane fields, and banana groves all owe their fertility to ancient eruptions. The dark earth here retains water and minerals that sandy delta soils cannot hold. The pineapples taste sweeter. The vegetables grow faster. There is a direct line — visible to anyone paying attention — between the volcanoes of the past and the abundance on today\'s tables.\n\nComing from Guangzhou or Shenzhen, this terrain registers as a shock. The Pearl River Delta feels planned, managed, paved. Zhanjiang\'s volcanic landscape is ungoverned. It is a reminder that Guangdong is not only a province of commerce and high-speed rail, but also one of tectonic forces, tropical agriculture, and coastlines shaped by geological time.',
           zh: '很少有旅行者预料到会在广东发现火山。但雷州半岛——湛江南半部——是由过去数百万年的喷发塑造而成的。其结果是一片与省内其他地方截然不同的地貌：黑色玄武岩露头、暗色肥沃土壤，以及熔岩曾经与海洋相遇的海岸线。\n\n观赏这一地貌的最佳地点是硇洲岛，六棱形玄武岩石柱从水中升起。由熔岩缓慢冷却形成，它们以几何队列排列着，仿佛一座为海洋建造的管风琴。行走在这片海岸上，你能感受到这个地方的深层时间：构造碰撞、熔岩，以及将烈火转化为土壤的漫长风化过程。\n\n火山土壤滋养着湛江的农场。菠萝种植园、甘蔗田和香蕉林都得益于远古喷发的肥力。这里的深色土壤能保持沙质三角洲土壤无法持有的水分和矿物质。菠萝更甜。蔬菜长得更快。从过去的火山到今日餐桌的丰盛——有一条清晰的线索，任何留心的人都能看见。\n\n从广州或深圳来到这里，这片地形会带来一种冲击。珠三角让人感觉被规划、被管理、被铺设。湛江的火山地貌是不受统治的。它提醒人们：广东不仅仅是商业与高铁的省份，它也是地质力量、热带农业和被地质时间塑造的海岸线的省份。',
-        }),
-        JSON.stringify({ en: '80+ volcanic cones · Shaped over 1 million years', zh: '80+ 座火山锥 · 跨越 100 万年的地质塑造' }),
-        JSON.stringify({ en: 'Volcanic landscape', zh: '火山地貌' }),
-        'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1400&q=80',
+        }), // $15
+        JSON.stringify({ en: '80+ volcanic cones · Shaped over 1 million years', zh: '80+ 座火山锥 · 跨越 100 万年的地质塑造' }), // $16
+        JSON.stringify({ en: 'Volcanic landscape', zh: '火山地貌' }), // $17
+        'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1400&q=80', // $18
         JSON.stringify({
           en: '"Few travellers expect to find volcanoes in Guangdong, but the Leizhou Peninsula was shaped by eruptions over the past several million years."',
           zh: '"很少有旅行者预料到会在广东发现火山。但雷州半岛是由过去数百万年的喷发塑造而成的。"',
-        }),
+        }), // $19
       ],
     );
     console.log('✅ City culture sections seeded (3 sections)');
@@ -185,12 +198,13 @@ async function seed() {
   // ═══════════════════════════════════════════════════════
   if (routeId) {
     await dataSource.query(
-      `INSERT INTO route_stops (route_id, sort_order, time, stop_name, plan, story, cultural_story, details, image, lat, lng, meal) VALUES
-       ($1, 0, '08:00', $2, '', $3, $4, $5, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', 21.147, 110.277, NULL),
-       ($1, 1, '11:00', $6, '', $7, $8, $9, 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80', 21.196, 110.404, NULL),
-       ($1, 2, '14:00', $10, '', $11, $12, $13, 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80', 21.197, 110.411, NULL),
-       ($1, 3, '17:30', $14, '', $15, $16, $17, 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80', 21.249, 110.427, $18);`,
+      `INSERT INTO route_stops (route_id, sort_order, time, stop_name, story, cultural_story, details, image, lat, lng, meal) VALUES
+       ($1, 0, '08:00', $2, $3, $4, $5, 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', 21.147, 110.277, NULL),
+       ($1, 1, '11:00', $6, $7, $8, $9, 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80', 21.196, 110.404, NULL),
+       ($1, 2, '14:00', $10, $11, $12, $13, 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80', 21.197, 110.411, NULL),
+       ($1, 3, '17:30', $14, $15, $16, $17, 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80', 21.249, 110.427, $18);`,
       [
+        routeId,
         // ── Stop 0: Huguangyan Maar Lake ──
         JSON.stringify({ en: 'Huguangyan Maar Lake', zh: '湖光岩玛珥湖' }),
         JSON.stringify({
@@ -323,11 +337,7 @@ async function seed() {
          $6,
          $7,
          $8,
-         ARRAY[
-           'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1200&q=82',
-           'https://images.unsplash.com/photo-1594910413523-d2391693c004?auto=format&fit=crop&w=1200&q=82',
-           'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1200&q=82'
-         ],
+         $9,
          10,
          true
        );`,
@@ -343,6 +353,11 @@ async function seed() {
         JSON.stringify({ en: '9cm diameter, 5cm height', zh: '直径 9cm，高 5cm' }),
         JSON.stringify({ en: 'Leizhou Peninsula, Zhanjiang', zh: '湛江·雷州半岛' }),
         JSON.stringify({ en: 'Hand wash only. Not recommended for microwave use.', zh: '建议手洗，不适用于微波炉。' }),
+        JSON.stringify([
+          'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1200&q=82',
+          'https://images.unsplash.com/photo-1594910413523-d2391693c004?auto=format&fit=crop&w=1200&q=82',
+          'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1200&q=82'
+        ]),
       ],
     );
     console.log('✅ Store product "Volcanic Soil Tea Bowl" seeded');

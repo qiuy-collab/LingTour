@@ -50,7 +50,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
           {/* Info side */}
           <div className="lg:sticky lg:top-28">
             <Reveal delay={100}>
-              <p className="text-label text-[var(--cinnabar)]">{product.collection}</p>
+              <p className="text-label text-[var(--cinnabar)]">{typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title}</p>
               <h1 className="mt-5 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl lg:text-6xl">
                 {product.name}
               </h1>
@@ -99,7 +99,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                   ))}
                 </div>
                 <p className="text-xs text-[var(--muted)]">
-                  Part of the <span className="font-semibold text-[var(--ink)]">{product.collection}</span> collection.
+                  Part of the <span className="font-semibold text-[var(--ink)]">{typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title}</span> collection.
                 </p>
               </div>
             </Reveal>

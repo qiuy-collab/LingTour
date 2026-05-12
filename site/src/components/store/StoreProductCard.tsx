@@ -37,7 +37,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
               {product.name}
             </h3>
             <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-              <p className="text-sm text-white/80">{product.collection}</p>
+              <p className="text-sm text-white/80">{typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title}</p>
               <p className="font-semibold">{formatStorePrice(product)}</p>
             </div>
           </div>

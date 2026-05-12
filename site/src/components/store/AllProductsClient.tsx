@@ -19,13 +19,14 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
     const normalizedQuery = query.trim().toLowerCase();
 
     return products.filter((product) => {
+      const productCollection = typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title;
       const matchesQuery =
         normalizedQuery.length === 0 ||
-        [product.name, product.collection, product.tag, product.story]
+        [product.name, productCollection, product.tag, product.story]
           .join(" ")
           .toLowerCase()
           .includes(normalizedQuery);
-      const matchesCollection = collection === "All collections" || product.collection === collection;
+      const matchesCollection = collection === "All collections" || productCollection === collection;
       const matchesTag = tag === "All types" || product.tag === tag;
 
       return matchesQuery && matchesCollection && matchesTag;

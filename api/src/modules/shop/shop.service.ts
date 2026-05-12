@@ -86,14 +86,16 @@ export class ShopService {
     // Get distinct tags & collections for filters
     const allTags = await this.productRepo
       .createQueryBuilder('p')
-      .select("DISTINCT p.tag->>'en'", 'tag_en')
-      .addSelect("DISTINCT p.tag->>'zh'", 'tag_zh')
+      .select("p.tag->>'en'", 'tag_en')
+      .addSelect("p.tag->>'zh'", 'tag_zh')
+      .distinct(true)
       .where('p.published = :published', { published: true })
       .getRawMany();
 
     const allCollections = await this.collectionRepo
       .createQueryBuilder('c')
-      .select('DISTINCT c.slug', 'slug')
+      .select('c.slug', 'slug')
+      .distinct(true)
       .where('c.published = :published', { published: true })
       .getRawMany();
 

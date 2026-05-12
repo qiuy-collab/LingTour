@@ -49,6 +49,9 @@ export class City {
   @Column({ type: 'jsonb', name: 'food_images', default: [] })
   foodImages: string[];
 
+  @Column({ type: 'int', nullable: true })
+  adcode?: number;
+
   @Column({ type: 'boolean', default: false })
   published: boolean;
 

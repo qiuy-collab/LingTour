@@ -40,7 +40,7 @@ export function ProductDetailClient({ slug }: Props) {
   }
 
   const relatedProducts = (allProducts ?? [])
-    .filter((p) => p.slug !== product.slug && p.collection === product.collection)
+    .filter((p) => p.slug !== product.slug && (typeof p.collection === 'string' ? p.collection : (p.collection as any)?.title) === (typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title))
     .slice(0, 3);
 
   return (
@@ -55,7 +55,7 @@ export function ProductDetailClient({ slug }: Props) {
             <Reveal>
               <p className="text-label text-[var(--cinnabar)]">Related items</p>
               <h2 className="mt-5 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
-                Completing the {product.collection} collection.
+                Completing the {typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title} collection.
               </h2>
             </Reveal>
 

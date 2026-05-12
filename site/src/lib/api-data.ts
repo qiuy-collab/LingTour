@@ -85,6 +85,7 @@ interface ApiCity {
   foodTitle: string;
   foodDescription: string;
   foodImages: string[];
+  adcode?: number;
   sections: ApiCitySection[];
   routes?: { slug: string }[];
 }
@@ -132,8 +133,10 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     title: apiRoute.title,
     culture: apiRoute.cultureTag as StoryRoute["culture"],
     city: apiRoute.cityName,
-    citySlugs:
-      apiRoute.routeCityLinks?.map((l) => l.citySlug) ?? [],
+    citySlugs: [
+      ...(apiRoute.routeCityLinks?.map((l) => l.citySlug) ?? []),
+      apiRoute.cityName.toLowerCase(),
+    ],
     duration: apiRoute.duration,
     audience: apiRoute.audience,
     summary: apiRoute.summary,
@@ -162,7 +165,7 @@ function mapCity(apiCity: ApiCity): CityCulture {
   return {
     slug: apiCity.slug,
     name: apiCity.name,
-    adcode: 0, // Not available in public API response
+    adcode: apiCity.adcode ?? 0,
     label: apiCity.regionLabel,
     summary: apiCity.editorIntro ?? "",
     narrative: apiCity.heroNarrative,
@@ -225,7 +228,58 @@ function mapCollection(apiCol: ApiStoreCollection): StoreCollection {
   };
 }
 
+interface ApiInterpretingMode {
+  id: string;
+  sortOrder: number;
+  title: string;
+  price: string;
+  bestFor: string;
+  body: string;
+  includes: string[];
+  accent: "light" | "dark";
+  featured: boolean;
+}
+
+interface ApiInterpreterProfile {
+  id: string;
+  sortOrder: number;
+  name: string;
+  language: string;
+  focus: string;
+  helps: string[];
+}
+
+interface ApiInterpretingFaq {
+  id: string;
+  sortOrder: number;
+  question: string;
+  answer: string;
+}
+
+export interface InterpretingData {
+  serviceModes: ApiInterpretingMode[];
+  profiles: ApiInterpreterProfile[];
+  faqs: ApiInterpretingFaq[];
+}
+
 // ───────────── Public API data hooks ─────────────
+
+export async function fetchInterpreting(
+  locale: Locale,
+): Promise<InterpretingData> {
+  const res = await apiGet<{
+    service_modes: ApiInterpretingMode[];
+    profiles: ApiInterpreterProfile[];
+    faqs: ApiInterpretingFaq[];
+  }>("/public/interpreting", {
+    lang: locale,
+  });
+  return {
+    serviceModes: res.service_modes ?? [],
+    profiles: res.profiles ?? [],
+    faqs: res.faqs ?? [],
+  };
+}
 
 export async function fetchRoutes(locale: Locale): Promise<StoryRoute[]> {
   const res = await apiGet<PaginatedResponse<ApiStoryRoute>>("/public/routes", {
@@ -276,10 +330,10 @@ export async function fetchCityBySlug(
 export async function fetchStoreCollections(
   locale: Locale,
 ): Promise<StoreCollection[]> {
-  const res = await apiGet<ApiStoreCollection[]>("/public/shop/collections", {
+  const res = await apiGet<{ collections: ApiStoreCollection[] }>("/public/shop/collections", {
     lang: locale,
   });
-  return res.map(mapCollection);
+  return (res.collections ?? []).map(mapCollection);
 }
 
 export async function fetchStoreProducts(
@@ -292,11 +346,11 @@ export async function fetchStoreProducts(
     lang: locale,
   };
   if (collectionSlug) params.collection = collectionSlug;
-  const res = await apiGet<PaginatedResponse<ApiStoreProduct>>(
+  const res = await apiGet<{ products: ApiStoreProduct[] }>(
     "/public/shop/products",
     params,
   );
-  return res.data.map(mapProduct);
+  return (res.products ?? []).map(mapProduct);
 }
 
 export async function fetchStoreProductBySlug(
@@ -304,11 +358,11 @@ export async function fetchStoreProductBySlug(
   locale: Locale,
 ): Promise<StoreProduct | null> {
   try {
-    const res = await apiGet<ApiStoreProduct>(
+    const res = await apiGet<{ product: ApiStoreProduct }>(
       `/public/shop/products/${slug}`,
       { lang: locale },
     );
-    return mapProduct(res);
+    return res.product ? mapProduct(res.product) : null;
   } catch {
     return null;
   }
@@ -318,8 +372,13 @@ export async function fetchRelatedProducts(
   product: StoreProduct,
   allProducts: StoreProduct[],
 ): Promise<StoreProduct[]> {
+  const getCollectionTitle = (p: StoreProduct) => 
+    typeof p.collection === 'string' ? p.collection : (p.collection as any)?.title;
+  
+  const targetTitle = getCollectionTitle(product);
+  
   return allProducts.filter(
-    (p) => p.slug !== product.slug && p.collection === product.collection,
+    (p) => p.slug !== product.slug && getCollectionTitle(p) === targetTitle,
   );
 }
 

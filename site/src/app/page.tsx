@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
 import { fetchHomeData, fetchStoreProducts, fetchRoutes } from "@/lib/api-data";
-import { useApiQuery, LoadingSpinner } from "@/lib/use-api-query";
+import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { CultureGallery } from "@/components/home/CultureGallery";
 import { FeaturedRoutesCarousel } from "@/components/home/FeaturedRoutesCarousel";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
@@ -33,7 +33,7 @@ export default function Home() {
   );
 
   if (homeLoading) return <LoadingSpinner text="Loading…" />;
-  if (!homeData) return null;
+  if (!homeData) return <ErrorState message="Could not load home data" />;
 
   const {
     regionShowcase,

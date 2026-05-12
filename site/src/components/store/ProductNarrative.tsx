@@ -74,8 +74,8 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
                 <div className="mt-8 space-y-6 text-base leading-8 text-[var(--muted)]">
                   <p>
                     At LingTour, we believe objects should stay connected to the places they come from.
-                    This {product.name.toLowerCase()} is not a generic souvenir — it is a tactile record
-                    of the {product.collection.toLowerCase()}.
+                    This {product.name?.toLowerCase() || "item"} is not a generic souvenir — it is a tactile record
+                    of the {typeof product.collection === "string" ? product.collection.toLowerCase() : "collection"}.
                   </p>
                   <p>
                     Every material and design choice draws from the city stories we tell. When you use

@@ -18,7 +18,13 @@ export default function ProductsPage() {
   if (error) return <ErrorState message={error} onRetry={refetch} />;
 
   const products = storeProducts ?? [];
-  const collections = Array.from(new Set(products.map((product) => product.collection)));
+  const collections = Array.from(
+    new Set(
+      products.map((product) =>
+        typeof product.collection === "string" ? product.collection : (product.collection as any)?.title
+      ).filter(Boolean)
+    )
+  );
   const tags = Array.from(new Set(products.map((product) => product.tag)));
 
   return (

@@ -97,6 +97,7 @@ export class CitiesService {
       foodTitle: dto.foodTitle,
       foodDescription: dto.foodDescription,
       foodImages: dto.foodImages ?? [],
+      adcode: dto.adcode,
       published: dto.published ?? false,
     });
 

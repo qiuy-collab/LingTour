@@ -5,58 +5,90 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { getMapFeatures, buildProjection, featureToPath } from "@/lib/map-projection";
 import { fetchRoutes } from "@/lib/api-data";
+import { useLocale } from "@/lib/locale-context";
 import type { StoryRoute } from "@/data/routes";
 
 const initialFeatures = getMapFeatures();
+
+const regionCityMap: Record<string, { en: string[]; zh: string[] }> = {
+  "Bay Area Core": {
+    en: ["Guangzhou", "Foshan", "Shenzhen"],
+    zh: ["广州", "佛山", "深圳"],
+  },
+  "Chaoshan Coast": {
+    en: ["Chaozhou", "Shantou"],
+    zh: ["潮州", "汕头"],
+  },
+  "Hakka Mountains": {
+    en: ["Meizhou"],
+    zh: ["梅州"],
+  },
+  "Southern Sea": {
+    en: ["Zhanjiang"],
+    zh: ["湛江"],
+  },
+  "Northern Gateway": {
+    en: ["Shaoguan"],
+    zh: ["韶关"],
+  },
+};
 
 const routeRegions = [
   {
     title: "Bay Area Core",
     note: "Guangzhou / Foshan / Shenzhen",
     adcodes: [440100, 440300, 440600],
-    cities: ["Guangzhou", "Foshan", "Shenzhen"],
   },
   {
     title: "Chaoshan Coast",
     note: "Chaozhou / Shantou",
     adcodes: [445100, 440500],
-    cities: ["Chaozhou", "Shantou"],
   },
   {
     title: "Hakka Mountains",
     note: "Meizhou",
     adcodes: [441400],
-    cities: ["Meizhou"],
   },
   {
     title: "Southern Sea",
     note: "Zhanjiang",
     adcodes: [440800],
-    cities: ["Zhanjiang"],
   },
   {
     title: "Northern Gateway",
     note: "Shaoguan",
     adcodes: [440200],
-    cities: ["Shaoguan"],
   },
 ];
 
-function routesForCities(cities: string[], routes: StoryRoute[]) {
-  const regionLower = cities.map((c) => c.toLowerCase());
-  return routes.filter((route) =>
-    route.citySlugs.some((slug) => regionLower.includes(slug)),
-  );
+function routesForRegion(regionTitle: string, routes: StoryRoute[]) {
+  const cityMap = regionCityMap[regionTitle];
+  if (!cityMap) return [];
+
+  const searchNames = [
+    ...cityMap.en.map((c) => c.toLowerCase()),
+    ...cityMap.zh,
+  ];
+
+  return routes.filter((route) => {
+    const cityName = route.city;
+    return (
+      searchNames.includes(cityName) ||
+      searchNames.includes(cityName.toLowerCase()) ||
+      route.citySlugs.some((slug) => searchNames.includes(slug))
+    );
+  });
 }
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
+  const { locale } = useLocale();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
 
-  // Fetch routes on mount
+  // Fetch routes on mount and locale change
   useEffect(() => {
-    fetchRoutes("en").then(setRoutes).catch(() => {});
-  }, []);
+    fetchRoutes(locale).then(setRoutes).catch(() => {});
+  }, [locale]);
 
   const mapPaths = useMemo(() => {
     if (!initialFeatures.length) {
@@ -103,7 +135,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
 
           <div className="grid gap-x-7 gap-y-8 md:grid-cols-3 xl:grid-cols-5">
             {routeRegions.map((region) => {
-              const regionRoutes = routesForCities(region.cities, routes);
+              const regionRoutes = routesForRegion(region.title, routes);
 
               return (
                 <motion.div
