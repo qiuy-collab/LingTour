@@ -27,6 +27,7 @@ export type CultureFeature = {
   slug: string;
   title: string;
   body: string;
+  href?: string;
 };
 
 export type ServiceStep = {
