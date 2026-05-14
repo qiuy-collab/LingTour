@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  rewrites: async () => [
+    {
+      source: "/api/:path*",
+      destination: "http://localhost:3001/api/:path*",
+    },
+  ],
 };
 
 export default nextConfig;

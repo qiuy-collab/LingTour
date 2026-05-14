@@ -7,10 +7,8 @@
  * - Uniform error handling
  */
 
-const DEFAULT_BASE_URL = "http://localhost:3001/api/v1";
-
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL || DEFAULT_BASE_URL;
+  return process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 }
 
 export type ApiError = {
@@ -49,7 +47,11 @@ export async function apiClient<T = unknown>(
   const baseUrl = getBaseUrl();
 
   // ── Build URL ──
-  const url = new URL(`${baseUrl}${endpoint}`);
+  const fullPath = `${baseUrl}${endpoint}`;
+  const url = new URL(
+    fullPath,
+    fullPath.startsWith("http") ? undefined : window.location.origin,
+  );
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
