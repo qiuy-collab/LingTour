@@ -5,14 +5,53 @@ import { useLocale } from "@/lib/locale-context";
 import { fetchHomeData, fetchStoreProducts, fetchRoutes } from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { CultureGallery } from "@/components/home/CultureGallery";
-import { FeaturedRoutesCarousel } from "@/components/home/FeaturedRoutesCarousel";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
+import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
 import { Reveal } from "@/components/ui/Reveal";
 import { SpotlightPanel } from "@/components/ui/SpotlightPanel";
 
 function formatStorePrice(price: number, currency: string) {
   return `${currency} $${price.toFixed(2)}`;
 }
+
+const FALLBACK_PRODUCTS = [
+  {
+    slug: "camphorwood-tray",
+    image: "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=900&q=80",
+    name: "Hand-carved Camphorwood Tray",
+    tag: "Masterpiece",
+    collection: "Chaozhou Heritage",
+    price: 128,
+    currency: "SGD",
+  },
+  {
+    slug: "volcanic-soil-bowl",
+    image: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=900&q=82",
+    name: "Volcanic Soil Tea Bowl",
+    tag: "Handcrafted",
+    collection: "Zhanjiang Coast",
+    price: 32,
+    currency: "SGD",
+  },
+  {
+    slug: "lingnan-tea-set",
+    image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=900&q=82",
+    name: "Lingnan Clay Tea Set",
+    tag: "Artisan",
+    collection: "Lingnan Pottery",
+    price: 62,
+    currency: "SGD",
+  },
+  {
+    slug: "chaozhou-embroidery",
+    image: "https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?auto=format&fit=crop&w=900&q=82",
+    name: "Chaozhou Silk Embroidery",
+    tag: "Heritage",
+    collection: "Chaozhou Heritage",
+    price: 88,
+    currency: "SGD",
+  },
+];
 
 export default function Home() {
   const { t, locale } = useLocale();
@@ -40,17 +79,14 @@ export default function Home() {
     cultureHighlights,
     testimonials,
     trustMetrics,
-    homeEntryCards,
   } = homeData;
 
   const storeProducts = products ?? [];
   const storyRoutes = allRoutes ?? [];
-  
-  // Debug log to ensure routes are present
-  console.log("Rendering home with routes:", storyRoutes.map(r => r.slug));
 
   return (
-    <div>
+    <div className="bg-[var(--background)]">
+      {/* 1. HERO PILLAR */}
       <section className="relative min-h-[calc(100svh-73px)] overflow-hidden bg-[var(--night)] text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-60 hero-zoom"
@@ -109,159 +145,140 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="site-container py-12 lg:py-20">
-        <div className="grid gap-8 border-l border-[var(--cinnabar)]/30 pl-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(22rem,0.58fr)] lg:items-start lg:pl-8">
-          <div className="max-w-3xl">
-            <p className="text-label text-[var(--cinnabar)]">{t("home.entryCards.0.title")}</p>
-            <h2 className="mt-4 max-w-[16ch] font-[family:var(--font-display)] text-4xl leading-[1.1] text-[var(--river-deep)] md:text-[2.85rem]">
-              {t("home.culture.subtitle")}
-            </h2>
-          </div>
-          <p className="max-w-2xl pt-1 text-base leading-8 text-[var(--muted)] lg:pt-12">
-            {t("home.entryCards.0.body")}
-          </p>
-        </div>
+      <div className="bg-[var(--paper-deep)]">
+        {/* 2. MAP PILLAR */}
+        <GuangdongMapSection cities={regionShowcase} />
 
-        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {homeEntryCards.map((card, index) => (
-            <Reveal key={card.href} delay={index * 90}>
-              <Link href={card.href} className="group block">
-                <SpotlightPanel className="lux-card min-h-[18rem] border border-[var(--line)] bg-[var(--paper)] p-6">
-                  <p className="text-label text-[var(--muted)]">{card.id}</p>
-                  <h3 className="mt-8 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] transition group-hover:translate-x-1 sm:text-3xl">
-                    {card.title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{card.body}</p>
-                  <p className="mt-8 text-sm font-medium text-[var(--cinnabar)] transition group-hover:translate-x-2">
-                    {t("common.btn.explore")}
-                  </p>
-                </SpotlightPanel>
-              </Link>
+        {/* Divider */}
+        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
+
+        {/* 3. CALENDAR & ROUTE PILLAR */}
+        <GuangdongEventCalendar />
+
+        {/* Divider */}
+        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
+
+        {/* 4. SHOP PILLAR */}
+        <section className="site-container py-16 lg:py-24">
+          <div className="mb-8 opacity-60">
+            <Reveal>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
+                {t("shop.page.title")}
+              </p>
+              <h2 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+                {t("home.shop.title")}
+              </h2>
             </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <GuangdongMapSection cities={regionShowcase} />
-
-      <FeaturedRoutesCarousel routes={storyRoutes} />
-      <CultureGallery highlights={cultureHighlights} />
-
-      <section className="site-container py-16 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
-          <div>
-            <p className="text-label text-[var(--cinnabar)]">{t("interpreting.page.title")}</p>
-            <h2 className="mt-4 max-w-[17ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
-              {t("home.interpreting.title")}
-            </h2>
-            <Link
-              href="/interpreting"
-              className="mt-8 inline-block bg-[var(--river-deep)] px-6 py-4 text-sm font-medium text-white transition hover:bg-[var(--night)]"
-            >
-              {t("interpreting.cta.button")}
-            </Link>
           </div>
 
-          <div className="grid gap-4">
-            {[1, 2, 3, 4].map((num) => (
-              <Reveal key={num} delay={(num - 1) * 80}>
-                <SpotlightPanel className="lux-card grid gap-4 border border-[var(--line)] bg-[var(--paper)] p-5 sm:grid-cols-[4rem_1fr]">
-                  <p className="font-[family:var(--font-display)] text-3xl text-[var(--cinnabar)]">0{num}</p>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[var(--ink)]">{t(`interpreting.scenarios.${num - 1}.title`)}</h3>
-                    <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{t(`interpreting.scenarios.${num - 1}.body`)}</p>
-                  </div>
-                </SpotlightPanel>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {(storeProducts.length > 0 ? storeProducts : FALLBACK_PRODUCTS).slice(0, 4).map((product, idx) => (
+              <Reveal key={product.slug} delay={idx * 100}>
+                <Link href={`/checkout?product=${product.slug}`} className="group block">
+                  <article className="relative aspect-[4/5] overflow-hidden bg-[var(--paper-deep)] shadow-[var(--shadow-soft)] transition-shadow duration-500 hover:shadow-[0_24px_70px_rgba(17,25,35,0.12)]">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
+                      style={{ backgroundImage: `url(${product.image})` }}
+                    />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0),rgba(17,25,35,0.05)_60%,rgba(17,25,35,0.85))]" />
+                    <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white sm:p-8">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">
+                          {product.tag ?? (product as any).collection ?? "Lingnan Goods"}
+                        </span>
+                      </div>
+                      <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight sm:text-3xl">
+                        {product.name}
+                      </h3>
+                      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                        <p className="text-sm text-white/80">
+                          {typeof product.collection === 'string' ? product.collection : ((product as any).collection ?? "")}
+                        </p>
+                        <p className="font-semibold">{formatStorePrice(product.price, product.currency)}</p>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
               </Reveal>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="border-y border-[var(--line)] bg-[var(--paper-deep)] py-16 lg:py-20">
-        <div className="site-container grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-          <div>
-            <p className="text-label text-[var(--cinnabar)]">{t("shop.page.title")}</p>
-            <h2 className="mt-4 max-w-[18ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
-              {t("home.shop.title")}
-            </h2>
-            <p className="mt-5 max-w-xl text-base leading-8 text-[var(--muted)]">
-              {t("home.shop.subtitle")}
-            </p>
-            <Link href="/shop" className="kinetic-link mt-8 inline-block bg-[var(--cinnabar)] px-6 py-4 text-sm font-medium text-white">
-              {t("home.shop.cta")}
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {storeProducts.slice(0, 4).map((product) => (
-              <Link
-                key={product.slug}
-                href={`/checkout?product=${product.slug}`}
-                className="group lux-card relative aspect-square overflow-hidden bg-[var(--night)] text-white shadow-[var(--shadow-soft)]"
-              >
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-78 transition duration-700 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${product.image})` }}
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.08),rgba(17,25,35,0.82))]" />
-                <div className="relative z-10 flex h-full flex-col justify-end p-4 sm:p-5">
-                  <p className="text-label text-white/62">{product.tag}</p>
-                  <h3 className="mt-2 font-[family:var(--font-display)] text-xl leading-tight sm:text-2xl">{product.name}</h3>
-                  <p className="mt-2 translate-y-0 text-sm text-white/82 transition duration-300 md:translate-y-4 md:text-white/0 md:group-hover:translate-y-0 md:group-hover:text-white/82">
-                    {formatStorePrice(product.price, product.currency)}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        {/* Divider */}
+        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
 
-      <section className="site-container py-16 lg:py-20">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-label text-[var(--cinnabar)]">{t("home.testimonials.0.name")}</p>
-          <h2 className="mt-4 max-w-[18ch] font-[family:var(--font-display)] text-4xl leading-[1.12] text-[var(--river-deep)] md:text-[2.85rem]">
-            {t("home.entryCards.1.title")}
-          </h2>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-3">
-          {testimonials.map((item, index) => (
-            <Reveal key={item.name} delay={index * 90}>
-              <SpotlightPanel className="lux-card min-h-full border-l-2 border-[var(--cinnabar)] bg-[var(--paper)] p-6">
-                <blockquote>
-                  <p className="text-lg leading-8 text-[var(--ink)]">&ldquo;{item.quote}&rdquo;</p>
-                  <footer className="mt-5 text-sm text-[var(--muted)]">{item.name}</footer>
-                </blockquote>
-              </SpotlightPanel>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="site-container pb-6">
-        <div className="bg-[var(--night)] px-6 py-12 text-white lg:px-10">
-          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="text-label text-white/48">{t("home.hero.subtitle")}</p>
-              <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-4xl leading-[1.12] md:text-[2.85rem]">
-                {t("home.entryCards.2.title")}
+        {/* 5. INTERPRETING PILLAR */}
+        <section className="site-container py-16 lg:py-24">
+          <div className="mb-8 opacity-60">
+            <Reveal>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
+                {t("interpreting.page.title")}
+              </p>
+              <h2 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+                {t("home.interpreting.title")}
               </h2>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/routes" className="bg-white px-6 py-4 text-center text-sm font-semibold text-[#111923] shadow-sm transition hover:bg-[var(--paper-deep)]">
-                {t("common.btn.learnMore")}
-              </Link>
+            </Reveal>
+          </div>
+
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
+            <div>
+              <Reveal>
               <Link
                 href="/interpreting"
-                className="border border-white/24 px-6 py-4 text-center text-sm font-medium text-white"
+                className="inline-flex items-center gap-2 bg-[var(--cinnabar)] px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-[var(--river-deep)]"
               >
                 {t("interpreting.cta.button")}
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
+              </Reveal>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {testimonials.slice(0, 2).map((item, index) => (
+                <Reveal key={item.name} delay={index * 100}>
+                  <div className="h-full rounded-xl border border-[var(--line)] bg-white p-6">
+                    <p className="text-sm leading-7 text-[var(--muted)]">
+                      &ldquo;{item.quote}&rdquo;
+                    </p>
+                    <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]">
+                      {item.name}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* 6. CULTURE CARDS */}
+        <section className="site-container pb-16 lg:pb-24">
+          <CultureGallery highlights={cultureHighlights} />
+        </section>
+
+        {/* FINAL CTA */}
+        <section className="site-container pb-16 lg:pb-24">
+          <div className="relative overflow-hidden bg-[var(--night)] px-8 py-20 text-white lg:px-20 lg:py-24">
+            <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1200&q=82')] bg-cover bg-fixed grayscale" />
+            <div className="relative z-10 max-w-3xl">
+              <div className="mb-8 opacity-60">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">{t("interpreting.page.title")}</p>
+              </div>
+              <Reveal>
+                <h2 className="font-[family:var(--font-display)] text-3xl leading-[1.1] md:text-5xl">
+                  {t("home.interpreting.title")}
+                </h2>
+                <div className="mt-10">
+                  <Link href="/interpreting" className="btn-gold px-10 py-5 text-xs">
+                    {t("interpreting.cta.button")}
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
