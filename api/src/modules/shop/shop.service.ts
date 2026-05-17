@@ -26,6 +26,28 @@ export class ShopService {
     private readonly dataSource: DataSource,
   ) {}
 
+  private toPublicProduct(product: StoreProduct) {
+    return {
+      slug: product.slug,
+      price: Number(product.price),
+      currency: product.currency,
+      image: product.image,
+      gallery: product.gallery ?? [],
+      collection: product.collection
+        ? {
+            slug: product.collection.slug,
+            title: product.collection.title,
+          }
+        : null,
+      product: {
+        name: product.name,
+        tag: product.tag,
+      },
+      materialNotes: product.material,
+      story: product.story,
+    };
+  }
+
   // ── Collections (Public) ──
 
   async findAllCollections(): Promise<{ collections: any[] }> {
@@ -100,7 +122,7 @@ export class ShopService {
       .getRawMany();
 
     return {
-      products,
+      products: products.map((product) => this.toPublicProduct(product)),
       pagination: { page: +page, limit: +limit, total },
       filters: {
         collections: allCollections.map((c) => c.slug),
@@ -131,8 +153,11 @@ export class ShopService {
     }
 
     return {
-      product,
-      relatedProducts: related.filter((p) => p.id !== product.id).slice(0, 3),
+      product: this.toPublicProduct(product),
+      relatedProducts: related
+        .filter((p) => p.id !== product.id)
+        .slice(0, 3)
+        .map((item) => this.toPublicProduct(item)),
     };
   }
 
@@ -152,7 +177,10 @@ export class ShopService {
         take: 3,
         relations: ['collection'],
       });
-      return { section, products };
+      return {
+        section,
+        products: products.map((product) => this.toPublicProduct(product)),
+      };
     }
 
     const productIds = featured
@@ -173,7 +201,10 @@ export class ShopService {
       (a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999),
     );
 
-    return { section, products };
+    return {
+      section,
+      products: products.map((product) => this.toPublicProduct(product)),
+    };
   }
 
   // ── Admin: Products ──

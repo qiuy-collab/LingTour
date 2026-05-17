@@ -102,22 +102,21 @@ interface ApiStoreCollection {
 }
 
 interface ApiStoreProduct {
-  id: string;
   slug: string;
-  name: string;
-  collectionId: string | null;
-  collection?: ApiStoreCollection | null;
   price: number;
   currency: string;
-  tag: string;
   image: string;
-  story: string;
-  material: string | null;
-  dimensions: string | null;
-  origin: string | null;
-  care: string | null;
   gallery: string[];
-  stock: number;
+  collection: {
+    slug: string;
+    title: string;
+  } | null;
+  product: {
+    name: string;
+    tag: string;
+  };
+  materialNotes: string | null;
+  story: string;
 }
 
 interface PaginatedResponse<T> {
@@ -198,22 +197,14 @@ function mapCity(apiCity: ApiCity): CityCulture {
 function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
   return {
     slug: apiProduct.slug,
-    name: apiProduct.name,
+    name: apiProduct.product.name,
     collection: apiProduct.collection?.title ?? "",
     price: Number(apiProduct.price),
     currency: (apiProduct.currency as StoreProduct["currency"]) ?? "SGD",
-    tag: apiProduct.tag,
+    tag: apiProduct.product.tag,
     image: apiProduct.image,
+    materialNotes: apiProduct.materialNotes ?? undefined,
     story: apiProduct.story,
-    details:
-      apiProduct.material || apiProduct.dimensions || apiProduct.origin || apiProduct.care
-        ? {
-            material: apiProduct.material ?? "",
-            dimensions: apiProduct.dimensions ?? "",
-            origin: apiProduct.origin ?? "",
-            care: apiProduct.care ?? "",
-          }
-        : undefined,
     gallery: apiProduct.gallery ?? undefined,
   };
 }
