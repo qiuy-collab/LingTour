@@ -1,4 +1,4 @@
-import { common } from "./common";
+﻿import { common } from "./common";
 import { home } from "./home";
 import { culture } from "./culture";
 import { routes } from "./routes";
@@ -24,17 +24,18 @@ for (const mod of allModules) {
   Object.assign(dictionaries.zh, mod.zh);
 }
 
-/** Translate a key into the given locale. Falls back to key itself or "⚠️ MISSING". */
+/** Translate a key into the given locale. Falls back to English, then a readable missing-key label. */
 export function translate(key: string, locale: Locale): string {
   const val = dictionaries[locale]?.[key];
   if (val !== undefined && val !== null) return String(val);
-  // fallback — try English
+  // Fall back to English.
   const fallback = dictionaries.en[key];
   if (fallback !== undefined && fallback !== null) return String(fallback);
-  return `⚠️ ${key}`;
+  return `Missing translation: ${key}`;
 }
 
 /** Get all translation keys for a locale (for debugging) */
 export function getKeys(locale: Locale): string[] {
   return Object.keys(dictionaries[locale]);
 }
+

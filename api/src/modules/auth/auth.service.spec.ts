@@ -85,6 +85,7 @@ describe('AuthService', () => {
       expect(result.expires_in).toBe('24h');
       expect(result.user.email).toBe('admin@lingtour.cn');
       expect(result.user.role).toBe('admin');
+      expect(result.user.accountId).toBe('LT-UUIDTEST');
     });
 
     it('should not expose passwordHash in response', async () => {

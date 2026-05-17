@@ -1,17 +1,11 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUI } from "@/lib/ui-context";
-
-type LocalUser = {
-  name: string;
-  email: string;
-  country?: string;
-  travelStyle?: string;
-};
+import { LocalUser, readStoredUser, signInWithGoogle } from "@/lib/auth-client";
 
 type FavoriteItem = { id: string; type: string; title: string };
 type CartItem = { productSlug: string; name: string; quantity: number; price: number; image?: string };
@@ -54,6 +48,7 @@ function getInitials(name: string) {
 function logOut() {
   try {
     window.localStorage.removeItem("lingtour-user");
+    window.localStorage.removeItem("lingtour-token");
   } catch {
     // localStorage may be unavailable
   }
@@ -69,10 +64,18 @@ export function GlobalDrawer() {
   const [recentRoutes, setRecentRoutes] = useState<RecentRoute[]>([]);
   const recentOrders: { slug: string; name: string; price: number; currency: string }[] = [];
 
+  async function connectGoogleAccount() {
+    const existing = readStoredUser();
+    await signInWithGoogle({
+      email: existing?.email || "google@lingtour.local",
+      name: existing?.name || "Google Traveler",
+    });
+  }
+
   // Load data from localStorage on mount and when drawer opens
   const loadData = () => {
     if (typeof window === "undefined") return;
-    setUser(readJSON<LocalUser | null>("lingtour-user", null));
+    setUser(readStoredUser());
     setFavorites(readJSON<FavoriteItem[]>("lingtour-favorites", []).filter(
       (item) => item && typeof item.id === "string" && typeof item.title === "string",
     ));
@@ -167,6 +170,9 @@ export function GlobalDrawer() {
                       <p className="mt-2 truncate text-xs text-[var(--muted)]">
                         {user.email}
                       </p>
+                      <p className="mt-2 inline-flex rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                        ID {user.accountId}
+                      </p>
                     </div>
                   </div>
                   
@@ -205,7 +211,7 @@ export function GlobalDrawer() {
                     onClick={closeDrawer}
                     className="mt-6 inline-flex h-11 items-center justify-center bg-[var(--cinnabar)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--cinnabar-deep)]"
                   >
-                    Sign in
+                    Log in with email
                   </Link>
                 </section>
               )}
@@ -222,10 +228,39 @@ export function GlobalDrawer() {
                         onClick={closeDrawer}
                         className="block border border-[var(--line)] bg-white px-4 py-3 transition hover:border-[var(--cinnabar)]"
                       >
-                        <p className="text-xs text-[var(--muted)]">{booking.status} • {booking.city}</p>
+                        <p className="text-xs text-[var(--muted)]">{booking.status} / {booking.city}</p>
                         <p className="mt-1 text-sm font-medium text-[var(--ink)] truncate">{booking.service}</p>
                       </Link>
                     ))}
+                  </div>
+                </section>
+              )}
+
+              {user && (
+                <section className="border-b border-[var(--line)] px-6 py-5">
+                  <p className="text-label text-[var(--cinnabar)]">Personal account</p>
+                  <div className="mt-4 rounded-2xl border border-[var(--line)] bg-white/65 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--ink)]">Google</p>
+                        <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                          Bind Google for faster access to saved routes and bookings.
+                        </p>
+                      </div>
+                      {user.provider === "Google" ? (
+                        <span className="shrink-0 rounded-full bg-[var(--paper-deep)] px-3 py-2 text-xs font-semibold text-[var(--river-deep)]">
+                          Connected
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={connectGoogleAccount}
+                          className="shrink-0 rounded-full bg-[var(--river-deep)] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[var(--cinnabar)]"
+                        >
+                          Bind
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </section>
               )}
@@ -339,3 +374,4 @@ export function GlobalDrawer() {
     </AnimatePresence>
   );
 }
+

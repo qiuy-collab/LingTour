@@ -6,5 +6,5 @@ export const siteNavigation: NavItem[] = [
   { href: "/routes", label: "Routes", labelEn: "Routes" },
   { href: "/interpreting", label: "Interpreting", labelEn: "Interpreting" },
   { href: "/shop", label: "Store", labelEn: "Store" },
-  { href: "/about", label: "About", labelEn: "About" },
+  { href: "/community", label: "Community", labelEn: "Community" },
 ];

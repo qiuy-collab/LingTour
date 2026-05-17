@@ -13,7 +13,7 @@ export default function LoginPage() {
               LingTour
             </p>
             <p className="mt-3 text-sm text-[var(--muted)]">
-              Sign in to continue.
+              Return to your saved routes, bookings, and quiet plans.
             </p>
           </div>
 

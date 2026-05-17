@@ -23,6 +23,7 @@ import { ShopModule } from './modules/shop/shop.module';
 import { InterpretingModule } from './modules/interpreting/interpreting.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { UploadModule } from './modules/upload/upload.module';
     InterpretingModule,
     OrdersModule,
     UploadModule,
+    DashboardModule,
   ],
   providers: [
     {

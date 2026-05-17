@@ -1,0 +1,240 @@
+[
+  {
+    "page": "Home Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": false,
+    "brokenImages": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Event carousel: NOT found",
+      "Calendar: found",
+      "Culture section: NOT found",
+      "Travel notes: found"
+    ],
+    "timestamp": "2026-05-14T06:01:45.807Z"
+  },
+  {
+    "page": "Routes Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": true,
+    "brokenImages": [],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Map/SVG: found",
+      "Region filters: 27 elements found",
+      "Route cards: 6 cards found"
+    ],
+    "timestamp": "2026-05-14T06:01:50.798Z"
+  },
+  {
+    "page": "Route Detail Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": false,
+    "brokenImages": [
+      "https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80"
+    ],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Route map: found",
+      "Node index: NOT found",
+      "Community section: found",
+      "Arrangements: NOT found"
+    ],
+    "timestamp": "2026-05-14T06:01:55.741Z"
+  },
+  {
+    "page": "Culture Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": true,
+    "brokenImages": [],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Theme cards: 6 found",
+      "Routes CTA links: 25 found"
+    ],
+    "timestamp": "2026-05-14T06:02:03.450Z"
+  },
+  {
+    "page": "Interpreting Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": true,
+    "brokenImages": [],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Scene packages: NOT found",
+      "Interpreter levels: NOT found",
+      "Price builder: NOT found",
+      "Booking form: found",
+      "FAQ: NOT found"
+    ],
+    "timestamp": "2026-05-14T06:02:09.254Z"
+  },
+  {
+    "page": "Posts Page",
+    "loads": true,
+    "loadError": null,
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": true,
+    "brokenImages": [],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to execute 'measure' on 'Performance': '​UserPostsPage' cannot have a negative time stamp.",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": true,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "Posts: 3 found",
+      "Filters: 5 found"
+    ],
+    "timestamp": "2026-05-14T06:02:14.691Z"
+  },
+  {
+    "page": "User Posts Page",
+    "loads": false,
+    "loadError": "HTTP 404",
+    "hasHero": true,
+    "hasCTA": true,
+    "noBrokenImages": true,
+    "brokenImages": [],
+    "noConsoleErrors": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "contentComplete": false,
+    "layoutCorrect": true,
+    "visualQuality": "unknown",
+    "notes": [
+      "Desktop screenshot captured",
+      "User profile: NOT found",
+      "User posts: NOT found"
+    ],
+    "timestamp": "2026-05-14T06:02:19.050Z"
+  },
+  {
+    "page": "Home (Tablet 768px)",
+    "layoutCorrect": false,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:23.315Z"
+  },
+  {
+    "page": "Routes (Tablet 768px)",
+    "layoutCorrect": false,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:25.179Z"
+  },
+  {
+    "page": "Home (Mobile 375px)",
+    "layoutCorrect": true,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:27.113Z"
+  },
+  {
+    "page": "Routes (Mobile 375px)",
+    "layoutCorrect": true,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:28.892Z"
+  },
+  {
+    "page": "Route Detail (Mobile 375px)",
+    "layoutCorrect": false,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:30.817Z"
+  },
+  {
+    "page": "Interpreting (Mobile 375px)",
+    "layoutCorrect": true,
+    "loads": true,
+    "timestamp": "2026-05-14T06:02:32.616Z"
+  }
+]

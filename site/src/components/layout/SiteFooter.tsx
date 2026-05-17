@@ -30,7 +30,7 @@ export function SiteFooter() {
         </div>
 
         <div className="space-y-3 text-sm text-white/68">
-          <p className="text-label text-white/48">{t("common.nav.about")}</p>
+          <p className="text-label text-white/48">{t("common.nav.community")}</p>
           <p>hello@lingtour.cn</p>
           <p>Guangzhou / Shantou / Meizhou</p>
           <p>{t("common.site.footer.rights")}</p>

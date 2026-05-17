@@ -6,7 +6,7 @@ import type { StoreProduct } from "@/data/store";
 
 type ProductActionsProps = {
   product: StoreProduct;
-  variant?: "dark" | "light";
+  variant?: "dark" | "light" | "editorial";
 };
 
 export function ProductActions({ product, variant = "dark" }: ProductActionsProps) {
@@ -44,21 +44,31 @@ export function ProductActions({ product, variant = "dark" }: ProductActionsProp
     secondary: "border border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--cinnabar)]",
     primary: "bg-[var(--river-deep)] text-white hover:bg-[var(--night)]",
   };
+  const editorialClasses = {
+    secondary:
+      "border border-[rgba(20,33,47,0.14)] bg-white text-[var(--river-deep)] hover:border-[var(--river-deep)]",
+    primary: "bg-[var(--night)] text-white hover:bg-[var(--river-deep)]",
+  };
 
-  const classes = variant === "dark" ? darkClasses : lightClasses;
+  const classes =
+    variant === "dark"
+      ? darkClasses
+      : variant === "editorial"
+        ? editorialClasses
+        : lightClasses;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3">
       <button
         type="button"
-        className={`${baseBtn} ${classes.secondary}`}
+        className={`${baseBtn} ${classes.primary}`}
         onClick={() => persistCart(false)}
       >
         {added ? "Added to bag" : "Add to bag"}
       </button>
       <button
         type="button"
-        className={`${baseBtn} ${classes.primary}`}
+        className={`${baseBtn} ${classes.secondary}`}
         onClick={() => persistCart(true)}
       >
         Buy now

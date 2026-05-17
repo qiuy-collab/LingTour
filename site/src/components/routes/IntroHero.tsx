@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -27,7 +27,7 @@ export function IntroHero({ title, summary, image }: Props) {
       className="relative h-screen w-full overflow-hidden"
       style={{ background: "var(--route-bg)" }}
     >
-      {/* Background image — parallax layer */}
+      {/* Background image 鈥?parallax layer */}
       <motion.div
         className="absolute inset-0"
         style={{ opacity: useTransform(scrollYProgress, [0, 0.5], [1, 0.2]) }}
@@ -114,10 +114,11 @@ export function IntroHero({ title, summary, image }: Props) {
             className="blink-arrow text-lg"
             style={{ color: "var(--route-gold)" }}
           >
-            ↓
-          </div>
+            鈫?          </div>
         </motion.div>
       </motion.div>
     </div>
   );
 }
+
+

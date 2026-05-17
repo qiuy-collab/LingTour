@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
@@ -14,16 +14,16 @@ export default function ProductsPage() {
     [locale],
   );
 
-  if (loading) return <LoadingSpinner text="Loading products…" />;
+  if (loading) return <LoadingSpinner text="Arranging the shelf..." />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
 
   const products = storeProducts ?? [];
   const collections = Array.from(
     new Set(
       products.map((product) =>
-        typeof product.collection === "string" ? product.collection : (product.collection as any)?.title
-      ).filter(Boolean)
-    )
+        typeof product.collection === "string" ? product.collection : (product.collection as any)?.title,
+      ).filter(Boolean),
+    ),
   );
   const tags = Array.from(new Set(products.map((product) => product.tag)));
 
@@ -32,16 +32,14 @@ export default function ProductsPage() {
       <section className="border-b border-[var(--line)] py-20 lg:py-28">
         <EditorialIntro
           eyebrow="All products"
-          title={locale === "zh" ? "浏览完整的岭南文创货架。" : "Search the full Lingnan store shelf."}
+          title="The full shelf of carried memory."
           description={
             <>
               <p>
-                {locale === "zh"
-                  ? "浏览每一件文创产品。按路线合集或产品类型筛选。"
-                  : "Browse every cultural object. Narrow by route collection or product type."}
+                Browse the complete Lingnan store: pieces selected for their craft lineage, route connection, and quiet usefulness after the trip ends.
               </p>
               <Link href="/shop" className="mt-6 inline-block text-sm font-semibold text-[var(--cinnabar)]">
-                {locale === "zh" ? "返回文创" : "Back to store"}
+                Back to store
               </Link>
             </>
           }

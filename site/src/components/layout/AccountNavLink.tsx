@@ -2,23 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUI } from "@/lib/ui-context";
-
-type LocalUser = {
-  name: string;
-  email: string;
-  country?: string;
-  travelStyle?: string;
-};
-
-function getStoredUser(): LocalUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = window.localStorage.getItem("lingtour-user");
-    return stored ? (JSON.parse(stored) as LocalUser) : null;
-  } catch {
-    return null;
-  }
-}
+import { LocalUser, readStoredUser } from "@/lib/auth-client";
 
 function getInitials(name: string) {
   return name
@@ -35,7 +19,7 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
 
   useEffect(() => {
     function syncUser() {
-      setUser(getStoredUser());
+      setUser(readStoredUser());
     }
 
     syncUser();

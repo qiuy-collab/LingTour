@@ -25,7 +25,7 @@ export function SiteHeader() {
   const leftNavigation = siteNavigation.filter((item) =>
     ["/", "/culture", "/routes", "/interpreting"].includes(item.href),
   );
-  const rightNavigation = siteNavigation.filter((item) => ["/shop", "/about"].includes(item.href));
+  const rightNavigation = siteNavigation.filter((item) => ["/shop", "/community"].includes(item.href));
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/10 bg-[rgba(242,238,230,0.9)] backdrop-blur-xl">

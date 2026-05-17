@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
@@ -71,7 +71,7 @@ export default function Home() {
     [locale],
   );
 
-  if (homeLoading) return <LoadingSpinner text="Loading…" />;
+  if (homeLoading) return <LoadingSpinner text="Preparing the journey..." />;
   if (!homeData) return <ErrorState message="Could not load home data" />;
 
   const {
@@ -104,10 +104,9 @@ export default function Home() {
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
                 {t("home.hero.title")}
               </p>
-              <h1 className="mt-8 font-[family:var(--font-display)] text-[3.8rem] leading-[0.92] text-white sm:text-7xl md:text-8xl lg:text-[7.5rem]">
-                LingTour<br />Guangdong
+              <h1 className="mt-8 max-w-[11ch] font-[family:var(--font-display)] text-[3.8rem] leading-[0.92] text-white sm:text-7xl md:text-8xl lg:text-[7.5rem]">
+                Guangdong, deeply arranged.
               </h1>
-              <div className="mt-10 h-px w-24 bg-[var(--gold)]/50" />
               <p className="mt-10 max-w-2xl text-lg leading-relaxed text-white/70 md:text-xl md:leading-relaxed">
                 {t("home.hero.subtitle")}
               </p>
@@ -282,3 +281,4 @@ export default function Home() {
     </div>
   );
 }
+

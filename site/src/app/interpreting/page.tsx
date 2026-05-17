@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
@@ -203,19 +203,19 @@ export default function InterpretingPage() {
                 {locale === "zh" ? "LingTour \u53e3\u8bd1\u670d\u52a1" : "LingTour Interpreting"}
               </p>
               <h1 className="mt-7 max-w-[11ch] font-[family:var(--font-display)] text-[3.5rem] leading-[0.94] tracking-[-0.03em] sm:text-7xl lg:text-8xl">
-                {locale === "zh" ? "\u8ba9\u65c5\u9014\u542c\u5f97\u61c2\u3002" : "A local voice for the day."}
+                {locale === "zh" ? "\u8ba9\u65c5\u9014\u542c\u5f97\u61c2\u3002" : "Let the day speak clearly."}
               </h1>
               <p className="mt-7 max-w-[36rem] text-[15px] leading-8 text-white/68 md:text-[17px] md:leading-[1.95]">
                 {locale === "zh"
                   ? "\u628a\u8bed\u8a00\u3001\u8def\u7ebf\u3001\u793c\u4eea\u548c\u5730\u65b9\u6545\u4e8b\u5408\u5728\u4e00\u8d77\u3002\u5c11\u4e00\u70b9\u89e3\u91ca\u6210\u672c\uff0c\u591a\u4e00\u70b9\u771f\u6b63\u8fdb\u5165\u5f53\u5730\u7684\u4f53\u9a8c\u3002"
-                  : "Language help, route context, and calm coordination in one service. Fewer logistics. More of the place itself."}
+                  : "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one."}
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <a href="#interpreting-booking" className="rounded-full bg-[var(--gold)] px-6 py-3 text-sm font-bold text-[var(--night)] transition hover:-translate-y-0.5 hover:bg-white">
-                  {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1" : "Book service"}
+                  {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1" : "Plan support"}
                 </a>
                 <a href="#service-types" className="rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/15">
-                  {locale === "zh" ? "\u67e5\u770b\u7c7b\u578b" : "View options"}
+                  {locale === "zh" ? "\u67e5\u770b\u7c7b\u578b" : "Choose a scene"}
                 </a>
               </div>
             </div>
@@ -227,10 +227,10 @@ export default function InterpretingPage() {
         <div className="mb-8 opacity-60">
           <Reveal>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-              {locale === "zh" ? "\u670d\u52a1\u7c7b\u578b" : "Service Types"}
+              {locale === "zh" ? "\u670d\u52a1\u7c7b\u578b" : "Service scenes"}
             </p>
             <h2 className="mt-3 max-w-[12ch] font-[family:var(--font-display)] text-3xl leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
-              {locale === "zh" ? "\u5148\u9009\u573a\u666f\u3002" : "Start with the scene."}
+              {locale === "zh" ? "\u5148\u9009\u573a\u666f\u3002" : "Choose the shape of your day."}
             </h2>
           </Reveal>
         </div>
@@ -296,7 +296,7 @@ export default function InterpretingPage() {
           <div>
             <div className="mb-8 opacity-60">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                {locale === "zh" ? "\u7ec4\u5408\u53c2\u8003\u4ef7" : "Combination Guide"}
+                {locale === "zh" ? "\u7ec4\u5408\u53c2\u8003\u4ef7" : "Budget guide"}
               </p>
               <h2 className="mt-3 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
                 {locale === "zh" ? "\u670d\u52a1\u7c7b\u578b \u00d7 \u53e3\u8bd1\u7b49\u7ea7\u3002" : "Service type \u00d7 interpreter level."}
@@ -342,3 +342,4 @@ export default function InterpretingPage() {
     </div>
   );
 }
+
