@@ -59,246 +59,208 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
       : (product.collection as { title?: string })?.title || "LingTour Goods";
 
   return (
-    <section className="overflow-hidden bg-[var(--paper-deep)] pb-10 pt-6 lg:pb-16 lg:pt-8">
-      <div className="border-y border-[rgba(20,33,47,0.12)] bg-[rgba(246,238,229,0.82)]">
-        <div className="site-container py-3">
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)]">
-            <span className="rounded-full border border-[rgba(20,33,47,0.1)] bg-white/65 px-3 py-1 text-[10px] tracking-[0.2em] text-[var(--cinnabar)]">
-              Studio dispatch
-            </span>
-            <span className="text-[rgba(20,33,47,0.62)]">
-              Free route-linked packing for this object.
-            </span>
+    <section className="overflow-hidden bg-[var(--paper-deep)] bg-grain pb-12 pt-8 lg:pb-20 lg:pt-12">
+      <div className="border-y border-[rgba(20,33,47,0.1)] bg-[var(--paper-deep)] bg-grain py-4">
+        <div className="site-container">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="font-handwritten text-lg text-[var(--gold)]">
+                Studio dispatch
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/60">
+                Free route-linked packing for this object.
+              </span>
+            </div>
+            <nav aria-label="Product breadcrumb" className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">
+              <Link href="/" className="hover:text-[var(--river-deep)] transition-colors">Home</Link>
+              <span>/</span>
+              <Link href="/shop" className="hover:text-[var(--river-deep)] transition-colors">Store</Link>
+              <span>/</span>
+              <span className="text-[var(--river-deep)]/80">{product.name}</span>
+            </nav>
           </div>
         </div>
       </div>
 
-      <div className="site-container pt-7 lg:pt-10">
-        <div className="grid gap-8 border border-[rgba(20,33,47,0.12)] bg-[rgba(251,245,239,0.88)] p-5 shadow-[0_30px_90px_rgba(17,25,35,0.08)] lg:grid-cols-[0.82fr_1.06fr_0.82fr] lg:gap-10 lg:p-8">
-          <Reveal>
-            <aside className="flex flex-col gap-6 border-[rgba(20,33,47,0.12)] lg:border-r lg:pr-8">
-              <div className="w-fit min-w-[16rem] rounded-[1.4rem] bg-[var(--cinnabar)]/84 px-5 py-5 text-white shadow-[0_16px_40px_rgba(182,66,53,0.16)]">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/68">
-                  Collection
-                </p>
-                <p className="mt-4 whitespace-nowrap font-[family:var(--font-display)] text-[2.1rem] leading-none tracking-[-0.05em]">
+      <div className="site-container mt-12">
+        <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
+          {/* Left Column: Details & Story */}
+          <div className="lg:col-span-3 space-y-10">
+            <Reveal>
+              <div className="relative inline-block bg-[var(--river-deep)] p-6 scrapbook-shadow -rotate-2">
+                <p className="font-handwritten text-xl text-[var(--gold)]">Collection</p>
+                <p className="mt-2 font-[family:var(--font-display)] text-2xl text-white leading-tight">
                   {collectionLabel}
                 </p>
+                {/* Stamp effect */}
+                <div className="absolute -right-4 -top-4 h-16 w-16 rotate-12 rounded-full border-2 border-dashed border-[var(--gold)]/30 flex items-center justify-center">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]/40 text-center">Authentic<br/>Object</span>
+                </div>
               </div>
+            </Reveal>
 
-              <div className="border-b border-[rgba(20,33,47,0.08)] pb-6">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-                  Product
-                </p>
-                <h1 className="mt-3 max-w-[12ch] font-[family:var(--font-display)] text-[3rem] leading-[0.88] tracking-[-0.07em] text-[var(--river-deep)]">
+            <Reveal delay={100}>
+              <div className="space-y-4">
+                <h1 className="font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-tight text-[var(--river-deep)] lg:text-6xl">
                   {product.name}
                 </h1>
-                <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.24em] text-[rgba(20,33,47,0.42)]">
+                <p className="font-handwritten text-2xl text-[var(--gold)]">
                   {product.tag}
                 </p>
               </div>
+            </Reveal>
 
-              <div className="space-y-5">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Material notes
+            <Reveal delay={200}>
+              <div className="space-y-4 border-t border-dashed border-[var(--river-deep)]/20 pt-8">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">Story Summary</p>
+                <p className="text-base leading-relaxed text-[var(--river-deep)]/80 italic">
+                  "{shortStory}"
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
+              </div>
+            </Reveal>
+
+            <Reveal delay={300}>
+              <div className="space-y-4 border-t border-dashed border-[var(--river-deep)]/20 pt-8">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">Material Logic</p>
+                <div className="flex flex-wrap gap-2">
                   {noteWords.map((word) => (
                     <span
                       key={word}
-                      className="rounded-full border border-[rgba(20,33,47,0.1)] bg-[var(--paper)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]"
+                      className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]"
                     >
                       {word}
                     </span>
                   ))}
                 </div>
               </div>
+            </Reveal>
+          </div>
 
-              <div className="border-t border-[rgba(20,33,47,0.08)] pt-5">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Story
-                </p>
-                <p className="mt-4 max-w-sm text-base leading-8 text-[rgba(20,33,47,0.72)]">
-                  {shortStory}
-                </p>
-              </div>
+          {/* Center Column: Main Image */}
+          <div className="lg:col-span-5 relative">
+            <Reveal delay={150}>
+              <div className="relative aspect-[4/5] w-full bg-white p-12 scrapbook-shadow rotate-1">
+                {/* Tape effect */}
+                <div className="absolute -top-4 left-1/2 h-10 w-32 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm border border-white/20" />
 
-            </aside>
-          </Reveal>
+                <div className="relative flex h-full w-full items-center justify-center">
+                  <img
+                    src={activeImage}
+                    alt={product.name}
+                    className="max-h-full w-auto max-w-full object-contain transition-transform duration-700 hover:scale-105"
+                  />
 
-          <Reveal delay={80}>
-            <div className="flex flex-col items-center justify-between gap-5">
-              <div className="flex w-full items-center justify-between px-1 text-[11px] font-bold uppercase tracking-[0.22em] text-[rgba(20,33,47,0.52)]">
-                <nav
-                  aria-label="Product breadcrumb"
-                  className="flex flex-wrap items-center gap-2"
-                >
-                  <Link
-                    href="/"
-                    className="rounded-full border border-transparent px-2 py-1 transition hover:border-[rgba(20,33,47,0.1)] hover:bg-white/70 hover:text-[var(--river-deep)]"
+                  {/* Navigation Buttons */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveIndex((c) => (c === 0 ? images.length - 1 : c - 1))}
+                    className="absolute -left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
                   >
-                    Home
-                  </Link>
-                  <span className="text-[rgba(20,33,47,0.26)]">/</span>
-                  <Link
-                    href="/shop"
-                    className="rounded-full border border-transparent px-2 py-1 transition hover:border-[rgba(20,33,47,0.1)] hover:bg-white/70 hover:text-[var(--river-deep)]"
+                    <span className="text-2xl mt-[-2px] pr-[2px]">&#8249;</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveIndex((c) => (c + 1) % images.length)}
+                    className="absolute -right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
                   >
-                    Shop
-                  </Link>
-                  <span className="text-[rgba(20,33,47,0.26)]">/</span>
-                  <Link
-                    href="/shop/products"
-                    className="rounded-full border border-[rgba(20,33,47,0.08)] bg-white/60 px-2.5 py-1 text-[rgba(20,33,47,0.68)] transition hover:border-[rgba(20,33,47,0.16)] hover:bg-white hover:text-[var(--river-deep)]"
-                  >
-                    {collectionLabel}
-                  </Link>
-                </nav>
-                <span>{String(activeIndex + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}</span>
-              </div>
-
-              <div className="relative flex min-h-[28rem] w-full items-center justify-center overflow-visible bg-[radial-gradient(circle_at_50%_32%,rgba(255,255,255,0.88),rgba(244,231,220,0.75)_44%,rgba(235,224,211,0.28)_72%,transparent_100%)] px-6 py-8 lg:min-h-[38rem] lg:px-12">
-                <button
-                  type="button"
-                  aria-label="Previous image"
-                  onClick={() =>
-                    setActiveIndex((current) =>
-                      current === 0 ? images.length - 1 : current - 1,
-                    )
-                  }
-                  className="absolute left-1 top-1/2 z-10 grid h-11 w-11 -translate-x-1/3 -translate-y-1/2 place-items-center rounded-full border border-[rgba(20,33,47,0.1)] bg-white/72 text-[var(--river-deep)] shadow-[0_14px_34px_rgba(17,25,35,0.12)] transition hover:bg-white lg:-left-3 lg:h-12 lg:w-12"
-                >
-                  <span className="text-xl leading-none">&#8249;</span>
-                </button>
-
-                <img
-                  src={activeImage}
-                  alt={product.name}
-                  className="max-h-[30rem] w-auto max-w-full object-contain drop-shadow-[0_35px_45px_rgba(17,25,35,0.16)] transition-transform duration-500 hover:scale-[1.02] lg:max-h-[36rem]"
-                />
-
-                <button
-                  type="button"
-                  aria-label="Next image"
-                  onClick={() =>
-                    setActiveIndex((current) => (current + 1) % images.length)
-                  }
-                  className="absolute right-1 top-1/2 z-10 grid h-11 w-11 translate-x-1/3 -translate-y-1/2 place-items-center rounded-full border border-[rgba(20,33,47,0.1)] bg-white/72 text-[var(--river-deep)] shadow-[0_14px_34px_rgba(17,25,35,0.12)] transition hover:bg-white lg:-right-3 lg:h-12 lg:w-12"
-                >
-                  <span className="text-xl leading-none">&#8250;</span>
-                </button>
-              </div>
-
-              <div className="flex w-full items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  {images.map((image, index) => (
-                    <button
-                      key={`${image}-${index}`}
-                      type="button"
-                      onClick={() => setActiveIndex(index)}
-                      className={`h-16 w-16 overflow-hidden rounded-2xl border transition ${
-                        activeIndex === index
-                          ? "border-[var(--river-deep)] shadow-[0_12px_28px_rgba(17,25,35,0.12)]"
-                          : "border-[rgba(20,33,47,0.12)] opacity-75 hover:opacity-100"
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
+                    <span className="text-2xl mt-[-2px] pl-[2px]">&#8250;</span>
+                  </button>
                 </div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[rgba(20,33,47,0.54)]">
-                  Studio view
-                </p>
-              </div>
-            </div>
-          </Reveal>
 
-          <Reveal delay={140}>
-            <aside className="border-[rgba(20,33,47,0.12)] bg-[rgba(255,249,244,0.74)] p-5 lg:border lg:p-6">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Reviews
-                </p>
-                <div className="mt-4 flex items-center gap-3 border-b border-dashed border-[rgba(20,33,47,0.18)] pb-5">
-                  <div className="flex items-center gap-1 text-[var(--river-deep)]">
-                    {Array.from({ length: 5 }).map((_, index) => (
-                      <svg
-                        key={index}
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4 fill-current"
-                        aria-hidden="true"
-                      >
+                {/* Image counter */}
+                <div className="absolute bottom-6 right-6 font-handwritten text-xl text-[var(--gold)]">
+                  {activeIndex + 1} / {images.length}
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Gallery Thumbs */}
+            <div className="mt-12 flex justify-center gap-4">
+              {images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`relative h-20 w-20 overflow-hidden border-4 transition-all ${
+                    activeIndex === index
+                      ? "border-[var(--gold)] rotate-2 scale-110 z-10 scrapbook-shadow"
+                      : "border-white rotate-[-2deg] opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <img src={image} alt="" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Buying Options */}
+          <div className="lg:col-span-4 lg:pl-8">
+            <Reveal delay={250}>
+              <div className="bg-white p-8 scrapbook-shadow rotate-[-1deg] space-y-8">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1 text-[var(--gold)]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <svg key={i} viewBox="0 0 24 24" className="h-4 w-4 fill-current">
                         <path d="M12 2.8l2.87 5.82 6.43.93-4.65 4.53 1.1 6.41L12 17.45l-5.75 3.04 1.1-6.41-4.65-4.53 6.43-.93L12 2.8z" />
                       </svg>
                     ))}
+                    <span className="ml-2 text-xs font-bold text-[var(--river-deep)]/40">4.9 (20)</span>
                   </div>
-                  <p className="text-sm text-[rgba(20,33,47,0.68)]">4.9 (20)</p>
+                  <p className="font-[family:var(--font-display)] text-6xl tracking-tight text-[var(--river-deep)]">
+                    {formatStorePrice(product)}
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)]/40 italic">Select Finish</p>
+                  <div className="grid gap-2">
+                    {["Collector finish", "Daily use finish"].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setFinish(option)}
+                        className={`group flex items-center justify-between border-2 px-5 py-3 transition-all ${
+                          finish === option
+                            ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
+                            : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/60 hover:border-[var(--river-deep)]/30"
+                        }`}
+                      >
+                        <span className="text-sm font-bold uppercase tracking-widest">{option}</span>
+                        {finish === option && <span className="font-handwritten text-lg text-[var(--gold)]">Picked</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-2">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)]/40 italic">Choose Edition</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["Single object", "Gift set"].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setEdition(option)}
+                        className={`border-2 py-3 transition-all text-xs font-bold uppercase tracking-widest ${
+                          edition === option
+                            ? "border-[var(--gold)] bg-[var(--gold)] text-[var(--river-deep)]"
+                            : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/60 hover:border-[var(--river-deep)]/30"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <ProductActions product={product} variant="editorial" />
+                </div>
+
+                <div className="flex items-center gap-4 pt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]/30 italic">
+                  <div className="h-[1px] flex-1 bg-[var(--river-deep)]/10" />
+                  <span>Registry #LT-{product.slug.slice(0, 4).toUpperCase()}</span>
+                  <div className="h-[1px] flex-1 bg-[var(--river-deep)]/10" />
                 </div>
               </div>
-
-              <div className="mt-6 border-b border-dashed border-[rgba(20,33,47,0.18)] pb-6">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Price
-                </p>
-                <p className="mt-4 font-[family:var(--font-display)] text-5xl leading-none tracking-[-0.04em] text-[var(--river-deep)]">
-                  {formatStorePrice(product)}
-                </p>
-              </div>
-
-              <div className="mt-6 border-b border-dashed border-[rgba(20,33,47,0.18)] pb-6">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Finish
-                </p>
-                <div className="mt-4 grid gap-3">
-                  {["Collector finish", "Daily use finish"].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setFinish(option)}
-                      className={`flex items-center justify-between border px-4 py-3 text-left text-sm transition ${
-                        finish === option
-                          ? "border-[var(--river-deep)] bg-white text-[var(--river-deep)]"
-                          : "border-[rgba(20,33,47,0.14)] bg-[rgba(255,255,255,0.46)] text-[rgba(20,33,47,0.65)] hover:bg-white"
-                      }`}
-                    >
-                      <span>{option}</span>
-                      {finish === option ? <span>Selected</span> : null}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6 border-b border-dashed border-[rgba(20,33,47,0.18)] pb-6">
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]">
-                  Edition
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {["Single object", "Gift set"].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setEdition(option)}
-                      className={`border px-4 py-3 text-sm font-semibold transition ${
-                        edition === option
-                          ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
-                          : "border-[rgba(20,33,47,0.14)] bg-white/62 text-[var(--river-deep)] hover:bg-white"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <ProductActions product={product} variant="editorial" />
-              </div>
-            </aside>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>
