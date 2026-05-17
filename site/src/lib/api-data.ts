@@ -1,16 +1,16 @@
-/**
+﻿/**
  * API Data Module
  *
- * Bridges backend API responses → frontend TypeScript types.
+ * Bridges backend API responses 鈫?frontend TypeScript types.
  * Each function:
  *  1. Calls the backend via apiClient
  *  2. Maps the response shape to the consumer type expected
  *  3. Returns a clean result (or throws on failure)
  *
- * Locale is passed via Accept–Language header (handled by apiClient).
+ * Locale is passed via Accept鈥揕anguage header (handled by apiClient).
  */
 
-import { apiGet } from "./api-client";
+import { apiGet, apiPost } from "./api-client";
 import type { Locale } from "./locale";
 import type {
   Region,
@@ -25,7 +25,7 @@ import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
 
-// ───────────── Internal API response types ─────────────
+// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Internal API response types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 interface ApiRouteStop {
   id: string;
@@ -88,6 +88,7 @@ interface ApiCity {
   adcode?: number;
   sections: ApiCitySection[];
   routes?: { slug: string }[];
+  relatedCitySlugs?: string[];
 }
 
 interface ApiStoreCollection {
@@ -124,7 +125,17 @@ interface PaginatedResponse<T> {
   total: number;
 }
 
-// ───────────── Mappers ─────────────
+type LocalizedText = string | { en?: string; zh?: string };
+
+interface ApiHomeConfig {
+  trustMetrics?: Array<{ value: string; label: LocalizedText }>;
+  entryCards?: Array<{ id: string; title: LocalizedText; body: LocalizedText; href: string }>;
+  cultureHighlights?: Array<{ slug: string; title: LocalizedText; body: LocalizedText; href?: string }>;
+  testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
+  featuredRouteSlugs?: string[];
+}
+
+// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Mappers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
   return {
@@ -172,24 +183,18 @@ function mapCity(apiCity: ApiCity): CityCulture {
     gallery: apiCity.galleryImages ?? [],
     tags: apiCity.tags ?? [],
     food: apiCity.foodTitle,
+    foodDescription: apiCity.foodDescription ?? "",
     routeSlugs: apiCity.routes?.map((r) => r.slug) ?? [],
-    stats:
-      apiCity.sections
-        ?.map((s) => s.statLabel ?? "")
-        .filter(Boolean) ?? [],
-    quotes:
-      apiCity.sections
-        ?.map((s) => s.breathQuote ?? "")
-        .filter(Boolean) ?? [],
+    relatedCitySlugs: apiCity.relatedCitySlugs ?? [],
     foodImages: apiCity.foodImages ?? [],
-    breathImages:
-      apiCity.sections
-        ?.map((s) => s.breathImage ?? "")
-        .filter((b): b is string => b !== null) ?? [],
     sections:
       apiCity.sections?.map((s) => ({
         title: s.title,
         body: s.body,
+        image: s.image,
+        stat: [s.statLabel, s.statValue].filter(Boolean).join(" / ") || undefined,
+        breathImage: s.breathImage ?? undefined,
+        breathQuote: s.breathQuote ?? undefined,
       })) ?? [],
   };
 }
@@ -217,6 +222,12 @@ function mapCollection(apiCol: ApiStoreCollection): StoreCollection {
     image: apiCol.image,
     body: apiCol.body,
   };
+}
+
+function pickLocalized(value: LocalizedText | undefined, locale: Locale): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return locale === "zh" ? (value.zh ?? value.en ?? "") : (value.en ?? value.zh ?? "");
 }
 
 interface ApiInterpretingMode {
@@ -253,7 +264,33 @@ export interface InterpretingData {
   faqs: ApiInterpretingFaq[];
 }
 
-// ───────────── Public API data hooks ─────────────
+export type InterpretingBookingPayload = {
+  name: string;
+  contact: string;
+  city: string;
+  serviceDate: string;
+  supportMode: string;
+  groupSize?: string;
+  routeOrNeed?: string;
+  fastTrack?: boolean;
+};
+
+export type InterpretingDepositCheckout = {
+  bookingId: string;
+  created_at: string;
+  status: string;
+  message: string;
+  deposit: {
+    orderNo: string;
+    amount: number;
+    currency: string;
+    status: string;
+    paymentLabel: string;
+    stripeClientSecret: string;
+  };
+};
+
+// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Public API data hooks 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 export async function fetchInterpreting(
   locale: Locale,
@@ -270,6 +307,29 @@ export async function fetchInterpreting(
     profiles: res.profiles ?? [],
     faqs: res.faqs ?? [],
   };
+}
+
+export async function createInterpretingDepositCheckout(
+  payload: InterpretingBookingPayload,
+): Promise<InterpretingDepositCheckout> {
+  return apiPost<InterpretingDepositCheckout>("/public/bookings/checkout", payload);
+}
+
+export async function confirmInterpretingDeposit(
+  bookingId: string,
+  orderNo: string,
+  paymentId: string,
+): Promise<{
+  bookingId: string;
+  bookingStatus: string;
+  orderNo: string;
+  paymentId: string;
+  message: string;
+}> {
+  return apiPost(`/public/bookings/${bookingId}/confirm-deposit`, {
+    orderNo,
+    paymentId,
+  });
 }
 
 export async function fetchRoutes(locale: Locale): Promise<StoryRoute[]> {
@@ -363,17 +423,14 @@ export async function fetchRelatedProducts(
   product: StoreProduct,
   allProducts: StoreProduct[],
 ): Promise<StoreProduct[]> {
-  const getCollectionTitle = (p: StoreProduct) => 
+  const getCollectionTitle = (p: StoreProduct) =>
     typeof p.collection === 'string' ? p.collection : (p.collection as any)?.title;
-  
+
   const targetTitle = getCollectionTitle(product);
-  
   return allProducts.filter(
     (p) => p.slug !== product.slug && getCollectionTitle(p) === targetTitle,
   );
 }
-
-// ───────────── Home page data ─────────────
 
 export interface HomeData {
   regionShowcase: Region[];
@@ -385,14 +442,16 @@ export interface HomeData {
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
-  // Home data is mostly editorial — we fetch routes + cities for counts
-  const [routes, cities] = await Promise.all([
+  const [routes, cities, homeConfig] = await Promise.all([
     fetchRoutes(locale),
     fetchCities(locale),
+    apiGet<ApiHomeConfig>("/public/home", { lang: locale }).catch(
+      () => ({}) as ApiHomeConfig,
+    ),
   ]);
 
-  const featured = routes[0];
-  const firstCity = cities[0];
+  const featured =
+    routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ?? routes[0];
 
   const regionShowcase: Region[] = cities.map((c) => ({
     slug: c.slug as RegionSlug,
@@ -411,71 +470,60 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
   }));
 
   const featuredRoutes: FeaturedRoute[] = featured
-    ? [
-        {
-          slug: featured.slug,
-          title: featured.title,
-          theme: featured.culture,
-          duration: featured.duration,
-          audience: featured.audience,
-          description: featured.summary,
-        },
-      ]
+    ? [{
+        slug: featured.slug,
+        title: featured.title,
+        theme: featured.culture,
+        duration: featured.duration,
+        audience: featured.audience,
+        description: featured.summary,
+      }]
     : [];
 
-  const cultureHighlights: CultureFeature[] = cities.map((city) => ({
-    slug: city.slug,
-    title: city.label,
-    body: city.summary,
-    href: `/culture/${city.slug}`,
+  const cultureHighlightsFromApi = (homeConfig.cultureHighlights ?? []).map((item) => ({
+    slug: item.slug,
+    title: pickLocalized(item.title, locale),
+    body: pickLocalized(item.body, locale),
+    href: item.href ?? `/culture/${item.slug}`,
   }));
+
+  const cultureHighlights: CultureFeature[] =
+    cultureHighlightsFromApi.length > 0
+      ? cultureHighlightsFromApi
+      : cities.map((city) => ({
+          slug: city.slug,
+          title: city.label,
+          body: city.summary,
+          href: `/culture/${city.slug}`,
+        }));
 
   return {
     regionShowcase,
     featuredRoutes,
     cultureHighlights,
-    testimonials: [], // Editorial content stays in translations
-    trustMetrics: [
-      { value: String(cities.length || 1), label: locale === "zh" ? "座精选城市" : "Featured city" },
-      { value: String(routes.length || 1), label: locale === "zh" ? "条故事路线" : "Story route" },
-      { value: "1", label: locale === "zh" ? "个文化系列" : "Cultural collection" },
-    ],
-    homeEntryCards: [
-      {
-        id: "01",
-        title: locale === "zh" ? "文化" : "Culture",
-        body: locale === "zh"
-          ? "阅读城市故事，了解每片目的地背后的美食、手工艺与日常生活。"
-          : "Read city stories that explain the food, craft, and daily life behind each destination.",
-        href: "/culture",
-      },
-      {
-        id: "02",
-        title: locale === "zh" ? "故事路线" : "Story Routes",
-        body: locale === "zh"
-          ? "跟随围绕一个主题打造的路线——一个市场、一段海岸线、一门手艺。"
-          : "Follow a route built around a single idea — a market, a coastline, a craft tradition.",
-        href: "/routes",
-      },
-      {
-        id: "03",
-        title: locale === "zh" ? "口译服务" : "Interpreter Service",
-        body: locale === "zh"
-          ? "预约英语本地支持：交通、菜单、购票、文化背景。"
-          : "Book English-speaking local support for the day: transport, menus, tickets, and cultural context.",
-        href: "/interpreting",
-      },
-      {
-        id: "04",
-        title: locale === "zh" ? "文创商城" : "Lingnan Store",
-        body: locale === "zh"
-          ? "带回家与路线息息相关的好物——陶瓷、织物、有故事的小物件。"
-          : "Take home objects tied to the routes — ceramics, textiles, and objects with a story.",
-        href: "/shop",
-      },
-    ],
+    testimonials: (homeConfig.testimonials ?? []).map((item) => ({
+      quote: pickLocalized(item.quote, locale),
+      name: pickLocalized(item.name, locale),
+    })),
+    trustMetrics:
+      homeConfig.trustMetrics?.map((item) => ({
+        value: item.value,
+        label: pickLocalized(item.label, locale),
+      })) ?? [
+        { value: String(cities.length || 1), label: locale === "zh" ? "精选城市" : "Featured city" },
+        { value: String(routes.length || 1), label: locale === "zh" ? "故事路线" : "Story route" },
+        { value: "1", label: locale === "zh" ? "文化商品系列" : "Cultural collection" },
+      ],
+    homeEntryCards:
+      homeConfig.entryCards?.map((item) => ({
+        id: item.id,
+        title: pickLocalized(item.title, locale),
+        body: pickLocalized(item.body, locale),
+        href: item.href,
+      })) ?? [],
   };
 }
 
 // Re-export useApiQuery for convenience
 export { useApiQuery, type AsyncState } from "./use-api-query";
+

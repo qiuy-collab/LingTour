@@ -10,6 +10,7 @@ import {
   Min,
   MaxLength,
   IsPositive,
+  IsObject,
 } from 'class-validator';
 import { IsI18nObject } from '../../../common/validators/i18n.validator';
 
@@ -71,6 +72,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsI18nObject()
   care?: { en: string; zh: string };
+
+  @ApiPropertyOptional({ type: Object })
+  @IsOptional()
+  @IsObject()
+  originTrace?: Record<string, unknown>;
 
   @ApiPropertyOptional({ type: [String], default: [] })
   @IsOptional()

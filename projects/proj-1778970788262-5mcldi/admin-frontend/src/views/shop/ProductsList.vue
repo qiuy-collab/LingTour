@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { productsApi } from '@/api/products'
-import type { Product, ProductStatus } from '@/types/product'
+import type { Product } from '@/types/product'
 
 const router = useRouter()
 const loading = ref(false)
@@ -34,9 +34,10 @@ async function fetchList() {
     // 提取系列选项
     const seen = new Set(collectionOptions.value.map((c) => c.id))
     for (const p of list.value) {
-      if (!seen.has(p.collectionId)) {
-        seen.add(p.collectionId)
-        collectionOptions.value.push({ id: p.collectionId, title: p.collectionName })
+      const cid = p.collectionId || ''
+      if (cid && !seen.has(cid)) {
+        seen.add(cid)
+        collectionOptions.value.push({ id: cid, title: p.collectionName || '' })
       }
     }
   } finally {
@@ -69,11 +70,12 @@ function handleEdit(id: string) {
 }
 
 async function handleToggleStatus(row: Product) {
-  const newStatus: ProductStatus = row.status === 'on_sale' ? 'off_shelf' : 'on_sale'
-  const label = newStatus === 'on_sale' ? '上架' : '下架'
+  const newStatus = !row.published
+  const label = newStatus ? '上架' : '下架'
   try {
-    await productsApi.updateProductStatus(row.id, newStatus)
-    row.status = newStatus
+    // 假设后端 updateProduct 包含 published 字段的更新
+    await productsApi.updateProduct(row.id, { published: newStatus })
+    row.published = newStatus
     ElMessage.success(`${row.name} 已${label}`)
   } catch {
     ElMessage.error('操作失败')
@@ -89,9 +91,6 @@ async function handleDelete(id: string, name: string) {
     ElMessage.error('删除失败')
   }
 }
-
-const statusTagType = (s: ProductStatus) => (s === 'on_sale' ? 'success' : 'info')
-const statusLabel = (s: ProductStatus) => (s === 'on_sale' ? '在售' : '下架')
 
 onMounted(() => {
   fetchList()
@@ -154,8 +153,8 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="商品名称" min-width="180">
         <template #default="{ row }">
-          <div>{{ row.name }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.nameEn }}</div>
+          <div>{{ row.name || '' }}</div>
+          <div style="font-size: 12px; color: #909399">{{ row.nameEn || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column prop="collectionName" label="所属系列" width="140" />
@@ -173,8 +172,8 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="状态" width="80" align="center">
         <template #default="{ row }">
-          <el-tag :type="statusTagType(row.status)" size="small">
-            {{ statusLabel(row.status) }}
+          <el-tag :type="row.published ? 'success' : 'info'" size="small">
+            {{ row.published ? '在售' : '下架' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -183,10 +182,10 @@ onMounted(() => {
           <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>
           <el-button
             size="small"
-            :type="row.status === 'on_sale' ? 'warning' : 'success'"
+            :type="row.published ? 'warning' : 'success'"
             @click="handleToggleStatus(row)"
           >
-            {{ row.status === 'on_sale' ? '下架' : '上架' }}
+            {{ row.published ? '下架' : '上架' }}
           </el-button>
           <el-popconfirm
             title="确定删除该商品？"

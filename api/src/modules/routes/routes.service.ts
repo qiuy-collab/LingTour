@@ -163,14 +163,17 @@ export class RoutesService {
     route.stops.sort((a, b) => a.sortOrder - b.sortOrder);
 
     // Load city slugs
-    const links = await this.linkRepository.find({
-      where: { routeId: id },
-      order: { sortOrder: 'ASC' },
-    });
+    const links = await this.linkRepository
+      .createQueryBuilder('link')
+      .innerJoin('cities', 'city', 'city.id = link.city_id')
+      .select('city.slug', 'slug')
+      .where('link.route_id = :id', { id })
+      .orderBy('link.sort_order', 'ASC')
+      .getRawMany();
 
     return {
       ...route,
-      citySlugs: links.map((l) => l.cityId),
+      citySlugs: links.map((l) => l.slug),
     };
   }
 
@@ -229,7 +232,8 @@ export class RoutesService {
       if (dto.citySlugs?.length) {
         const cities = await queryRunner.manager
           .createQueryBuilder()
-          .select(['id', 'slug'])
+          .select('c.id', 'id')
+          .addSelect('c.slug', 'slug')
           .from('cities', 'c')
           .where('c.slug IN (:...slugs)', { slugs: dto.citySlugs })
           .getRawMany();
@@ -304,7 +308,8 @@ export class RoutesService {
       if (dto.citySlugs?.length) {
         const cities = await queryRunner.manager
           .createQueryBuilder()
-          .select(['id', 'slug'])
+          .select('c.id', 'id')
+          .addSelect('c.slug', 'slug')
           .from('cities', 'c')
           .where('c.slug IN (:...slugs)', { slugs: dto.citySlugs })
           .getRawMany();

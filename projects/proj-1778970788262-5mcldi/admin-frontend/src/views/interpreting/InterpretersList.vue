@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { interpretersApi } from '@/api/interpreters'
 import { InterpreterStatusMap, InterpreterStatusColorMap } from '@/types/interpreting'
+import { pickI18n } from '@/types/common'
 import type { Interpreter } from '@/types/interpreting'
 
 const router = useRouter()
@@ -140,13 +141,13 @@ onMounted(() => {
       <el-table-column prop="language" label="服务语种" width="200" show-overflow-tooltip />
       <el-table-column label="专注领域" min-width="180">
         <template #default="{ row }">
-          <div>{{ row.focus }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.focusEn }}</div>
+          <div>{{ row.focus || '' }}</div>
+          <div style="font-size: 12px; color: #909399">{{ row.focusEn || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column label="能力标签" min-width="200">
         <template #default="{ row }">
-          <el-tag v-for="h in row.helps" :key="h" size="small" style="margin: 2px 2px">{{ h }}</el-tag>
+          <el-tag v-for="h in row.helps" :key="pickI18n(h)" size="small" style="margin: 2px 2px">{{ pickI18n(h) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="city" label="服务城市" width="100" align="center" />

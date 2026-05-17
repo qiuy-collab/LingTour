@@ -10,7 +10,7 @@ export const citiesApi = {
 
   /** 获取单个城市 */
   getCity(id: string) {
-    return request.get<ApiResponse<City>>(`/cities/${id}`)
+    return request.get<ApiResponse<City>>(`/cities/${id}`, { params: { rawI18n: true } })
   },
 
   /** 新增城市 */
@@ -21,6 +21,16 @@ export const citiesApi = {
   /** 更新城市 */
   updateCity(id: string, data: Partial<CityFormData>) {
     return request.put<ApiResponse<City>>(`/cities/${id}`, data)
+  },
+
+  /** 发布城市 */
+  publishCity(id: string) {
+    return request.patch<ApiResponse<City>>(`/cities/${id}/publish`)
+  },
+
+  /** 下架城市 */
+  unpublishCity(id: string) {
+    return request.patch<ApiResponse<City>>(`/cities/${id}/unpublish`)
   },
 
   /** 删除城市 */

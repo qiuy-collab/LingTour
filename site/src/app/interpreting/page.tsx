@@ -171,8 +171,8 @@ export default function InterpretingPage() {
     return fallback.map((item, index) => ({
       ...item,
       title: modes[index]?.title ?? item.title,
-      body: clampCopy(modes[index]?.body ?? item.body, 112),
-      subtitle: clampCopy(modes[index]?.bestFor ?? item.subtitle, 34),
+      body: clampCopy(modes[index]?.body ?? item.body, 64),
+      subtitle: clampCopy(modes[index]?.bestFor ?? item.subtitle, 40),
       tags: modes[index]?.includes?.slice(0, 3) ?? item.tags,
       duration: modes[index]?.price ?? item.duration,
     }));
@@ -184,42 +184,56 @@ export default function InterpretingPage() {
   const matrix = pricingMatrix(locale);
 
   return (
-    <div className="bg-[var(--paper-deep)] text-[var(--river-deep)]">
-      <section className="relative min-h-[82vh] overflow-hidden bg-[var(--night)] text-white">
-        <div
-          className="absolute inset-0 bg-cover bg-center hero-zoom opacity-55"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=2200&q=84)",
-          }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(17,25,35,0.92),rgba(17,25,35,0.48),rgba(17,25,35,0.25))]" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-[linear-gradient(0deg,var(--paper-deep),transparent)]" />
+    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
+      <section className="relative min-h-[70vh] flex items-center overflow-hidden pt-32 pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
-        <div className="site-container relative flex min-h-[82vh] items-end pb-20 pt-28">
-          <Reveal>
-            <div className="max-w-3xl">
-              <p className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--gold)] backdrop-blur-md">
-                {locale === "zh" ? "LingTour \u53e3\u8bd1\u670d\u52a1" : "LingTour Interpreting"}
-              </p>
-              <h1 className="mt-7 max-w-[11ch] font-[family:var(--font-display)] text-[3.5rem] leading-[0.94] tracking-[-0.03em] sm:text-7xl lg:text-8xl">
-                {locale === "zh" ? "\u8ba9\u65c5\u9014\u542c\u5f97\u61c2\u3002" : "Let the day speak clearly."}
-              </h1>
-              <p className="mt-7 max-w-[36rem] text-[15px] leading-8 text-white/68 md:text-[17px] md:leading-[1.95]">
-                {locale === "zh"
-                  ? "\u628a\u8bed\u8a00\u3001\u8def\u7ebf\u3001\u793c\u4eea\u548c\u5730\u65b9\u6545\u4e8b\u5408\u5728\u4e00\u8d77\u3002\u5c11\u4e00\u70b9\u89e3\u91ca\u6210\u672c\uff0c\u591a\u4e00\u70b9\u771f\u6b63\u8fdb\u5165\u5f53\u5730\u7684\u4f53\u9a8c\u3002"
-                  : "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one."}
-              </p>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <a href="#interpreting-booking" className="rounded-full bg-[var(--gold)] px-6 py-3 text-sm font-bold text-[var(--night)] transition hover:-translate-y-0.5 hover:bg-white">
-                  {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1" : "Plan support"}
-                </a>
-                <a href="#service-types" className="rounded-full border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/15">
-                  {locale === "zh" ? "\u67e5\u770b\u7c7b\u578b" : "Choose a scene"}
-                </a>
+        <div className="site-container relative w-full">
+          <div className="max-w-4xl">
+            <Reveal>
+              <div className="flex items-center gap-6 mb-12">
+                <div className="w-12 h-12 rounded-full border border-[var(--line)] flex items-center justify-center font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
+                  L
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
+                  {locale === "zh" ? "LingTour \u53e3\u8bd1 / \u73b0\u573a\u534f\u4f5c" : "LingTour Interpreting / Field Coordination"}
+                </p>
               </div>
-            </div>
-          </Reveal>
+
+              <h1 className="font-[family:var(--font-display)] text-7xl md:text-9xl lg:text-[11rem] leading-[0.8] tracking-[-0.04em] mb-12">
+                Let the day <br />
+                <span className="italic text-[var(--cinnabar)]">Speak.</span>
+              </h1>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
+                <p className="text-xl leading-relaxed text-[var(--muted)] handwritten">
+                  {locale === "zh"
+                    ? "\u628a\u8bed\u8a00\u3001\u8def\u7ebf\u3001\u793c\u4eea\u548c\u5730\u65b9\u6545\u4e8b\u5408\u5728\u4e00\u8d77\u3002\u5c11\u4e00\u70b9\u89e3\u91ca\u6210\u672c\uff0c\u591a\u4e00\u70b9\u771f\u6b63\u8fdb\u5165\u5f53\u5730\u7684\u4f53\u9a8c\u3002"
+                    : "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one."}
+                </p>
+
+                <div className="flex gap-4">
+                  <a href="#interpreting-booking" className="px-10 py-5 bg-[var(--river-deep)] text-white text-xs font-bold uppercase tracking-[0.2em] transition-transform hover:scale-105 active:scale-95">
+                    {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1" : "Plan support"}
+                  </a>
+                  <a href="#service-types" className="px-10 py-5 border border-[var(--line)] bg-white/50 text-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] transition-all hover:bg-white">
+                    {locale === "zh" ? "\u67e5\u770b\u7c7b\u578b" : "Choose a scene"}
+                  </a>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+
+        {/* Cinematic Narrow Strip */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-[40vh] hidden lg:block overflow-hidden rotate-2 scrapbook-shadow border-[12px] border-white">
+          <div
+            className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 scale-110"
+            style={{
+              backgroundImage:
+                "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=84)",
+            }}
+          />
         </div>
       </section>
 
@@ -235,47 +249,55 @@ export default function InterpretingPage() {
           </Reveal>
         </div>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {serviceTypes.map((item, index) => (
             <Reveal key={item.id} delay={index * 100} className="h-full">
-              <article className="group relative flex h-full min-h-[380px] overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,244,236,0.96))] p-6 text-[var(--river-deep)] shadow-[0_20px_60px_rgba(17,25,35,0.08)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(17,25,35,0.12)] sm:p-7">
-                <div className="flex h-full flex-col">
-                  <div className="flex min-h-[124px] items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">
-                        {locale === "zh" ? "from USD" : "from USD"}
-                      </p>
-                      <p className="mt-3 min-h-[4.8rem] max-w-[8ch] font-[family:var(--font-display)] text-[2rem] leading-[0.95] tracking-[-0.03em] text-[var(--river-deep)]">
-                        {item.duration}
-                      </p>
+              <article className={`group relative flex h-full min-h-[420px] flex-col bg-white p-8 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 ${
+                index % 2 === 0 ? "rotate-1" : "-rotate-1"
+              }`}>
+                {/* ID Watermark */}
+                <div className="absolute top-4 right-6 font-[family:var(--font-display)] text-8xl text-[var(--gold)]/10 select-none group-hover:text-[var(--gold)]/20 transition-colors">
+                  0{index + 1}
+                </div>
+
+                <div className="relative z-10 h-full flex flex-col">
+                  <div className="border-b border-[var(--line)] pb-6 mb-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                      Base rate
+                    </p>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">{item.duration}</span>
+                      <span className="text-[10px] uppercase font-bold text-[var(--muted)]">/ Dispatch</span>
                     </div>
-                    <span className="font-[family:var(--font-display)] text-5xl leading-none text-[var(--cinnabar)]/18">0{index + 1}</span>
                   </div>
 
-                  <div className="mt-6 min-h-[288px]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      {locale === "zh" ? "\u670d\u52a1\u4ecb\u7ecd" : "Service Profile"}
+                  <div className="flex-1">
+                    <h3 className="font-[family:var(--font-display)] text-3xl leading-tight mb-2 text-[var(--river-deep)]">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs font-bold text-[var(--gold)] uppercase tracking-widest mb-6 italic">
+                      {item.subtitle}
                     </p>
-                    <h3 className="mt-3 min-h-[6.2rem] max-w-[11ch] text-balance font-[family:var(--font-display)] text-[2rem] leading-[1.02] tracking-[-0.025em] text-[var(--river-deep)]">{item.title}</h3>
-                    <p className="mt-3 min-h-[2.75rem] text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--cinnabar)]/80">{item.subtitle}</p>
-                    <p className="mt-4 min-h-[8.75rem] max-w-[30ch] text-[15px] leading-7 text-[var(--muted)]">{item.body}</p>
+                    <p className="text-sm leading-relaxed text-[var(--muted)] handwritten mb-8">
+                      {item.body}
+                    </p>
                   </div>
 
-                  <div className="mt-6 min-h-[182px] rounded-[1.5rem] border border-[var(--line)] bg-white/72 p-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      {locale === "zh" ? "\u9002\u5408\u573a\u666f" : "Best for"}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">
+                      Field Capabilities
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {item.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-[var(--paper-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--river-deep)]">
+                        <span key={tag} className="px-3 py-1 border border-[var(--line)] rounded-sm text-[10px] font-bold uppercase text-[var(--river-deep)] bg-[var(--paper-deep)]/30">
                           {tag}
                         </span>
                       ))}
                     </div>
-                  </div>
 
-                  <div className="mt-auto pt-6">
-                    <div className="h-px bg-[var(--line)]" />
+                    <a href="#interpreting-booking" className="mt-6 block w-full py-4 border border-[var(--river-deep)] text-center text-[10px] font-bold uppercase tracking-[0.2em] transition-all group-hover:bg-[var(--river-deep)] group-hover:text-white">
+                      Request Dispatch
+                    </a>
                   </div>
                 </div>
               </article>

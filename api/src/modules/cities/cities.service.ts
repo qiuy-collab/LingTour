@@ -101,7 +101,14 @@ export class CitiesService {
       throw new NotFoundException(`City with id "${id}" not found`);
     }
     city.sections.sort((a, b) => a.sortOrder - b.sortOrder);
-    return city;
+    const routes = await this.cityRepository.manager.query(
+      `SELECT r.slug FROM story_routes r
+       INNER JOIN route_city_links l ON l.route_id = r.id
+       WHERE l.city_id = $1
+       ORDER BY l.sort_order ASC`,
+      [city.id],
+    );
+    return { ...city, routeSlugs: routes.map((r: any) => r.slug) } as City;
   }
 
   async create(dto: CreateCityDto): Promise<City> {
@@ -126,6 +133,7 @@ export class CitiesService {
       foodTitle: dto.foodTitle,
       foodDescription: dto.foodDescription,
       foodImages: dto.foodImages ?? [],
+      relatedCitySlugs: dto.relatedCitySlugs ?? [],
       adcode: dto.adcode,
       published: dto.published ?? false,
     });
@@ -149,6 +157,10 @@ export class CitiesService {
       );
       await this.sectionRepository.save(sections);
       saved.sections = sections;
+    }
+
+    if (dto.routeSlugs?.length) {
+      await this.replaceRouteLinks(saved.id, dto.routeSlugs);
     }
 
     return saved;
@@ -193,6 +205,10 @@ export class CitiesService {
       }
     }
 
+    if (dto.routeSlugs !== undefined) {
+      await this.replaceRouteLinks(id, dto.routeSlugs);
+    }
+
     return saved;
   }
 
@@ -211,5 +227,23 @@ export class CitiesService {
   async softDelete(id: string): Promise<void> {
     const city = await this.findByIdAdmin(id);
     await this.cityRepository.softRemove(city);
+  }
+
+  private async replaceRouteLinks(cityId: string, routeSlugs: string[]) {
+    await this.cityRepository.manager.query('DELETE FROM route_city_links WHERE city_id = $1', [cityId]);
+    if (!routeSlugs.length) return;
+    const routes = await this.cityRepository.manager.query(
+      'SELECT id, slug FROM story_routes WHERE slug = ANY($1)',
+      [routeSlugs],
+    );
+    for (const route of routes) {
+      const sortOrder = routeSlugs.indexOf(route.slug);
+      await this.cityRepository.manager.query(
+        `INSERT INTO route_city_links (route_id, city_id, sort_order)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (route_id, city_id) DO UPDATE SET sort_order = EXCLUDED.sort_order`,
+        [route.id, cityId, sortOrder],
+      );
+    }
   }
 }

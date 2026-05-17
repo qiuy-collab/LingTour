@@ -1,704 +1,312 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus, Delete, Top, Bottom, ArrowLeft, Edit } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Delete, Plus } from '@element-plus/icons-vue'
 import { routesApi } from '@/api/routes'
-import type { RouteStop, RouteFormData, CultureTag } from '@/types/route'
+import { toI18n, toI18nArray } from '@/types/common'
+import I18nInput from '@/components/I18nInput.vue'
+import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 
 const router = useRouter()
 const route = useRoute()
-
-// ─── 模式判断 ──────────────────────────────
-const isEdit = computed(() => !!route.params.id)
-const pageTitle = computed(() => (isEdit.value ? '编辑路线' : '新增路线'))
-
-// ─── 文化标签选项 ──────────────────────────
-const cultureTagOptions: { value: CultureTag; label: string; color: string }[] = [
-  { value: 'Guangfu', label: '广府 (Guangfu)', color: '#409EFF' },
-  { value: 'Chaoshan', label: '潮汕 (Chaoshan)', color: '#E6A23C' },
-  { value: 'Hakka', label: '客家 (Hakka)', color: '#67C23A' },
-  { value: 'Coastal', label: '滨海 (Coastal)', color: '#00B5AD' },
-  { value: 'BayArea', label: '湾区 (Bay Area)', color: '#9C27B0' },
-  { value: 'Mountain', label: '山川 (Mountain)', color: '#FF5722' },
-]
-
-// ─── 表单数据 ──────────────────────────────
+const isEdit = computed(() => Boolean(route.params.id))
 const loading = ref(false)
 const saving = ref(false)
 
-const form = reactive<RouteFormData>({
+const form = reactive<any>({
   slug: '',
-  title: '',
-  titleEn: '',
+  title: { zh: '', en: '' },
   cultureTag: 'Guangfu',
-  cityName: '',
-  duration: '',
-  audience: '',
-  summary: '',
-  story: '',
+  cityName: { zh: '', en: '' },
+  citySlugs: [],
+  duration: { zh: '', en: '' },
+  audience: { zh: '', en: '' },
+  summary: { zh: '', en: '' },
+  story: { zh: '', en: '' },
   coverImage: '',
   stops: [],
-  routeCityLinks: [],
-  status: 'draft',
-  price: 0,
+  published: false,
 })
 
-// ─── Stops 站点管理（★★★核心★★★）────────────────
-const stopDrawerVisible = ref(false)
-const editingStopIndex = ref(-1)
-const editingStop = reactive<RouteStop>({
-  id: '',
-  sortOrder: 0,
-  time: '',
-  stopName: '',
-  plan: '',
-  story: '',
-  culturalStory: '',
-  details: [],
-  image: '',
-  lat: 0,
-  lng: 0,
-  meal: '',
-  hotel: '',
-  transit: '',
-  placeDetail: '',
-})
+const newCitySlug = ref('')
 
-function generateStop(sortOrder: number): RouteStop {
+function addCitySlug() {
+  const slug = newCitySlug.value.trim()
+  if (slug && !form.citySlugs.includes(slug)) {
+    form.citySlugs.push(slug)
+    newCitySlug.value = ''
+  }
+}
+
+function removeCitySlug(index: number) {
+  form.citySlugs.splice(index, 1)
+}
+
+function createStop() {
   return {
-    id: 'stop-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
-    sortOrder,
+    id: `stop-${Date.now()}`,
+    sortOrder: form.stops.length,
     time: '',
-    stopName: '',
-    plan: '',
-    story: '',
-    culturalStory: '',
+    stopName: { zh: '', en: '' },
+    story: { zh: '', en: '' },
+    culturalStory: { zh: '', en: '' },
     details: [],
     image: '',
     lat: 0,
     lng: 0,
-    meal: '',
-    hotel: '',
-    transit: '',
-    placeDetail: '',
+    meal: { zh: '', en: '' },
+    hotel: { zh: '', en: '' },
+    transit: { zh: '', en: '' },
   }
 }
 
 function addStop() {
-  const maxSort = form.stops.length ? Math.max(...form.stops.map((s) => s.sortOrder)) : 0
-  form.stops.push(generateStop(maxSort + 1))
+  form.stops.push(createStop())
 }
 
 function removeStop(index: number) {
   form.stops.splice(index, 1)
+  reindexStops()
 }
 
-function moveStop(index: number, direction: 'up' | 'down') {
-  const arr = form.stops
-  if (direction === 'up' && index > 0) {
-    ;[arr[index - 1], arr[index]] = [arr[index], arr[index - 1]]
-    ;[arr[index - 1].sortOrder, arr[index].sortOrder] = [arr[index].sortOrder, arr[index - 1].sortOrder]
-  } else if (direction === 'down' && index < arr.length - 1) {
-    ;[arr[index], arr[index + 1]] = [arr[index + 1], arr[index]]
-    ;[arr[index].sortOrder, arr[index + 1].sortOrder] = [arr[index + 1].sortOrder, arr[index].sortOrder]
-  }
+function moveStop(index: number, delta: -1 | 1) {
+  const target = index + delta
+  if (target < 0 || target >= form.stops.length) return
+  ;[form.stops[index], form.stops[target]] = [form.stops[target], form.stops[index]]
+  reindexStops()
 }
 
-// ─── 打开站点编辑抽屉 ─────────────────────
-function openStopDrawer(index: number) {
-  editingStopIndex.value = index
-  const stop = form.stops[index]
-  Object.assign(editingStop, {
-    id: stop.id,
-    sortOrder: stop.sortOrder,
-    time: stop.time,
-    stopName: stop.stopName,
-    plan: stop.plan,
-    story: stop.story,
-    culturalStory: stop.culturalStory,
-    details: [...stop.details],
-    image: stop.image,
-    lat: stop.lat,
-    lng: stop.lng,
-    meal: stop.meal,
-    hotel: stop.hotel,
-    transit: stop.transit,
-    placeDetail: stop.placeDetail,
+function reindexStops() {
+  form.stops.forEach((stop: any, index: number) => {
+    stop.sortOrder = index
   })
-  stopDrawerVisible.value = true
 }
 
-function saveStopFromDrawer() {
-  if (editingStopIndex.value >= 0 && editingStopIndex.value < form.stops.length) {
-    Object.assign(form.stops[editingStopIndex.value], {
-      id: editingStop.id,
-      sortOrder: editingStop.sortOrder,
-      time: editingStop.time,
-      stopName: editingStop.stopName,
-      plan: editingStop.plan,
-      story: editingStop.story,
-      culturalStory: editingStop.culturalStory,
-      details: [...editingStop.details],
-      image: editingStop.image,
-      lat: editingStop.lat,
-      lng: editingStop.lng,
-      meal: editingStop.meal,
-      hotel: editingStop.hotel,
-      transit: editingStop.transit,
-      placeDetail: editingStop.placeDetail,
-    })
+function addDetail(stop: any) {
+  stop.details.push({ zh: '', en: '' })
+}
+
+function removeDetail(stop: any, index: number) {
+  stop.details.splice(index, 1)
+}
+
+function fillFromApi(data: any) {
+  Object.assign(form, {
+    slug: data.slug || '',
+    title: toI18n(data.title),
+    cultureTag: data.cultureTag || 'Guangfu',
+    cityName: toI18n(data.cityName),
+    citySlugs: data.citySlugs || [],
+    duration: toI18n(data.duration),
+    audience: toI18n(data.audience),
+    summary: toI18n(data.summary),
+    story: toI18n(data.story),
+    coverImage: data.coverImage || '',
+    published: data.published ?? false,
+    stops: (data.stops || []).map((stop: any, index: number) => ({
+      id: stop.id || `stop-${index}`,
+      sortOrder: stop.sortOrder ?? index,
+      time: stop.time || '',
+      stopName: toI18n(stop.stopName),
+      story: toI18n(stop.story),
+      culturalStory: toI18n(stop.culturalStory),
+      details: toI18nArray(stop.details),
+      image: stop.image || '',
+      lat: stop.lat ?? 0,
+      lng: stop.lng ?? 0,
+      meal: toI18n(stop.meal),
+      hotel: toI18n(stop.hotel),
+      transit: toI18n(stop.transit),
+    })),
+  })
+}
+
+function optionalI18n(value: any) {
+  return value?.zh || value?.en ? value : undefined
+}
+
+function toPayload() {
+  return {
+    slug: form.slug,
+    title: form.title,
+    cultureTag: form.cultureTag,
+    cityName: form.cityName,
+    citySlugs: form.citySlugs,
+    duration: form.duration,
+    audience: form.audience,
+    summary: form.summary,
+    story: form.story,
+    coverImage: form.coverImage,
+    published: form.published,
+    stops: form.stops.map((stop: any, index: number) => ({
+      sortOrder: index,
+      time: stop.time,
+      stopName: stop.stopName,
+      story: stop.story,
+      culturalStory: stop.culturalStory,
+      details: stop.details.filter((detail: any) => detail.zh || detail.en),
+      image: stop.image,
+      lat: Number(stop.lat || 0),
+      lng: Number(stop.lng || 0),
+      meal: optionalI18n(stop.meal),
+      hotel: optionalI18n(stop.hotel),
+      transit: optionalI18n(stop.transit),
+    })),
   }
-  stopDrawerVisible.value = false
 }
 
-// ─── 抽屉内详情管理 ───────────────────────
-const newDetail = ref('')
-function addDetail() {
-  const d = newDetail.value.trim()
-  if (d && !editingStop.details.includes(d)) {
-    editingStop.details.push(d)
-    newDetail.value = ''
-  }
-}
-function removeDetail(index: number) {
-  editingStop.details.splice(index, 1)
-}
-
-// ─── 关联城市链接 ─────────────────────────
-const newCityName = ref('')
-const newCitySlug = ref('')
-function addCityLink() {
-  const name = newCityName.value.trim()
-  const slug = newCitySlug.value.trim()
-  if (name && slug) {
-    form.routeCityLinks.push({ cityName: name, citySlug: slug })
-    newCityName.value = ''
-    newCitySlug.value = ''
-  }
-}
-function removeCityLink(index: number) {
-  form.routeCityLinks.splice(index, 1)
-}
-
-// ─── 加载编辑数据 ──────────────────────────
 onMounted(async () => {
-  if (isEdit.value) {
-    loading.value = true
-    try {
-      const res = await routesApi.getRoute(route.params.id as string)
-      const r = res.data.data
-      Object.assign(form, {
-        id: r.id,
-        slug: r.slug,
-        title: r.title,
-        titleEn: r.titleEn,
-        cultureTag: r.cultureTag,
-        cityName: r.cityName,
-        duration: r.duration,
-        audience: r.audience,
-        summary: r.summary,
-        story: r.story,
-        coverImage: r.coverImage,
-        stops: r.stops.map((s: RouteStop) => ({ ...s, details: [...s.details] })),
-        routeCityLinks: r.routeCityLinks ? r.routeCityLinks.map((l: any) => ({ ...l })) : [],
-        status: r.status,
-        price: r.price,
-      })
-    } catch {
-      ElMessage.error('加载路线数据失败')
-      router.back()
-    } finally {
-      loading.value = false
-    }
+  if (!isEdit.value) return
+  loading.value = true
+  try {
+    const res = await routesApi.getRoute(route.params.id as string)
+    fillFromApi(res.data.data)
+  } catch {
+    ElMessage.error('加载路线失败')
+    router.push('/admin/routes')
+  } finally {
+    loading.value = false
   }
 })
 
-// ─── 保存 ──────────────────────────────
 async function handleSave() {
   saving.value = true
   try {
     if (isEdit.value) {
-      await routesApi.updateRoute(route.params.id as string, form)
+      await routesApi.updateRoute(route.params.id as string, toPayload())
       ElMessage.success('路线更新成功')
     } else {
-      await routesApi.createRoute(form)
+      await routesApi.createRoute(toPayload())
       ElMessage.success('路线创建成功')
     }
     router.push('/admin/routes')
-  } catch {
-    ElMessage.error('保存失败')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || '保存失败')
   } finally {
     saving.value = false
   }
 }
-
-function handleCancel() {
-  router.push('/admin/routes')
-}
 </script>
 
 <template>
-  <div class="route-edit" v-loading="loading">
-    <!-- 页面标题 -->
+  <div class="edit-page" v-loading="loading">
     <div class="page-header">
-      <el-button :icon="ArrowLeft" @click="handleCancel">返回</el-button>
-      <h2>{{ pageTitle }}</h2>
-    </div>
-
-    <el-form label-width="120px" label-position="top">
-      <!-- ============ 基本信息 ============ -->
-      <el-card shadow="never" class="form-card">
-        <template #header>
-          <span class="card-title">基本信息</span>
-        </template>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item label="Slug" required>
-              <el-input v-model="form.slug" placeholder="URL 标识，如 zhujiang-new-town" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="路线标题（中文）" required>
-              <el-input v-model="form.title" placeholder="如：珠江新城：从稻田到天际线" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="路线标题（英文）">
-              <el-input v-model="form.titleEn" placeholder="如：From Rice Fields to Skyline" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="文化标签" required>
-              <el-select v-model="form.cultureTag" style="width: 100%">
-                <el-option
-                  v-for="opt in cultureTagOptions"
-                  :key="opt.value"
-                  :label="opt.label"
-                  :value="opt.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="所属城市" required>
-              <el-input v-model="form.cityName" placeholder="如：广州" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="时长">
-              <el-input v-model="form.duration" placeholder="如：1 day / half day" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="价格 (¥)">
-              <el-input-number
-                v-model="form.price"
-                :min="0"
-                :precision="2"
-                controls-position="right"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="目标人群">
-              <el-input v-model="form.audience" placeholder="如：城市文化爱好者、摄影爱好者" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="封面图">
-              <ImageUpload v-model="form.coverImage" :multiple="false" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="摘要">
-          <el-input v-model="form.summary" type="textarea" :rows="2" placeholder="路线摘要" />
-        </el-form-item>
-        <el-form-item label="路线总述">
-          <el-input v-model="form.story" type="textarea" :rows="3" placeholder="路线故事/总述" />
-        </el-form-item>
-      </el-card>
-
-      <!-- ============ 路线站点 (Stops) ★★★ 核心嵌套编辑 ★★★ ============ -->
-      <el-card shadow="never" class="form-card">
-        <template #header>
-          <div class="card-header-row">
-            <span class="card-title">路线站点 (Stops)</span>
-            <el-button type="primary" size="small" :icon="Plus" @click="addStop">
-              添加站点
-            </el-button>
-          </div>
-        </template>
-
-        <div v-if="form.stops.length === 0" class="empty-hint">
-          暂无站点，点击「添加站点」按钮新增
-        </div>
-
-        <el-table v-else :data="form.stops" stripe row-key="id" style="width: 100%">
-          <el-table-column label="序号" width="60" align="center">
-            <template #default="{ row }">{{ row.sortOrder }}</template>
-          </el-table-column>
-
-          <el-table-column prop="time" label="时间" width="90" />
-
-          <el-table-column prop="stopName" label="站点名" min-width="140" />
-
-          <el-table-column prop="plan" label="计划" min-width="200">
-            <template #default="{ row }">
-              <span class="text-ellipsis">{{ row.plan }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="详情字段" width="120" align="center">
-            <template #default="{ row }">
-              <el-tag size="small" :type="row.image ? 'success' : 'info'">
-                {{ row.image ? '已配图' : '无图' }}
-              </el-tag>
-              <el-tag size="small" style="margin-left: 4px">
-                {{ row.details?.length || 0 }} 要点
-              </el-tag>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="操作" width="280" fixed="right">
-            <template #default="{ $index }">
-              <el-button type="primary" link :icon="Edit" size="small" @click="openStopDrawer($index)">
-                编辑
-              </el-button>
-              <el-button
-                size="small"
-                :icon="Top"
-                :disabled="$index === 0"
-                @click="moveStop($index, 'up')"
-              >
-                上移
-              </el-button>
-              <el-button
-                size="small"
-                :icon="Bottom"
-                :disabled="$index === form.stops.length - 1"
-                @click="moveStop($index, 'down')"
-              >
-                下移
-              </el-button>
-              <el-button
-                type="danger"
-                link
-                :icon="Delete"
-                size="small"
-                @click="removeStop($index)"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div v-if="form.stops.length > 0" class="add-more-row">
-          <el-button :icon="Plus" @click="addStop">添加站点</el-button>
-        </div>
-      </el-card>
-
-      <!-- ============ 关联城市 ============ -->
-      <el-card shadow="never" class="form-card">
-        <template #header>
-          <span class="card-title">关联城市</span>
-        </template>
-        <div class="city-link-list">
-          <el-tag
-            v-for="(link, idx) in form.routeCityLinks"
-            :key="idx"
-            closable
-            size="default"
-            style="margin: 4px"
-            @close="removeCityLink(idx)"
-          >
-            {{ link.cityName }} ({{ link.citySlug }})
-          </el-tag>
-        </div>
-        <div class="city-link-input-row">
-          <el-input
-            v-model="newCityName"
-            placeholder="城市名"
-            size="small"
-            style="width: 140px"
-          />
-          <el-input
-            v-model="newCitySlug"
-            placeholder="Slug"
-            size="small"
-            style="width: 140px"
-          />
-          <el-button size="small" :icon="Plus" @click="addCityLink">添加</el-button>
-        </div>
-      </el-card>
-
-      <!-- ============ 发布状态 ============ -->
-      <el-card shadow="never" class="form-card">
-        <template #header>
-          <span class="card-title">发布状态</span>
-        </template>
-        <el-radio-group v-model="form.status">
-          <el-radio value="draft">草稿</el-radio>
-          <el-radio value="published">已发布</el-radio>
-          <el-radio value="archived">已下架</el-radio>
-        </el-radio-group>
-      </el-card>
-
-      <!-- ============ 保存/取消 ============ -->
-      <div class="form-actions">
-        <el-button @click="handleCancel">取消</el-button>
+      <h2>{{ isEdit ? '编辑路线' : '新增路线' }}</h2>
+      <div>
+        <el-button @click="router.push('/admin/routes')">取消</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </div>
-    </el-form>
+    </div>
 
-    <!-- ============ ★★★ 站点编辑抽屉 ★★★ ============ -->
-    <el-drawer
-      v-model="stopDrawerVisible"
-      :title="`编辑站点: ${editingStop.stopName || '新增'}`"
-      size="600px"
-      direction="rtl"
-      destroy-on-close
-    >
-      <el-form label-width="100px" label-position="top">
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="排序号">
-              <el-input-number
-                v-model="editingStop.sortOrder"
-                :min="1"
-                controls-position="right"
-                style="width: 100%"
-              />
+    <div class="editor-shell">
+      <el-form class="editor-form" label-position="top">
+        <el-card id="section-basic" shadow="never" class="section-card">
+          <template #header>基础信息</template>
+          <el-row :gutter="16">
+            <el-col :span="12"><el-form-item label="Slug"><el-input v-model="form.slug" /></el-form-item></el-col>
+            <el-col :span="12">
+              <el-form-item label="文化标签">
+                <el-select v-model="form.cultureTag" style="width: 100%">
+                  <el-option value="Guangfu" label="广府" />
+                  <el-option value="Chaoshan" label="潮汕" />
+                  <el-option value="Hakka" label="客家" />
+                  <el-option value="Coastal" label="滨海" />
+                  <el-option value="BayArea" label="湾区" />
+                  <el-option value="Mountain" label="山川" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-form-item label="路线标题"><I18nInput v-model="form.title" /></el-form-item>
+          <el-form-item label="展示城市"><I18nInput v-model="form.cityName" /></el-form-item>
+          <el-form-item label="关联城市 Slug">
+            <div class="tag-list">
+              <el-tag v-for="(slug, index) in form.citySlugs" :key="slug" closable @close="removeCitySlug(Number(index))">{{ slug }}</el-tag>
+            </div>
+            <div class="inline-row">
+              <el-input v-model="newCitySlug" placeholder="zhanjiang" @keyup.enter="addCitySlug" />
+              <el-button :icon="Plus" @click="addCitySlug">添加</el-button>
+            </div>
+          </el-form-item>
+        </el-card>
+
+        <el-card id="section-story" shadow="never" class="section-card">
+          <template #header>封面与叙述</template>
+          <el-row :gutter="16">
+            <el-col :span="12"><el-form-item label="时长"><I18nInput v-model="form.duration" /></el-form-item></el-col>
+            <el-col :span="12"><el-form-item label="目标人群"><I18nInput v-model="form.audience" /></el-form-item></el-col>
+          </el-row>
+          <el-form-item label="封面图"><ImageUpload v-model="form.coverImage" /></el-form-item>
+          <el-form-item label="摘要"><I18nInput v-model="form.summary" type="textarea" :rows="3" /></el-form-item>
+          <el-form-item label="路线总述"><I18nMarkdownEditor v-model="form.story" :rows="8" /></el-form-item>
+          <el-form-item label="发布状态"><el-switch v-model="form.published" active-text="已发布" inactive-text="草稿" /></el-form-item>
+        </el-card>
+
+        <el-card shadow="never" class="section-card">
+          <template #header>
+            <div class="card-header">
+              <span>站点管理</span>
+              <el-button size="small" type="primary" :icon="Plus" @click="addStop">添加站点</el-button>
+            </div>
+          </template>
+          <div v-for="(stop, index) in form.stops" :id="`route-stop-${index}`" :key="stop.id" class="repeat-item">
+            <div class="repeat-header">
+              <strong>站点 {{ Number(index) + 1 }}</strong>
+              <div>
+                <el-button text :icon="ArrowUp" :disabled="Number(index) === 0" @click="moveStop(Number(index), -1)" />
+                <el-button text :icon="ArrowDown" :disabled="Number(index) === form.stops.length - 1" @click="moveStop(Number(index), 1)" />
+                <el-button text type="danger" :icon="Delete" @click="removeStop(Number(index))" />
+              </div>
+            </div>
+            <el-row :gutter="12">
+              <el-col :span="8"><el-form-item label="时间"><el-input v-model="stop.time" placeholder="08:00" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="纬度"><el-input-number v-model="stop.lat" :precision="6" style="width: 100%" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="经度"><el-input-number v-model="stop.lng" :precision="6" style="width: 100%" /></el-form-item></el-col>
+            </el-row>
+            <el-form-item label="站点名称"><I18nInput v-model="stop.stopName" /></el-form-item>
+            <el-form-item label="站点故事"><I18nMarkdownEditor v-model="stop.story" :rows="5" /></el-form-item>
+            <el-form-item label="文化说明"><I18nMarkdownEditor v-model="stop.culturalStory" :rows="5" /></el-form-item>
+            <el-form-item label="站点图片"><ImageUpload v-model="stop.image" /></el-form-item>
+            <el-form-item label="详情要点">
+              <div class="detail-list">
+                <div v-for="(_, detailIndex) in stop.details" :key="detailIndex" class="detail-row">
+                  <I18nInput v-model="stop.details[detailIndex]" />
+                  <el-button type="danger" text :icon="Delete" @click="removeDetail(stop, Number(detailIndex))" />
+                </div>
+                <el-button size="small" :icon="Plus" @click="addDetail(stop)">添加要点</el-button>
+              </div>
             </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="时间">
-              <el-input v-model="editingStop.time" placeholder="如 08:30" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="站点名">
-              <el-input v-model="editingStop.stopName" placeholder="站点名称" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="纬度">
-              <el-input-number
-                v-model="editingStop.lat"
-                :min="-90"
-                :max="90"
-                :precision="4"
-                controls-position="right"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="经度">
-              <el-input-number
-                v-model="editingStop.lng"
-                :min="-180"
-                :max="180"
-                :precision="4"
-                controls-position="right"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="计划简述">
-          <el-input v-model="editingStop.plan" placeholder="本站在路线中的定位与计划" />
-        </el-form-item>
-
-        <el-form-item label="站点故事">
-          <el-input
-            v-model="editingStop.story"
-            type="textarea"
-            :rows="2"
-            placeholder="站点背后的故事"
-          />
-        </el-form-item>
-
-        <el-form-item label="文化深度解读">
-          <el-input
-            v-model="editingStop.culturalStory"
-            type="textarea"
-            :rows="4"
-            placeholder="文化层面的解读（富文本）"
-          />
-        </el-form-item>
-
-        <el-form-item label="配图">
-          <ImageUpload v-model="editingStop.image" :multiple="false" />
-        </el-form-item>
-
-        <!-- 体验要点 -->
-        <el-form-item label="体验要点">
-          <div class="detail-tags">
-            <el-tag
-              v-for="(d, idx) in editingStop.details"
-              :key="idx"
-              closable
-              size="default"
-              style="margin: 4px"
-              @close="removeDetail(idx)"
-            >
-              {{ d }}
-            </el-tag>
+            <el-row :gutter="12">
+              <el-col :span="8"><el-form-item label="餐食"><I18nInput v-model="stop.meal" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="住宿"><I18nInput v-model="stop.hotel" /></el-form-item></el-col>
+              <el-col :span="8"><el-form-item label="交通"><I18nInput v-model="stop.transit" /></el-form-item></el-col>
+            </el-row>
           </div>
-          <div class="detail-input-row">
-            <el-input
-              v-model="newDetail"
-              placeholder="输入要点，按回车添加"
-              size="small"
-              style="width: 300px"
-              @keyup.enter="addDetail"
-            />
-            <el-button size="small" :icon="Plus" @click="addDetail">添加</el-button>
-          </div>
-        </el-form-item>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="餐食安排">
-              <el-input v-model="editingStop.meal" placeholder="如：午餐推荐..." />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="住宿安排">
-              <el-input v-model="editingStop.hotel" placeholder="如：推荐住宿..." />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="交通方式">
-          <el-input v-model="editingStop.transit" placeholder="如：地铁1号线 体育中心站" />
-        </el-form-item>
-
-        <el-form-item label="地点详述">
-          <el-input
-            v-model="editingStop.placeDetail"
-            type="textarea"
-            :rows="3"
-            placeholder="关于此地点的详细补充信息"
-          />
-        </el-form-item>
+          <el-empty v-if="form.stops.length === 0" description="暂无站点" :image-size="60" />
+        </el-card>
       </el-form>
 
-      <template #footer>
-        <div class="drawer-footer">
-          <el-button @click="stopDrawerVisible = false">取消</el-button>
-          <el-button type="primary" @click="saveStopFromDrawer">确定</el-button>
-        </div>
-      </template>
-    </el-drawer>
+      <FrontendPagePreview type="route" :model="form" />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.route-edit {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding-bottom: 40px;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #303133;
-}
-
-.form-card {
-  margin-bottom: 20px;
-}
-
-.card-title {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.card-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.empty-hint {
-  text-align: center;
-  color: #909399;
-  padding: 40px 0;
-}
-
-.add-more-row {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.text-ellipsis {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-}
-
-/* 关联城市 */
-.city-link-list {
-  margin-bottom: 12px;
-  min-height: 32px;
-}
-
-.city-link-input-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* 抽屉内详情标签 */
-.detail-tags {
-  margin-bottom: 12px;
-  min-height: 32px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.detail-input-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.drawer-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-/* 保存按钮区 */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 0;
-}
+.edit-page { padding-bottom: 40px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.page-header h2 { margin: 0; font-size: 20px; }
+.editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 20px; align-items: start; }
+.section-card { margin-bottom: 16px; }
+.card-header, .repeat-header, .inline-row, .tag-list { display: flex; align-items: center; gap: 8px; }
+.card-header, .repeat-header { justify-content: space-between; }
+.inline-row { width: 100%; }
+.inline-row .el-input { max-width: 260px; }
+.tag-list { flex-wrap: wrap; min-height: 28px; margin-bottom: 8px; }
+.repeat-item { padding: 14px; margin-bottom: 14px; border: 1px solid #ebeef5; border-radius: 8px; background: #fafbfc; }
+.detail-list { width: 100%; display: grid; gap: 10px; }
+.detail-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
+@media (max-width: 1100px) { .editor-shell { grid-template-columns: 1fr; } }
 </style>

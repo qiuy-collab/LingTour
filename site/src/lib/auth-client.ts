@@ -11,6 +11,8 @@ export type LocalUser = {
   country?: string;
   travelStyle?: string;
   provider?: string;
+  memberSince?: string;
+  avatarUrl?: string;
 };
 
 export type AuthResponse = {

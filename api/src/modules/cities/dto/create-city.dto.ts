@@ -140,4 +140,16 @@ export class CreateCityDto {
   @ValidateNested({ each: true })
   @Type(() => CreateSectionDto)
   sections?: CreateSectionDto[];
+
+  @ApiPropertyOptional({ type: [String], example: ['southern-sea-table'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  routeSlugs?: string[];
+
+  @ApiPropertyOptional({ type: [String], example: ['foshan', 'chaozhou'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  relatedCitySlugs?: string[];
 }

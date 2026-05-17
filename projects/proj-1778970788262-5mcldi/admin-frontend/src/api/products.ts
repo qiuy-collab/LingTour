@@ -3,15 +3,17 @@
 // ============================================
 import api from './index'
 import type { ApiResponse, PaginatedResponse, PageParams } from '@/types/common'
-import type { Product, ProductFormData, ProductStatus } from '@/types/product'
+import type { Product, ProductFormData } from '@/types/product'
 
 export const productsApi = {
   getProducts(params: PageParams & { collectionId?: string; status?: string }) {
-    return api.get<ApiResponse<PaginatedResponse<Product>>>('/shop/products', { params })
+    return api.get<ApiResponse<PaginatedResponse<Product>>>('/shop/products', {
+      params: { ...params, limit: params.pageSize },
+    })
   },
 
   getProduct(id: string) {
-    return api.get<ApiResponse<Product>>(`/shop/products/${id}`)
+    return api.get<ApiResponse<Product>>(`/shop/products/${id}`, { params: { rawI18n: true } })
   },
 
   createProduct(data: ProductFormData) {
@@ -22,8 +24,8 @@ export const productsApi = {
     return api.put<ApiResponse<Product>>(`/shop/products/${id}`, data)
   },
 
-  updateProductStatus(id: string, status: ProductStatus) {
-    return api.patch<ApiResponse<Product>>(`/shop/products/${id}/status`, { status })
+  updateProductStatus(id: string, published: boolean) {
+    return api.patch<ApiResponse<Product>>(`/shop/products/${id}/status`, { published })
   },
 
   updateStock(id: string, stock: number) {

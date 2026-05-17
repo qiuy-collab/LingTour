@@ -88,6 +88,13 @@ export class ShopController {
     return this.shopService.createCollection(dto);
   }
 
+  @Get('admin/shop/collections/:id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get collection by ID (admin)' })
+  async getAdminCollection(@Param('id', ParseUUIDPipe) id: string) {
+    return this.shopService.findCollectionByIdAdmin(id);
+  }
+
   @Put('admin/shop/collections/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update collection' })

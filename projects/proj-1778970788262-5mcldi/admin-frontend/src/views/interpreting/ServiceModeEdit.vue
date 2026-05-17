@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { modesApi } from '@/api/modes'
 import type { ServiceModeFormData } from '@/types/interpreting'
+import { toI18n } from '@/types/common'
+import I18nInput from '@/components/I18nInput.vue'
+import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,45 +16,30 @@ const loading = ref(false)
 
 const form = reactive<ServiceModeFormData>({
   sortOrder: 1,
-  title: '',
-  titleEn: '',
+  title: { zh: '', en: '' },
   price: '',
-  bestFor: '',
-  bestForEn: '',
-  body: '',
-  bodyEn: '',
+  bestFor: { zh: '', en: '' },
+  body: { zh: '', en: '' },
   includes: [],
-  includesEn: [],
   accent: 'light',
   featured: false,
 })
 
-const includeInput = ref('')
+const newInclude = ref<{ zh: string; en: string }>({ zh: '', en: '' })
 function addInclude() {
-  const val = includeInput.value.trim()
-  if (val && !form.includes.includes(val)) {
-    form.includes.push(val)
+  const zh = newInclude.value.zh.trim()
+  const en = newInclude.value.en.trim()
+  if (zh && en) {
+    form.includes.push({ zh, en })
+    newInclude.value = { zh: '', en: '' }
   }
-  includeInput.value = ''
 }
 function removeInclude(idx: number) {
   form.includes.splice(idx, 1)
 }
 
-const includeEnInput = ref('')
-function addIncludeEn() {
-  const val = includeEnInput.value.trim()
-  if (val && !form.includesEn.includes(val)) {
-    form.includesEn.push(val)
-  }
-  includeEnInput.value = ''
-}
-function removeIncludeEn(idx: number) {
-  form.includesEn.splice(idx, 1)
-}
-
 const rules = {
-  title: [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
+  'title.zh': [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
   price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
 }
 
@@ -65,15 +53,11 @@ onMounted(async () => {
       const data = res.data.data
       Object.assign(form, {
         sortOrder: data.sortOrder,
-        title: data.title,
-        titleEn: data.titleEn || '',
-        price: data.price,
-        bestFor: data.bestFor,
-        bestForEn: data.bestForEn || '',
-        body: data.body,
-        bodyEn: data.bodyEn || '',
-        includes: [...data.includes],
-        includesEn: [...(data.includesEn || [])],
+        title: toI18n(data.title),
+        price: typeof data.price === 'string' ? data.price : ((data.price as any)?.zh || (data.price as any)?.en || ''),
+        bestFor: toI18n(data.bestFor),
+        body: toI18n(data.body),
+        includes: Array.isArray(data.includes) ? data.includes.map((item: any) => toI18n(item)) : [],
         accent: data.accent,
         featured: data.featured,
       })
@@ -126,45 +110,34 @@ function handleCancel() {
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item label="模式名称（中）" prop="title">
-        <el-input v-model="form.title" placeholder="中文名称" />
+      <el-form-item label="模式名称">
+        <I18nInput v-model="form.title" />
       </el-form-item>
-      <el-form-item label="模式名称（英）">
-        <el-input v-model="form.titleEn" placeholder="English title" />
+      <el-form-item label="适用场景">
+        <I18nInput v-model="form.bestFor" type="textarea" :rows="2" />
       </el-form-item>
-      <el-form-item label="适用场景（中）">
-        <el-input v-model="form.bestFor" type="textarea" :rows="2" placeholder="中文适用场景" />
-      </el-form-item>
-      <el-form-item label="适用场景（英）">
-        <el-input v-model="form.bestForEn" type="textarea" :rows="2" placeholder="English best for" />
-      </el-form-item>
-      <el-form-item label="描述（中）">
-        <el-input v-model="form.body" type="textarea" :rows="5" placeholder="中文描述" />
-      </el-form-item>
-      <el-form-item label="描述（英）">
-        <el-input v-model="form.bodyEn" type="textarea" :rows="5" placeholder="English description" />
+      <el-form-item label="描述">
+        <I18nMarkdownEditor v-model="form.body" :rows="5" />
       </el-form-item>
 
       <el-divider content-position="left">服务清单</el-divider>
-      <el-form-item label="服务清单（中）">
+      <el-form-item label="服务清单">
         <div class="tag-section">
           <div class="tag-list">
-            <el-tag v-for="(item, idx) in form.includes" :key="'zh-' + idx" closable @close="removeInclude(idx)" style="margin: 2px 4px">{{ item }}</el-tag>
+            <el-tag
+              v-for="(item, idx) in form.includes"
+              :key="idx"
+              closable
+              @close="removeInclude(idx)"
+              style="margin: 2px 4px"
+            >
+              {{ item.zh }} / {{ item.en }}
+            </el-tag>
           </div>
           <div class="tag-input-row">
-            <el-input v-model="includeInput" placeholder="输入后回车添加" size="small" style="width: 200px" @keyup.enter="addInclude" />
+            <el-input v-model="newInclude.zh" placeholder="中文" size="small" style="width: 180px" @keyup.enter="addInclude" />
+            <el-input v-model="newInclude.en" placeholder="English" size="small" style="width: 180px" @keyup.enter="addInclude" />
             <el-button size="small" @click="addInclude">添加</el-button>
-          </div>
-        </div>
-      </el-form-item>
-      <el-form-item label="服务清单（英）">
-        <div class="tag-section">
-          <div class="tag-list">
-            <el-tag v-for="(item, idx) in form.includesEn" :key="'en-' + idx" closable @close="removeIncludeEn(idx)" style="margin: 2px 4px">{{ item }}</el-tag>
-          </div>
-          <div class="tag-input-row">
-            <el-input v-model="includeEnInput" placeholder="Type and Enter to add" size="small" style="width: 200px" @keyup.enter="addIncludeEn" />
-            <el-button size="small" @click="addIncludeEn">添加</el-button>
           </div>
         </div>
       </el-form-item>

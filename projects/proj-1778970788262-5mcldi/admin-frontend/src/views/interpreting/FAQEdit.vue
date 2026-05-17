@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { faqsApi } from '@/api/faqs'
 import type { FAQFormData } from '@/types/interpreting'
+import { toI18n } from '@/types/common'
+import I18nInput from '@/components/I18nInput.vue'
+import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,38 +16,31 @@ const loading = ref(false)
 
 const form = reactive<FAQFormData>({
   sortOrder: 1,
-  question: '',
-  questionEn: '',
-  answer: '',
-  answerEn: '',
+  question: { zh: '', en: '' },
+  answer: { zh: '', en: '' },
   category: 'interpreting',
 })
 
 const rules = {
-  question: [{ required: true, message: '请输入问题', trigger: 'blur' }],
-  answer: [{ required: true, message: '请输入答案', trigger: 'blur' }],
   category: [{ required: true, message: '请选择分类', trigger: 'change' }],
 }
 
 onMounted(async () => {
   const id = route.params.id as string
-  if (id) {
-    isEdit.value = true
-    loading.value = true
-    try {
-      const res = await faqsApi.getFAQ(id)
-      const data = res.data.data
-      Object.assign(form, {
-        sortOrder: data.sortOrder,
-        question: data.question,
-        questionEn: data.questionEn || '',
-        answer: data.answer,
-        answerEn: data.answerEn || '',
-        category: data.category,
-      })
-    } finally {
-      loading.value = false
-    }
+  if (!id) return
+  isEdit.value = true
+  loading.value = true
+  try {
+    const res = await faqsApi.getFAQ(id)
+    const data = res.data.data
+    Object.assign(form, {
+      sortOrder: data.sortOrder,
+      question: toI18n(data.question),
+      answer: toI18n(data.answer),
+      category: data.category,
+    })
+  } finally {
+    loading.value = false
   }
 })
 
@@ -97,19 +93,13 @@ function handleCancel() {
       </el-row>
 
       <el-divider content-position="left">问题</el-divider>
-      <el-form-item label="问题（中）" prop="question">
-        <el-input v-model="form.question" placeholder="中文问题" />
-      </el-form-item>
-      <el-form-item label="问题（英）">
-        <el-input v-model="form.questionEn" placeholder="English question" />
+      <el-form-item label="问题">
+        <I18nInput v-model="form.question" placeholder="输入问题" />
       </el-form-item>
 
       <el-divider content-position="left">答案</el-divider>
-      <el-form-item label="答案（中）" prop="answer">
-        <el-input v-model="form.answer" type="textarea" :rows="4" placeholder="中文答案" />
-      </el-form-item>
-      <el-form-item label="答案（英）">
-        <el-input v-model="form.answerEn" type="textarea" :rows="4" placeholder="English answer" />
+      <el-form-item label="答案">
+        <I18nMarkdownEditor v-model="form.answer" :rows="6" placeholder="输入答案 (支持 Markdown)" />
       </el-form-item>
 
       <el-form-item>

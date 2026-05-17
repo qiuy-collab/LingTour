@@ -9,33 +9,44 @@ export function SiteFooter() {
   const { t } = useLocale();
 
   return (
-    <footer className="mt-20 border-t border-white/10 bg-[var(--night)] text-white">
-      <Container className="grid gap-10 py-12 lg:grid-cols-[1.3fr_0.8fr_1fr]">
-        <div className="space-y-4">
-          <p className="font-[family:var(--font-display)] text-3xl">LingTour Guangdong</p>
-          <p className="max-w-md text-sm leading-7 text-white/68">
+    <footer className="border-t border-black/5 bg-[var(--river-deep)] bg-grain text-white overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-1 bg-[var(--gold)]/20" />
+      <Container className="grid gap-16 py-20 lg:grid-cols-[1.5fr_1fr_1fr] relative z-10">
+        <div className="space-y-8">
+          <div>
+            <p className="font-[family:var(--font-display)] text-4xl lg:text-5xl tracking-tight">LingTour</p>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">The Field Dispatch</p>
+          </div>
+          <p className="max-w-md text-lg leading-relaxed text-white/50 handwritten">
             {t("common.site.tagline")}
           </p>
         </div>
 
-        <div>
-          <p className="mb-4 text-label text-white/48">{t("common.nav.routes")}</p>
-          <div className="space-y-2 text-sm text-white/72">
+        <div className="flex flex-col gap-8">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{t("common.nav.routes")}</p>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm font-medium text-white/70">
             {siteNavigation.slice(1).map((item) => (
-              <Link key={item.href} href={item.href} className="block transition hover:text-white">
+              <Link key={item.href} href={item.href} className="transition hover:text-[var(--gold)]">
                 {item.label}
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="space-y-3 text-sm text-white/68">
-          <p className="text-label text-white/48">{t("common.nav.community")}</p>
-          <p>hello@lingtour.cn</p>
-          <p>Guangzhou / Shantou / Meizhou</p>
-          <p>{t("common.site.footer.rights")}</p>
+        <div className="space-y-8">
+          <div className="space-y-4 text-sm text-white/50">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Registry</p>
+            <p className="text-lg text-white">hello@lingtour.cn</p>
+            <p className="handwritten text-white/70">Guangzhou / Shantou / Meizhou</p>
+          </div>
+          <div className="pt-8 border-t border-white/10 text-[10px] uppercase tracking-widest text-white/30">
+            {t("common.site.footer.rights")}
+          </div>
         </div>
       </Container>
+
+      {/* Abstract decorative element */}
+      <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
     </footer>
   );
 }

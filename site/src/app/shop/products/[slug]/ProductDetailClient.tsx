@@ -1,35 +1,49 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
+import { usePreviewBridge } from "@/lib/preview";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { ProductDetailHero } from "@/components/store/ProductDetailHero";
 import { ProductNarrative } from "@/components/store/ProductNarrative";
 import { StoreProductCard } from "@/components/store/StoreProductCard";
 import { Reveal } from "@/components/ui/Reveal";
+import type { StoreProduct } from "@/data/store";
 
 interface Props {
   slug: string;
 }
 
 export function ProductDetailClient({ slug }: Props) {
-  const { locale } = useLocale();
+  const { locale, setLocale } = useLocale();
+  const { previewData, previewLocale, previewEnabled } = usePreviewBridge<StoreProduct>("product");
+  const activeLocale = previewLocale ?? locale;
+
+  useEffect(() => {
+    if (previewLocale && previewLocale !== locale) {
+      setLocale(previewLocale);
+    }
+  }, [locale, previewLocale, setLocale]);
 
   const { data: product, loading, error } = useApiQuery(
-    () => fetchStoreProductBySlug(slug, locale),
-    [slug, locale],
+    () => fetchStoreProductBySlug(slug, activeLocale),
+    [slug, activeLocale],
   );
 
   const { data: allProducts } = useApiQuery(
-    () => fetchStoreProducts(locale),
-    [locale],
+    () => fetchStoreProducts(activeLocale),
+    [activeLocale],
   );
 
-  if (loading) return <LoadingSpinner text="Preparing the object..." />;
-  if (error) return <ErrorState message={error} />;
+  const activeProduct = previewData ?? product;
 
-  if (!product) {
+  if (previewEnabled && !activeProduct) return <LoadingSpinner text="Loading preview..." />;
+  if (loading && !activeProduct) return <LoadingSpinner text="Preparing the object..." />;
+  if (error && !activeProduct) return <ErrorState message={error} />;
+
+  if (!activeProduct) {
     return (
       <div className="site-container flex min-h-[50vh] items-center justify-center">
         <div className="text-center">
@@ -40,13 +54,13 @@ export function ProductDetailClient({ slug }: Props) {
   }
 
   const relatedProducts = (allProducts ?? [])
-    .filter((p) => p.slug !== product.slug)
+    .filter((p) => p.slug !== activeProduct.slug)
     .slice(0, 3);
 
   return (
     <main className="bg-[var(--paper-deep)]">
-      <ProductDetailHero product={product} />
-      <ProductNarrative product={product} />
+      <ProductDetailHero product={activeProduct} />
+      <ProductNarrative product={activeProduct} />
 
       {relatedProducts.length > 0 && (
         <section className="site-container py-16 lg:py-24">

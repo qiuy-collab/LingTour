@@ -16,6 +16,11 @@ const defaultCurrency = ref('SGD')
 const taxRate = ref(7.6)
 const serviceCities = ref<string[]>([])
 const serviceCityInput = ref('')
+const enableMarkdownEditor = ref(true)
+const pageTitleFontSize = ref(20)
+const sectionTitleFontSize = ref(15)
+const bodyFontSize = ref(14)
+const hintFontSize = ref(12)
 
 // 语言选项
 const languageOptions = [
@@ -83,6 +88,11 @@ async function fetchSettings() {
     taxRate.value = data.taxRate ?? 7.6
     shippingTemplates.value = JSON.parse(JSON.stringify(data.shippingTemplates || []))
     serviceCities.value = data.serviceCities || []
+    enableMarkdownEditor.value = data.enableMarkdownEditor ?? true
+    pageTitleFontSize.value = data.pageTitleFontSize ?? 20
+    sectionTitleFontSize.value = data.sectionTitleFontSize ?? 15
+    bodyFontSize.value = data.bodyFontSize ?? 14
+    hintFontSize.value = data.hintFontSize ?? 12
   } catch {
     ElMessage.error('获取系统设置失败')
   } finally {
@@ -108,6 +118,11 @@ async function handleSave() {
       taxRate: taxRate.value,
       shippingTemplates: templates,
       serviceCities: serviceCities.value,
+      enableMarkdownEditor: enableMarkdownEditor.value,
+      pageTitleFontSize: pageTitleFontSize.value,
+      sectionTitleFontSize: sectionTitleFontSize.value,
+      bodyFontSize: bodyFontSize.value,
+      hintFontSize: hintFontSize.value,
     }
     await updateSettings(data)
     ElMessage.success('系统设置已保存')
@@ -147,6 +162,37 @@ onMounted(() => {
             placeholder="网站描述（用于搜索引擎结果摘要）"
           />
         </el-form-item>
+      </el-card>
+
+      <el-card shadow="never" class="section-card">
+        <template #header>
+          <span class="section-title">UI 与 Markdown</span>
+        </template>
+        <el-form-item label="启用 Markdown 编辑器">
+          <el-switch v-model="enableMarkdownEditor" />
+        </el-form-item>
+        <el-row :gutter="16">
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="页面标题字号(px)">
+              <el-input-number v-model="pageTitleFontSize" :min="16" :max="36" />
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="区块标题字号(px)">
+              <el-input-number v-model="sectionTitleFontSize" :min="12" :max="24" />
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="正文字号(px)">
+              <el-input-number v-model="bodyFontSize" :min="12" :max="20" />
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12">
+            <el-form-item label="提示字号(px)">
+              <el-input-number v-model="hintFontSize" :min="10" :max="18" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-card>
 
       <!-- 语言设置 -->

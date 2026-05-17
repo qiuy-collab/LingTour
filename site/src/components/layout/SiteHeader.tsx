@@ -28,7 +28,7 @@ export function SiteHeader() {
   const rightNavigation = siteNavigation.filter((item) => ["/shop", "/community"].includes(item.href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-[rgba(242,238,230,0.9)] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-black/10 bg-[var(--paper-deep)] bg-grain backdrop-blur-xl">
       <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 md:grid-cols-[1fr_auto_1fr]">
         <nav className="hidden items-center justify-start gap-1 md:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
@@ -111,7 +111,7 @@ export function SiteHeader() {
       </Container>
 
       {isOpen ? (
-        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper)] md:hidden">
+        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden">
           <Container className="grid gap-2 py-4">
             {siteNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -122,8 +122,8 @@ export function SiteHeader() {
                   href={item.href}
                   className={`px-4 py-3 text-sm transition ${
                     active
-                      ? "bg-[var(--river-deep)] text-white"
-                      : "border border-[var(--line)] bg-white/70 text-[var(--ink)]"
+                      ? "bg-[var(--river-deep)] text-white shadow-lg"
+                      : "border border-[var(--line)] bg-white/40 text-[var(--ink)]"
                   }`}
                   aria-current={active ? "page" : undefined}
                   onClick={() => setIsOpen(false)}
@@ -132,7 +132,7 @@ export function SiteHeader() {
                 </Link>
               );
             })}
-            <div className="mt-2 grid grid-cols-2 gap-2 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/70 [&>button]:py-3">
+            <div className="mt-2 grid grid-cols-2 gap-2 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
               <AccountNavLink onNavigate={() => setIsOpen(false)} />
               <LanguageToggle />
             </div>

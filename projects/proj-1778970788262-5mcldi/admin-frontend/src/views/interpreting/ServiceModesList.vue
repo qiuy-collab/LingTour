@@ -110,8 +110,8 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="title" label="模式名称" min-width="160">
         <template #default="{ row }">
-          <div>{{ row.title }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.titleEn }}</div>
+          <div>{{ row.title || '' }}</div>
+          <div style="font-size: 12px; color: #909399">{{ row.titleEn || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column prop="price" label="价格" width="130" />
@@ -128,7 +128,9 @@ onMounted(() => {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="bestFor" label="适用场景" min-width="200" show-overflow-tooltip />
+      <el-table-column label="适用场景" min-width="200" show-overflow-tooltip>
+        <template #default="{ row }">{{ row.bestFor || '' }}</template>
+      </el-table-column>
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row, $index }">
           <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>

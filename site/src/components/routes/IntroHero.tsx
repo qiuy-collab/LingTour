@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -24,28 +24,28 @@ export function IntroHero({ title, summary, image }: Props) {
   return (
     <div
       ref={ref}
-      className="relative h-screen w-full overflow-hidden"
-      style={{ background: "var(--route-bg)" }}
+      className="relative h-screen w-full overflow-hidden bg-grain"
+      style={{ background: "var(--background)" }}
     >
-      {/* Background image 鈥?parallax layer */}
+      {/* Background image — parallax layer */}
       <motion.div
         className="absolute inset-0"
-        style={{ opacity: useTransform(scrollYProgress, [0, 0.5], [1, 0.2]) }}
+        style={{ opacity: useTransform(scrollYProgress, [0, 0.5], [0.6, 0.1]) }}
       >
         <div
-          className="h-full w-full bg-cover bg-center"
+          className="h-full w-full bg-cover bg-center grayscale contrast-[0.9] brightness-[1.05]"
           style={{ backgroundImage: `url(${image})` }}
         />
       </motion.div>
 
-      {/* Dark overlay on scroll */}
+      {/* Editorial overlay on scroll */}
       <motion.div
         className="absolute inset-0"
-        style={{ background: "#1A2A3A", opacity: overlayOpacity }}
+        style={{ background: "var(--paper-deep)", opacity: overlayOpacity }}
       />
 
-      {/* Grain texture overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-grain opacity-[0.04]" />
+      {/* Grain texture overlay — increased for tactile feel */}
+      <div className="pointer-events-none absolute inset-0 bg-grain opacity-[0.08]" />
 
       {/* Content */}
       <motion.div
@@ -57,10 +57,10 @@ export function IntroHero({ title, summary, image }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="text-xs uppercase tracking-[0.28em]"
-          style={{ color: "var(--route-gold)" }}
+          className="text-xs uppercase tracking-[0.4em] font-bold"
+          style={{ color: "var(--cinnabar)" }}
         >
-          Story Route
+          Field Discovery / Story Route
         </motion.p>
 
         {/* Decorative gold lines */}
@@ -68,8 +68,8 @@ export function IntroHero({ title, summary, image }: Props) {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-5 h-px w-16 origin-center"
-          style={{ background: "var(--route-gold)" }}
+          className="mt-6 h-px w-20 origin-center"
+          style={{ background: "var(--gold)" }}
         />
 
         {/* Title */}
@@ -77,28 +77,23 @@ export function IntroHero({ title, summary, image }: Props) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.55 }}
-          className="mt-7 font-serif text-5xl leading-[1.08] tracking-tight md:text-7xl lg:text-8xl"
-          style={{ color: "var(--route-text)" }}
+          className="mt-10 font-[family:var(--font-display)] text-6xl leading-[0.9] tracking-tight md:text-8xl lg:text-9xl"
+          style={{ color: "var(--river-deep)" }}
         >
-          {title}
+          {title.split(' ').map((word, i) => (
+            <span key={i} className={i % 2 === 1 ? 'italic text-[var(--gold)] block md:inline' : ''}>
+              {word}{' '}
+            </span>
+          ))}
         </motion.h1>
-
-        {/* Gold accent line */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="mt-8 h-px w-24 origin-center"
-          style={{ background: "var(--route-gold)" }}
-        />
 
         {/* Summary */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.25 }}
-          className="mt-8 max-w-lg text-sm leading-relaxed"
-          style={{ color: "var(--route-text)" }}
+          className="mt-12 max-w-xl text-xl leading-relaxed handwritten"
+          style={{ color: "var(--muted)" }}
         >
           {summary}
         </motion.p>
@@ -108,17 +103,17 @@ export function IntroHero({ title, summary, image }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.0 }}
-          className="absolute bottom-10"
+          className="absolute bottom-12 flex flex-col items-center gap-4"
         >
+          <span className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted)] [writing-mode:vertical-lr]">Explore</span>
           <div
-            className="blink-arrow text-lg"
-            style={{ color: "var(--route-gold)" }}
+            className="blink-arrow text-xl"
+            style={{ color: "var(--gold)" }}
           >
-            鈫?          </div>
+            ↓
+          </div>
         </motion.div>
       </motion.div>
     </div>
   );
 }
-
-

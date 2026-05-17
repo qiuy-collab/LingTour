@@ -22,6 +22,9 @@ export class User {
   @Column({ type: 'varchar', length: 50, default: 'editor' })
   role: 'admin' | 'editor';
 
+  @Column({ type: 'varchar', length: 20, default: 'active' })
+  status: 'active' | 'banned';
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   name: string;
 

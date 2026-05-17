@@ -1,47 +1,41 @@
-// ============================================
-// 活动/节庆管理 TypeScript 类型定义
-// ============================================
+import type { I18nObject } from './common'
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'past' | 'draft'
 
 export interface Event {
   id: string
-  title: string
-  titleEn: string
-  date: string           // YYYY-MM-DD
-  endDate?: string        // YYYY-MM-DD
-  city: string
-  citySlug: string
-  adcode: number
-  tags: string[]
-  summary: string
-  summaryEn: string
-  description: string
-  descriptionEn: string
-  relatedRouteSlugs: string[]
-  image: string
-  status: EventStatus
-}
-
-export interface EventFormData {
-  title: string
-  titleEn: string
+  title: any
+  titleEn?: string
   date: string
   endDate?: string
   city: string
   citySlug: string
   adcode: number
   tags: string[]
-  summary: string
-  summaryEn: string
-  description: string
-  descriptionEn: string
+  summary: any
+  summaryEn?: string
+  description: any
+  descriptionEn?: string
   relatedRouteSlugs: string[]
   image: string
   status: EventStatus
 }
 
-// ─── 状态显示映射 ──────────────────────────────
+export interface EventFormData {
+  title: I18nObject
+  date: string
+  endDate?: string
+  city: string
+  citySlug: string
+  adcode: number
+  tags: string[]
+  summary: I18nObject
+  description: I18nObject
+  relatedRouteSlugs: string[]
+  image: string
+  status: EventStatus
+}
+
 export const EventStatusMap: Record<EventStatus, string> = {
   upcoming: '即将开始',
   ongoing: '进行中',

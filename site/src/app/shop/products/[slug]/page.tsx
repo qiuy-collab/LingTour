@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { fetchStoreProducts } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
@@ -29,5 +30,9 @@ export default async function ProductDetailPage({
 }) {
   const { slug } = await params;
   const { ProductDetailClient } = await import("./ProductDetailClient");
-  return <ProductDetailClient slug={slug} />;
+  return (
+    <Suspense fallback={null}>
+      <ProductDetailClient slug={slug} />
+    </Suspense>
+  );
 }

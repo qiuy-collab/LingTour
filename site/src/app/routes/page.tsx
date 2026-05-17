@@ -20,36 +20,56 @@ export default function RoutesPage() {
   const storyRoutes = data;
 
   return (
-    <div className="bg-[var(--paper-deep)]">
-      <section className="relative overflow-hidden bg-[var(--night)] text-white">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-50 hero-zoom"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1800&q=82)",
-          }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.54),rgba(17,25,35,0.88))]" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-[linear-gradient(0deg,var(--paper-deep),transparent)]" />
+    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
+      <section className="relative overflow-hidden pt-24 pb-16 lg:pt-40 lg:pb-32">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
 
-        <div className="site-container relative flex min-h-[46vh] flex-col justify-center py-20 lg:min-h-[56vh] lg:py-28">
-          <Reveal>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
-              Story Routes
-            </p>
-            <h1 className="mt-6 max-w-[13ch] font-[family:var(--font-display)] text-[3.2rem] leading-[0.94] tracking-[-0.03em] sm:text-7xl md:text-8xl">
-              Follow a story, not a schedule.
-            </h1>
-            <div className="mt-8 h-px w-24 bg-[var(--gold)]/40" />
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/66">
-              These routes are built like narrative arcs: a first impression, a turning point, a table, a street, and a place that stays with you after the day ends.
-            </p>
-          </Reveal>
+        <div className="site-container relative">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+            <div className="lg:col-span-8">
+              <Reveal>
+                <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
+                  Story Routes / Selection
+                </div>
+                <h1 className="font-[family:var(--font-display)] text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] tracking-[-0.05em] text-[var(--river-deep)] mix-blend-multiply">
+                  Follow a <br />
+                  <span className="text-[var(--gold)] italic">Story.</span>
+                </h1>
+                <div className="mt-16 flex flex-col md:flex-row gap-8 items-start">
+                  <div className="w-px h-24 bg-[var(--line)] hidden md:block" />
+                  <p className="max-w-xl text-xl leading-relaxed text-[var(--muted)]">
+                    These routes are built like narrative arcs: a first impression, a turning point, a table, a street, and a place that stays with you after the day ends.
+                  </p>
+                </div>
+              </Reveal>
+            </div>
+
+            <div className="lg:col-span-4 relative mt-12 lg:mt-0">
+              <Reveal delay={300}>
+                <div className="relative aspect-[3/4] scrapbook-shadow -rotate-3 group">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
+                    style={{
+                      backgroundImage:
+                        "url(https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1200&q=82)",
+                    }}
+                  />
+                  <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
+
+                  {/* Handwritten Annotation */}
+                  <div className="absolute -bottom-8 -right-4 w-40 h-40 bg-[url('/assets/images/stamp-circle.svg')] bg-contain bg-no-repeat opacity-20 animate-spin-slow" />
+                  <div className="absolute top-1/2 -right-12 handwritten text-2xl text-[var(--gold)] -rotate-90 origin-bottom-right">
+                    Archive: Route 01-12
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="site-container py-12 lg:-mt-12 lg:py-16">
-        <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
+      <section className="site-container py-12 lg:py-20">
+        <div className="grid gap-12 sm:grid-cols-2 lg:gap-16">
           {storyRoutes.map((route, i) => (
             <Reveal key={route.slug} delay={i * 100}>
               <Link href={`/routes/${route.slug}`} className="group block">

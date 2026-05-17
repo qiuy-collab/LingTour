@@ -1,19 +1,20 @@
 // 认证相关类型
 
 export interface LoginRequest {
-  username?: string
-  email?: string
+  email: string
   password: string
 }
 
 export interface AdminUser {
   id: string
-  username: string
+  accountId: string
+  email: string
   name: string
-  avatar?: string
+  role: 'admin' | 'editor'
 }
 
 export interface LoginResponse {
-  token: string
+  access_token: string
+  expires_in: string
   user: AdminUser
 }

@@ -137,8 +137,8 @@ function setupMock(axiosInstance: AxiosInstance) {
       if (keyword) {
         filtered = cities.filter(
           (c) =>
-            c.name.includes(keyword) ||
-            c.nameEn.toLowerCase().includes(keyword) ||
+            (c.name.zh || '').toLowerCase().includes(keyword) ||
+            (c.name.en || '').toLowerCase().includes(keyword) ||
             c.slug.toLowerCase().includes(keyword)
         )
       }
@@ -207,16 +207,17 @@ function setupMock(axiosInstance: AxiosInstance) {
       if (keyword) {
         filtered = filtered.filter(
           (r) =>
-            r.title.includes(keyword) ||
-            r.titleEn.toLowerCase().includes(keyword) ||
+            (r.title.zh || '').toLowerCase().includes(keyword) ||
+            (r.title.en || '').toLowerCase().includes(keyword) ||
             r.slug.toLowerCase().includes(keyword)
         )
       }
       if (status) {
-        filtered = filtered.filter((r) => r.status === status)
+        const isPublished = status === 'published'
+        filtered = filtered.filter((r) => r.published === isPublished)
       }
       if (cityName) {
-        filtered = filtered.filter((r) => r.cityName === cityName)
+        filtered = filtered.filter((r) => (r.cityName.zh || '') === cityName || (r.cityName.en || '') === cityName)
       }
       return mockResponse(config, paginate(filtered, page, pageSize))
     }
@@ -237,7 +238,7 @@ function setupMock(axiosInstance: AxiosInstance) {
       const body = parseBody(config)
       const index = routes.findIndex((r) => r.id === id)
       if (index === -1) return mockError(config, '路线不存在', 404)
-      routes[index] = { ...routes[index], status: body.status }
+      routes[index] = { ...routes[index], published: body.published }
       return mockResponse(config, routes[index])
     }
 
@@ -248,8 +249,8 @@ function setupMock(axiosInstance: AxiosInstance) {
         ...body,
         id: genRouteId(),
         stops: body.stops || [],
-        routeCityLinks: body.routeCityLinks || [],
-        status: body.status || 'draft',
+        citySlugs: body.citySlugs || [],
+        published: body.published !== undefined ? body.published : false,
       }
       routes.unshift(newRoute)
       return mockResponse(config, newRoute)
@@ -288,8 +289,8 @@ function setupMock(axiosInstance: AxiosInstance) {
       if (keyword) {
         filtered = collections.filter(
           (c) =>
-            c.title.includes(keyword) ||
-            c.titleEn.toLowerCase().includes(keyword) ||
+            (c.title.zh || '').toLowerCase().includes(keyword) ||
+            (c.title.en || '').toLowerCase().includes(keyword) ||
             c.slug.toLowerCase().includes(keyword)
         )
       }
@@ -312,7 +313,7 @@ function setupMock(axiosInstance: AxiosInstance) {
         ...body,
         id: genColId(),
         productCount: body.productCount || 0,
-        status: body.status || 'draft',
+        published: body.published !== undefined ? body.published : false,
       }
       collections.unshift(newCol)
       return mockResponse(config, newCol)
@@ -353,8 +354,8 @@ function setupMock(axiosInstance: AxiosInstance) {
       if (keyword) {
         filtered = filtered.filter(
           (p) =>
-            p.name.includes(keyword) ||
-            p.nameEn.toLowerCase().includes(keyword) ||
+            (p.name.zh || '').toLowerCase().includes(keyword) ||
+            (p.name.en || '').toLowerCase().includes(keyword) ||
             p.slug.toLowerCase().includes(keyword)
         )
       }
@@ -362,7 +363,8 @@ function setupMock(axiosInstance: AxiosInstance) {
         filtered = filtered.filter((p) => p.collectionId === collectionId)
       }
       if (status) {
-        filtered = filtered.filter((p) => p.status === status)
+        const isPublished = status === 'published'
+        filtered = filtered.filter((p) => p.published === isPublished)
       }
       return mockResponse(config, paginate(filtered, page, pageSize))
     }
@@ -383,7 +385,7 @@ function setupMock(axiosInstance: AxiosInstance) {
       const body = parseBody(config)
       const index = products.findIndex((p) => p.id === id)
       if (index === -1) return mockError(config, '商品不存在', 404)
-      products[index] = { ...products[index], status: body.status }
+      products[index] = { ...products[index], published: body.published }
       return mockResponse(config, products[index])
     }
 
@@ -410,7 +412,7 @@ function setupMock(axiosInstance: AxiosInstance) {
           materialSource: '', craftTradition: '', process: '', mapAdcode: 0,
         },
         stock: body.stock || 0,
-        status: body.status || 'off_shelf',
+        published: body.published !== undefined ? body.published : false,
       }
       products.unshift(newProd)
       return mockResponse(config, newProd)
@@ -539,7 +541,7 @@ function setupMock(axiosInstance: AxiosInstance) {
     // POST /interpreting/modes — 新增
     if (url === '/interpreting/modes' && method === 'POST') {
       const body = parseBody(config)
-      const newMode: ServiceMode = { ...body, id: generateModeId(), includes: body.includes || [], includesEn: body.includesEn || [] }
+      const newMode: ServiceMode = { ...body, id: generateModeId(), includes: body.includes || [] }
       serviceModes.unshift(newMode)
       return mockResponse(config, newMode)
     }
@@ -603,7 +605,7 @@ function setupMock(axiosInstance: AxiosInstance) {
     // POST /interpreting/profiles — 新增
     if (url === '/interpreting/profiles' && method === 'POST') {
       const body = parseBody(config)
-      const newInterp: Interpreter = { ...body, id: generateInterpreterId(), helps: body.helps || [], helpsEn: body.helpsEn || [] }
+      const newInterp: Interpreter = { ...body, id: generateInterpreterId(), helps: body.helps || [] }
       interpreters.unshift(newInterp)
       return mockResponse(config, newInterp)
     }

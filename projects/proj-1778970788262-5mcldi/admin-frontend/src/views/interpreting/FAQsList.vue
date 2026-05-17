@@ -126,13 +126,13 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="问题" min-width="280">
         <template #default="{ row }">
-          <div class="qa-text">{{ row.question }}</div>
-          <div class="qa-sub">{{ row.questionEn }}</div>
+          <div class="qa-text">{{ row.question || '' }}</div>
+          <div class="qa-sub">{{ row.questionEn || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column label="答案" min-width="320" show-overflow-tooltip>
         <template #default="{ row }">
-          <div class="qa-text">{{ row.answer }}</div>
+          <div class="qa-text">{{ row.answer || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column label="分类" width="120" align="center">

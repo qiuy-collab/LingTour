@@ -243,8 +243,8 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="title" label="活动名称" min-width="180">
         <template #default="{ row }">
-          <div>{{ row.title }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.titleEn }}</div>
+          <div>{{ row.title || '' }}</div>
+          <div style="font-size: 12px; color: #909399">{{ row.titleEn || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column label="日期" width="200" align="center">
@@ -355,11 +355,11 @@ onMounted(() => {
                 :key="ev.id"
                 class="calendar-event-chip"
                 :class="'status-' + ev.status"
-                :title="ev.title"
+                :title="ev.title || ''"
                 @click="handleEdit(ev.id)"
               >
                 <el-tag :type="getStatusType(ev.status)" size="small" effect="plain">
-                  {{ ev.title.slice(0, 8) }}{{ ev.title.length > 8 ? '…' : '' }}
+                  {{ (ev.title || '').slice(0, 8) }}{{ (ev.title || '').length > 8 ? '…' : '' }}
                 </el-tag>
               </div>
             </div>

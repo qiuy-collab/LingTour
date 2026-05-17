@@ -13,7 +13,9 @@ export interface OrderListParams extends PageParams {
 
 export const ordersApi = {
   getOrders(params: OrderListParams) {
-    return api.get<ApiResponse<PaginatedResponse<Order>>>('/orders', { params })
+    return api.get<ApiResponse<PaginatedResponse<Order>>>('/orders', {
+      params: { ...params, limit: params.pageSize },
+    })
   },
 
   getOrder(id: string) {

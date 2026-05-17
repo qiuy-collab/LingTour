@@ -37,6 +37,12 @@ export class BookingSubmission {
   @Column({ type: 'varchar', length: 20, default: 'new' })
   status: string;
 
+  @Column({ type: 'uuid', name: 'assigned_interpreter_id', nullable: true })
+  assignedInterpreterId: string | null;
+
+  @Column({ type: 'varchar', length: 200, name: 'assigned_interpreter_name', nullable: true })
+  assignedInterpreterName: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

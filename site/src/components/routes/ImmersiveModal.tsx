@@ -195,27 +195,29 @@ export function ImmersiveModal({
       {isOpen && (
         <motion.div
           key="modal"
-          initial={{ opacity: 0, y: "100%" }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: "100%" }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-50 flex flex-col overflow-hidden"
-          style={{ background: "var(--route-bg)" }}
+          className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-grain"
+          style={{ background: "var(--background)" }}
         >
           {/* ── Top bar ── */}
-          <div className="flex shrink-0 items-center justify-between border-b px-6 py-3"
-            style={{ borderColor: "rgba(26,42,58,0.06)" }}
+          <div className="flex shrink-0 items-center justify-between border-b px-8 py-5 bg-white/40 backdrop-blur-md"
+            style={{ borderColor: "var(--line)" }}
           >
-            <span className="text-xs font-medium tracking-wider"
-              style={{ color: "rgba(26,42,58,0.4)" }}>
-              {routeTitle}
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                Field Archive
+              </span>
+              <div className="h-px w-8 bg-[var(--line)]" />
+              <span className="font-[family:var(--font-display)] text-sm italic text-[var(--river-deep)]">
+                {routeTitle}
+              </span>
+            </div>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-sm transition-colors"
-              style={{ color: "rgba(26,42,58,0.4)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--route-text)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(26,42,58,0.4)")}
+              className="group flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-sm transition-all hover:bg-[var(--cinnabar)] hover:text-white"
             >
               ✕
             </button>
@@ -224,186 +226,158 @@ export function ImmersiveModal({
           {/* ── Body: Sidebar + Content ── */}
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden lg:flex-row">
             {/* ── Left Sidebar (fixed on desktop) ── */}
-            <div className="border-b px-6 py-10 lg:h-full lg:w-[38%] lg:shrink-0 lg:self-start lg:border-b-0 lg:border-r lg:px-10 lg:py-16"
-              style={{ borderColor: "rgba(26,42,58,0.06)" }}
+            <div className="border-b px-8 py-12 lg:h-full lg:w-[40%] lg:shrink-0 lg:self-start lg:border-b-0 lg:border-r lg:px-16 lg:py-20"
+              style={{ borderColor: "var(--line)" }}
             >
-              <div className="lg:sticky lg:top-16">
+              <div className="lg:sticky lg:top-20">
                 {/* Label */}
-                <p className="text-[10px] uppercase tracking-[0.28em]"
-                  style={{ color: "rgba(26,42,58,0.3)" }}>
-                  Memories of this place
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)] handwritten">
+                  Station Log / Observations
                 </p>
 
                 {/* Clock */}
-                <div className="mt-6" style={{ color: "var(--route-gold)" }}>
+                <div className="mt-8 flex items-center gap-4">
                   <ClockIcon />
+                  <span className="font-mono text-sm font-bold text-[var(--river-deep)] tracking-tighter">
+                    T-{stop.time}
+                  </span>
                 </div>
 
                 {/* Stop identifier */}
-                <p className="mt-6 font-mono text-xs tracking-wider"
-                  style={{ color: "rgba(26,42,58,0.3)" }}>
-                  {String(currentIndex + 1).padStart(2, "0")} / {String(allStops.length).padStart(2, "0")}
-                </p>
+                <div className="mt-10 flex items-baseline gap-3">
+                  <span className="font-[family:var(--font-display)] text-6xl text-[var(--cinnabar)]/20">
+                    {String(currentIndex + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                    of {String(allStops.length).padStart(2, "0")} Registry Entries
+                  </span>
+                </div>
 
                 {/* Title */}
-                <h2 className="mt-2 font-serif text-3xl leading-[1.12] md:text-4xl"
-                  style={{ color: "var(--route-text)" }}>
+                <h2 className="mt-6 font-[family:var(--font-display)] text-4xl leading-[1.1] md:text-5xl text-[var(--river-deep)]">
                   {stop.stop}
                 </h2>
 
-                {/* Time + tags */}
-                <p className="mt-4 font-mono text-xs tracking-wider"
-                  style={{ color: "var(--route-gold)" }}>
-                  {stop.time}
-                </p>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {stop.details.slice(0, 3).map((d, i) => (
+                <div className="mt-8 flex flex-wrap gap-2">
+                  {stop.details.slice(0, 4).map((d, i) => (
                     <span key={i}
-                      className="rounded-full px-2.5 py-1 text-[10px] leading-tight"
-                      style={{
-                        background: "var(--route-gold-light)",
-                        color: "rgba(26,42,58,0.6)",
-                      }}
+                      className="border border-[var(--gold)]/30 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] bg-white/50"
                     >
                       {d.length > 30 ? d.slice(0, 28) + "…" : d}
                     </span>
                   ))}
                 </div>
 
-                {/* Prev / Next in sidebar */}
-                <div className="mt-10 flex gap-3">
+                {/* Navigation */}
+                <div className="mt-16 flex items-center gap-8">
                   <button
                     onClick={onPrev}
                     disabled={!hasPrev}
-                    className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] transition-opacity disabled:opacity-20"
-                    style={{ color: "var(--route-gold)" }}
+                    className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] disabled:opacity-20"
                   >
-                    ← Prev
+                    <svg className="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Previous
                   </button>
+                  <div className="h-8 w-px bg-[var(--line)]" />
                   <button
                     onClick={onNext}
                     disabled={!hasNext}
-                    className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] transition-opacity disabled:opacity-20"
-                    style={{ color: "var(--route-gold)" }}
+                    className="group flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] disabled:opacity-20"
                   >
-                    Next →
+                    Next
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ── Right: Scrolling Content (the ONLY scrollable area) ── */}
-            <div className="flex-1 min-w-0 overflow-y-auto px-6 py-10 lg:px-14 lg:py-16">
-              {/* Main story */}
-              <div className="mx-auto max-w-2xl">
-                {/* Hero image */}
+            {/* ── Right: Scrolling Content ── */}
+            <div className="flex-1 min-w-0 overflow-y-auto px-8 py-12 lg:px-20 lg:py-20 bg-white/20">
+              <div className="mx-auto max-w-3xl">
+                {/* Hero image as a physical photo */}
                 {stop.image && (
                   <motion.div
-                    initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
-                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    viewport={{ once: true, margin: "-80px" }}
+                    initial={{ opacity: 0, y: 40, rotate: 2 }}
+                    animate={{ opacity: 1, y: 0, rotate: 1 }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="mb-10 overflow-hidden rounded-[1.5rem] shadow-[0_12px_40px_rgba(26,42,58,0.10)]"
+                    className="mb-16 relative"
                   >
-                    <img
-                      src={stop.image}
-                      alt={stop.stop}
-                      className="aspect-[16/9] w-full object-cover"
-                    />
+                    <div className="border-[12px] border-white bg-white scrapbook-shadow overflow-hidden">
+                      <img
+                        src={stop.image}
+                        alt={stop.stop}
+                        className="aspect-[16/10] w-full object-cover saturate-[0.9] contrast-[1.02]"
+                      />
+                    </div>
+                    {/* Tape effect */}
+                    <div className="absolute -top-4 left-1/4 z-20 h-10 w-32 -translate-x-1/2 -rotate-12 bg-white/40 backdrop-blur-[2px] border border-black/5" />
+                    <div className="absolute -bottom-4 right-1/4 z-20 h-10 w-32 translate-x-1/2 rotate-6 bg-white/40 backdrop-blur-[2px] border border-black/5" />
                   </motion.div>
                 )}
 
-                {/* Drop-cap story */}
-                <div
-                  className="drop-cap text-[15px] leading-[1.85]"
-                  style={{ color: "rgba(26,42,58,0.75)" }}
-                >
-                  {paragraphs.map((para, i) => (
-                    <p key={i} className="mb-5 last:mb-0">
-                      {para}
-                    </p>
-                  ))}
+                {/* Story content */}
+                <div className="relative">
+                  <div className="absolute -left-12 top-0 text-7xl font-[family:var(--font-display)] text-[var(--gold)]/20 select-none">“</div>
+                  <div className="drop-cap text-lg leading-relaxed text-[var(--ink)]/80">
+                    {paragraphs.map((para, i) => (
+                      <p key={i} className="mb-8 last:mb-0">
+                        {para}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Schedule info if present */}
+                {/* Practical info as field notes */}
                 {(stop.meal || stop.hotel || stop.transit) && (
-                  <div className="mt-12 grid gap-4 sm:grid-cols-3">
+                  <div className="mt-20 grid gap-6 sm:grid-cols-3">
                     {stop.meal && (
-                      <div className="rounded-xl border px-4 py-4"
-                        style={{ borderColor: "rgba(26,42,58,0.06)" }}
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.18em]"
-                          style={{ color: "rgba(26,42,58,0.3)" }}>
-                          Meal
-                        </p>
-                        <p className="mt-1 text-sm"
-                          style={{ color: "var(--route-text)" }}>
-                          {stop.meal}
-                        </p>
+                      <div className="border-8 border-white bg-white p-6 scrapbook-shadow rotate-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-3">Provisioning</p>
+                        <p className="text-sm text-[var(--river-deep)] font-medium">{stop.meal}</p>
                       </div>
                     )}
                     {stop.hotel && (
-                      <div className="rounded-xl border px-4 py-4"
-                        style={{ borderColor: "rgba(26,42,58,0.06)" }}
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.18em]"
-                          style={{ color: "rgba(26,42,58,0.3)" }}>
-                          Stay
-                        </p>
-                        <p className="mt-1 text-sm"
-                          style={{ color: "var(--route-text)" }}>
-                          {stop.hotel}
-                        </p>
+                      <div className="border-8 border-white bg-white p-6 scrapbook-shadow -rotate-1">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-3">Station / Stay</p>
+                        <p className="text-sm text-[var(--river-deep)] font-medium">{stop.hotel}</p>
                       </div>
                     )}
                     {stop.transit && (
-                      <div className="rounded-xl border px-4 py-4"
-                        style={{ borderColor: "rgba(26,42,58,0.06)" }}
-                      >
-                        <p className="text-[10px] uppercase tracking-[0.18em]"
-                          style={{ color: "rgba(26,42,58,0.3)" }}>
-                          Transit
-                        </p>
-                        <p className="mt-1 text-sm"
-                          style={{ color: "var(--route-text)" }}>
-                          {stop.transit}
-                        </p>
+                      <div className="border-8 border-white bg-white p-6 scrapbook-shadow rotate-2">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-3">Transport</p>
+                        <p className="text-sm text-[var(--river-deep)] font-medium">{stop.transit}</p>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* ── Discovery Route ── */}
-                <div className="mt-16 border-t pt-12"
-                  style={{ borderColor: "rgba(26,42,58,0.06)" }}
-                >
-                  <p className="text-[10px] uppercase tracking-[0.28em]"
-                    style={{ color: "rgba(26,42,58,0.3)" }}>
-                    Discovery Route
+                {/* Full Timeline as a discovery archive */}
+                <div className="mt-24 border-t border-[var(--line)] pt-16">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)] handwritten mb-4">
+                    Full Journey Log
                   </p>
-                  <h3 className="mt-2 font-serif text-2xl"
-                    style={{ color: "var(--route-text)" }}>
-                    Full Journey Timeline
+                  <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] mb-10">
+                    Temporal Mapping
                   </h3>
 
-                  <div className="mt-8">
+                  <div className="grid gap-2">
                     {allStops.map((s, i) => (
                       <DiscoveryItem
                         key={i}
                         stop={s}
                         index={i}
                         isActive={i === currentIndex}
-                        onSelect={() => {
-                          /* Within modal, can navigate via prev/next */
-                        }}
+                        onSelect={() => {}}
                       />
                     ))}
                   </div>
                 </div>
 
-                {/* Bottom spacing */}
-                <div className="h-20" />
+                <div className="h-32" />
               </div>
             </div>
           </div>

@@ -62,6 +62,7 @@ export function GlobalDrawer() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [recentRoutes, setRecentRoutes] = useState<RecentRoute[]>([]);
+  const [stamps, setStamps] = useState(0);
   const recentOrders: { slug: string; name: string; price: number; currency: string }[] = [];
 
   async function connectGoogleAccount() {
@@ -81,6 +82,7 @@ export function GlobalDrawer() {
     ));
     setCart(readJSON<CartItem[]>("lingtour-cart", []));
     setRecentRoutes(readJSON<RecentRoute[]>("lingtour-recent-routes", []).slice(0, 3));
+    setStamps(Number(window.localStorage.getItem("lingtour-community-stamps") || "0"));
   };
 
   useEffect(() => {
@@ -135,238 +137,238 @@ export function GlobalDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-[var(--line)] bg-[var(--paper)] shadow-[0_0_100px_rgba(17,25,35,0.15)]"
+            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-[0_0_100px_rgba(17,25,35,0.15)]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-5">
-              <p className="font-[family:var(--font-display)] text-xl tracking-[0.06em] text-[var(--river-deep)]">
-                Your LingTour
-              </p>
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-8 py-6 bg-white/40 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-[var(--gold)] animate-pulse" />
+                <p className="font-[family:var(--font-display)] text-2xl italic tracking-[0.02em] text-[var(--river-deep)]">
+                  Your LingTour
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="grid h-8 w-8 place-items-center text-[var(--muted)] transition hover:text-[var(--ink)]"
+                className="group grid h-10 w-10 place-items-center rounded-full border border-[var(--line)] transition-all hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)] hover:text-white"
                 aria-label="Close drawer"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto px-8 py-8 space-y-12">
               {/* User Profile Section */}
               {user ? (
-                <section className="border-b border-[var(--line)] bg-[var(--paper-deep)] px-6 py-8">
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-2xl text-white shadow-[0_12px_32px_rgba(182,66,53,0.3)]">
-                      {getInitials(user.name)}
+                <section className="relative">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-6">
+                      <div className="relative group">
+                        <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--river-deep)] font-[family:var(--font-display)] text-3xl text-white scrapbook-shadow overflow-hidden">
+                          {user.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          ) : getInitials(user.name)}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-[var(--gold)] border-2 border-[var(--paper-deep)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)]">
+                          {user.name}
+                        </p>
+                        <p className="mt-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                          <span className="inline-block w-3 h-px bg-[var(--line)]" />
+                          {user.country || "Explorer"} / Joined {user.memberSince || "2026"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-[family:var(--font-display)] text-2xl leading-none text-[var(--ink)]">
-                        {user.name}
-                      </p>
-                      <p className="mt-2 truncate text-xs text-[var(--muted)]">
-                        {user.email}
-                      </p>
-                      <p className="mt-2 inline-flex rounded-full border border-[var(--line)] bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                        ID {user.accountId}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {user.travelStyle && (
-                    <div className="mt-6 border-l border-[var(--line)] pl-4">
-                      <p className="text-[10px] uppercase tracking-widest text-[var(--muted)]">Travel Style</p>
-                      <p className="mt-1 text-sm leading-relaxed text-[var(--ink)]">
-                        {user.travelStyle}
-                      </p>
-                    </div>
-                  )}
 
-                  <div className="mt-8">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="scrapbook-shadow border border-[var(--line)] bg-white/60 p-4 rotate-1">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">Traveler ID</p>
+                        <p className="mt-1 font-mono text-xs text-[var(--river-deep)]">{user.accountId}</p>
+                      </div>
+                      <div className="scrapbook-shadow border border-[var(--line)] bg-white/60 p-4 -rotate-1">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">Travel Style</p>
+                        <p className="mt-1 text-xs font-bold text-[var(--river-deep)]">{user.travelStyle || "Curious Local"}</p>
+                      </div>
+                    </div>
+
+                    {/* Community Stats Badge */}
+                    <Link
+                      href="/community"
+                      onClick={closeDrawer}
+                      className="group flex items-center justify-between border border-[var(--line)] bg-[var(--river-deep)] p-4 text-white shadow-xl transition-all hover:bg-[var(--cinnabar)]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Community Rank</p>
+                          <p className="font-[family:var(--font-display)] text-lg italic">{stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Stamps</p>
+                        <p className="text-xl font-bold">{stamps}</p>
+                      </div>
+                    </Link>
+                  </div>
+
+                  <div className="mt-8 flex items-center justify-between gap-4">
                     <button
                       type="button"
                       onClick={() => {
                         logOut();
                         closeDrawer();
                       }}
-                      className="inline-flex h-10 items-center justify-center rounded-lg border border-red-100 bg-red-50 px-5 text-xs font-medium text-red-600 transition hover:bg-red-100"
+                      className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors underline underline-offset-4 decoration-[var(--line)]"
                     >
-                      Log out
+                      Sign Out Account
                     </button>
+                    <div className="h-px flex-1 bg-[var(--line)]" />
                   </div>
                 </section>
               ) : (
-                <section className="border-b border-[var(--line)] bg-[var(--paper-deep)] px-6 py-8">
-                  <p className="font-[family:var(--font-display)] text-2xl text-[var(--ink)]">
+                <section className="relative scrapbook-shadow border-4 border-white bg-white/40 p-8 rotate-1">
+                  <p className="font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
                     Planning your tour?
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-                    Sign in to save routes, objects, and manage your interpreting requests.
+                  <p className="handwritten mt-4 text-sm leading-relaxed text-[var(--muted)]">
+                    Sign in to save routes, objects, and manage your interpreting requests in this personal registry.
                   </p>
                   <Link
                     href="/login"
                     onClick={closeDrawer}
-                    className="mt-6 inline-flex h-11 items-center justify-center bg-[var(--cinnabar)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--cinnabar-deep)]"
+                    className="mt-8 inline-flex h-12 w-full items-center justify-center bg-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] text-white shadow-xl transition-all hover:bg-[var(--cinnabar)] active:scale-95"
                   >
                     Log in with email
                   </Link>
                 </section>
               )}
 
-              {/* Booking Drafts */}
+              {/* Favorites & Cart Tabs (New Concept) */}
+              <section className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="h-px flex-1 bg-[var(--line)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Registry & Kit</p>
+                  <div className="h-px flex-1 bg-[var(--line)]" />
+                </div>
+
+                <div className="space-y-12">
+                  {/* Favorites */}
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="font-[family:var(--font-display)] text-xl italic text-[var(--river-deep)]">Saved Signals</h4>
+                      <span className="text-[10px] font-bold text-[var(--muted)]">{favorites.length} Items</span>
+                    </div>
+                    {favorites.length > 0 ? (
+                      <div className="grid gap-4">
+                        {favorites.map((item, idx) => {
+                          const href = item.type === "route"
+                            ? `/routes/${item.id}`
+                            : `/shop/products/${item.id}`;
+                          return (
+                            <Link
+                              key={`${item.type}-${item.id}`}
+                              href={href}
+                              onClick={closeDrawer}
+                              className={`group relative flex items-center gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all hover:-translate-y-1 ${idx % 2 === 0 ? "rotate-1" : "-rotate-1"}`}
+                            >
+                              <div className="grid h-10 w-10 shrink-0 place-items-center bg-[var(--paper-deep)] text-[var(--gold)]">
+                                {item.type === "route" ? (
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 20l-5-2V4l5 2m0 14l5-2m-5 2v-14m5 12l5 2V6l-5-2m0 14V4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                ) : (
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">{item.type}</p>
+                                <p className="mt-0.5 truncate text-sm font-bold text-[var(--river-deep)] group-hover:text-[var(--cinnabar)]">{item.title}</p>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="handwritten text-sm text-[var(--muted)] opacity-60">Your private collection is currently empty...</p>
+                    )}
+                  </div>
+
+                  {/* Cart */}
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="font-[family:var(--font-display)] text-xl italic text-[var(--river-deep)]">Field Objects</h4>
+                      <span className="text-[10px] font-bold text-[var(--muted)]">{cart.length} in Cart</span>
+                    </div>
+                    {cart.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid gap-3">
+                          {cart.map((item) => (
+                            <div
+                              key={item.productSlug}
+                              className="flex items-center gap-4 border-b border-[var(--line)] pb-4"
+                            >
+                              <div className="h-14 w-14 shrink-0 bg-white p-1 scrapbook-shadow -rotate-2">
+                                {item.image && <img src={item.image} alt="" className="h-full w-full object-cover" />}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-bold text-[var(--river-deep)]">{item.name}</p>
+                                <p className="mt-1 text-[10px] font-bold text-[var(--gold)] uppercase tracking-widest">Qty: {item.quantity}</p>
+                              </div>
+                              <p className="text-sm font-bold text-[var(--cinnabar)]">
+                                ${(item.price * item.quantity).toFixed(2)}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                        <Link
+                          href="/checkout"
+                          onClick={closeDrawer}
+                          className="btn-primary mt-4 flex w-full items-center justify-center py-4"
+                        >
+                          Checkout Bag
+                        </Link>
+                      </div>
+                    ) : (
+                      <p className="handwritten text-sm text-[var(--muted)] opacity-60">No objects collected from the store yet.</p>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* Interpreter Requests */}
               {user && (
-                <section className="border-b border-[var(--line)] px-6 py-5">
-                  <p className="text-label text-[var(--cinnabar)]">Interpreting Drafts</p>
-                  <div className="mt-4 grid gap-3">
-                    {bookingDrafts.map((booking) => (
+                <section className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-[var(--line)]" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Dispatch Logs</p>
+                    <div className="h-px flex-1 bg-[var(--line)]" />
+                  </div>
+
+                  <div className="grid gap-4">
+                    {bookingDrafts.map((booking, idx) => (
                       <Link
                         key={`${booking.city}-${booking.date}`}
                         href="/interpreting#booking"
                         onClick={closeDrawer}
-                        className="block border border-[var(--line)] bg-white px-4 py-3 transition hover:border-[var(--cinnabar)]"
+                        className={`group relative block border border-dashed border-[var(--line)] bg-white/30 p-5 transition-all hover:bg-white ${idx % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
                       >
-                        <p className="text-xs text-[var(--muted)]">{booking.status} / {booking.city}</p>
-                        <p className="mt-1 text-sm font-medium text-[var(--ink)] truncate">{booking.service}</p>
+                        <div className="absolute -left-2 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">{booking.status}</p>
+                          <p className="text-[9px] font-mono text-[var(--muted)]">{booking.date}</p>
+                        </div>
+                        <p className="font-[family:var(--font-display)] text-lg text-[var(--river-deep)]">{booking.city} Dispatch</p>
+                        <p className="mt-1 handwritten text-xs text-[var(--muted)]">{booking.service}</p>
                       </Link>
                     ))}
                   </div>
                 </section>
               )}
-
-              {user && (
-                <section className="border-b border-[var(--line)] px-6 py-5">
-                  <p className="text-label text-[var(--cinnabar)]">Personal account</p>
-                  <div className="mt-4 rounded-2xl border border-[var(--line)] bg-white/65 p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--ink)]">Google</p>
-                        <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                          Bind Google for faster access to saved routes and bookings.
-                        </p>
-                      </div>
-                      {user.provider === "Google" ? (
-                        <span className="shrink-0 rounded-full bg-[var(--paper-deep)] px-3 py-2 text-xs font-semibold text-[var(--river-deep)]">
-                          Connected
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={connectGoogleAccount}
-                          className="shrink-0 rounded-full bg-[var(--river-deep)] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[var(--cinnabar)]"
-                        >
-                          Bind
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              {/* Favorites */}
-              <section className="border-b border-[var(--line)] px-6 py-5">
-                <p className="text-label text-[var(--cinnabar)]">Favorites</p>
-                {favorites.length > 0 ? (
-                  <div className="mt-4 grid gap-3">
-                    {favorites.map((item) => {
-                      const href = item.type === "route"
-                        ? `/routes/${item.id}`
-                        : `/shop/products/${item.id}`;
-                      return (
-                        <Link
-                          key={`${item.type}-${item.id}`}
-                          href={href}
-                          onClick={closeDrawer}
-                          className="block border border-[var(--line)] bg-white px-4 py-3 transition hover:border-[var(--cinnabar)]"
-                        >
-                          <p className="text-xs text-[var(--muted)]">{item.type === "route" ? "Route" : "Product"}</p>
-                          <p className="mt-1 text-sm font-medium text-[var(--ink)]">{item.title}</p>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-[var(--muted)]">Nothing saved yet. Browse routes or products and save what catches your eye.</p>
-                )}
-              </section>
-
-              {/* Cart */}
-              <section className="border-b border-[var(--line)] px-6 py-5">
-                <p className="text-label text-[var(--cinnabar)]">Cart</p>
-                {cart.length > 0 ? (
-                  <div className="mt-4 grid gap-3">
-                    {cart.map((item) => (
-                      <div
-                        key={item.productSlug}
-                        className="flex items-center gap-4 border border-[var(--line)] bg-white px-4 py-3"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[var(--ink)] truncate">{item.name}</p>
-                          <p className="mt-0.5 text-xs text-[var(--muted)]">Qty: {item.quantity}</p>
-                        </div>
-                        <p className="text-sm font-medium text-[var(--cinnabar)]">
-                          {`SGD $${(item.price * item.quantity).toFixed(2)}`}
-                        </p>
-                      </div>
-                    ))}
-                    <Link
-                      href="/checkout"
-                      onClick={closeDrawer}
-                      className="kinetic-link mt-1 bg-[var(--cinnabar)] px-4 py-3 text-center text-sm text-white transition hover:bg-[var(--cinnabar-deep)]"
-                    >
-                      Go to checkout
-                    </Link>
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-[var(--muted)]">Your cart is empty. Visit the store to find objects tied to Guangdong&apos;s stories.</p>
-                )}
-              </section>
-
-              {/* Recent Orders */}
-              {user && (
-                <section className="border-b border-[var(--line)] px-6 py-5">
-                  <p className="text-label text-[var(--cinnabar)]">Recent Orders</p>
-                  <div className="mt-4 grid gap-3">
-                    {recentOrders.map((order) => (
-                      <div
-                        key={order.slug}
-                        className="flex items-center gap-4 border border-[var(--line)] bg-white px-4 py-3"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[var(--ink)] truncate">{order.name}</p>
-                          <p className="mt-0.5 text-xs text-[var(--muted)]">Processing</p>
-                        </div>
-                        <p className="text-sm font-medium text-[var(--ink)]">
-                          {`${order.currency} $${order.price.toFixed(2)}`}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Recent Routes */}
-              <section className="px-6 py-5">
-                <p className="text-label text-[var(--cinnabar)]">Recently viewed</p>
-                {recentRoutes.length > 0 ? (
-                  <div className="mt-4 grid gap-3">
-                    {recentRoutes.map((route) => (
-                      <Link
-                        key={route.slug}
-                        href={`/routes/${route.slug}`}
-                        onClick={closeDrawer}
-                        className="block border border-[var(--line)] bg-white px-4 py-3 transition hover:border-[var(--cinnabar)]"
-                      >
-                        <p className="text-sm font-medium text-[var(--ink)]">{route.title}</p>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-[var(--muted)]">Routes you visit will appear here for quick access.</p>
-                )}
-              </section>
             </div>
           </motion.div>
         </>

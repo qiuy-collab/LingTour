@@ -23,12 +23,6 @@ function getCultureTagInfo(tag: string) {
   return cultureTagMap[tag] || { label: tag, color: '#909399' }
 }
 
-const statusMap: Record<string, { label: string; type: 'info' | 'success' | 'danger' }> = {
-  draft: { label: '草稿', type: 'info' },
-  published: { label: '已发布', type: 'success' },
-  archived: { label: '已下架', type: 'danger' },
-}
-
 // ─── 列表数据 ──────────────────────────────
 const loading = ref(false)
 const list = ref<Route[]>([])
@@ -73,7 +67,7 @@ function handleEdit(id: string) {
 async function handleDelete(routeItem: Route) {
   try {
     await routesApi.deleteRoute(routeItem.id)
-    ElMessage.success(`已删除路线「${routeItem.title}」`)
+    ElMessage.success(`已删除路线「${routeItem.title || ''}」`)
     fetchList()
   } catch {
     ElMessage.error('删除失败')
@@ -81,11 +75,16 @@ async function handleDelete(routeItem: Route) {
 }
 
 async function handleToggleStatus(routeItem: Route) {
-  const newStatus = routeItem.status === 'published' ? 'archived' : 'published'
   try {
-    await routesApi.updateRouteStatus(routeItem.id, newStatus)
-    routeItem.status = newStatus as Route['status']
-    ElMessage.success(newStatus === 'published' ? '已上架' : '已下架')
+    if (routeItem.published) {
+      await routesApi.unpublishRoute(routeItem.id)
+      routeItem.published = false
+      ElMessage.success('已下架')
+    } else {
+      await routesApi.publishRoute(routeItem.id)
+      routeItem.published = true
+      ElMessage.success('已发布')
+    }
   } catch {
     ElMessage.error('状态更新失败')
   }
@@ -170,7 +169,7 @@ const cityOptions = computed(() => {
           <template #default="{ row }">
             <div>
               <div class="route-title">{{ row.title }}</div>
-              <div class="route-title-en">{{ row.titleEn }}</div>
+              <div class="route-title-en">{{ row.titleEn || '' }}</div>
             </div>
           </template>
         </el-table-column>
@@ -189,9 +188,17 @@ const cityOptions = computed(() => {
           </template>
         </el-table-column>
 
-        <el-table-column prop="cityName" label="城市" width="80" />
+        <el-table-column prop="cityName" label="城市" width="100">
+          <template #default="{ row }">
+            {{ row.cityName }}
+          </template>
+        </el-table-column>
 
-        <el-table-column prop="duration" label="时长" width="90" />
+        <el-table-column prop="duration" label="时长" width="90">
+          <template #default="{ row }">
+            {{ row.duration }}
+          </template>
+        </el-table-column>
 
         <el-table-column label="站点数" width="80" align="center">
           <template #default="{ row }">
@@ -207,8 +214,8 @@ const cityOptions = computed(() => {
 
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag :type="statusMap[row.status]?.type || 'info'" size="small">
-              {{ statusMap[row.status]?.label || row.status }}
+            <el-tag :type="row.published ? 'success' : 'info'" size="small">
+              {{ row.published ? '已发布' : '草稿' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -226,14 +233,14 @@ const cityOptions = computed(() => {
             </el-button>
             <el-button
               link
-              :type="row.status === 'published' ? 'warning' : 'success'"
+              :type="row.published ? 'warning' : 'success'"
               size="small"
               @click="handleToggleStatus(row)"
             >
-              {{ row.status === 'published' ? '下架' : '上架' }}
+              {{ row.published ? '下架' : '发布' }}
             </el-button>
             <el-popconfirm
-              :title="`确定删除路线「${row.title}」吗？`"
+              :title="`确定删除路线「${row.title || ''}」吗？`"
               confirm-button-text="确定"
               cancel-button-text="取消"
               @confirm="handleDelete(row)"

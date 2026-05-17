@@ -18,36 +18,56 @@ export default function CulturePage() {
   if (!cityCultures) return null;
 
   return (
-    <div className="bg-[var(--paper-deep)]">
-      <section className="relative overflow-hidden bg-[var(--night)] text-white">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-45 hero-zoom"
-          style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1800&q=82)",
-          }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.48),rgba(17,25,35,0.84))]" />
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-[linear-gradient(0deg,var(--paper-deep),transparent)]" />
+    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
+      <section className="relative overflow-hidden pt-20 pb-12 lg:pt-32 lg:pb-24">
+        <div className="site-container">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 z-10">
+              <Reveal>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-px w-12 bg-[var(--cinnabar)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                    City Culture / The Atlas
+                  </p>
+                </div>
+                <h1 className="font-[family:var(--font-display)] text-6xl md:text-8xl lg:text-9xl leading-[0.85] tracking-[-0.04em] text-[var(--river-deep)]">
+                  Read the <br />
+                  <span className="italic text-[var(--gold)]">Province.</span>
+                </h1>
+                <p className="mt-12 max-w-xl text-lg leading-relaxed text-[var(--muted)] handwritten">
+                  Each city carries a different Guangdong: a coastline, a dialect, a table, a craft memory, and a rhythm you only notice when you slow down.
+                </p>
+              </Reveal>
+            </div>
 
-        <div className="site-container relative flex min-h-[46vh] flex-col justify-center py-20 lg:min-h-[56vh] lg:py-28">
-          <Reveal>
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
-              City Culture
-            </p>
-            <h1 className="mt-6 max-w-[12ch] font-[family:var(--font-display)] text-[3.2rem] leading-[0.94] tracking-[-0.03em] sm:text-7xl md:text-8xl">
-              Read the province through its cities.
-            </h1>
-            <div className="mt-8 h-px w-24 bg-[var(--gold)]/40" />
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/66">
-              Each city carries a different Guangdong: a coastline, a dialect, a table, a craft memory, and a rhythm you only notice when you slow down.
-            </p>
-          </Reveal>
+            <div className="lg:col-span-5 relative">
+              <Reveal delay={200}>
+                <div className="relative aspect-[4/5] rotate-2 scrapbook-shadow overflow-hidden rounded-sm border-8 border-white">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage:
+                        "url(https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1200&q=82)",
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/10" />
+                  {/* Tape effect */}
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/40 backdrop-blur-sm -rotate-2 z-20" />
+                </div>
+
+                {/* Floating metadata */}
+                <div className="absolute -bottom-6 -left-6 bg-white p-6 scrapbook-shadow -rotate-3 hidden md:block">
+                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-widest">Archive No.</p>
+                  <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] mt-1">GD-020-0755</p>
+                </div>
+              </Reveal>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="site-container -mt-12 py-12 lg:py-20">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="site-container py-12 lg:py-20">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {cityCultures.map((city, index) => (
             <Reveal key={city.slug} delay={index * 80}>
               <Link href={`/culture/${city.slug}`} className="group block">

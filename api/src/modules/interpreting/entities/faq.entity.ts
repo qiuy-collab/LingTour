@@ -22,6 +22,9 @@ export class Faq {
   @Column({ type: 'jsonb' })
   answer: { en: string; zh: string };
 
+  @Column({ type: 'varchar', length: 40, default: 'interpreting' })
+  category: string;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

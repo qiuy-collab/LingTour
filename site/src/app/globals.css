@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f2eee6;
+  --background: #e8ded0; /* This was --paper-deep */
   --foreground: #17202a;
   --paper: #f8f4ec;
   --paper-deep: #e8ded0;
@@ -33,18 +33,16 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  background-color: var(--background);
 }
 
 body {
   margin: 0;
   overflow-x: hidden;
-  background:
-    linear-gradient(90deg, rgba(23, 32, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 32, 42, 0.03) 1px, transparent 1px),
-    var(--background);
-  background-size: 44px 44px;
+  background-color: var(--background);
   color: var(--foreground);
   font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100vh;
 }
 
 a {
@@ -166,57 +164,62 @@ button {
 
 /* High-visibility primary button */
 .btn-primary {
-  background-color: var(--cinnabar);
+  background-color: var(--river-deep);
   color: #ffffff !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  transition: all 0.3s ease;
+  letter-spacing: 0.2em;
+  padding: 1.25rem 2.5rem;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   z-index: 1;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(20, 52, 61, 0.15);
 }
 
 .btn-primary:hover {
-  background-color: var(--cinnabar-deep);
+  background-color: var(--cinnabar);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(182, 66, 53, 0.3);
+  box-shadow: 0 12px 30px rgba(182, 66, 53, 0.25);
 }
 
 /* High-visibility gold button */
 .btn-gold {
   background-color: var(--gold);
-  color: var(--night) !important;
+  color: #ffffff !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  transition: all 0.3s ease;
+  letter-spacing: 0.2em;
+  padding: 1.25rem 2.5rem;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   z-index: 1;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(185, 138, 70, 0.15);
 }
 
 .btn-gold:hover {
-  background-color: #d4a75a;
+  background-color: var(--river-deep);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(185, 138, 70, 0.3);
+  box-shadow: 0 12px 30px rgba(20, 52, 61, 0.2);
 }
 
 /* High-visibility outline button */
 .btn-outline {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff !important;
-  font-weight: 600;
+  border: 1px solid var(--river-deep);
+  color: var(--river-deep) !important;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  transition: all 0.3s ease;
+  letter-spacing: 0.2em;
+  padding: 1.25rem 2.5rem;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   background: transparent;
 }
 
 .btn-outline:hover {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--river-deep);
   color: #ffffff !important;
+  box-shadow: 0 8px 25px rgba(20, 52, 61, 0.15);
 }
 
 @keyframes slow-float {

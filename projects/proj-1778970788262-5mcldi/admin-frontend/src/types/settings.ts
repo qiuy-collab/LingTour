@@ -26,6 +26,13 @@ export interface AppSettings {
 
   // 口译服务城市
   serviceCities: string[]      // 可选城市 slug 列表
+
+  // 后台UI配置
+  enableMarkdownEditor: boolean
+  pageTitleFontSize: number
+  sectionTitleFontSize: number
+  bodyFontSize: number
+  hintFontSize: number
 }
 
 export const DefaultSettings: AppSettings = {
@@ -36,4 +43,9 @@ export const DefaultSettings: AppSettings = {
   taxRate: 7.6,
   shippingTemplates: [],
   serviceCities: [],
+  enableMarkdownEditor: true,
+  pageTitleFontSize: 20,
+  sectionTitleFontSize: 15,
+  bodyFontSize: 14,
+  hintFontSize: 12,
 }

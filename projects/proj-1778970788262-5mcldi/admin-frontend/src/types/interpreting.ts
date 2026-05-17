@@ -1,75 +1,60 @@
-// ============================================
-// 口译服务相关 TypeScript 类型定义
-// 覆盖: 服务模式 / 口译员 / 预约 / FAQ
-// ============================================
+import type { I18nObject } from './common'
 
-// ─── 服务模式 (Service Modes) ──────────────────────
 export interface ServiceMode {
   id: string
   sortOrder: number
-  title: string
-  titleEn: string
-  price: string
-  bestFor: string
-  bestForEn: string
-  body: string
-  bodyEn: string
-  includes: string[]
-  includesEn: string[]
+  title: any
+  titleEn?: string
+  price: any
+  bestFor: any
+  bestForEn?: string
+  body: any
+  bodyEn?: string
+  includes: any[]
   accent: 'light' | 'dark'
   featured: boolean
 }
 
 export interface ServiceModeFormData {
   sortOrder: number
-  title: string
-  titleEn: string
+  title: I18nObject
   price: string
-  bestFor: string
-  bestForEn: string
-  body: string
-  bodyEn: string
-  includes: string[]
-  includesEn: string[]
+  bestFor: I18nObject
+  body: I18nObject
+  includes: I18nObject[]
   accent: 'light' | 'dark'
   featured: boolean
 }
 
-// ─── 口译员 (Interpreters) ──────────────────────
 export type InterpreterStatus = 'active' | 'inactive' | 'pending_review'
 
 export interface Interpreter {
   id: string
   sortOrder: number
-  name: string
-  language: string
-  focus: string
-  focusEn: string
-  helps: string[]
-  helpsEn: string[]
+  name: any
+  language: any
+  focus: any
+  focusEn?: string
+  helps: any[]
   avatar: string
-  bio: string
-  bioEn: string
+  bio: any
+  bioEn?: string
   status: InterpreterStatus
-  city: string
+  city: any
 }
 
 export interface InterpreterFormData {
   sortOrder: number
   name: string
   language: string
-  focus: string
-  focusEn: string
-  helps: string[]
-  helpsEn: string[]
+  focus: I18nObject
+  helps: I18nObject[]
   avatar: string
-  bio: string
-  bioEn: string
+  bio: I18nObject
   status: InterpreterStatus
   city: string
 }
 
-// ─── 口译预约 (Bookings) ──────────────────────
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
 
 export interface Booking {
@@ -88,32 +73,28 @@ export interface Booking {
   createdAt: string
 }
 
-// ─── 常见问题 (FAQs) ──────────────────────
 export type FAQCategory = 'interpreting' | 'general' | 'routes'
 
 export interface FAQ {
   id: string
   sortOrder: number
-  question: string
-  questionEn: string
-  answer: string
-  answerEn: string
+  question: any
+  questionEn?: string
+  answer: any
+  answerEn?: string
   category: FAQCategory
 }
 
 export interface FAQFormData {
   sortOrder: number
-  question: string
-  questionEn: string
-  answer: string
-  answerEn: string
+  question: I18nObject
+  answer: I18nObject
   category: FAQCategory
 }
 
-// ─── 状态显示映射 ──────────────────────────────
 export const InterpreterStatusMap: Record<InterpreterStatus, string> = {
   active: '已激活',
-  inactive: '已禁用',
+  inactive: '已停用',
   pending_review: '待审核',
 }
 

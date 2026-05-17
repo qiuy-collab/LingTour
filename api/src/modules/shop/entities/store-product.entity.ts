@@ -58,6 +58,9 @@ export class StoreProduct {
   @Column({ type: 'jsonb', nullable: true })
   care: { en: string; zh: string } | null;
 
+  @Column({ type: 'jsonb', name: 'origin_trace', nullable: true })
+  originTrace: Record<string, unknown> | null;
+
   @Column({ type: 'jsonb', default: [] })
   gallery: string[];
 

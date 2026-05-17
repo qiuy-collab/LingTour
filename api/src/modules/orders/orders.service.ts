@@ -58,6 +58,53 @@ export class OrdersService {
     };
   }
 
+  async createInterpretingDeposit(input: {
+    name: string;
+    contact: string;
+    city: string;
+    serviceDate: string;
+    supportMode: string;
+    groupSize?: string | null;
+    routeOrNeed?: string | null;
+    depositAmount: number;
+    currency?: string;
+  }) {
+    const order = this.orderRepo.create({
+      orderNo: this.generateOrderNo(),
+      userId: null,
+      guestEmail: this.deriveGuestEmail(input.contact),
+      status: 'pending',
+      totalAmount: input.depositAmount,
+      paymentMethod: 'deposit',
+      shippingAddr: {
+        recipientName: input.name,
+        street: 'Interpreting deposit request',
+        city: input.city,
+        state: input.city,
+        postalCode: '000000',
+        country: 'China',
+        phone: input.contact,
+        serviceDate: input.serviceDate,
+        supportMode: input.supportMode,
+        groupSize: input.groupSize ?? '',
+        routeOrNeed: input.routeOrNeed ?? '',
+        currency: input.currency ?? 'SGD',
+        serviceType: 'interpreting-deposit',
+      },
+    });
+
+    const saved = await this.orderRepo.save(order);
+
+    return {
+      orderId: saved.id,
+      orderNo: saved.orderNo,
+      totalAmount: saved.totalAmount,
+      currency: input.currency ?? 'SGD',
+      status: saved.status,
+      stripeClientSecret: `pi_mock_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`,
+    };
+  }
+
   /**
    * Handle Stripe webhook callback.
    * In production: verify webhook signature, update order status,
@@ -131,5 +178,15 @@ export class OrdersService {
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `LT${timestamp}${random}`;
+  }
+
+  private deriveGuestEmail(contact: string): string {
+    const trimmed = contact.trim();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const safe = trimmed.replace(/[^a-zA-Z0-9]/g, '').slice(0, 18) || 'guest';
+    return `${safe.toLowerCase()}@lingtour.local`;
   }
 }

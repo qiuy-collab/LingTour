@@ -119,21 +119,18 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
         Routes
       </Link>
 
-      <div className="invisible fixed left-0 top-[4.55rem] z-40 w-screen translate-y-3 border-y border-black/10 bg-[rgba(248,244,236,0.98)] opacity-0 shadow-[0_28px_80px_rgba(17,25,35,0.14)] backdrop-blur-xl transition-all duration-300 group-hover/routes:visible group-hover/routes:translate-y-0 group-hover/routes:opacity-100 group-focus-within/routes:visible group-focus-within/routes:translate-y-0 group-focus-within/routes:opacity-100">
-        <div className="mx-auto max-w-[82rem] px-10 py-8">
-          <div className="mb-7 flex items-end justify-between gap-8">
+      <div className="invisible fixed left-0 top-[4.55rem] z-40 w-screen translate-y-3 border-y border-black/5 bg-[var(--paper-deep)] bg-grain opacity-0 shadow-[0_40px_100px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-400 group-hover/routes:visible group-hover/routes:translate-y-0 group-hover/routes:opacity-100 group-focus-within/routes:visible group-focus-within/routes:translate-y-0 group-focus-within/routes:opacity-100">
+        <div className="mx-auto max-w-[82rem] px-10 py-12">
+          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-black/5 pb-10">
             <div>
-              <p className="text-label text-[var(--cinnabar)]">Routes by region</p>
-              <h2 className="mt-2 font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)]">
-                Pick a Guangdong region, then follow its story route.
-              </h2>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Routes / Field Discovery</p>
             </div>
-            <Link href="/routes" className="kinetic-link bg-[var(--night)] px-5 py-3 text-sm text-white">
+            <Link href="/routes" className="px-8 py-4 border border-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white">
               View all routes
             </Link>
           </div>
 
-          <div className="grid gap-x-7 gap-y-8 md:grid-cols-3 xl:grid-cols-5">
+          <div className="grid gap-x-10 gap-y-12 md:grid-cols-3 xl:grid-cols-5">
             {routeRegions.map((region) => {
               const regionRoutes = routesForRegion(region.title, routes);
 
@@ -148,11 +145,11 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                   transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <Link href={regionRoutes[0] ? `/routes/${regionRoutes[0].slug}` : "/routes"} className="block">
-                    <div className="relative h-28 overflow-hidden bg-white/60 transition group-hover/region:-translate-y-1 group-hover/region:shadow-[0_20px_60px_rgba(17,25,35,0.12)]">
+                    <div className="relative h-32 overflow-hidden bg-white border border-black/10 scrapbook-shadow transition group-hover/region:-translate-y-1">
                       {mapPaths ? (
                         <svg
                           viewBox={`0 0 ${mapPaths.width} ${mapPaths.height}`}
-                          className="h-full w-full scale-110"
+                          className="h-full w-full scale-110 grayscale-[0.2] opacity-80 group-hover/region:grayscale-0 group-hover/region:opacity-100 transition-all duration-500"
                           role="img"
                           aria-label={`${region.title} highlighted on Guangdong map`}
                         >
@@ -161,32 +158,33 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                             <path
                               key={city.adcode}
                               d={city.path}
-                              fill={region.adcodes.includes(city.adcode) ? "#d42621" : "#dbe7df"}
-                              stroke="#fffaf1"
-                              strokeWidth={region.adcodes.includes(city.adcode) ? 1.2 : 0.7}
-                              opacity={region.adcodes.includes(city.adcode) ? 1 : 0.72}
+                              fill={region.adcodes.includes(city.adcode) ? "#b64235" : "#8a968d"}
+                              stroke="#fff"
+                              strokeWidth={region.adcodes.includes(city.adcode) ? 2 : 1.2}
+                              opacity={1}
                               onMouseEnter={() => setHoveredRegion(region.title)}
                               onMouseLeave={() => setHoveredRegion(null)}
                             />
                           ))}
                         </svg>
                       ) : (
-                        <div className="grid h-full place-items-center text-xs text-[var(--muted)]">Map</div>
+                        <div className="grid h-full place-items-center text-xs text-[var(--muted)] handwritten">Loading Map...</div>
                       )}
                     </div>
-                    <h3 className="mt-4 text-base font-bold text-[var(--ink)] transition group-hover/region:text-[var(--cinnabar)]">
+                    <h3 className="mt-5 text-lg font-bold text-[var(--river-deep)] transition group-hover/region:text-[var(--cinnabar)]">
                       {region.title}
                     </h3>
-                    <p className="mt-1 text-xs text-[var(--muted)]">{region.note}</p>
+                    <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{region.note}</p>
                   </Link>
-                  <div className="mt-4 grid gap-2">
-                    {regionRoutes.map((route) => (
+                  <div className="mt-6 space-y-3 border-t border-black/5 pt-4">
+                    {regionRoutes.slice(0, 3).map((route) => (
                       <Link
                         key={route.slug}
                         href={`/routes/${route.slug}`}
-                        className="text-sm leading-6 text-[var(--ink)] transition hover:translate-x-1 hover:text-[var(--cinnabar)]"
+                        className="group/link flex items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
                       >
-                        {route.title}
+                        <span className="w-1 h-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
+                        <span className="handwritten whitespace-nowrap overflow-hidden text-ellipsis">{route.title}</span>
                       </Link>
                     ))}
                   </div>

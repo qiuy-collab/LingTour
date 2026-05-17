@@ -3,6 +3,8 @@ import {
   Get,
   Post,
   Put,
+  Patch,
+  Delete,
   Param,
   Body,
   Query,
@@ -20,6 +22,7 @@ import { SetProfilesDto } from './dto/set-profiles.dto';
 import { SetFaqsDto } from './dto/set-faqs.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
+import { ConfirmBookingDepositDto } from './dto/confirm-booking-deposit.dto';
 import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('Interpreting')
@@ -41,6 +44,27 @@ export class InterpretingController {
   @ApiOperation({ summary: 'Submit booking request' })
   async submitBooking(@Body() dto: CreateBookingDto) {
     return this.interpretingService.submitBooking(dto);
+  }
+
+  @Public()
+  @Post('public/bookings/checkout')
+  @ApiOperation({ summary: 'Submit booking request and create deposit checkout' })
+  async submitBookingWithDeposit(@Body() dto: CreateBookingDto) {
+    return this.interpretingService.submitBookingWithDeposit(dto);
+  }
+
+  @Public()
+  @Post('public/bookings/:id/confirm-deposit')
+  @ApiOperation({ summary: 'Confirm interpreting booking deposit payment' })
+  async confirmBookingDeposit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ConfirmBookingDepositDto,
+  ) {
+    return this.interpretingService.confirmBookingDeposit(
+      id,
+      dto.orderNo,
+      dto.paymentId,
+    );
   }
 
   // ── Admin: Config ──
@@ -71,6 +95,131 @@ export class InterpretingController {
   @ApiOperation({ summary: 'Full replace FAQs' })
   async setFaqs(@Body() dto: SetFaqsDto) {
     return this.interpretingService.replaceFaqs(dto.faqs);
+  }
+
+  @Get('admin/interpreting/modes')
+  @ApiBearerAuth()
+  async listModes(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+    return this.interpretingService.findModesAdmin(+page, +pageSize);
+  }
+
+  @Get('admin/interpreting/modes/:id')
+  @ApiBearerAuth()
+  async getMode(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.findModeByIdAdmin(id);
+  }
+
+  @Post('admin/interpreting/modes')
+  @ApiBearerAuth()
+  async createMode(@Body() body: any) {
+    return this.interpretingService.createMode(body);
+  }
+
+  @Put('admin/interpreting/modes/:id')
+  @ApiBearerAuth()
+  async updateMode(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+    return this.interpretingService.updateMode(id, body);
+  }
+
+  @Patch('admin/interpreting/modes/:id/sort')
+  @ApiBearerAuth()
+  async updateModeSort(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('sortOrder') sortOrder: number,
+  ) {
+    return this.interpretingService.updateModeSort(id, +sortOrder);
+  }
+
+  @Delete('admin/interpreting/modes/:id')
+  @ApiBearerAuth()
+  async deleteMode(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.deleteMode(id);
+  }
+
+  @Get('admin/interpreting/profiles')
+  @ApiBearerAuth()
+  async listProfiles(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 20,
+    @Query('status') status?: string,
+  ) {
+    return this.interpretingService.findProfilesAdmin(+page, +pageSize, status);
+  }
+
+  @Get('admin/interpreting/profiles/:id')
+  @ApiBearerAuth()
+  async getProfile(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.findProfileByIdAdmin(id);
+  }
+
+  @Post('admin/interpreting/profiles')
+  @ApiBearerAuth()
+  async createProfile(@Body() body: any) {
+    return this.interpretingService.createProfile(body);
+  }
+
+  @Put('admin/interpreting/profiles/:id')
+  @ApiBearerAuth()
+  async updateProfile(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+    return this.interpretingService.updateProfile(id, body);
+  }
+
+  @Patch('admin/interpreting/profiles/:id/status')
+  @ApiBearerAuth()
+  async updateProfileStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('status') status: string,
+  ) {
+    return this.interpretingService.updateProfileStatus(id, status);
+  }
+
+  @Delete('admin/interpreting/profiles/:id')
+  @ApiBearerAuth()
+  async deleteProfile(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.deleteProfile(id);
+  }
+
+  @Get('admin/interpreting/faqs')
+  @ApiBearerAuth()
+  async listFaqs(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 20,
+    @Query('category') category?: string,
+  ) {
+    return this.interpretingService.findFaqsAdmin(+page, +pageSize, category);
+  }
+
+  @Get('admin/interpreting/faqs/:id')
+  @ApiBearerAuth()
+  async getFaq(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.findFaqByIdAdmin(id);
+  }
+
+  @Post('admin/interpreting/faqs')
+  @ApiBearerAuth()
+  async createFaq(@Body() body: any) {
+    return this.interpretingService.createFaq(body);
+  }
+
+  @Put('admin/interpreting/faqs/:id')
+  @ApiBearerAuth()
+  async updateFaq(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+    return this.interpretingService.updateFaq(id, body);
+  }
+
+  @Patch('admin/interpreting/faqs/:id/sort')
+  @ApiBearerAuth()
+  async updateFaqSort(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('sortOrder') sortOrder: number,
+  ) {
+    return this.interpretingService.updateFaqSort(id, +sortOrder);
+  }
+
+  @Delete('admin/interpreting/faqs/:id')
+  @ApiBearerAuth()
+  async deleteFaq(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.deleteFaq(id);
   }
 
   // ── Admin: Bookings ──
@@ -106,5 +255,14 @@ export class InterpretingController {
     @Body() dto: UpdateBookingStatusDto,
   ) {
     return this.interpretingService.updateBookingStatus(id, dto.status);
+  }
+
+  @Patch('admin/bookings/:id/assign')
+  @ApiBearerAuth()
+  async assignInterpreter(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('interpreterId') interpreterId: string,
+  ) {
+    return this.interpretingService.assignInterpreter(id, interpreterId);
   }
 }

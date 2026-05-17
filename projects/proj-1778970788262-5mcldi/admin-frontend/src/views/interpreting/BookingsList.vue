@@ -83,7 +83,7 @@ async function refreshBooking() {
     // Also update in list
     const idx = list.value.findIndex((b) => b.id === selectedBooking.value!.id)
     if (idx >= 0) {
-      list.value[idx] = { ...selectedBooking.value }
+      list.value[idx] = { ...(selectedBooking.value as Booking) }
     }
   } catch {
     // ignore

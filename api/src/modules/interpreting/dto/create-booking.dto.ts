@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  MaxLength,
+  IsBoolean,
+} from 'class-validator';
 
 export class CreateBookingDto {
   @ApiProperty({ example: 'John Smith' })
@@ -36,4 +42,9 @@ export class CreateBookingDto {
   @IsOptional()
   @IsString()
   routeOrNeed?: string;
+
+  @ApiPropertyOptional({ example: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  fastTrack?: boolean;
 }

@@ -11,7 +11,7 @@ export const interpretersApi = {
   },
 
   getInterpreter(id: string) {
-    return api.get<ApiResponse<Interpreter>>(`/interpreting/profiles/${id}`)
+    return api.get<ApiResponse<Interpreter>>(`/interpreting/profiles/${id}`, { params: { rawI18n: true } })
   },
 
   createInterpreter(data: InterpreterFormData) {

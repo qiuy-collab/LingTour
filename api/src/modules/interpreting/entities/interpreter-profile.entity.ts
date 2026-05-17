@@ -28,6 +28,18 @@ export class InterpreterProfile {
   @Column({ type: 'jsonb', default: [] })
   helps: { en: string; zh: string }[];
 
+  @Column({ type: 'varchar', length: 500, default: '' })
+  avatar: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  bio: { en: string; zh: string } | null;
+
+  @Column({ type: 'varchar', length: 30, default: 'pending_review' })
+  status: string;
+
+  @Column({ type: 'varchar', length: 120, default: '' })
+  city: string;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

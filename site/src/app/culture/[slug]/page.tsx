@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { fetchCities } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
@@ -29,5 +30,9 @@ export default async function CityCulturePage({
 }) {
   const { slug } = await params;
   const { CultureDetailClient } = await import("./CultureDetailClient");
-  return <CultureDetailClient slug={slug} />;
+  return (
+    <Suspense fallback={null}>
+      <CultureDetailClient slug={slug} />
+    </Suspense>
+  );
 }

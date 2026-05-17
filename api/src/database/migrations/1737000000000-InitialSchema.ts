@@ -11,6 +11,7 @@ export class InitialSchema1737000000000 implements MigrationInterface {
         email VARCHAR(255) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'editor',
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
         name VARCHAR(100),
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -153,6 +154,7 @@ export class InitialSchema1737000000000 implements MigrationInterface {
         dimensions JSONB,
         origin JSONB,
         care JSONB,
+        origin_trace JSONB,
         gallery JSONB NOT NULL DEFAULT '[]',
         stock INT NOT NULL DEFAULT 0,
         published BOOLEAN NOT NULL DEFAULT false,
@@ -206,6 +208,10 @@ export class InitialSchema1737000000000 implements MigrationInterface {
         language JSONB NOT NULL,
         focus JSONB NOT NULL,
         helps JSONB NOT NULL DEFAULT '[]',
+        avatar VARCHAR(500) NOT NULL DEFAULT '',
+        bio JSONB,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending_review',
+        city VARCHAR(120) NOT NULL DEFAULT '',
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
@@ -219,6 +225,7 @@ export class InitialSchema1737000000000 implements MigrationInterface {
         sort_order INT NOT NULL UNIQUE,
         question JSONB NOT NULL,
         answer JSONB NOT NULL,
+        category VARCHAR(40) NOT NULL DEFAULT 'interpreting',
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
@@ -237,6 +244,8 @@ export class InitialSchema1737000000000 implements MigrationInterface {
         group_size VARCHAR(100),
         route_or_need TEXT,
         status VARCHAR(20) NOT NULL DEFAULT 'new',
+        assigned_interpreter_id UUID,
+        assigned_interpreter_name VARCHAR(200),
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );

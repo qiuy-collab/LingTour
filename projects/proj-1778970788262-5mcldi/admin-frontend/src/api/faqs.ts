@@ -11,7 +11,7 @@ export const faqsApi = {
   },
 
   getFAQ(id: string) {
-    return api.get<ApiResponse<FAQ>>(`/interpreting/faqs/${id}`)
+    return api.get<ApiResponse<FAQ>>(`/interpreting/faqs/${id}`, { params: { rawI18n: true } })
   },
 
   createFAQ(data: FAQFormData) {

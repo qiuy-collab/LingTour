@@ -12,12 +12,12 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 
 const form = reactive({
-  username: '',
+  email: '',
   password: '',
 })
 
 const rules: FormRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
@@ -28,7 +28,7 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    await authStore.login(form.username, form.password)
+    await authStore.login(form.email, form.password)
     ElMessage.success('登录成功')
     router.push('/admin/dashboard')
   } catch {
@@ -55,10 +55,10 @@ async function handleLogin() {
           label-position="top"
           @keyup.enter="handleLogin"
         >
-          <el-form-item prop="username">
+          <el-form-item prop="email">
             <el-input
-              v-model="form.username"
-              placeholder="请输入用户名"
+              v-model="form.email"
+              placeholder="请输入邮箱 (admin@lingtour.cn)"
               :prefix-icon="UserFilled"
               size="large"
             />

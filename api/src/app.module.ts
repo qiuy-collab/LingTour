@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -24,6 +24,10 @@ import { InterpretingModule } from './modules/interpreting/interpreting.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { HomeModule } from './modules/home/home.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { CommunityModule } from './modules/community/community.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -68,6 +72,10 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     OrdersModule,
     UploadModule,
     DashboardModule,
+    HomeModule,
+    SettingsModule,
+    CommunityModule,
+    EventsModule,
   ],
   providers: [
     {
@@ -85,3 +93,4 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
   ],
 })
 export class AppModule {}
+

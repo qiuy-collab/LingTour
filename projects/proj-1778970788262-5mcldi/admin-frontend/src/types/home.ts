@@ -1,43 +1,36 @@
+import type { I18nObject } from './common'
+
 // ============================================
 // 首页内容管理 TypeScript 类型定义
 // ============================================
 
 export interface HeroStat {
-  title: string
-  titleEn: string
-  description: string
-  descriptionEn: string
+  title: I18nObject
+  description: I18nObject
 }
 
 export interface TrustMetric {
   value: string
-  label: string
-  labelEn: string
+  label: I18nObject
 }
 
 export interface EntryCard {
-  title: string
-  titleEn: string
-  description: string
-  descriptionEn: string
+  title: I18nObject
+  description: I18nObject
   image: string
   link: string
 }
 
 export interface CultureHighlight {
-  title: string
-  titleEn: string
-  description: string
-  descriptionEn: string
+  title: I18nObject
+  description: I18nObject
   image: string
   citySlug: string
 }
 
 export interface Testimonial {
-  quote: string
-  quoteEn: string
-  author: string
-  authorEn: string
+  quote: I18nObject
+  author: I18nObject
   avatar: string
 }
 

@@ -13,6 +13,10 @@ type SupportedLang = 'en' | 'zh';
 export class I18nInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
+    if (request.query?.rawI18n === 'true' || request.query?.rawI18n === '1') {
+      return next.handle();
+    }
+
     const lang: SupportedLang = this.resolveLanguage(request);
 
     return next

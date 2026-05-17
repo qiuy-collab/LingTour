@@ -6,9 +6,11 @@ import { Faq } from './entities/faq.entity';
 import { BookingSubmission } from './entities/booking-submission.entity';
 import { InterpretingService } from './interpreting.service';
 import { InterpretingController } from './interpreting.controller';
+import { OrdersModule } from '../orders/orders.module';
 
 @Module({
   imports: [
+    OrdersModule,
     TypeOrmModule.forFeature([
       ServiceMode,
       InterpreterProfile,

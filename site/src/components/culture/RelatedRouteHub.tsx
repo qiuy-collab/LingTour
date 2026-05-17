@@ -47,33 +47,37 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
   return (
     <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_0.9fr]">
       {/* Left: Route cards */}
-      <div className="grid gap-5">
+      <div className="grid gap-8">
         {routes.map((route, idx) => (
           <Reveal key={route.slug} delay={idx * 80}>
             <Link
               href={`/routes/${route.slug}`}
-              className="group lux-card flex flex-col gap-4 border border-[var(--line)] bg-white p-5 transition hover:border-[var(--cinnabar)] sm:flex-row sm:gap-6"
+              className={`group relative flex flex-col gap-4 border border-[var(--line)] bg-white p-6 transition-all duration-500 scrapbook-shadow hover:border-[var(--cinnabar)] sm:flex-row sm:gap-8 ${idx % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
               onMouseEnter={() => setHoveredRouteIdx(idx)}
               onMouseLeave={() => setHoveredRouteIdx(null)}
             >
               <div
-                className="image-sheen h-28 w-full shrink-0 bg-cover bg-center sm:h-24 sm:w-36"
+                className="image-sheen h-32 w-full shrink-0 border-4 border-white bg-cover bg-center scrapbook-shadow sm:h-28 sm:w-40"
                 style={{ backgroundImage: `url(${route.image})` }}
               />
               <div className="flex flex-1 flex-col min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="bg-[var(--river-deep)] px-2 py-0.5 text-xs text-white">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="bg-[var(--river-deep)] px-2.5 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
                     {route.culture}
                   </span>
-                  <span className="text-xs text-[var(--muted)]">{route.duration}</span>
-                  <span className="text-xs text-[var(--muted)]">{route.audience}</span>
+                  <span className="text-[11px] font-medium tracking-wider text-[var(--muted)]">{route.duration}</span>
                 </div>
-                <h3 className="mt-2 font-[family:var(--font-display)] text-xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+                <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
                   {route.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{route.summary}</p>
-                <p className="mt-auto pt-3 text-sm font-medium text-[var(--cinnabar)] transition group-hover:translate-x-1">
-                  Read route details →
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)] line-clamp-2">
+                  {route.summary}
+                </p>
+                <p className="mt-4 flex items-center gap-2 pt-3 text-sm font-bold tracking-widest text-[var(--cinnabar)] uppercase transition group-hover:translate-x-1">
+                  <span>Explore Route</span>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </p>
               </div>
             </Link>
@@ -84,13 +88,14 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
       {/* Right: Micro map */}
       <div className="hidden lg:block">
         <div className="sticky top-28">
-          <p className="text-label text-[var(--cinnabar)]">Route geography</p>
-          <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
+          <p className="text-label text-[var(--cinnabar)] handwritten">Route geography</p>
+          <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
             Where {cityName}&apos;s routes cross
           </h3>
-          <div className="relative mt-6 overflow-hidden border border-[var(--line)] bg-[var(--paper)] shadow-[var(--shadow-soft)]">
+          <div className="relative mt-8 overflow-hidden border-8 border-white bg-white scrapbook-shadow -rotate-1">
+            <div className="absolute inset-0 bg-grain opacity-[0.05] pointer-events-none" />
             {mapData ? (
-              <div className="relative">
+              <div className="relative p-4">
                 <svg
                   viewBox={`0 0 ${mapData.width} ${mapData.height}`}
                   className="w-full"
@@ -104,10 +109,10 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
                       <path
                         key={city.adcode}
                         d={city.path}
-                        fill={isHighlighted ? "#b64235" : "#d8d0c2"}
-                        stroke="#fffaf1"
-                        strokeWidth={isHighlighted ? 1.2 : 0.6}
-                        opacity={isHighlighted ? 1 : 0.6}
+                        fill={isHighlighted ? "#b64235" : "#ccd6ce"}
+                        stroke="#fff"
+                        strokeWidth={isHighlighted ? 1.5 : 0.8}
+                        opacity={isHighlighted ? 1 : 0.7}
                         className="transition-[fill,opacity] duration-300"
                       />
                     );

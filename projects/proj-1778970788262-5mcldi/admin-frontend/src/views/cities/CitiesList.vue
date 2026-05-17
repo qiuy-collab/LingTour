@@ -118,7 +118,7 @@ function regionColor(region: string) {
           <template #default="{ row }">
             <div>
               <div class="city-name">{{ row.name }}</div>
-              <div class="city-name-en">{{ row.nameEn }}</div>
+              <div class="city-name-en">{{ row.nameEn || '' }}</div>
             </div>
           </template>
         </el-table-column>
@@ -128,7 +128,7 @@ function regionColor(region: string) {
         <el-table-column label="地区标签" width="160">
           <template #default="{ row }">
             <el-tag
-              :color="regionColor(row.regionLabel)"
+              :color="regionColor(row.regionLabel || '')"
               effect="dark"
               size="small"
             >
@@ -140,8 +140,8 @@ function regionColor(region: string) {
         <el-table-column label="标签" min-width="200">
           <template #default="{ row }">
             <el-tag
-              v-for="tag in row.tags"
-              :key="tag"
+              v-for="(tag, idx) in (row.tags || [])"
+              :key="idx"
               size="small"
               style="margin: 2px"
             >
@@ -159,10 +159,10 @@ function regionColor(region: string) {
         <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
             <el-tag
-              :type="row.status === 'published' ? 'success' : 'info'"
+              :type="row.published ? 'success' : 'info'"
               size="small"
             >
-              {{ row.status === 'published' ? '已发布' : '草稿' }}
+              {{ row.published ? '已发布' : '草稿' }}
             </el-tag>
           </template>
         </el-table-column>

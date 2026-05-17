@@ -5,7 +5,9 @@ import { Plus, Delete } from '@element-plus/icons-vue'
 import { homeApi } from '@/api/home'
 import type { HomeConfig } from '@/types/home'
 import { HomeConfigBlockLabels } from '@/types/home'
+import { toI18n } from '@/types/common'
 import ImageUpload from '@/components/ImageUpload.vue'
+import I18nInput from '@/components/I18nInput.vue'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -26,7 +28,15 @@ onMounted(async () => {
   loading.value = true
   try {
     const res = await homeApi.getHomeConfig()
-    Object.assign(config, res.data.data)
+    const data = res.data.data
+    Object.assign(config, {
+      heroStats: (data.heroStats || []).map((s: any) => ({ title: toI18n(s.title), description: toI18n(s.description) })),
+      trustMetrics: (data.trustMetrics || []).map((m: any) => ({ value: m.value || '', label: toI18n(m.label) })),
+      entryCards: (data.entryCards || []).map((c: any) => ({ title: toI18n(c.title), description: toI18n(c.description), image: c.image || '', link: c.link || '' })),
+      featuredRoutes: data.featuredRoutes || [],
+      cultureHighlights: (data.cultureHighlights || []).map((h: any) => ({ title: toI18n(h.title), description: toI18n(h.description), image: h.image || '', citySlug: h.citySlug || '' })),
+      testimonials: (data.testimonials || []).map((t: any) => ({ quote: toI18n(t.quote), author: toI18n(t.author), avatar: t.avatar || '' })),
+    })
   } catch {
     ElMessage.error('加载首页配置失败')
   } finally {
@@ -46,7 +56,7 @@ function toggleBlock(block: string) {
 
 // ─── Hero统计卡片 ──────────────────────────
 function addHeroStat() {
-  config.heroStats.push({ title: '', titleEn: '', description: '', descriptionEn: '' })
+  config.heroStats.push({ title: { zh: '', en: '' }, description: { zh: '', en: '' } })
 }
 function removeHeroStat(index: number) {
   config.heroStats.splice(index, 1)
@@ -54,7 +64,7 @@ function removeHeroStat(index: number) {
 
 // ─── 信任指标 ──────────────────────────
 function addTrustMetric() {
-  config.trustMetrics.push({ value: '', label: '', labelEn: '' })
+  config.trustMetrics.push({ value: '', label: { zh: '', en: '' } })
 }
 function removeTrustMetric(index: number) {
   config.trustMetrics.splice(index, 1)
@@ -62,7 +72,7 @@ function removeTrustMetric(index: number) {
 
 // ─── 入口卡片 ──────────────────────────
 function addEntryCard() {
-  config.entryCards.push({ title: '', titleEn: '', description: '', descriptionEn: '', image: '', link: '' })
+  config.entryCards.push({ title: { zh: '', en: '' }, description: { zh: '', en: '' }, image: '', link: '' })
 }
 function removeEntryCard(index: number) {
   config.entryCards.splice(index, 1)
@@ -83,7 +93,7 @@ function removeFeaturedRoute(index: number) {
 
 // ─── 文化亮点 ──────────────────────────
 function addCultureHighlight() {
-  config.cultureHighlights.push({ title: '', titleEn: '', description: '', descriptionEn: '', image: '', citySlug: '' })
+  config.cultureHighlights.push({ title: { zh: '', en: '' }, description: { zh: '', en: '' }, image: '', citySlug: '' })
 }
 function removeCultureHighlight(index: number) {
   config.cultureHighlights.splice(index, 1)
@@ -91,7 +101,7 @@ function removeCultureHighlight(index: number) {
 
 // ─── 评价展示 ──────────────────────────
 function addTestimonial() {
-  config.testimonials.push({ quote: '', quoteEn: '', author: '', authorEn: '', avatar: '' })
+  config.testimonials.push({ quote: { zh: '', en: '' }, author: { zh: '', en: '' }, avatar: '' })
 }
 function removeTestimonial(index: number) {
   config.testimonials.splice(index, 1)
@@ -144,30 +154,12 @@ async function handleSave() {
             <span>卡片 #{{ idx + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="removeHeroStat(idx)">删除</el-button>
           </div>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="标题">
-                <el-input v-model="item.title" placeholder="如：12+" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="标题（英文）">
-                <el-input v-model="item.titleEn" placeholder="如：12+" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="描述">
-                <el-input v-model="item.description" placeholder="如：深度探索城市" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="描述（英文）">
-                <el-input v-model="item.descriptionEn" placeholder="如：Cities Explored" />
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-form-item label="标题">
+            <I18nInput v-model="item.title" placeholder="如：12+" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <I18nInput v-model="item.description" type="textarea" :rows="2" placeholder="如：深度探索城市" />
+          </el-form-item>
         </div>
         <div v-if="config.heroStats.length === 0" class="empty-hint">暂无数据</div>
         <el-button :icon="Plus" size="small" @click="addHeroStat" style="margin-top: 12px">添加卡片</el-button>
@@ -204,14 +196,9 @@ async function handleSave() {
                 <el-input v-model="item.value" placeholder="如：100%" />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="16">
               <el-form-item label="标签">
-                <el-input v-model="item.label" placeholder="如：本地团队" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="标签（英文）">
-                <el-input v-model="item.labelEn" placeholder="如：Local Team" />
+                <I18nInput v-model="item.label" placeholder="如：本地团队" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -245,30 +232,12 @@ async function handleSave() {
             <span>入口 #{{ idx + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="removeEntryCard(idx)">删除</el-button>
           </div>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="标题">
-                <el-input v-model="item.title" placeholder="如：城市文化" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="标题（英文）">
-                <el-input v-model="item.titleEn" placeholder="如：City Culture" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="描述">
-                <el-input v-model="item.description" type="textarea" :rows="2" placeholder="中文描述" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="描述（英文）">
-                <el-input v-model="item.descriptionEn" type="textarea" :rows="2" placeholder="English description" />
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-form-item label="标题">
+            <I18nInput v-model="item.title" placeholder="如：城市文化" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <I18nInput v-model="item.description" type="textarea" :rows="2" placeholder="中文描述" />
+          </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="图片">
@@ -351,30 +320,12 @@ async function handleSave() {
             <span>亮点 #{{ idx + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="removeCultureHighlight(idx)">删除</el-button>
           </div>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="标题">
-                <el-input v-model="item.title" placeholder="如：潮汕功夫茶" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="标题（英文）">
-                <el-input v-model="item.titleEn" placeholder="如：Chaoshan Kungfu Tea" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="描述">
-                <el-input v-model="item.description" type="textarea" :rows="2" placeholder="中文描述" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="描述（英文）">
-                <el-input v-model="item.descriptionEn" type="textarea" :rows="2" placeholder="English description" />
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <el-form-item label="标题">
+            <I18nInput v-model="item.title" placeholder="如：潮汕功夫茶" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <I18nInput v-model="item.description" type="textarea" :rows="2" placeholder="中文描述" />
+          </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="图片">
@@ -417,27 +368,13 @@ async function handleSave() {
             <span>评价 #{{ idx + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="removeTestimonial(idx)">删除</el-button>
           </div>
+          <el-form-item label="评价内容">
+            <I18nInput v-model="item.quote" type="textarea" :rows="3" placeholder="中文评价内容" />
+          </el-form-item>
           <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="评价内容">
-                <el-input v-model="item.quote" type="textarea" :rows="3" placeholder="中文评价内容" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="评价内容（英文）">
-                <el-input v-model="item.quoteEn" type="textarea" :rows="3" placeholder="English testimonial" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16">
-            <el-col :span="8">
+            <el-col :span="16">
               <el-form-item label="作者">
-                <el-input v-model="item.author" placeholder="如：李女士" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="作者（英文）">
-                <el-input v-model="item.authorEn" placeholder="如：Ms. Li" />
+                <I18nInput v-model="item.author" placeholder="如：李女士" />
               </el-form-item>
             </el-col>
             <el-col :span="8">

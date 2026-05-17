@@ -55,21 +55,37 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
   );
 
   const bookingSteps = useMemo(
-    () => [
-      {
-        title: locale === "zh" ? "\u57fa\u7840\u4fe1\u606f" : "Your Details",
-        body: locale === "zh" ? "\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u3001\u51fa\u884c\u65e5\u671f" : "City, contact, and date",
-      },
-      {
-        title: locale === "zh" ? "\u670d\u52a1\u504f\u597d" : "Service Needs",
-        body: locale === "zh" ? "\u8def\u7ebf\u3001\u4eba\u6570\u3001\u53e3\u8bd1\u65b9\u5f0f" : "Mode, group size, and route",
-      },
-      {
-        title: locale === "zh" ? "\u6700\u7ec8\u786e\u8ba4" : "Review Brief",
-        body: locale === "zh" ? "\u63d0\u4ea4\u524d\u68c0\u67e5\u91cd\u70b9" : "One last check before sending",
-      },
-    ],
-    [locale],
+    () =>
+      bookingFastTrack
+        ? [
+            {
+              title: locale === "zh" ? "\u57fa\u7840\u4fe1\u606f" : "Your Details",
+              body: locale === "zh" ? "\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u3001\u5feb\u901f\u9884\u7ea6" : "City, contact, and a quick brief",
+            },
+            {
+              title: locale === "zh" ? "\u652f\u4ed8\u8ba2\u91d1" : "Pay Deposit",
+              body: locale === "zh" ? "\u4fdd\u7559\u65f6\u6bb5\u5e76\u8fdb\u5165\u5339\u914d" : "Secure the slot and enter matching",
+            },
+          ]
+        : [
+            {
+              title: locale === "zh" ? "\u57fa\u7840\u4fe1\u606f" : "Your Details",
+              body: locale === "zh" ? "\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u3001\u51fa\u884c\u65e5\u671f" : "City, contact, and date",
+            },
+            {
+              title: locale === "zh" ? "\u670d\u52a1\u504f\u597d" : "Service Needs",
+              body: locale === "zh" ? "\u8def\u7ebf\u3001\u4eba\u6570\u3001\u53e3\u8bd1\u65b9\u5f0f" : "Mode, group size, and route",
+            },
+            {
+              title: locale === "zh" ? "\u6700\u7ec8\u786e\u8ba4" : "Review Brief",
+              body: locale === "zh" ? "\u63d0\u4ea4\u524d\u68c0\u67e5\u91cd\u70b9" : "Check the brief before payment",
+            },
+            {
+              title: locale === "zh" ? "\u652f\u4ed8\u8ba2\u91d1" : "Pay Deposit",
+              body: locale === "zh" ? "\u4fdd\u7559\u65f6\u6bb5\u5e76\u8fdb\u5165\u5339\u914d" : "Secure the slot and enter matching",
+            },
+          ],
+    [bookingFastTrack, locale],
   );
 
   return (
@@ -142,11 +158,11 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
               <p className="mt-3 text-[15px] leading-7 text-[var(--muted)]">
                 {bookingFastTrack
                   ? (locale === "zh"
-                      ? "\u5f53\u524d\u662f Fast Track \u6a21\u5f0f\uff0c\u53ea\u9700\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u548c\u59d3\u540d\u3002"
-                      : "Fast Track keeps it light: just your name, contact, and city.")
+                      ? "\u5f53\u524d\u662f Fast Track \u6a21\u5f0f\uff0c\u586b\u5199\u57fa\u7840\u4fe1\u606f\u540e\u9700\u652f\u4ed8\u8ba2\u91d1\u624d\u4f1a\u9501\u5b9a\u65f6\u6bb5\u3002"
+                      : "Fast Track keeps it light. Fill the basics, then pay the deposit to secure the slot.")
                   : (locale === "zh"
-                      ? "\u5de6\u8fb9\u6b65\u9aa4\u5361\u53ef\u76f4\u63a5\u5207\u6362\u53f3\u8fb9\u7684\u8868\u5355\u9636\u6bb5\u3002"
-                      : "Tap any card on the left to move through the booking brief on the right.")}
+                      ? "\u5de6\u8fb9\u6b65\u9aa4\u5361\u53ef\u76f4\u63a5\u5207\u6362\u53f3\u8fb9\u7684\u9636\u6bb5\uff0c\u63d0\u4ea4\u9700\u6c42\u540e\u8fd8\u9700\u652f\u4ed8\u8ba2\u91d1\u3002"
+                      : "Use the cards on the left to move through the brief. After the request is sent, the deposit confirms the booking.")}
               </p>
             </div>
           </div>
@@ -162,8 +178,9 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
             </h3>
             <div className="mt-7">
               <MultiStepForm
+                locale={locale}
                 prefillNeeds={prefillNeeds}
-                requestedStep={bookingFastTrack ? 0 : bookingStep}
+                requestedStep={bookingStep}
                 onStepChange={handleBookingStepChange}
                 onFastTrackChange={handleBookingFastTrackChange}
                 onStateChange={handleBookingStateChange}

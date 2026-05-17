@@ -99,8 +99,7 @@ onMounted(() => {
       </el-table-column>
       <el-table-column prop="title" label="系列名称" min-width="160">
         <template #default="{ row }">
-          <div>{{ row.title }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.titleEn }}</div>
+          <div>{{ row.title || '' }}</div>
         </template>
       </el-table-column>
       <el-table-column prop="routeName" label="关联路线" width="140" />
@@ -109,10 +108,10 @@ onMounted(() => {
           <el-badge :value="row.productCount" type="primary" />
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="100" align="center">
+      <el-table-column prop="published" label="状态" width="100" align="center">
         <template #default="{ row }">
-          <el-tag :type="row.status === 'published' ? 'success' : 'info'" size="small">
-            {{ row.status === 'published' ? '已发布' : '草稿' }}
+          <el-tag :type="row.published ? 'success' : 'info'" size="small">
+            {{ row.published ? '已发布' : '草稿' }}
           </el-tag>
         </template>
       </el-table-column>

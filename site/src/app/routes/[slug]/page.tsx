@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { fetchRoutes } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
@@ -29,5 +30,9 @@ export default async function RouteDetailPage({
 }) {
   const { slug } = await params;
   const { RouteDetailClient } = await import("./RouteDetailClient");
-  return <RouteDetailClient slug={slug} />;
+  return (
+    <Suspense fallback={null}>
+      <RouteDetailClient slug={slug} />
+    </Suspense>
+  );
 }

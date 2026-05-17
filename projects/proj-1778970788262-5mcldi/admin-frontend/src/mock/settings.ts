@@ -50,4 +50,9 @@ export const mockSettings: AppSettings = {
     },
   ],
   serviceCities: ['guangzhou', 'zhanjiang', 'chaozhou', 'meizhou', 'foshan'],
+  enableMarkdownEditor: true,
+  pageTitleFontSize: 20,
+  sectionTitleFontSize: 15,
+  bodyFontSize: 14,
+  hintFontSize: 12,
 }

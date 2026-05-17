@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useLocale } from "@/lib/locale-context";
 import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
 import type { Region } from "@/types/content";
 import { mockEvents } from "@/data/mock/events";
-import { useLocale } from "@/lib/locale-context";
-import Link from "next/link";
+import { Reveal } from "@/components/ui/Reveal";
 
 const initialFeatures = getMapFeatures();
 
@@ -17,27 +17,38 @@ interface Props {
 export function GuangdongMapSection({ cities }: Props) {
   const { locale } = useLocale();
   const showcase = cities ?? [];
-  const focusCityByCode = useMemo(() => new Map(showcase.map((city) => [city.adcode, city])), [showcase]);
-  const router = useRouter();
+  const focusCityByCode = useMemo(
+    () => new Map(showcase.map((city) => [city.adcode, city])),
+    [showcase],
+  );
   const [features] = useState<CityFeature[]>(initialFeatures);
   const [activeCode, setActiveCode] = useState<number | null>(null);
   const [slideIndex, setSlideIndex] = useState(0);
 
-  // Events logic
   const events = mockEvents[locale];
   const eventsByCity = useMemo(() => {
-    const map = new Map<number, typeof events[0]>();
-    events.forEach(e => {
-      if (!map.has(e.adcode)) map.set(e.adcode, e);
+    const map = new Map<number, (typeof events)[number]>();
+    events.forEach((event) => {
+      if (!map.has(event.adcode)) map.set(event.adcode, event);
     });
     return map;
   }, [events]);
 
-  const activeCity = focusCityByCode.get(activeCode ?? -1) ?? showcase[0] ?? { slug: "zhanjiang", name: "Zhanjiang", label: "Southern coast", summary: "", image: "", tags: [], adcode: 440800, gallery: [] };
-  const activeEvent = activeCode ? eventsByCity.get(activeCode) : null;
+  const fallbackCity = {
+    slug: "zhanjiang",
+    name: "Zhanjiang",
+    label: "Southern coast",
+    summary: "",
+    image: "",
+    tags: [],
+    adcode: 440800,
+    gallery: [],
+  };
 
+  const activeCity = focusCityByCode.get(activeCode ?? -1) ?? showcase[0] ?? fallbackCity;
+  const activeEvent = activeCode ? eventsByCity.get(activeCode) : null;
   const activeGallery = activeCity.gallery && activeCity.gallery.length ? activeCity.gallery : [activeCity.image];
-  const activeImage = activeGallery[slideIndex % activeGallery.length];
+  const activeImage = activeGallery[slideIndex % activeGallery.length] ?? "";
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -48,11 +59,14 @@ export function GuangdongMapSection({ cities }: Props) {
   }, []);
 
   const mapData = useMemo(() => {
-    if (!features.length) {
-      return null;
-    }
+    if (!features.length) return null;
 
-    const projection = buildProjection(features, 1060, 640, { left: 100, right: 100, top: 50, bottom: 50 });
+    const projection = buildProjection(features, 1060, 640, {
+      left: 100,
+      right: 100,
+      top: 50,
+      bottom: 50,
+    });
 
     return {
       width: projection.width,
@@ -67,79 +81,96 @@ export function GuangdongMapSection({ cities }: Props) {
 
   const panelTitle = activeCity.name;
   const panelEyebrow = activeCity.label;
-  const panelLead = activeCity.summary.replace(/^#{1,3}\s+/gm, "").replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
+  const panelLead = activeCity.summary
+    .replace(/^#{1,3}\s+/gm, "")
+    .replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
 
   return (
-    <section className="site-container py-12 lg:py-20">
-      <div className="mb-12 opacity-60">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
-          {locale === "zh" ? "地理探索" : "Geographical Exploration"}
-        </p>
-        <h2 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-          {locale === "zh" ? "在地图上，预见你的下一场文化盛宴" : "On the Map, Preview Your Next Cultural Feast"}
-        </h2>
-      </div>
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[#fdfaf3] shadow-[var(--shadow-soft)] lg:min-h-[48rem]">
-          {/* Info Overlay Card */}
-          <div className="absolute left-6 top-6 z-20 w-52 overflow-hidden rounded-xl border border-[var(--line)] bg-white/95 shadow-lg backdrop-blur-sm">
-            <Link href={`/culture/${activeCity.slug}`} className="block">
-              <div
-                className="flex h-24 items-end bg-cover bg-center p-4 transition duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url(${activeImage})` }}
-              >
+    <section className="relative overflow-hidden py-24 lg:py-40">
+      <div className="site-container relative z-10">
+        <div className="mb-20">
+          <Reveal>
+            <div className="mb-6 flex items-center gap-4">
+              <div className="h-px w-10 bg-[var(--cinnabar)]" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                Geographical Exploration
+              </p>
+            </div>
+            <h2 className="max-w-4xl font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-[-0.04em] text-[var(--river-deep)] md:text-7xl lg:text-8xl">
+              On the Map, Preview Your Next Feast.
+            </h2>
+          </Reveal>
+        </div>
+
+        <div className="relative min-h-[40rem] lg:min-h-[50rem]">
+          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-full rotate-1 border-8 border-white bg-white/95 p-6 backdrop-blur-sm md:w-64">
+            <Reveal delay={400}>
+              <Link href={`/culture/${activeCity.slug}`} className="group block">
+                <div className="relative mb-6 aspect-[4/3] overflow-hidden">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+                    style={{ backgroundImage: `url(${activeImage})` }}
+                  />
+                  <div className="absolute -top-2 left-1/2 z-20 h-6 w-20 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm" />
+                </div>
+              </Link>
+
+              <div className="space-y-6">
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/80">{panelEyebrow}</p>
-                  <h3 className="mt-1 font-[family:var(--font-display)] text-xl leading-none text-white drop-shadow-sm">
+                  <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                    {panelEyebrow}
+                  </p>
+                  <h3 className="font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)]">
                     {panelTitle}
                   </h3>
                 </div>
-              </div>
-            </Link>
-            <div className="border-t border-[var(--line)] p-3">
-              {activeEvent ? (
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
-                    {activeEvent.title}
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-[var(--muted)]">{activeEvent.date}</p>
+
+                <div className="h-px bg-[var(--line)]" />
+
+                <div className="min-h-[6rem]">
+                  {activeEvent ? (
+                    <div className="animate-reveal">
+                      <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
+                        {activeEvent.title}
+                      </p>
+                      <p className="text-[10px] text-[var(--muted)]">{activeEvent.date}</p>
+                    </div>
+                  ) : (
+                    <p className="handwritten line-clamp-4 text-sm leading-relaxed text-[var(--muted)]">
+                      {panelLead}
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="line-clamp-2 text-[11px] leading-relaxed text-[var(--muted)]">{panelLead}</p>
-              )}
-              <div className="mt-3 flex gap-1.5">
-                <Link
-                  href={`/culture/${activeCity.slug}`}
-                  className="flex-1 rounded-md border border-[var(--river-deep)]/20 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-[var(--river-deep)] transition hover:border-[var(--river-deep)]/50 hover:bg-[var(--river-deep)]/5"
-                >
-                  {locale === "zh" ? "城市故事" : "Story"}
-                </Link>
-                <Link
-                  href={`/interpreting?city=${activeCity.slug}`}
-                  className="flex-1 rounded-md bg-[var(--cinnabar)] py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-white transition hover:bg-[var(--cinnabar)]/80"
-                >
-                  {locale === "zh" ? "预约口译" : "Book"}
-                </Link>
+
+                <div className="grid grid-cols-2 gap-3 pt-4">
+                  <Link
+                    href={`/culture/${activeCity.slug}`}
+                    className="border border-[var(--river-deep)] py-3 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                  >
+                    Story
+                  </Link>
+                  <Link
+                    href={`/interpreting?city=${activeCity.slug}`}
+                    className="bg-[var(--cinnabar)] py-3 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)]"
+                  >
+                    Book
+                  </Link>
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
 
-          <div className="relative h-[30rem] lg:absolute lg:inset-0 lg:h-auto">
-            <div className="h-full w-full p-4 lg:p-12">
+          <div className="pointer-events-none absolute inset-0 z-10">
+            <div className="pointer-events-auto h-full w-full opacity-60">
               {mapData ? (
-                <svg
-                  viewBox={`0 0 ${mapData.width} ${mapData.height}`}
-                  className="h-full w-full"
-                  role="img"
-                >
-                  <rect width={mapData.width} height={mapData.height} fill="#fdfaf3" />
+                <svg viewBox={`0 0 ${mapData.width} ${mapData.height}`} className="h-full w-full" role="img">
+                  <rect width={mapData.width} height={mapData.height} fill="transparent" />
 
-                  {/* Decorative routes */}
-                  <g opacity="0.3">
-                    <path d="M120 528 C250 438 380 492 512 408 S760 346 908 246" fill="none" stroke="#d7cfc1" strokeWidth="1" strokeDasharray="4 4" />
-                    <path d="M92 382 C244 330 302 244 420 236 S648 196 918 114" fill="none" stroke="#d7cfc1" strokeWidth="1" strokeDasharray="4 4" />
+                  <g opacity="0.6">
+                    <path d="M120 528 C250 438 380 492 512 408 S760 346 908 246" fill="none" stroke="#444b54" strokeWidth="1" strokeDasharray="6 6" />
+                    <path d="M92 382 C244 330 302 244 420 236 S648 196 918 114" fill="none" stroke="#444b54" strokeWidth="1" strokeDasharray="6 6" />
                   </g>
 
-                  {/* City Paths */}
                   {mapData.paths.map((city) => {
                     const hasContent = focusCityByCode.has(city.adcode);
                     const hasEvent = eventsByCity.has(city.adcode);
@@ -151,28 +182,27 @@ export function GuangdongMapSection({ cities }: Props) {
                         d={city.path}
                         stroke="#fff"
                         strokeWidth={isActive ? 2 : 1}
-                        opacity={hasContent || isActive ? 1 : 0.6}
-                        className="transition-all duration-300"
+                        opacity={hasContent || isActive ? 1 : 0.8}
+                        className="transition-all duration-500"
                         style={{
                           fill: isActive
-                            ? (hasEvent ? "#b64235" : "#24535e")
+                            ? hasEvent
+                              ? "#b64235"
+                              : "#14343d"
                             : hasContent
-                              ? (hasEvent ? "#e69c94" : "#9fb39e")
-                              : "#e2ded6",
+                              ? hasEvent
+                                ? "rgba(182, 66, 53, 0.8)"
+                                : "rgba(20, 52, 61, 0.45)"
+                              : "rgba(102, 113, 125, 0.25)",
                           cursor: hasContent ? "pointer" : "default",
                         }}
                         onMouseEnter={() => {
                           if (hasContent) setActiveCode(city.adcode);
                         }}
-                        onClick={() => {
-                          const focusCity = focusCityByCode.get(city.adcode);
-                          if (focusCity) router.push(`/culture/${focusCity.slug}`);
-                        }}
                       />
                     );
                   })}
 
-                  {/* City Label Dots */}
                   {mapData.paths.map((city) => {
                     const focusCity = focusCityByCode.get(city.adcode);
                     if (!focusCity || !city.point) return null;
@@ -187,24 +217,19 @@ export function GuangdongMapSection({ cities }: Props) {
                         style={{ cursor: "pointer" }}
                         onMouseEnter={() => setActiveCode(city.adcode)}
                       >
-                        {hasEvent && (
-                          <circle cx={x} cy={y} r={isActive ? 12 : 8} fill="#b64235" opacity="0.2">
-                            <animate attributeName="r" values={isActive ? "10;14;10" : "6;10;6"} dur="2s" repeatCount="indefinite" />
+                        {hasEvent ? (
+                          <circle cx={x} cy={y} r={isActive ? 15 : 10} fill="#b64235" opacity="0.1">
+                            <animate attributeName="r" values={isActive ? "12;18;12" : "8;12;8"} dur="3s" repeatCount="indefinite" />
                           </circle>
-                        )}
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r={isActive ? 4 : 3}
-                          fill={isActive ? (hasEvent ? "#d42621" : "#fff") : (hasEvent ? "#b64235" : "#66717d")}
-                        />
+                        ) : null}
+                        <circle cx={x} cy={y} r={isActive ? 3 : 2} fill={isActive ? "#b64235" : "var(--river-deep)"} />
                         <text
-                          x={x + 10}
+                          x={x + 12}
                           y={y + 4}
-                          className={`pointer-events-none select-none font-bold transition-all duration-300 ${
-                            isActive ? "opacity-100 translate-x-1" : "opacity-40"
+                          className={`pointer-events-none select-none font-[family:var(--font-display)] italic transition-all duration-500 ${
+                            isActive ? "opacity-100 translate-x-2" : "opacity-0 -translate-x-2"
                           }`}
-                          style={{ fontSize: "12px", fill: "var(--night)" }}
+                          style={{ fontSize: "16px", fill: "var(--river-deep)" }}
                         >
                           {focusCity.name}
                         </text>
@@ -213,14 +238,14 @@ export function GuangdongMapSection({ cities }: Props) {
                   })}
                 </svg>
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
-                  Loading Map...
+                <div className="handwritten flex h-full items-center justify-center text-sm text-[var(--muted)]">
+                  Drawing Atlas...
                 </div>
               )}
             </div>
           </div>
         </div>
+      </div>
     </section>
   );
 }
-

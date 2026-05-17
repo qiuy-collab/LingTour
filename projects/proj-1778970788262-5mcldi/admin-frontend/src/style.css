@@ -5,6 +5,13 @@
   box-sizing: border-box;
 }
 
+:root {
+  --admin-font-page-title: 20px;
+  --admin-font-section-title: 15px;
+  --admin-font-body: 14px;
+  --admin-font-hint: 12px;
+}
+
 html,
 body {
   height: 100%;
@@ -12,6 +19,7 @@ body {
     'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: var(--admin-font-body);
 }
 
 #app {
@@ -39,7 +47,7 @@ body {
 
 /* Element Plus 表格全局样式微调 */
 .el-table {
-  font-size: 14px;
+  font-size: var(--admin-font-body);
 }
 
 .el-pagination {
@@ -58,4 +66,21 @@ body {
 /* 表单卡片通用样式 */
 .form-card {
   max-width: 900px;
+}
+
+.page-header h2 {
+  font-size: var(--admin-font-page-title) !important;
+}
+
+.card-title,
+.section-title,
+.block-title {
+  font-size: var(--admin-font-section-title) !important;
+}
+
+.page-desc,
+.block-count,
+.form-hint,
+.empty-hint {
+  font-size: var(--admin-font-hint) !important;
 }

@@ -136,39 +136,21 @@ function GoldenThread({ progress }: { progress: number }) {
 function StopImage({ stop, index }: { stop: Stop; index: number }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.035 }}
+      whileHover={{ scale: 1.02, rotate: index % 2 === 0 ? 0.5 : -0.5 }}
       transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      style={{ height: "100%" }}
+      className="h-full"
     >
       <div
-        style={{
-          height: "100%",
-          minHeight: index % 2 === 0 ? 430 : 340,
-          overflow: "hidden",
-          borderRadius: index % 2 === 0 ? "2rem" : "1.5rem",
-          background: "rgba(197,160,57,0.06)",
-          boxShadow: "0 18px 70px rgba(26,42,58,0.08)",
-        }}
+        className={`relative h-full min-h-[400px] overflow-hidden border-[10px] border-white bg-white scrapbook-shadow transition-transform duration-700 ${index % 2 === 0 ? '-rotate-1' : 'rotate-1'}`}
       >
         <img
           src={stop.image || placeholderUri(stop.stop)}
           alt={stop.stop}
           loading={index === 0 ? "eager" : "lazy"}
-          onError={(e) => {
-            const image = e.currentTarget;
-            if (!image.dataset.fallback) {
-              image.dataset.fallback = "1";
-              image.src = placeholderUri(stop.stop);
-            }
-          }}
-          style={{
-            display: "block",
-            height: "100%",
-            width: "100%",
-            objectFit: "cover",
-            filter: "saturate(0.78) contrast(0.96)",
-          }}
+          className="block h-full w-full object-cover saturate-[0.85] contrast-[0.98] transition-transform duration-[10s] hover:scale-110"
         />
+        {/* Physical tape effect */}
+        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/30 backdrop-blur-[2px] border border-black/5 ${index % 2 === 0 ? 'rotate-2' : '-rotate-2'} z-10`} />
       </div>
     </motion.div>
   );
@@ -176,68 +158,25 @@ function StopImage({ stop, index }: { stop: Stop; index: number }) {
 
 function StopText({ stop, index, onEnterStory }: { stop: Stop; index: number; onEnterStory: () => void }) {
   return (
-    <div
-      style={{
-        alignSelf: "center",
-        padding: index % 2 === 0 ? "1rem 0" : "0.75rem 0",
-      }}
-    >
-      <span
-        style={{
-          color: "var(--route-gold)",
-          fontFamily: "monospace",
-          fontSize: 11,
-          letterSpacing: "0.22em",
-          textTransform: "uppercase",
-        }}
-      >
-        Route Stop {String(index + 1).padStart(2, "0")}
+    <div className={`flex flex-col ${index % 2 === 0 ? 'lg:pl-12' : 'lg:pr-12'} py-8`}>
+      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)] handwritten">
+        Field Entry No. {String(index + 1).padStart(2, "0")}
       </span>
 
-      <h3
-        style={{
-          marginTop: 14,
-          maxWidth: 460,
-          color: "var(--route-text)",
-          fontFamily: "Georgia, serif",
-          fontSize: index % 2 === 0 ? "clamp(2.1rem, 4vw, 4.8rem)" : "clamp(1.75rem, 3vw, 3.6rem)",
-          lineHeight: 0.95,
-          letterSpacing: "-0.045em",
-        }}
-      >
+      <h3 className="mt-6 font-[family:var(--font-display)] text-4xl leading-[1.1] tracking-tight text-[var(--river-deep)] md:text-5xl lg:text-6xl">
         {stop.stop}
       </h3>
 
-      <p
-        style={{
-          marginTop: 22,
-          maxWidth: 440,
-          color: "rgba(26,42,58,0.56)",
-          fontFamily: "Georgia, serif",
-          fontSize: 17,
-          fontStyle: "italic",
-          lineHeight: 1.75,
-        }}
-      >
-        {stop.story}
+      <p className="mt-8 max-w-md text-lg leading-relaxed text-[var(--muted)] italic handwritten">
+        &ldquo;{stop.story}&rdquo;
       </p>
 
       {stop.details.length > 0 && (
-        <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10, maxWidth: 430 }}>
+        <div className="mt-8 flex flex-col gap-3">
           {stop.details.slice(0, 3).map((detail, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <span
-                style={{
-                  marginTop: 8,
-                  height: 5,
-                  width: 5,
-                  flex: "0 0 5px",
-                  borderRadius: "999px",
-                  background: "var(--route-gold)",
-                  opacity: 0.7,
-                }}
-              />
-              <span style={{ color: "rgba(26,42,58,0.58)", fontSize: 13, lineHeight: 1.7 }}>
+            <div key={i} className="flex gap-4 items-start">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--gold)]/60" />
+              <span className="text-sm leading-relaxed text-[var(--muted)]">
                 {detail}
               </span>
             </div>
@@ -248,20 +187,10 @@ function StopText({ stop, index, onEnterStory }: { stop: Stop; index: number; on
       <button
         type="button"
         onClick={onEnterStory}
-        style={{
-          marginTop: 30,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 12,
-          color: "var(--route-gold)",
-          fontSize: 12,
-          fontWeight: 600,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-        }}
+        className="mt-10 flex items-center gap-4 text-xs font-bold uppercase tracking-[0.2em] text-[var(--gold)] transition-all hover:text-[var(--cinnabar)] hover:translate-x-2"
       >
-        <span style={{ height: 1, width: 28, background: "var(--route-gold)" }} />
-        Enter the story
+        <div className="h-px w-10 bg-[var(--gold)] transition-all group-hover:w-16" />
+        <span>Open Archive</span>
       </button>
     </div>
   );
@@ -283,71 +212,39 @@ function StopCard({
   isDesktop: boolean;
 }) {
   const even = index % 2 === 0;
-  const featured = index === 0 || index === 2;
-
-  const image = <StopImage stop={stop} index={index} />;
-  const text = <StopText stop={stop} index={index} onEnterStory={onEnterStory} />;
 
   return (
     <motion.article
       ref={cardRef}
-      data-stop={index}
-      data-layout={even ? "image-left" : "text-left"}
-      initial={{ opacity: 0, y: 46 }}
+      initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "relative",
-        zIndex: 10,
-        width: isDesktop ? (featured ? "82%" : "68%") : "100%",
-        marginLeft: isDesktop ? (even ? "0" : "auto") : "0",
-        marginRight: isDesktop ? (even ? "auto" : "0") : "0",
-        transform: isDesktop
-          ? featured
-            ? "translateY(0)"
-            : even
-              ? "translateY(-24px)"
-              : "translateY(36px)"
-          : "none",
-        borderRadius: featured ? "2.25rem" : "1.75rem",
-        background: "rgba(244,242,238,0.965)",
-        boxShadow: isActive
-          ? "0 30px 90px rgba(26,42,58,0.13)"
-          : "0 18px 70px rgba(26,42,58,0.075)",
-        border: "1px solid rgba(197,160,57,0.08)",
-        overflow: "hidden",
-      }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative z-10 w-full transition-all duration-500 ${
+        isDesktop
+          ? even
+            ? "max-w-[85%] mr-auto"
+            : "max-w-[85%] ml-auto mt-[-40px]"
+          : ""
+      }`}
     >
-      <div
-        style={{
-          display: isDesktop ? "grid" : "block",
-          gridTemplateColumns: isDesktop
-            ? featured
-              ? "minmax(0, 1.18fr) minmax(0, 0.82fr)"
-              : "minmax(0, 0.92fr) minmax(0, 1.08fr)"
-            : undefined,
-          gap: isDesktop ? (featured ? 54 : 42) : 0,
-          alignItems: "center",
-          padding: isDesktop ? (featured ? 34 : 28) : 20,
-        }}
-      >
+      <div className={`grid gap-12 items-center p-6 lg:p-12 ${isDesktop ? (even ? 'grid-cols-[1.1fr_0.9fr]' : 'grid-cols-[0.9fr_1.1fr]') : 'grid-cols-1'}`}>
         {isDesktop ? (
           even ? (
             <>
-              {image}
-              {text}
+              <StopImage stop={stop} index={index} />
+              <StopText stop={stop} index={index} onEnterStory={onEnterStory} />
             </>
           ) : (
             <>
-              {text}
-              {image}
+              <StopText stop={stop} index={index} onEnterStory={onEnterStory} />
+              <StopImage stop={stop} index={index} />
             </>
           )
         ) : (
           <>
-            {image}
-            <div style={{ paddingTop: 24 }}>{text}</div>
+            <StopImage stop={stop} index={index} />
+            <StopText stop={stop} index={index} onEnterStory={onEnterStory} />
           </>
         )}
       </div>
@@ -405,53 +302,50 @@ export function ScrollStoryRoute({ stops, routeTitle, routeStory }: Props) {
 
   return (
     <>
-      <section ref={rootRef} className="relative" style={{ background: "var(--route-bg)" }}>
+      <section ref={rootRef} className="relative bg-grain" style={{ background: "var(--background)" }}>
         <div
-          className="sticky top-0 z-40 border-b backdrop-blur-sm"
+          className="sticky top-0 z-40 border-b border-[var(--line)] backdrop-blur-md"
           style={{
-            background: "rgba(244,242,238,0.94)",
-            borderColor: "rgba(26,42,58,0.04)",
+            background: "rgba(232,222,208,0.85)",
           }}
         >
-          <div className="mx-auto flex max-w-5xl items-center gap-4 px-6 py-2.5">
+          <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-4">
             <span
-              className="font-mono text-[11px] font-medium tracking-[0.18em]"
-              style={{ color: "var(--route-gold)" }}
+              className="font-mono text-xs font-bold tracking-[0.2em] text-[var(--cinnabar)]"
             >
-              {String(activeIdx + 1).padStart(2, "0")}/{String(stops.length).padStart(2, "0")}
+              {String(activeIdx + 1).padStart(2, "0")} / {String(stops.length).padStart(2, "0")}
             </span>
-            <span className="hidden font-serif text-sm italic sm:inline" style={{ color: "var(--route-text)" }}>
+            <span className="hidden font-[family:var(--font-display)] text-base italic text-[var(--river-deep)] sm:inline">
               {stops[activeIdx]?.stop || ""}
             </span>
             <div className="flex-1">
-              <div className="h-px w-full rounded-full" style={{ background: "rgba(26,42,58,0.06)" }}>
+              <div className="h-1 w-full rounded-full bg-[var(--line)]">
                 <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{ width: `${Math.round(totalProgress * 100)}%`, background: "var(--route-gold)" }}
+                  className="h-full rounded-full transition-all duration-300 bg-[var(--gold)]"
+                  style={{ width: `${Math.round(totalProgress * 100)}%` }}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 py-20 text-center lg:py-28">
-          <p className="text-[11px] uppercase tracking-[0.28em]" style={{ color: "var(--route-gold)" }}>
-            Route Narrative
+        <div className="relative z-10 py-24 text-center lg:py-32">
+          <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+            Route Narrative / Field Log
           </p>
-          <div className="mx-auto mt-3 h-px w-10" style={{ background: "var(--route-gold)" }} />
+          <div className="mx-auto mt-6 h-px w-16 bg-[var(--gold)]/40" />
           <p
-            className="mx-auto mt-5 max-w-xl font-serif text-lg leading-relaxed italic md:text-xl"
-            style={{ color: "rgba(26,42,58,0.48)" }}
+            className="mx-auto mt-10 max-w-2xl font-[family:var(--font-display)] text-2xl leading-relaxed italic text-[var(--river-deep)] md:text-3xl"
           >
             &ldquo;{routeStory}&rdquo;
           </p>
         </div>
 
-        <div className="relative pb-28 lg:pb-40">
+        <div className="relative pb-32 lg:pb-48">
           <GoldenThread progress={scrollProgress} />
 
-          <div className="relative z-10 mx-auto max-w-[1280px] px-5 sm:px-8 lg:px-12">
-            <div style={{ display: "flex", flexDirection: "column", gap: isDesktop ? 168 : 72 }}>
+          <div className="relative z-10 mx-auto max-w-[1440px] px-6 sm:px-12 lg:px-20">
+            <div className="flex flex-col gap-24 lg:gap-40">
               {stops.map((stop, i) => (
                 <StopCard
                   key={`${stop.time}-${stop.stop}`}

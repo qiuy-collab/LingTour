@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AdminUser } from '@/types/auth'
+import type { AdminUser, LoginResponse } from '@/types/auth'
 import { authApi } from '@/api/auth'
 import router from '@/router'
 
@@ -16,23 +16,20 @@ export const useAuthStore = defineStore('auth', () => {
   const currentUser = computed(() => user.value)
 
   // Actions
-  async function login(username: string, password: string) {
-    // 兼容后端真实接口，传递 email
-    const res = await authApi.login({ username, email: username, password })
+  async function login(email: string, password: string) {
+    const res = await authApi.login({ email, password })
+    // 后端 /api/v1/auth/login 响应不走 ApiResponse 包装，直接返回 LoginResponse
+    const responseData = res.data as unknown as LoginResponse
+    const { access_token, user: loginUser } = responseData
 
-    // 适配真实后端与 Mock 的不同响应格式
-    const responseData = res.data as any
-    const newToken = responseData.data?.token || responseData.access_token
-    const newUser = responseData.data?.user || responseData.user
-
-    if (!newToken || !newUser) {
+    if (!access_token || !loginUser) {
       throw new Error('Invalid response format')
     }
 
-    token.value = newToken
-    user.value = newUser
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('user', JSON.stringify(newUser))
+    token.value = access_token
+    user.value = loginUser as AdminUser
+    localStorage.setItem('token', access_token)
+    localStorage.setItem('user', JSON.stringify(loginUser))
   }
 
   function logout() {

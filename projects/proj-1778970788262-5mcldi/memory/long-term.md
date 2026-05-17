@@ -94,3 +94,15 @@
 - 用户要求管理后台对接真实的 NestJS 后端（运行于 `http://localhost:8000`）。
 - **配置变更**：在 `admin-frontend/src/main.ts` 中去除了 mock 数据的开发环境加载，并在 `admin-frontend/vite.config.ts` 的 server 配置中添加了 proxy：将 `/api` 请求代理到 `http://localhost:8000`。
 - **当前状态**：管理后台所有 API 请求现在真实对接 NestJS 接口（API base 为 `/api/admin`）。
+
+## 2026-05-17 自动提取
+- 管理后台前端开发服务器端口为 5173（若被占用，Vite 会自动尝试 5174）
+
+
+## 2026-05-17 自动提取
+- 用户明确要求使用真实后端数据，禁止 Mock
+- 后端登录凭据：admin@lingtour.cn / LingTour2026!
+- 开发环境 API 代理配置：/api/admin/auth/* → localhost:8000/api/v1/auth/*；/api/admin/* → localhost:8000/api/v1/admin/*
+- 登录表单字段使用 email 而非 username
+- 已禁用 Mock 数据导入（注释 main.ts 中的 import('./mock')）
+- 数据类型适配后端响应格式（AdminUser 含 id/accountId/email/name/role；LoginResponse 含 access_token/user）

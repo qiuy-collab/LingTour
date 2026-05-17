@@ -21,3 +21,35 @@ export interface PageParams {
   pageSize: number
   keyword?: string
 }
+
+/** 多语言对象结构 (匹配后端 I18nObject) */
+export interface I18nObject {
+  zh: string
+  en: string
+}
+
+/** 将后端返回的纯字符串或 I18nObject 统一转换为 I18nObject */
+export function toI18n(val: unknown): I18nObject {
+  if (!val) return { zh: '', en: '' }
+  if (typeof val === 'string') return { zh: val, en: '' }
+  if (typeof val === 'object' && val !== null) {
+    const obj = val as Record<string, unknown>
+    return { zh: String(obj.zh ?? ''), en: String(obj.en ?? '') }
+  }
+  return { zh: '', en: '' }
+}
+
+export function pickI18n(val: unknown, locale: keyof I18nObject = 'zh'): string {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  if (typeof val === 'object') {
+    const obj = val as Record<string, unknown>
+    return String(obj[locale] ?? obj.zh ?? obj.en ?? '')
+  }
+  return String(val)
+}
+
+export function toI18nArray(val: unknown): I18nObject[] {
+  if (!Array.isArray(val)) return []
+  return val.map((item) => toI18n(item))
+}
