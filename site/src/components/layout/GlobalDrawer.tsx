@@ -136,191 +136,203 @@ export function GlobalDrawer() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col border-l border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-[0_0_100px_rgba(17,25,35,0.15)]"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg flex-col border-l border-white/20 bg-[rgba(242,238,230,0.4)] backdrop-blur-3xl shadow-[0_0_100px_rgba(17,25,35,0.1)]"
           >
+            {/* Background Light Leak Effects */}
+            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[radial-gradient(circle,rgba(185,138,70,0.08),transparent_70%)] blur-3xl pointer-events-none" />
+            <div className="absolute bottom-[-5%] right-[-5%] w-[50%] h-[50%] rounded-full bg-[radial-gradient(circle,rgba(182,66,53,0.05),transparent_70%)] blur-3xl pointer-events-none" />
+
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-8 py-6 bg-white/40 backdrop-blur-md">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-[var(--gold)] animate-pulse" />
-                <p className="font-[family:var(--font-display)] text-2xl italic tracking-[0.02em] text-[var(--river-deep)]">
-                  Your LingTour
-                </p>
+            <div className="flex items-center justify-between px-10 py-10 bg-transparent relative z-10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[var(--gold)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--river-deep)]">
+                    Registry_01
+                  </p>
+                </div>
+                <h2 className="font-[family:var(--font-display)] text-5xl italic tracking-[-0.02em] text-[var(--river-deep)]">
+                  Personal Vault
+                </h2>
               </div>
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="group grid h-10 w-10 place-items-center rounded-full border border-[var(--line)] transition-all hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)] hover:text-white"
+                className="group relative h-14 w-14 rounded-full border border-[var(--river-deep)]/10 flex items-center justify-center transition-all hover:border-[var(--river-deep)]"
                 aria-label="Close drawer"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div className="absolute inset-0 rounded-full bg-[var(--river-deep)] scale-0 group-hover:scale-100 transition-transform duration-500 origin-center" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="relative z-10 group-hover:text-white transition-colors">
                   <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-8 py-8 space-y-12">
+            <div className="flex-1 overflow-y-auto px-10 py-4 space-y-16 relative z-10 scrollbar-hide">
               {/* User Profile Section */}
               {user ? (
                 <section className="relative">
-                  <div className="flex flex-col gap-6">
-                    <div className="flex items-center gap-6">
-                      <div className="relative group">
-                        <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-[var(--river-deep)] font-[family:var(--font-display)] text-3xl text-white scrapbook-shadow overflow-hidden">
-                          {user.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-                          ) : getInitials(user.name)}
+                  <div className="flex flex-col gap-10">
+                    <div className="flex items-center gap-8">
+                      <div className="relative">
+                        <div className="grid h-28 w-28 shrink-0 place-items-center rounded-2xl bg-white p-1.5 shadow-2xl rotate-2 group transition-transform hover:rotate-0 duration-500">
+                          <div className="h-full w-full rounded-xl overflow-hidden bg-[var(--river-deep)] flex items-center justify-center">
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="font-[family:var(--font-display)] text-4xl text-white">{getInitials(user.name)}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-[var(--gold)] border-2 border-[var(--paper-deep)]" />
+                        {/* Light flare on avatar */}
+                        <div className="absolute -top-4 -left-4 w-12 h-12 bg-white blur-2xl opacity-60 pointer-events-none" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)]">
+                      <div className="space-y-2">
+                        <p className="font-[family:var(--font-display)] text-5xl leading-none text-[var(--river-deep)]">
                           {user.name}
                         </p>
-                        <p className="mt-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                          <span className="inline-block w-3 h-px bg-[var(--line)]" />
-                          {user.country || "Explorer"} / Joined {user.memberSince || "2026"}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <span className="h-px w-6 bg-[var(--gold)]" />
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                            {user.country || "Explorer"} / Joined {user.memberSince || "2026"}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="scrapbook-shadow border border-[var(--line)] bg-white/60 p-4 rotate-1">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">Traveler ID</p>
-                        <p className="mt-1 font-mono text-xs text-[var(--river-deep)]">{user.accountId}</p>
-                      </div>
-                      <div className="scrapbook-shadow border border-[var(--line)] bg-white/60 p-4 -rotate-1">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">Travel Style</p>
-                        <p className="mt-1 text-xs font-bold text-[var(--river-deep)]">{user.travelStyle || "Curious Local"}</p>
-                      </div>
-                    </div>
-
-                    {/* Community Stats Badge */}
+                    {/* Community Rank - Glass Card */}
                     <Link
                       href="/community"
                       onClick={closeDrawer}
-                      className="group flex items-center justify-between border border-[var(--line)] bg-[var(--river-deep)] p-4 text-white shadow-xl transition-all hover:bg-[var(--cinnabar)]"
+                      className="group relative overflow-hidden rounded-3xl bg-white/40 border border-white/60 p-8 shadow-2xl transition-all hover:bg-white/60"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      {/* Dynamic light gradient on hover */}
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent,rgba(255,255,255,0.4),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+
+                      <div className="flex justify-between items-start relative z-10">
+                        <div className="space-y-6">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--river-deep)] text-white shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">Field Status</p>
+                            <p className="font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)] mt-1">{stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Community Rank</p>
-                          <p className="font-[family:var(--font-display)] text-lg italic">{stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}</p>
+                        <div className="text-right">
+                          <div className="bg-[var(--gold)]/10 text-[var(--gold)] px-4 py-2 rounded-full text-[10px] font-bold tracking-widest border border-[var(--gold)]/20">
+                            STAMPS: {stamps}
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Stamps</p>
-                        <p className="text-xl font-bold">{stamps}</p>
                       </div>
                     </Link>
-                  </div>
 
-                  <div className="mt-8 flex items-center justify-between gap-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        logOut();
-                        closeDrawer();
-                      }}
-                      className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors underline underline-offset-4 decoration-[var(--line)]"
-                    >
-                      Sign Out Account
-                    </button>
-                    <div className="h-px flex-1 bg-[var(--line)]" />
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logOut();
+                          closeDrawer();
+                        }}
+                        className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors"
+                      >
+                        [ Terminate Session ]
+                      </button>
+                      <div className="flex gap-4">
+                        <div className="w-1 h-1 rounded-full bg-[var(--gold)]" />
+                        <div className="w-1 h-1 rounded-full bg-[var(--gold)]/40" />
+                        <div className="w-1 h-1 rounded-full bg-[var(--gold)]/20" />
+                      </div>
+                    </div>
                   </div>
                 </section>
               ) : (
-                <section className="relative scrapbook-shadow border-4 border-white bg-white/40 p-8 rotate-1">
-                  <p className="font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
-                    Planning your tour?
+                <section className="relative rounded-3xl bg-white/30 border border-white/50 p-10 shadow-2xl overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)] pointer-events-none" />
+                  <p className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)] leading-tight">
+                    Establish your <br /> field registry.
                   </p>
-                  <p className="handwritten mt-4 text-sm leading-relaxed text-[var(--muted)]">
-                    Sign in to save routes, objects, and manage your interpreting requests in this personal registry.
+                  <p className="mt-6 text-sm leading-relaxed text-[var(--muted)] font-light max-w-[25ch]">
+                    Synchronize routes, artifacts, and coordination requests across the province.
                   </p>
                   <Link
                     href="/login"
                     onClick={closeDrawer}
-                    className="mt-8 inline-flex h-12 w-full items-center justify-center bg-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] text-white shadow-xl transition-all hover:bg-[var(--cinnabar)] active:scale-95"
+                    className="group mt-10 relative flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.3em] text-white transition-all shadow-2xl active:scale-95"
                   >
-                    Log in with email
+                    <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                    <span>Initiate Connection</span>
                   </Link>
                 </section>
               )}
 
-              {/* Favorites & Cart Tabs (New Concept) */}
-              <section className="space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-px flex-1 bg-[var(--line)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Registry & Kit</p>
-                  <div className="h-px flex-1 bg-[var(--line)]" />
+              {/* Data Layers */}
+              <section className="space-y-12">
+                <div className="flex items-center gap-6">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-[var(--river-deep)] opacity-30">Field_Intel</p>
+                  <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
                 </div>
 
-                <div className="space-y-12">
+                <div className="space-y-16">
                   {/* Favorites */}
-                  <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <h4 className="font-[family:var(--font-display)] text-xl italic text-[var(--river-deep)]">Saved Signals</h4>
-                      <span className="text-[10px] font-bold text-[var(--muted)]">{favorites.length} Items</span>
+                  <div className="space-y-8">
+                    <div className="flex items-end justify-between">
+                      <h4 className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)]">Signals</h4>
+                      <span className="text-[9px] font-bold text-[var(--gold)] tracking-[0.2em] border-b border-[var(--gold)]/30 pb-1">{favorites.length} TOTAL</span>
                     </div>
                     {favorites.length > 0 ? (
-                      <div className="grid gap-4">
-                        {favorites.map((item, idx) => {
-                          const href = item.type === "route"
-                            ? `/routes/${item.id}`
-                            : `/shop/products/${item.id}`;
+                      <div className="grid gap-6">
+                        {favorites.map((item) => {
+                          const href = item.type === "route" ? `/routes/${item.id}` : `/shop/products/${item.id}`;
                           return (
                             <Link
                               key={`${item.type}-${item.id}`}
                               href={href}
                               onClick={closeDrawer}
-                              className={`group relative flex items-center gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all hover:-translate-y-1 ${idx % 2 === 0 ? "rotate-1" : "-rotate-1"}`}
+                              className="group flex items-center gap-6 p-4 rounded-2xl border border-transparent hover:border-white/40 hover:bg-white/20 transition-all"
                             >
-                              <div className="grid h-10 w-10 shrink-0 place-items-center bg-[var(--paper-deep)] text-[var(--gold)]">
+                              <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-white shadow-xl rotate-3 group-hover:rotate-0 transition-transform">
                                 {item.type === "route" ? (
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 20l-5-2V4l5 2m0 14l5-2m-5 2v-14m5 12l5 2V6l-5-2m0 14V4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><path d="M9 20l-5-2V4l5 2m0 14l5-2m-5 2v-14m5 12l5 2V6l-5-2m0 14V4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 ) : (
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                 )}
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">{item.type}</p>
-                                <p className="mt-0.5 truncate text-sm font-bold text-[var(--river-deep)] group-hover:text-[var(--cinnabar)]">{item.title}</p>
+                              <div className="min-w-0">
+                                <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">{item.type}</p>
+                                <p className="mt-1 truncate text-lg font-bold text-[var(--river-deep)]">{item.title}</p>
                               </div>
                             </Link>
                           );
                         })}
                       </div>
                     ) : (
-                      <p className="handwritten text-sm text-[var(--muted)] opacity-60">Your private collection is currently empty...</p>
+                      <p className="text-xs text-[var(--muted)] italic opacity-40">Listening for active signals...</p>
                     )}
                   </div>
 
                   {/* Cart */}
-                  <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <h4 className="font-[family:var(--font-display)] text-xl italic text-[var(--river-deep)]">Field Objects</h4>
-                      <span className="text-[10px] font-bold text-[var(--muted)]">{cart.length} in Cart</span>
+                  <div className="space-y-8">
+                    <div className="flex items-end justify-between">
+                      <h4 className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)]">Objects</h4>
+                      <span className="text-[9px] font-bold text-[var(--gold)] tracking-[0.2em] border-b border-[var(--gold)]/30 pb-1">{cart.length} ACQUIRED</span>
                     </div>
                     {cart.length > 0 ? (
-                      <div className="space-y-4">
-                        <div className="grid gap-3">
+                      <div className="space-y-10">
+                        <div className="grid gap-6">
                           {cart.map((item) => (
-                            <div
-                              key={item.productSlug}
-                              className="flex items-center gap-4 border-b border-[var(--line)] pb-4"
-                            >
-                              <div className="h-14 w-14 shrink-0 bg-white p-1 scrapbook-shadow -rotate-2">
-                                {item.image && <img src={item.image} alt="" className="h-full w-full object-cover" />}
+                            <div key={item.productSlug} className="flex items-center gap-6 group">
+                              <div className="h-20 w-20 shrink-0 rounded-2xl bg-white p-2 shadow-xl -rotate-2 group-hover:rotate-0 transition-transform">
+                                {item.image && <img src={item.image} alt="" className="h-full w-full object-cover rounded-lg" />}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-bold text-[var(--river-deep)]">{item.name}</p>
-                                <p className="mt-1 text-[10px] font-bold text-[var(--gold)] uppercase tracking-widest">Qty: {item.quantity}</p>
+                                <p className="truncate text-lg font-bold text-[var(--river-deep)]">{item.name}</p>
+                                <p className="mt-1 text-[9px] font-bold text-[var(--gold)] uppercase tracking-widest">UNIT_QTY: {item.quantity}</p>
                               </div>
-                              <p className="text-sm font-bold text-[var(--cinnabar)]">
-                                ${(item.price * item.quantity).toFixed(2)}
+                              <p className="font-[family:var(--font-display)] text-xl text-[var(--cinnabar)]">
+                                ${(item.price * item.quantity).toFixed(0)}
                               </p>
                             </div>
                           ))}
@@ -328,42 +340,44 @@ export function GlobalDrawer() {
                         <Link
                           href="/checkout"
                           onClick={closeDrawer}
-                          className="btn-primary mt-4 flex w-full items-center justify-center py-4"
+                          className="group relative flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.3em] text-white shadow-2xl"
                         >
-                          Checkout Bag
+                          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                          <span>Finalize Collection</span>
                         </Link>
                       </div>
                     ) : (
-                      <p className="handwritten text-sm text-[var(--muted)] opacity-60">No objects collected from the store yet.</p>
+                      <p className="text-xs text-[var(--muted)] italic opacity-40">Field bag remains empty.</p>
                     )}
                   </div>
                 </div>
               </section>
 
-              {/* Interpreter Requests */}
+              {/* Logs */}
               {user && (
-                <section className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-px flex-1 bg-[var(--line)]" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Dispatch Logs</p>
-                    <div className="h-px flex-1 bg-[var(--line)]" />
+                <section className="space-y-8 pb-10">
+                  <div className="flex items-center gap-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-[var(--river-deep)] opacity-30">Dispatch_Logs</p>
+                    <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
                   </div>
 
-                  <div className="grid gap-4">
-                    {bookingDrafts.map((booking, idx) => (
+                  <div className="grid gap-6">
+                    {bookingDrafts.map((booking) => (
                       <Link
                         key={`${booking.city}-${booking.date}`}
                         href="/interpreting#booking"
                         onClick={closeDrawer}
-                        className={`group relative block border border-dashed border-[var(--line)] bg-white/30 p-5 transition-all hover:bg-white ${idx % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
+                        className="group relative block rounded-3xl bg-white/20 border border-white/40 p-6 transition-all hover:bg-white/40"
                       >
-                        <div className="absolute -left-2 top-1/2 h-8 w-1 -translate-y-1/2 bg-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)]">{booking.status}</p>
-                          <p className="text-[9px] font-mono text-[var(--muted)]">{booking.date}</p>
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="bg-[var(--gold)]/10 text-[var(--gold)] px-3 py-1 rounded-md text-[8px] font-bold tracking-[0.2em]">{booking.status.toUpperCase()}</div>
+                          <p className="text-[10px] font-mono text-[var(--muted)] opacity-60">{booking.date}</p>
                         </div>
-                        <p className="font-[family:var(--font-display)] text-lg text-[var(--river-deep)]">{booking.city} Dispatch</p>
-                        <p className="mt-1 handwritten text-xs text-[var(--muted)]">{booking.service}</p>
+                        <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{booking.city} Coordination</p>
+                        <div className="mt-4 flex items-center gap-3 text-[10px] font-bold text-[var(--muted)] uppercase tracking-widest">
+                          <span className="w-4 h-px bg-[var(--line)]" />
+                          {booking.service}
+                        </div>
                       </Link>
                     ))}
                   </div>

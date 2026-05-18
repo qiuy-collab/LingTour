@@ -116,8 +116,8 @@ export function CheckoutClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)] pb-20">
-      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.2fr_0.8fr]">
+    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
+      <div className="grid min-h-screen w-full lg:grid-cols-[1.2fr_0.8fr]">
         <section className="relative overflow-hidden border-r border-[var(--line)]/40 bg-[linear-gradient(180deg,rgba(247,245,240,0.96),rgba(242,240,234,0.98))] px-6 py-10 lg:px-16 lg:py-20">
           <div className="pointer-events-none absolute inset-0 bg-grain opacity-[0.12]" />
           <div className="relative z-10 flex items-center gap-4 mb-12">

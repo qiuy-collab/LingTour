@@ -17,52 +17,59 @@ type StoreProductCardProps = {
 export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) {
   return (
     <Reveal delay={index * 80}>
-      <Link href={`/shop/products/${product.slug}`} className="group block">
-        <article
-          className={[
-            "relative aspect-[4/5] bg-[var(--paper)] transition-all duration-700 scrapbook-shadow border border-[var(--line)]",
-            index % 3 === 0 ? "rotate-[-1.5deg]" : index % 3 === 1 ? "rotate-[1deg]" : "rotate-[2deg]",
-            "hover:rotate-0 hover:-translate-y-4 hover:shadow-[0_32px_90px_rgba(0,0,0,0.12)]"
-          ].join(" ")}
-        >
-          <div className="absolute inset-0 p-3">
-            <div className="relative h-full w-full overflow-hidden border border-[var(--line)]">
-              <div
-                className="absolute inset-0 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
-                style={{ backgroundImage: `url(${product.image})` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--river-deep)]/60 via-transparent to-transparent opacity-40 group-hover:opacity-20 transition-opacity" />
+      <article
+        className={[
+          "relative aspect-[4/5] bg-white transition-all duration-700 shadow-2xl overflow-visible",
+          index % 2 === 0 ? "rotate-[-1deg]" : "rotate-[1deg]",
+          "hover:rotate-0 hover:-translate-y-4 group"
+        ].join(" ")}
+      >
+        {/* Physical Tag Attachment */}
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-12 bg-[var(--river-deep)]/20 z-0" />
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] z-0" />
+
+        <Link href={`/shop/products/${product.slug}`} className="block h-full w-full relative z-10 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 group-hover:scale-110"
+            style={{ backgroundImage: `url(${product.image})` }}
+          />
+          {/* Subtle Glass Overlay for depth */}
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] group-hover:opacity-0 transition-opacity" />
+        </Link>
+
+        {/* The Interactive "Specimen Tag" */}
+        <div className="absolute -bottom-10 -right-4 z-20 w-40 bg-[var(--paper)] border border-[var(--line)] p-4 shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500 origin-top-left">
+          {/* String loop hole */}
+          <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-[var(--paper-deep)] border border-[var(--line)]" />
+
+          <div className="space-y-3 pt-2">
+            <div className="flex justify-between items-start">
+              <p className="text-[7px] font-mono text-[var(--muted)] tracking-tighter uppercase">ID_{product.slug.slice(0, 8)}</p>
+              <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
             </div>
-          </div>
 
-          <div className="absolute right-6 top-6 z-20">
-            <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
-          </div>
+            <h3 className="font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
+              {product.name}
+            </h3>
 
-          <div className="absolute -right-2 top-12 z-20 rotate-90 origin-right">
-             <span className="bg-[var(--gold)] text-white text-[8px] font-bold px-3 py-1 uppercase tracking-widest shadow-sm">
-               {formatStorePrice(product)}
-             </span>
-          </div>
+            <div className="h-px bg-[var(--line)] w-full" />
 
-          <div className="relative z-10 flex h-full flex-col justify-end p-8 text-white">
-            <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-2 handwritten">
-                {product.tag}
-              </p>
-              <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-white drop-shadow-md">
-                {product.name}
-              </h3>
-              <div className="mt-4 flex items-center justify-between border-t border-white/20 pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-                  {typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title}
-                </p>
-                <span className="text-[10px] font-bold uppercase tracking-widest underline underline-offset-4">Details</span>
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]">{product.tag}</p>
+                <p className="text-[10px] font-bold text-[var(--river-deep)]">{formatStorePrice(product)}</p>
               </div>
+
+              <Link href={`/shop/products/${product.slug}`} className="w-8 h-8 rounded-full bg-[var(--river-deep)] flex items-center justify-center text-white scale-75 group-hover:scale-100 transition-transform">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </Link>
             </div>
           </div>
-        </article>
-      </Link>
+        </div>
+
+        {/* Hover Highlight (Light Leak) */}
+        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_top_right,rgba(185,138,70,0.1),transparent_70%)]" />
+      </article>
     </Reveal>
   );
 }

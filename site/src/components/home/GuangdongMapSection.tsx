@@ -119,10 +119,10 @@ export function GuangdongMapSection({ cities }: Props) {
         </div>
 
         <div className="relative min-h-[40rem] lg:min-h-[50rem]">
-          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-full rotate-1 border-8 border-white bg-white/95 p-6 backdrop-blur-sm md:w-64">
+          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-[min(82vw,17rem)] rotate-1 border-8 border-white bg-white/95 p-4 backdrop-blur-sm md:w-56 lg:w-52">
             <Reveal delay={400}>
               <Link href={`/culture/${activeCity.slug}`} className="group block">
-                <div className="relative mb-6 aspect-[4/3] overflow-hidden">
+                <div className="relative mb-4 aspect-[4/3] overflow-hidden">
                   <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
                     style={{ backgroundImage: `url(${activeImage})` }}
@@ -131,19 +131,19 @@ export function GuangdongMapSection({ cities }: Props) {
                 </div>
               </Link>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                     {panelEyebrow}
                   </p>
-                  <h3 className="font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)]">
+                  <h3 className="font-[family:var(--font-display)] text-2xl italic leading-none text-[var(--river-deep)]">
                     {panelTitle}
                   </h3>
                 </div>
 
                 <div className="h-px bg-[var(--line)]" />
 
-                <div className="min-h-[6rem]">
+                <div className="min-h-[4.5rem]">
                   {activeEvent ? (
                     <div className="animate-reveal">
                       <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
@@ -158,7 +158,7 @@ export function GuangdongMapSection({ cities }: Props) {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-4">
+                <div className="grid grid-cols-2 gap-2 pt-2">
                   <Link
                     href={`/culture/${activeCity.slug}`}
                     className="border border-[var(--river-deep)] py-3 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
