@@ -117,7 +117,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href="/interpreting"
-                    className="px-10 py-5 border border-[var(--line)] bg-white/50 text-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] transition-all hover:bg-white"
+                    className="btn-paper inline-flex items-center justify-center px-10 py-5 text-xs"
                   >
                     {t("common.btn.bookNow")}
                   </Link>
@@ -325,10 +325,10 @@ export default function Home() {
                   <span className="italic text-[var(--gold)]">Speak for itself.</span>
                 </h2>
                 <div className="flex flex-wrap gap-6 mt-16">
-                  <Link href="/routes" className="px-12 py-5 bg-[var(--gold)] text-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] transition-transform hover:scale-105">
+                  <Link href="/routes" className="btn-gold inline-flex items-center justify-center px-12 py-5 text-xs">
                     Start your log
                   </Link>
-                  <Link href="/interpreting" className="px-12 py-5 border border-white/20 text-white text-xs font-bold uppercase tracking-[0.2em] transition-all hover:bg-white/10">
+                  <Link href="/interpreting" className="btn-ghost-dark inline-flex items-center justify-center px-12 py-5 text-xs">
                     Book coordination
                   </Link>
                 </div>

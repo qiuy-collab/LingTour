@@ -48,7 +48,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
         </Reveal>
       </div>
 
-      <div className="mt-10 grid gap-5 lg:grid-cols-3">
+      <div className="mt-10 grid gap-8 lg:grid-cols-3">
         {profiles.map((profile, index) => {
           const isSelected = selectedProfileId === profile.id;
 
@@ -56,86 +56,80 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
             <Reveal key={profile.id} delay={index * 100}>
               <article
                 className={[
-                  "group relative overflow-hidden rounded-[2rem] border bg-white transition-all duration-500",
+                  "group relative overflow-hidden bg-[var(--paper)] bg-grain transition-all duration-500 scrapbook-shadow border border-[var(--line)]",
+                  index % 2 === 0 ? "rotate-1" : "-rotate-1",
                   isSelected
-                    ? "border-[var(--cinnabar)] shadow-[0_28px_80px_rgba(140,58,44,0.18)]"
-                    : "border-[var(--line)] shadow-[0_18px_55px_rgba(17,25,35,0.08)] hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(17,25,35,0.13)]",
+                    ? "border-[var(--cinnabar)] ring-1 ring-[var(--cinnabar)]/20"
+                    : "hover:-translate-y-2 hover:rotate-0",
                 ].join(" ")}
               >
-                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--paper-deep)]">
+                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)]">
                   <div
                     className={[
-                      "absolute inset-0 bg-cover bg-center transition-all duration-700",
+                      "absolute inset-0 bg-cover bg-center transition-all duration-1000",
                       isSelected
-                        ? "scale-100 grayscale-0 saturate-100"
-                        : "grayscale saturate-[0.7] group-hover:scale-105 group-hover:grayscale-0 group-hover:saturate-100",
+                        ? "scale-105 grayscale-0"
+                        : "grayscale group-hover:scale-110 group-hover:grayscale-0",
                     ].join(" ")}
                     style={{ backgroundImage: `url(${profile.image})` }}
                   />
-                  <div
-                    className={[
-                      "absolute inset-0 transition-all duration-500",
-                      isSelected
-                        ? "bg-[linear-gradient(0deg,rgba(17,25,35,0.72),rgba(17,25,35,0.08)_48%,transparent)]"
-                        : "bg-[linear-gradient(0deg,rgba(17,25,35,0.82),rgba(17,25,35,0.2)_48%,transparent)]",
-                    ].join(" ")}
-                  />
-                  <div
-                    className={[
-                      "absolute left-5 top-5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-all duration-500",
-                      isSelected
-                        ? "border border-[var(--gold)]/40 bg-[var(--gold)]/18 text-[var(--gold)]"
-                        : "border border-white/20 bg-black/35 text-white/72",
-                    ].join(" ")}
-                  >
-                    {locale === "zh" ? profile.levelZh ?? profile.level : profile.level ?? profile.levelZh}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--river-deep)]/80 via-transparent to-transparent opacity-60" />
+
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-bold uppercase tracking-[0.2em] text-white">
+                      {locale === "zh" ? profile.levelZh ?? profile.level : profile.level ?? profile.levelZh}
+                    </span>
                   </div>
-                  <div className="absolute bottom-5 left-5 right-5 text-white">
-                    <p
-                      className={[
-                        "text-[10px] font-bold uppercase tracking-[0.14em] transition-colors duration-500",
-                        isSelected ? "text-[var(--gold)]" : "text-white/52",
-                      ].join(" ")}
-                    >
+
+                  <div className="absolute bottom-6 left-6 right-6 z-10">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-1 handwritten">
                       {profile.specialty}
                     </p>
-                    <h3 className="mt-2 font-[family:var(--font-display)] text-[1.75rem] leading-[1.08] tracking-[-0.02em]">{profile.name}</h3>
+                    <h3 className="font-[family:var(--font-display)] text-3xl text-white leading-tight">
+                      {profile.name}
+                    </h3>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="max-w-[22ch] text-[13px] leading-6 text-[var(--muted)]">{profile.languages}</p>
-                      <p className="mt-2 text-[11px] text-[var(--cinnabar)]">
-                        {profile.serviceCount}+ {locale === "zh" ? "\u6b21\u670d\u52a1" : "bookings completed"}
+                <div className="p-8">
+                  <div className="flex items-start justify-between gap-4 mb-6">
+                    <div className="flex-1">
+                      <p className="text-xs leading-relaxed text-[var(--muted)] italic mb-2">
+                        {profile.languages}
                       </p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 rounded-full bg-[var(--cinnabar)] animate-pulse" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
+                          {profile.serviceCount}+ Dispatches
+                        </p>
+                      </div>
                     </div>
                     {profile.rateLabel ? (
-                      <span className="rounded-full bg-[var(--gold)]/12 px-3 py-1 text-[11px] font-bold text-[var(--cinnabar)]">
-                        {profile.rateLabel}
-                      </span>
+                      <div className="text-right">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-1">Rate</p>
+                        <p className="text-sm font-bold text-[var(--river-deep)]">{profile.rateLabel.split(' ')[0]}</p>
+                      </div>
                     ) : null}
                   </div>
 
                   {profile.bestFor ? (
-                    <p className="mt-4 rounded-2xl bg-[var(--paper-deep)] px-4 py-3 text-[13px] leading-6 text-[var(--muted)]">
-                      {profile.bestFor}
-                    </p>
+                    <div className="mb-8 p-4 bg-[var(--paper-deep)]/40 border-l border-[var(--gold)]/30 italic">
+                      <p className="text-[13px] leading-relaxed text-[var(--muted)] handwritten">
+                        "{profile.bestFor}"
+                      </p>
+                    </div>
                   ) : null}
 
                   <button
                     type="button"
                     onClick={() => handleSelect(profile)}
                     className={[
-                      "mt-5 flex w-full items-center justify-between rounded-full px-5 py-3 text-[11px] font-bold uppercase tracking-[0.14em] transition",
-                      isSelected
-                        ? "border border-[var(--cinnabar)] bg-[var(--cinnabar)] text-white"
-                        : "border border-[var(--line)] text-[var(--cinnabar)] hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)] hover:text-white",
+                      "btn-primary w-full py-4 text-[10px] flex items-center justify-between group/btn",
+                      isSelected ? "bg-[var(--cinnabar)]" : ""
                     ].join(" ")}
                   >
-                    <span>{locale === "zh" ? "\u9009\u62e9\u8be5\u7b49\u7ea7" : "Use this level"}</span>
-                    <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <span>{locale === "zh" ? "\u9009\u62e9\u8be5\u7b49\u7ea7" : "Assign to Brief"}</span>
+                    <svg className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                       <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>

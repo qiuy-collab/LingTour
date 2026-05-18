@@ -35,75 +35,83 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
 
   return (
     <div>
-      <div className="grid gap-3 border border-[var(--line)] bg-white p-4 lg:grid-cols-[1fr_14rem_12rem]">
-        <label className="block">
-          <span className="sr-only">Search products</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search product, route, or story"
-            className="h-12 w-full border border-[var(--line)] bg-[var(--paper)] px-4 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--cinnabar)]"
-          />
-        </label>
-        <label className="block">
-          <span className="sr-only">Filter by collection</span>
-          <select
-            value={collection}
-            onChange={(event) => setCollection(event.target.value)}
-            className="h-12 w-full border border-[var(--line)] bg-[var(--paper)] px-4 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--cinnabar)]"
-          >
-            <option>All collections</option>
-            {collections.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="sr-only">Filter by product type</span>
-          <select
-            value={tag}
-            onChange={(event) => setTag(event.target.value)}
-            className="h-12 w-full border border-[var(--line)] bg-[var(--paper)] px-4 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--cinnabar)]"
-          >
-            <option>All types</option>
-            {tags.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </select>
-        </label>
+      <div className="bg-[var(--paper)] bg-grain p-6 lg:p-10 scrapbook-shadow border border-[var(--line)] rotate-[-0.5deg] mb-16">
+        <div className="grid gap-6 lg:grid-cols-[1fr_14rem_12rem]">
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Search Registry</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Product, route, or story..."
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] handwritten"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Collection</span>
+            <select
+              value={collection}
+              onChange={(event) => setCollection(event.target.value)}
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+            >
+              <option>All collections</option>
+              {collections.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Type</span>
+            <select
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+            >
+              <option>All types</option>
+              {tags.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-between gap-4 text-sm text-[var(--muted)]">
+      <div className="flex items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] mb-12">
         <p>
-          Showing {filteredProducts.length} of {products.length} products
+          Showing {filteredProducts.length} <span className="text-[var(--gold)]">/</span> {products.length} Field Objects
         </p>
         {(query || collection !== "All collections" || tag !== "All types") && (
           <button
             type="button"
-            className="text-[var(--cinnabar)]"
+            className="text-[var(--cinnabar)] hover:underline"
             onClick={() => {
               setQuery("");
               setCollection("All collections");
               setTag("All types");
             }}
           >
-            Clear filters
+            Reset Filters
           </button>
         )}
       </div>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-x-12 gap-y-20 md:grid-cols-2 lg:grid-cols-3">
         {filteredProducts.map((product, index) => (
           <StoreProductCard key={product.slug} product={product} index={index} />
         ))}
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="mt-10 border border-[var(--line)] bg-white p-10 text-center">
-          <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-            No products found.
+        <div className="mt-24 text-center py-20 border border-[var(--line)] bg-white/30 scrapbook-shadow rotate-1">
+          <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)] italic">
+            Registry empty.
           </p>
-          <p className="mt-3 text-sm text-[var(--muted)]">Try another keyword, collection, or product type.</p>
+          <p className="mt-4 text-sm text-[var(--muted)] handwritten">No matching field objects found in this archive.</p>
+          <button
+            onClick={() => { setQuery(""); setCollection("All collections"); setTag("All types"); }}
+            className="mt-8 btn-outline px-8 py-3"
+          >
+            Clear All
+          </button>
         </div>
       )}
     </div>

@@ -14,17 +14,17 @@ export function LoginPanel() {
 
   const labels = {
     login: {
-      tab: "Log in",
-      title: "Welcome back",
+      tab: "Field Registry",
+      title: "Log in",
       cta: "Log in",
-      alt: "New to LingTour?",
+      alt: "New to the dispatch?",
       altLink: "Sign up",
     },
     signup: {
-      tab: "Sign up",
-      title: "Create your account",
+      tab: "New Recruit",
+      title: "Sign up",
       cta: "Sign up",
-      alt: "Already have an account?",
+      alt: "Already in the registry?",
       altLink: "Log in",
     },
   };
@@ -109,16 +109,16 @@ export function LoginPanel() {
   }
 
   return (
-    <div className="rounded-lg border border-[var(--line)] bg-white shadow-[0_24px_70px_rgba(17,25,35,0.08)]">
-      <div className="grid grid-cols-2 border-b border-[var(--line)] bg-[var(--paper)]">
+    <div className="relative rotate-1 scrapbook-shadow border border-[var(--line)] bg-[var(--paper)] bg-grain overflow-hidden">
+      <div className="grid grid-cols-2 border-b border-[var(--line)] bg-[var(--paper-deep)]/50">
         {(["login", "signup"] as const).map((item) => (
           <button
             key={item}
             type="button"
-            className={`px-5 py-4 text-sm font-semibold transition ${
+            className={`px-5 py-5 text-[10px] font-bold uppercase tracking-[0.2em] transition ${
               mode === item
-                ? "bg-white text-[var(--river-deep)]"
-                : "text-[var(--muted)] hover:bg-white/70 hover:text-[var(--river-deep)]"
+                ? "bg-[var(--paper)] text-[var(--river-deep)]"
+                : "text-[var(--muted)] hover:bg-[var(--paper)]/50 hover:text-[var(--river-deep)]"
             }`}
             onClick={() => {
               setMode(item);
@@ -130,20 +130,22 @@ export function LoginPanel() {
         ))}
       </div>
 
-      <div className="p-6 sm:p-8">
-        <h1 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
+      <div className="p-8 sm:p-10 relative">
+        <div className="absolute top-0 right-0 w-32 h-32 border-l border-b border-[var(--line)] opacity-10 pointer-events-none" />
+
+        <h1 className="font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)] mb-8">
           {t.title}
         </h1>
 
         {error ? (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-6 border-l-2 border-[var(--cinnabar)] bg-[var(--cinnabar)]/5 px-4 py-3 text-xs font-bold text-[var(--cinnabar)] uppercase tracking-wider">
             {error}
           </div>
         ) : null}
 
         <form
           ref={formRef}
-          className="mt-7 grid gap-4"
+          className="grid gap-6"
           onSubmit={(e) => e.preventDefault()}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -153,52 +155,52 @@ export function LoginPanel() {
           }}
         >
           {mode === "signup" ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-medium text-[var(--river-deep)]">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                 Full name
                 <input
                   name="name"
-                  className="rounded-md border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                  className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
                   placeholder="Maya Chen"
                 />
               </label>
-              <label className="grid gap-2 text-sm font-medium text-[var(--river-deep)]">
+              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                 Country
                 <input
                   name="country"
-                  className="rounded-md border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                  className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
                   placeholder="Singapore"
                 />
               </label>
             </div>
           ) : null}
 
-          <label className="grid gap-2 text-sm font-medium text-[var(--river-deep)]">
-            Email
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+            Email Address
             <input
               name="email"
               type="email"
-              className="rounded-md border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+              className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
               placeholder="you@example.com"
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium text-[var(--river-deep)]">
+          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
             Password
             <input
               name="password"
               type="password"
-              className="rounded-md border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
-              placeholder="Enter your password"
+              className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
+              placeholder="Enter password"
             />
           </label>
 
           {mode === "signup" ? (
-            <label className="grid gap-2 text-sm font-medium text-[var(--river-deep)]">
+            <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
               Travel style
               <select
                 name="travelStyle"
-                className="rounded-md border border-[var(--line)] bg-white px-3 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
               >
                 <option>Culture routes and food walks</option>
                 <option>Craft workshops and museums</option>
@@ -208,12 +210,12 @@ export function LoginPanel() {
             </label>
           ) : null}
 
-          <div className="mt-1 flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm text-[var(--muted)]">
-              <input type="checkbox" className="h-4 w-4 accent-[var(--cinnabar)]" />
+          <div className="mt-2 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] cursor-pointer">
+              <input type="checkbox" className="h-4 w-4 accent-[var(--cinnabar)] border-[var(--line)]" />
               Stay signed in
             </label>
-            <button type="button" className="text-sm text-[var(--muted)] transition hover:text-[var(--river-deep)]">
+            <button type="button" className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] transition hover:text-[var(--cinnabar)]">
               Forgot?
             </button>
           </div>
@@ -221,21 +223,19 @@ export function LoginPanel() {
           <button
             type="button"
             disabled={loading}
-            className={`mt-3 rounded-md px-6 py-3.5 text-sm font-semibold transition ${
-              loading
-                ? "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
-                : "bg-[var(--cinnabar)] text-white hover:bg-[var(--cinnabar-deep)]"
+            className={`mt-4 btn-primary w-full ${
+              loading ? "opacity-60 cursor-not-allowed" : ""
             }`}
             onClick={handleSignIn}
           >
             {loading ? "Processing..." : t.cta}
           </button>
 
-          <div className="grid gap-3">
-            <div className="flex items-center gap-3">
+          <div className="grid gap-4">
+            <div className="flex items-center gap-4">
               <span className="h-px flex-1 bg-[var(--line)]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                Quick access
+              <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+                Passport login
               </span>
               <span className="h-px flex-1 bg-[var(--line)]" />
             </div>
@@ -244,10 +244,10 @@ export function LoginPanel() {
               <button
                 type="button"
                 onClick={handleQuickLogin}
-                className="grid h-14 w-14 place-items-center rounded-full border border-[var(--line)] bg-[var(--paper)] transition hover:border-[var(--cinnabar)] hover:bg-white"
+                className="group relative h-16 w-16 place-items-center flex items-center justify-center rounded-full border border-[var(--line)] bg-transparent transition-all hover:border-[var(--cinnabar)] hover:bg-white scrapbook-shadow"
                 aria-label="Continue with Google"
               >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" aria-hidden="true">
+                <svg className="h-7 w-7 grayscale group-hover:grayscale-0 transition-all" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                     fill="#4285F4"
@@ -269,11 +269,11 @@ export function LoginPanel() {
             </div>
           </div>
 
-          <p className="text-center text-sm text-[var(--muted)]">
+          <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">
             {t.alt}{" "}
             <button
               type="button"
-              className="font-semibold text-[var(--cinnabar)] hover:text-[var(--cinnabar-deep)]"
+              className="text-[var(--cinnabar)] hover:text-[var(--cinnabar-deep)] underline underline-offset-4"
               onClick={() => {
                 setMode(mode === "login" ? "signup" : "login");
                 setError(null);

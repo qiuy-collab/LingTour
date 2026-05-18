@@ -41,35 +41,47 @@ export function CultureGallery({ highlights = [] }: Props) {
       }));
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {galleryItems.map((item) => (
+    <div className="grid gap-x-12 gap-y-20 md:grid-cols-2">
+      {galleryItems.map((item, idx) => (
         <Link
           key={item.slug}
           href={item.href}
-          className="group relative overflow-hidden rounded-xl bg-[var(--night)] shadow-[var(--shadow-soft)] transition-shadow duration-500 hover:shadow-[0_24px_70px_rgba(17,25,35,0.12)]"
+          className={`group relative transition-all duration-500 hover:-translate-y-2 ${
+            idx % 2 === 0 ? "-rotate-1" : "rotate-1"
+          }`}
         >
-          <div
-            className="aspect-[3/2] bg-cover bg-center transition duration-1000 group-hover:scale-105"
-            style={{ backgroundImage: `url(${item.image})` }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0),rgba(17,25,35,0.05)_50%,rgba(17,25,35,0.88))]" />
-          <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
-              {item.place}
-            </p>
-            <h3 className="mt-2 font-[family:var(--font-display)] text-xl leading-tight">
+          <div className="relative aspect-[3/2] scrapbook-shadow border-[0.75rem] border-white overflow-hidden bg-white">
+            <div
+              className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
+              style={{ backgroundImage: `url(${item.image})` }}
+            />
+            <div className="absolute inset-0 bg-black/5" />
+
+            {/* Tape decoration */}
+            <div className="absolute -top-3 left-1/4 w-16 h-6 bg-white/30 backdrop-blur-sm rotate-3 z-20" />
+          </div>
+
+          <div className="mt-8 space-y-4 px-2">
+            <div className="flex items-center gap-3">
+              <div className="h-px w-6 bg-[var(--gold)]" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                {item.place}
+              </p>
+            </div>
+
+            <h3 className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
               {item.title}
             </h3>
-            <div className="mt-4 max-h-0 overflow-hidden opacity-0 transition-all duration-500 group-hover:max-h-48 group-hover:opacity-100">
-              <p className="text-sm leading-7 text-white/75 line-clamp-3">
-                {stripMarkdown(item.body)}
-              </p>
-              <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-[var(--gold)]">
-                Read culture notes
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
+
+            <p className="text-sm leading-relaxed text-[var(--muted)] handwritten max-w-[30ch]">
+              {stripMarkdown(item.body)}
+            </p>
+
+            <div className="pt-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
+              <span>View archive</span>
+              <svg className="h-3 w-3 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
         </Link>

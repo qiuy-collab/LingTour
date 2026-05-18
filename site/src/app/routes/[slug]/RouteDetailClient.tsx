@@ -76,7 +76,7 @@ export function RouteDetailClient({ slug }: { slug: string }) {
                 </Link>
                 <Link
                   href="/routes"
-                  className="inline-block border border-white/30 bg-white/5 px-10 py-5 text-xs font-bold uppercase tracking-[0.2em] text-white transition-all hover:border-white/60 hover:bg-white/10"
+                  className="btn-ghost-dark inline-block px-10 py-5 text-xs"
                 >
                   Browse Atlas
                 </Link>

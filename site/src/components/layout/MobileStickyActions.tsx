@@ -24,8 +24,8 @@ export function MobileStickyActions({ actions }: Props) {
               href={action.href}
               className={`flex-1 px-5 py-3 text-center text-sm font-medium transition ${
                 action.variant === "primary"
-                  ? "bg-[var(--cinnabar)] text-white hover:bg-[var(--cinnabar-deep)]"
-                  : "border border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--cinnabar)]"
+                  ? "btn-primary-compact"
+                  : "btn-paper-compact"
               }`}
             >
               {action.label}
@@ -37,8 +37,8 @@ export function MobileStickyActions({ actions }: Props) {
               onClick={action.onClick}
               className={`flex-1 px-5 py-3 text-center text-sm font-medium transition ${
                 action.variant === "primary"
-                  ? "bg-[var(--cinnabar)] text-white hover:bg-[var(--cinnabar-deep)]"
-                  : "border border-[var(--line)] bg-white text-[var(--ink)] hover:border-[var(--cinnabar)]"
+                  ? "btn-primary-compact"
+                  : "btn-paper-compact"
               }`}
             >
               {action.label}

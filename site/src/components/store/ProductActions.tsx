@@ -37,7 +37,7 @@ export function ProductActions({ product, variant = "dark" }: ProductActionsProp
 
   const baseBtn = "px-8 py-4 text-sm font-medium transition-all duration-300 active:scale-95";
   const darkClasses = {
-    secondary: "border border-white/72 bg-white/10 text-white backdrop-blur hover:bg-white hover:text-[var(--night)]",
+    secondary: "btn-ghost-dark",
     primary: "bg-[var(--cinnabar)] text-white hover:bg-[var(--cinnabar-deep)]",
   };
   const lightClasses = {

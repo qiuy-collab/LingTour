@@ -212,11 +212,11 @@ export default function InterpretingPage() {
                     : "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one."}
                 </p>
 
-                <div className="flex gap-4">
-                  <a href="#interpreting-booking" className="px-10 py-5 bg-[var(--river-deep)] text-white text-xs font-bold uppercase tracking-[0.2em] transition-transform hover:scale-105 active:scale-95">
+                <div className="flex flex-wrap gap-4">
+                  <a href="#interpreting-booking" className="btn-primary inline-flex items-center justify-center px-10 py-5 text-xs leading-none active:scale-95">
                     {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1" : "Plan support"}
                   </a>
-                  <a href="#service-types" className="px-10 py-5 border border-[var(--line)] bg-white/50 text-[var(--river-deep)] text-xs font-bold uppercase tracking-[0.2em] transition-all hover:bg-white">
+                  <a href="#service-types" className="btn-paper inline-flex items-center justify-center px-10 py-5 text-xs leading-none">
                     {locale === "zh" ? "\u67e5\u770b\u7c7b\u578b" : "Choose a scene"}
                   </a>
                 </div>
@@ -295,7 +295,7 @@ export default function InterpretingPage() {
                       ))}
                     </div>
 
-                    <a href="#interpreting-booking" className="mt-6 block w-full py-4 border border-[var(--river-deep)] text-center text-[10px] font-bold uppercase tracking-[0.2em] transition-all group-hover:bg-[var(--river-deep)] group-hover:text-white">
+                    <a href="#interpreting-booking" className="btn-outline mt-6 block w-full py-4 text-center text-[10px] leading-none">
                       Request Dispatch
                     </a>
                   </div>

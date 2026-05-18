@@ -69,56 +69,71 @@ export default function RoutesPage() {
       </section>
 
       <section className="site-container py-12 lg:py-20">
-        <div className="grid gap-12 sm:grid-cols-2 lg:gap-16">
+        <div className="grid gap-x-12 gap-y-24 sm:grid-cols-2 lg:gap-x-20">
           {storyRoutes.map((route, i) => (
             <Reveal key={route.slug} delay={i * 100}>
               <Link href={`/routes/${route.slug}`} className="group block">
-                <article className="relative overflow-hidden rounded-2xl bg-white shadow-[0_4px_24px_rgba(17,25,35,0.06)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(17,25,35,0.1)]">
-                  <div className="relative aspect-[16/9] overflow-hidden">
+                <article className={`relative transition-all duration-500 hover:-translate-y-3 ${
+                  i % 2 === 0 ? "rotate-1" : "-rotate-1"
+                }`}>
+                  <div className="relative aspect-[16/10] scrapbook-shadow border-[0.85rem] border-white overflow-hidden bg-white">
                     <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.9] saturate-[0.85]"
                       style={{ backgroundImage: `url(${route.image})` }}
                     />
-                    <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(17,25,35,0.7),transparent_50%)]" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-sm">
-                          {route.culture}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/50">
-                          {route.duration}
-                        </span>
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/film-grain.png')] opacity-25 mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-black/5" />
+
+                    {/* Floating Ticket style Label */}
+                    <div className="absolute top-4 right-4 z-10 flex flex-col items-center">
+                      <div className="bg-[var(--cinnabar)] px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white shadow-lg -rotate-6">
+                        {route.duration}
                       </div>
-                      <h2 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-white sm:text-4xl">
-                        {route.title}
-                      </h2>
+                      <div className="w-px h-6 bg-white/40 mt-1" />
                     </div>
+
+                    {/* Tape decoration */}
+                    <div className="absolute -top-5 left-1/4 w-24 h-10 bg-white/20 backdrop-blur-sm rotate-6 z-20 border-x border-black/5" />
                   </div>
 
-                  <div className="p-6">
-                    <p className="line-clamp-2 text-sm leading-relaxed text-[var(--muted)]">
+                  <div className="mt-10 space-y-5 px-4 relative">
+                    <div className="absolute -top-16 -left-2 handwritten text-4xl text-[var(--gold)]/40 -rotate-12 select-none pointer-events-none">
+                      #{i + 1} Logged
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                        {route.culture}
+                      </p>
+                      <div className="h-px flex-1 bg-[var(--line)]/50" />
+                    </div>
+
+                    <h2 className="font-[family:var(--font-display)] text-4xl leading-[1.05] text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
+                      {route.title}
+                    </h2>
+
+                    <p className="line-clamp-2 text-base leading-relaxed text-[var(--muted)] handwritten max-w-[32ch]">
                       {route.summary}
                     </p>
-                    <div className="mt-5 flex flex-wrap gap-1.5">
-                      {route.itinerary.slice(0, 4).map((item, idx) => (
-                        <span
-                          key={idx}
-                          className="rounded-full border border-[var(--line)] bg-[var(--paper)] px-3 py-1 text-[11px] text-[var(--muted)]"
-                        >
-                          {item.stop}
-                        </span>
-                      ))}
-                      {route.itinerary.length > 4 && (
-                        <span className="px-2 py-1 text-[11px] italic text-[var(--muted)]">
-                          +{route.itinerary.length - 4}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-6 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--cinnabar)] transition-colors group-hover:text-[var(--cinnabar-deep)]">
-                      <span>Explore route</span>
-                      <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+
+                    <div className="flex items-center justify-between pt-6 border-t border-[var(--line)]/30">
+                      <div className="flex items-center gap-2">
+                        <div className="handwritten text-xs text-[var(--muted)]">Waypoints:</div>
+                        <div className="flex -space-x-2">
+                          {route.itinerary.slice(0, 3).map((_, idx) => (
+                            <div key={idx} className="w-6 h-6 rounded-full border-2 border-white bg-[var(--paper-deep)] flex items-center justify-center text-[8px] font-bold text-[var(--river-deep)] shadow-sm">
+                              {idx + 1}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                        <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-[var(--cinnabar)] after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:origin-left">Dispatch Info</span>
+                        <svg className="h-3 w-3 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -128,22 +143,22 @@ export default function RoutesPage() {
         </div>
       </section>
 
-      <section className="pb-16 lg:pb-24">
+      <section className="pb-24 lg:pb-32">
         <div className="site-container">
-          <div className="relative overflow-hidden rounded-2xl bg-[var(--night)] px-8 py-16 text-center text-white lg:px-20 lg:py-24">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.08),transparent_60%)]" />
+          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-8 py-20 text-center text-white lg:px-20 lg:py-28 scrapbook-shadow">
+            <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1800&q=82')] bg-cover bg-center grayscale" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
                   Need a local voice?
                 </p>
-                <h2 className="mt-6 font-[family:var(--font-display)] text-3xl leading-tight md:text-5xl">
+                <h2 className="mt-8 font-[family:var(--font-display)] text-4xl leading-tight md:text-6xl">
                   Walk the route with someone who knows where the quiet details are hiding.
                 </h2>
-                <div className="mt-8">
+                <div className="mt-12">
                   <Link
                     href="/interpreting"
-                    className="inline-block bg-[var(--gold)] px-10 py-5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--night)] transition-all hover:bg-white"
+                    className="btn-gold inline-flex px-12 py-5 text-xs"
                   >
                     Plan interpreting
                   </Link>

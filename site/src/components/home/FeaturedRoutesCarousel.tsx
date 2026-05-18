@@ -70,27 +70,35 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                 <Link
                   key={route.slug}
                   href={`/routes/${route.slug}`}
-                  className="group relative h-[28rem] w-[17.5rem] shrink-0 overflow-hidden bg-black text-white sm:h-[34rem] sm:w-[20rem]"
+                  className={`group relative h-[32rem] w-[20rem] shrink-0 transition-all duration-700 ${
+                    activeIndex === routes.indexOf(route) ? "scale-100 opacity-100" : "scale-90 opacity-40 grayscale"
+                  }`}
                 >
-                  <div
-                    className="absolute inset-0 bg-cover bg-center opacity-82 transition duration-700 group-hover:scale-105"
-                    style={{ backgroundImage: `url(${route.image})` }}
-                  />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.14),rgba(0,0,0,0.34)_45%,rgba(0,0,0,0.88))]" />
-                  <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-6">
-                    <p className="self-end text-sm font-bold uppercase">{route.duration}</p>
-                    <div>
-                      <p className="text-sm font-bold uppercase text-white/80">{route.culture}</p>
-                      <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight sm:text-3xl">
-                        {route.title}
-                      </h3>
-                      <div className="mt-4 max-h-64 translate-y-0 overflow-hidden opacity-100 transition-all duration-500 md:max-h-0 md:translate-y-8 md:opacity-0 md:group-hover:max-h-64 md:group-hover:translate-y-0 md:group-hover:opacity-100">
-                        <p className="text-sm leading-7 text-white/82">{route.summary}</p>
-                        <span className="mt-5 inline-block border border-white/70 px-5 py-3 text-sm font-semibold">
-                          Explore trip
-                        </span>
+                  <div className="relative h-full w-full scrapbook-shadow border-[0.85rem] border-white overflow-hidden bg-white">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
+                      style={{ backgroundImage: `url(${route.image})` }}
+                    />
+                    <div className="absolute inset-0 bg-black/5" />
+
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 text-[var(--river-deep)]">
+                      <div className="relative z-10 space-y-3 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                          {route.culture} — {route.duration}
+                        </p>
+                        <h3 className="font-[family:var(--font-display)] text-3xl leading-tight">
+                          {route.title}
+                        </h3>
+                        <div className="max-h-0 overflow-hidden opacity-0 group-hover:max-h-32 group-hover:opacity-100 transition-all duration-500">
+                          <p className="text-sm leading-relaxed handwritten line-clamp-2">
+                            {route.summary}
+                          </p>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Tape decoration */}
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-20 h-10 bg-white/20 backdrop-blur-sm -rotate-2 z-20" />
                   </div>
                 </Link>
               ))}
@@ -104,7 +112,7 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                 <button
                   type="button"
                   aria-label="Show previous route"
-                  className="absolute left-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
+                  className="btn-icon-dark absolute left-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full"
                   onClick={(e) => {
                     e.preventDefault();
                     showPreviousRoute();
@@ -120,7 +128,7 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                 <button
                   type="button"
                   aria-label="Show next route"
-                  className="absolute right-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full border border-white/28 bg-white/12 text-white backdrop-blur transition hover:bg-white hover:text-[var(--night)]"
+                  className="btn-icon-dark absolute right-3 top-1/2 z-20 inline-flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full"
                   onClick={(e) => {
                     e.preventDefault();
                     showNextRoute();

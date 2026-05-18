@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
 import type { Region } from "@/types/content";
@@ -16,13 +17,15 @@ interface Props {
 
 export function GuangdongMapSection({ cities }: Props) {
   const { locale } = useLocale();
-  const showcase = cities ?? [];
+  const router = useRouter();
+  const showcase = useMemo(() => cities ?? [], [cities]);
+  const defaultActiveCode = showcase[0]?.adcode ?? 440800;
   const focusCityByCode = useMemo(
     () => new Map(showcase.map((city) => [city.adcode, city])),
     [showcase],
   );
   const [features] = useState<CityFeature[]>(initialFeatures);
-  const [activeCode, setActiveCode] = useState<number | null>(null);
+  const [activeCode, setActiveCode] = useState<number>(defaultActiveCode);
   const [slideIndex, setSlideIndex] = useState(0);
 
   const events = mockEvents[locale];
@@ -45,8 +48,21 @@ export function GuangdongMapSection({ cities }: Props) {
     gallery: [],
   };
 
-  const activeCity = focusCityByCode.get(activeCode ?? -1) ?? showcase[0] ?? fallbackCity;
-  const activeEvent = activeCode ? eventsByCity.get(activeCode) : null;
+  const activateCity = (adcode: number) => {
+    setActiveCode(adcode);
+    setSlideIndex(0);
+  };
+
+  const openCity = (adcode: number) => {
+    const city = focusCityByCode.get(adcode);
+    if (!city) return;
+    activateCity(adcode);
+    router.push(`/culture/${city.slug}`);
+  };
+
+  const resolvedActiveCode = focusCityByCode.has(activeCode) ? activeCode : defaultActiveCode;
+  const activeCity = focusCityByCode.get(resolvedActiveCode) ?? showcase[0] ?? fallbackCity;
+  const activeEvent = eventsByCity.get(resolvedActiveCode) ?? null;
   const activeGallery = activeCity.gallery && activeCity.gallery.length ? activeCity.gallery : [activeCity.image];
   const activeImage = activeGallery[slideIndex % activeGallery.length] ?? "";
 
@@ -164,7 +180,7 @@ export function GuangdongMapSection({ cities }: Props) {
             <div className="pointer-events-auto h-full w-full opacity-60">
               {mapData ? (
                 <svg viewBox={`0 0 ${mapData.width} ${mapData.height}`} className="h-full w-full" role="img">
-                  <rect width={mapData.width} height={mapData.height} fill="transparent" />
+                  <rect width={mapData.width} height={mapData.height} fill="#f2f0ea" />
 
                   <g opacity="0.6">
                     <path d="M120 528 C250 438 380 492 512 408 S760 346 908 246" fill="none" stroke="#444b54" strokeWidth="1" strokeDasharray="6 6" />
@@ -174,7 +190,7 @@ export function GuangdongMapSection({ cities }: Props) {
                   {mapData.paths.map((city) => {
                     const hasContent = focusCityByCode.has(city.adcode);
                     const hasEvent = eventsByCity.has(city.adcode);
-                    const isActive = activeCode === city.adcode;
+                    const isActive = resolvedActiveCode === city.adcode;
 
                     return (
                       <path
@@ -197,7 +213,10 @@ export function GuangdongMapSection({ cities }: Props) {
                           cursor: hasContent ? "pointer" : "default",
                         }}
                         onMouseEnter={() => {
-                          if (hasContent) setActiveCode(city.adcode);
+                          if (hasContent) activateCity(city.adcode);
+                        }}
+                        onClick={() => {
+                          if (hasContent) openCity(city.adcode);
                         }}
                       />
                     );
@@ -207,7 +226,7 @@ export function GuangdongMapSection({ cities }: Props) {
                     const focusCity = focusCityByCode.get(city.adcode);
                     if (!focusCity || !city.point) return null;
                     const [x, y] = city.point;
-                    const isActive = activeCode === city.adcode;
+                    const isActive = resolvedActiveCode === city.adcode;
                     const hasEvent = eventsByCity.has(city.adcode);
 
                     return (
@@ -215,7 +234,8 @@ export function GuangdongMapSection({ cities }: Props) {
                         key={`${city.adcode}-dot`}
                         className="transition-all duration-300"
                         style={{ cursor: "pointer" }}
-                        onMouseEnter={() => setActiveCode(city.adcode)}
+                        onMouseEnter={() => activateCity(city.adcode)}
+                        onClick={() => openCity(city.adcode)}
                       >
                         {hasEvent ? (
                           <circle cx={x} cy={y} r={isActive ? 15 : 10} fill="#b64235" opacity="0.1">

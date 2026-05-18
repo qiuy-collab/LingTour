@@ -442,13 +442,15 @@ export interface HomeData {
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
-  const [routes, cities, homeConfig] = await Promise.all([
+  const [routesResult, citiesResult, homeConfigResult] = await Promise.allSettled([
     fetchRoutes(locale),
     fetchCities(locale),
-    apiGet<ApiHomeConfig>("/public/home", { lang: locale }).catch(
-      () => ({}) as ApiHomeConfig,
-    ),
+    apiGet<ApiHomeConfig>("/public/home"),
   ]);
+
+  const routes = routesResult.status === 'fulfilled' ? routesResult.value : [];
+  const cities = citiesResult.status === 'fulfilled' ? citiesResult.value : [];
+  const homeConfig = homeConfigResult.status === 'fulfilled' ? homeConfigResult.value : {} as ApiHomeConfig;
 
   const featured =
     routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ?? routes[0];

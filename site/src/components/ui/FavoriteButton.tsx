@@ -76,7 +76,7 @@ export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteB
       data-favorite-title={title}
       className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition ${
         isDark
-          ? "border-white/30 bg-white/10 text-white hover:bg-white hover:text-[var(--night)]"
+          ? "btn-ghost-dark"
           : "border-[var(--line)] bg-white/82 text-[var(--ink)] hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
       }`}
       onClick={handleClick}

@@ -27,11 +27,28 @@ export class HomeService {
   }
 
   private async getOrCreateConfig() {
-    let config = await this.homeConfigRepo.findOne({
-      order: { createdAt: 'ASC' },
-    });
-    if (!config) {
-      config = this.homeConfigRepo.create({
+    try {
+      let config = await this.homeConfigRepo.findOne({
+        order: { createdAt: 'ASC' },
+      });
+      if (!config) {
+        config = this.homeConfigRepo.create({
+          hero: {},
+          trustMetrics: [],
+          entryCards: [],
+          cultureHighlights: [],
+          testimonials: [],
+          featuredRouteSlugs: [],
+          featuredProductSlugs: [],
+          featuredCitySlugs: [],
+        });
+        config = await this.homeConfigRepo.save(config);
+      }
+      return config;
+    } catch (error) {
+      console.error('Error in getOrCreateConfig:', error);
+      // Return a default object if DB fails or table doesn't exist yet
+      return {
         hero: {},
         trustMetrics: [],
         entryCards: [],
@@ -40,10 +57,8 @@ export class HomeService {
         featuredRouteSlugs: [],
         featuredProductSlugs: [],
         featuredCitySlugs: [],
-      });
-      config = await this.homeConfigRepo.save(config);
+      };
     }
-    return config;
   }
 }
 

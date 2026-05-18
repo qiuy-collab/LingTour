@@ -161,8 +161,8 @@ export function PostCard({ post, index, variant = "image" }: PostCardProps) {
           <button
             type="button"
             onClick={() => setSaved((value) => !value)}
-            className={`absolute right-4 top-4 rounded-full px-3 py-2 text-xs font-bold backdrop-blur-md transition ${
-              saved ? "bg-[var(--gold)] text-[var(--night)]" : "bg-white/16 text-white hover:bg-white hover:text-[var(--night)]"
+            className={`absolute right-4 top-4 rounded-full px-3 py-2 text-xs font-bold transition ${
+              saved ? "bg-[var(--gold)] text-[var(--night)]" : "btn-ghost-dark"
             }`}
             aria-pressed={saved}
           >
@@ -249,7 +249,7 @@ export function PostCard({ post, index, variant = "image" }: PostCardProps) {
                   liked
                     ? "bg-[var(--cinnabar)] text-white"
                     : isFeature || isText
-                      ? "bg-white/8 text-white hover:bg-white hover:text-[var(--night)]"
+                      ? "btn-ghost-dark"
                       : "bg-white/70 text-[var(--river-deep)] hover:bg-[var(--cinnabar)] hover:text-white"
                 }`}
                 aria-pressed={liked}
@@ -261,7 +261,7 @@ export function PostCard({ post, index, variant = "image" }: PostCardProps) {
                 onClick={() => setShowThread((value) => !value)}
                 className={`rounded-full px-3 py-2 text-sm font-semibold transition ${
                   isFeature || isText
-                    ? "bg-white/8 text-white hover:bg-white hover:text-[var(--night)]"
+                    ? "btn-ghost-dark"
                     : "bg-white/70 text-[var(--river-deep)] hover:bg-[var(--river-deep)] hover:text-white"
                 }`}
               >

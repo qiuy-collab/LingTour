@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
-import { fetchCityBySlug, fetchCities } from "@/lib/api-data";
+import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { Reveal } from "@/components/ui/Reveal";
@@ -14,6 +14,7 @@ import { BreathingPoint } from "@/components/culture/BreathingPoint";
 import { FoodCollage } from "@/components/culture/FoodCollage";
 import { SectionProgress } from "@/components/culture/SectionProgress";
 import { RelatedCitiesHub } from "@/components/culture/RelatedCitiesHub";
+import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
 import type { CityCulture } from "@/data/culture";
 
 export function CultureDetailClient({ slug }: { slug: string }) {
@@ -38,6 +39,11 @@ export function CultureDetailClient({ slug }: { slug: string }) {
     [activeLocale],
   );
 
+  const { data: storyRoutes } = useApiQuery(
+    () => fetchRoutes(activeLocale),
+    [activeLocale],
+  );
+
   const activeCity = previewData ?? city;
 
   if (previewEnabled && !activeCity) {
@@ -53,6 +59,13 @@ export function CultureDetailClient({ slug }: { slug: string }) {
   }
 
   const foodImages = activeCity.foodImages;
+  const relatedCities = (cityCultures ?? []).filter((city) =>
+    activeCity.relatedCitySlugs.includes(city.slug),
+  );
+  const relatedRoutes = (storyRoutes ?? []).filter((route) =>
+    activeCity.routeSlugs.includes(route.slug),
+  );
+  const showRouteFallback = relatedCities.length === 0 && relatedRoutes.length > 0;
 
   const progressSections = [
     { id: "section-hero", label: "Overview" },
@@ -201,13 +214,31 @@ export function CultureDetailClient({ slug }: { slug: string }) {
       <section id="section-cities" className="border-t border-[var(--line)] bg-[var(--background)] bg-grain py-20 lg:py-32">
         <div className="site-container">
           <Reveal>
-            <p className="mb-6 text-label text-[var(--cinnabar)] handwritten">Connected Cities / Discovery</p>
+            <p className="mb-6 text-label text-[var(--cinnabar)] handwritten">
+              {showRouteFallback ? "Connected Routes / Discovery" : "Connected Cities / Discovery"}
+            </p>
             <h2 className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-6xl">
-              Cities that light up around <span className="italic text-[var(--gold)]">{activeCity.name}</span>
+              {showRouteFallback ? (
+                <>
+                  Routes that open from <span className="italic text-[var(--gold)]">{activeCity.name}</span>
+                </>
+              ) : (
+                <>
+                  Cities that light up around <span className="italic text-[var(--gold)]">{activeCity.name}</span>
+                </>
+              )}
             </h2>
           </Reveal>
 
-          <RelatedCitiesHub allCities={cityCultures ?? []} currentCity={activeCity} />
+          {showRouteFallback ? (
+            <RelatedRouteHub
+              routes={relatedRoutes}
+              cityAdcode={activeCity.adcode}
+              cityName={activeCity.name}
+            />
+          ) : (
+            <RelatedCitiesHub allCities={cityCultures ?? []} currentCity={activeCity} />
+          )}
         </div>
       </section>
 

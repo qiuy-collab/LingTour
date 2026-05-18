@@ -30,7 +30,7 @@ function placeholderUri(text: string) {
     "data:image/svg+xml," +
     encodeURIComponent(
       `<svg xmlns='http://www.w3.org/2000/svg' width='900' height='640' viewBox='0 0 900 640'>
-        <rect width='900' height='640' fill='#F4F2EE'/>
+        <rect width='900' height='640' fill='#eeebe5'/>
         <text x='450' y='305' text-anchor='middle' fill='#C5A039' font-family='serif' font-size='28'>${safe}</text>
         <text x='450' y='348' text-anchor='middle' fill='#A8A397' font-family='sans-serif' font-size='12'>Route Stop</text>
       </svg>`,

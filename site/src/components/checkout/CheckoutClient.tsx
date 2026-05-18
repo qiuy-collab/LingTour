@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
+import { readStoredUser, type LocalUser } from "@/lib/auth-client";
 import type { StoreProduct } from "@/data/store";
 
 type CheckoutItem = StoreProduct & {
@@ -22,6 +23,14 @@ export function CheckoutClient() {
 
   const [product, setProduct] = useState<StoreProduct | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [shippingMethod, setShippingMethod] = useState("express");
+  const [user, setUser] = useState<LocalUser | null>(null);
+
+  useEffect(() => {
+    setUser(readStoredUser());
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,9 +96,9 @@ export function CheckoutClient() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f5f5f5]">
+      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-sm text-[#777]">Loading checkout...</p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--muted)] handwritten">Preparing dispatch...</p>
         </div>
       </main>
     );
@@ -97,192 +106,314 @@ export function CheckoutClient() {
 
   if (!item) {
     return (
-      <main className="min-h-screen bg-[#f5f5f5]">
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-          <p className="text-sm text-[#777]">No product found.</p>
-          <Link href="/shop" className="text-sm text-[#2f8ac4] underline">Return to shop</Link>
+      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
+        <div className="flex min-h-screen flex-col items-center justify-center gap-6">
+          <p className="text-xl font-[family:var(--font-display)] text-[var(--river-deep)]">No items in the registry.</p>
+          <Link href="/shop" className="btn-outline px-8 py-3">Return to shop</Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f5f5] text-[#111]">
-      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="bg-white px-6 py-10 lg:px-12 lg:py-14">
-          <Link href="/shop" className="mb-9 inline-block text-sm text-[#4f6f8f]">
-            LingTour Store
-          </Link>
+    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)] pb-20">
+      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="relative overflow-hidden border-r border-[var(--line)]/40 bg-[linear-gradient(180deg,rgba(247,245,240,0.96),rgba(242,240,234,0.98))] px-6 py-10 lg:px-16 lg:py-20">
+          <div className="pointer-events-none absolute inset-0 bg-grain opacity-[0.12]" />
+          <div className="relative z-10 flex items-center gap-4 mb-12">
+            <Link href="/shop" className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors">
+              LingTour Store
+            </Link>
+            <span className="text-[var(--line)]">/</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">Checkout Registry</span>
+          </div>
 
-          <div className="mx-auto max-w-[39rem]">
-            <p className="mb-5 text-center text-sm text-[#6f6f6f]">Express checkout</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button className="h-12 rounded-lg bg-[#ffc439] text-xl font-bold text-[#003087]" type="button">
-                PayPal
-              </button>
-              <button className="h-12 rounded-lg bg-black text-xl font-semibold text-white" type="button">
-                <span className="text-[#4285f4]">G</span>
-                <span className="text-[#ea4335]">o</span>
-                <span className="text-[#fbbc05]">o</span>
-                <span className="text-[#4285f4]">g</span>
-                <span className="text-[#34a853]">l</span>
-                <span className="text-[#ea4335]">e</span> Pay
-              </button>
+          <div className="relative z-10 mx-auto max-w-2xl">
+            <div className="mb-12 relative">
+              <div className="absolute -left-12 top-0 text-7xl font-serif text-[var(--gold)]/10 select-none">ID</div>
+              <h1 className="font-[family:var(--font-display)] text-5xl italic mb-4">Master Dispatch Registry</h1>
+              <p className="text-sm text-[var(--muted)] handwritten">Confirm your field selection and finalize the logistical thread.</p>
             </div>
 
-            <div className="my-7 flex items-center gap-4 text-sm text-[#777]">
-              <span className="h-px flex-1 bg-[#dedede]" />
-              or
-              <span className="h-px flex-1 bg-[#dedede]" />
+            <div className="space-y-16">
+              {/* 1. Contact & Traveler Identity */}
+              <section className="relative">
+                <div className="flex items-center gap-4 mb-8">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--river-deep)] text-[10px] font-bold text-white">01</span>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">Traveler Identity</h2>
+                </div>
+
+                <div className="bg-[var(--paper)] p-8 scrapbook-shadow border border-[var(--line)] rotate-[-0.5deg]">
+                  <div className="flex items-center justify-between mb-8">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Contact Registry</p>
+                    {!user && (
+                      <Link href="/login" className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] hover:underline">
+                        Sign in for member benefits
+                      </Link>
+                    )}
+                  </div>
+                  <div className="grid gap-8">
+                    <div className="grid gap-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Email for Dispatch Manifest</span>
+                      <input
+                        className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)] transition-colors"
+                        placeholder="you@field-explorer.com"
+                        defaultValue={user?.email}
+                      />
+                    </div>
+                    <label className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] cursor-pointer hover:text-[var(--river-deep)] transition-colors">
+                      <input type="checkbox" defaultChecked className="h-4 w-4 accent-[var(--cinnabar)]" />
+                      Notify me with real-time field updates & signals
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* 2. Delivery Logistics */}
+              <section className="relative">
+                <div className="flex items-center gap-4 mb-8">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--river-deep)] text-[10px] font-bold text-white">02</span>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">Logistics & Coordinates</h2>
+                </div>
+
+                <div className="bg-[var(--paper)] p-8 scrapbook-shadow border border-[var(--line)] rotate-[0.5deg]">
+                  <div className="grid gap-10">
+                    <div className="grid grid-cols-2 rounded-sm border border-[var(--line)] p-1 bg-[var(--paper-deep)]/40">
+                      <button
+                        onClick={() => setShippingMethod("express")}
+                        className={`py-3 text-[10px] font-bold uppercase tracking-widest transition-all ${shippingMethod === "express" ? "bg-white shadow-md text-[var(--river-deep)]" : "text-[var(--muted)] hover:text-[var(--river-deep)]"}`}
+                        type="button"
+                      >
+                        Global Express
+                      </button>
+                      <button
+                        onClick={() => setShippingMethod("pickup")}
+                        className={`py-3 text-[10px] font-bold uppercase tracking-widest transition-all ${shippingMethod === "pickup" ? "bg-white shadow-md text-[var(--river-deep)]" : "text-[var(--muted)] hover:text-[var(--river-deep)]"}`}
+                        type="button"
+                      >
+                        Local Field Pickup
+                      </button>
+                    </div>
+
+                    {shippingMethod === "express" ? (
+                      <div className="grid gap-8 animate-reveal">
+                        <div className="grid gap-3">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Destination Country</span>
+                          <select className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)] appearance-none cursor-pointer">
+                            <option>Singapore</option>
+                            <option>China (Mainland)</option>
+                            <option>Hong Kong SAR</option>
+                            <option>United Kingdom</option>
+                            <option>United States</option>
+                          </select>
+                        </div>
+
+                        <div className="grid gap-8 sm:grid-cols-2">
+                          <div className="grid gap-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">First Name</span>
+                            <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="Explorer First Name" />
+                          </div>
+                          <div className="grid gap-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Last Name</span>
+                            <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="Last Name" />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Detailed Coordinates (Address)</span>
+                          <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="Street, Building, Unit" />
+                        </div>
+
+                        <div className="grid gap-8 sm:grid-cols-2">
+                          <div className="grid gap-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Postal Index</span>
+                            <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="Postal code" />
+                          </div>
+                          <div className="grid gap-3">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Field Contact (Phone)</span>
+                            <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="+ Country Code ..." />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-8 border border-dashed border-[var(--gold)]/30 bg-[var(--gold)]/5 animate-reveal">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-4">Selected Pickup Point</p>
+                        <p className="font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">LingTour Guangzhou Hub</p>
+                        <p className="mt-2 text-sm text-[var(--muted)] handwritten">No. 20 Liwan Road, Guangzhou. Dispatch available within 48 hours of verification.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. Field Dispatch Note */}
+              <section className="relative">
+                <div className="flex items-center gap-4 mb-8">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--river-deep)] text-[10px] font-bold text-white">03</span>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">Field Dispatch Note</h2>
+                </div>
+                <div className="bg-[var(--paper)] p-8 scrapbook-shadow border border-[var(--line)] rotate-[-0.3deg]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] mb-6">Special Instructions for the Handler</p>
+                  <textarea
+                    className="w-full min-h-[120px] bg-transparent border border-[var(--line)] p-4 text-sm handwritten outline-none focus:border-[var(--gold)] transition-colors"
+                    placeholder="E.g. Fragile handling requested, please leave at the concierge if I'm on a field trip..."
+                  ></textarea>
+                </div>
+              </section>
+
+              {/* 4. Secure Settlement */}
+              <section className="relative">
+                <div className="flex items-center gap-4 mb-8">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--river-deep)] text-[10px] font-bold text-white">04</span>
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">Secure Settlement</h2>
+                </div>
+
+                <div className="bg-[var(--paper)] p-8 scrapbook-shadow border border-[var(--line)] rotate-[0.2deg]">
+                  <div className="grid gap-8">
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { id: "card", label: "Card", sub: "Global" },
+                        { id: "wechat", label: "WeChat", sub: "Pay" },
+                        { id: "alipay", label: "Alipay", sub: "Connect" }
+                      ].map((method) => (
+                        <button
+                          key={method.id}
+                          onClick={() => setPaymentMethod(method.id)}
+                          className={`flex flex-col items-center justify-center py-4 border transition-all ${paymentMethod === method.id ? "bg-[var(--river-deep)] border-[var(--river-deep)] text-white shadow-xl scale-[1.02]" : "bg-white border-[var(--line)] text-[var(--muted)] hover:border-[var(--gold)]"}`}
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-widest">{method.label}</span>
+                          <span className="text-[8px] opacity-60 uppercase mt-1">{method.sub}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="rounded-sm border border-[var(--gold)]/20 overflow-hidden bg-white/50 p-8">
+                      {paymentMethod === "card" && (
+                        <div className="grid gap-8 animate-reveal">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Credit / Debit Settlement</p>
+                            <div className="flex gap-2">
+                              <span className="px-2 py-0.5 border border-[var(--line)] text-[8px] font-bold opacity-40">VISA</span>
+                              <span className="px-2 py-0.5 border border-[var(--line)] text-[8px] font-bold opacity-40">AMEX</span>
+                            </div>
+                          </div>
+                          <div className="grid gap-6">
+                            <div className="grid gap-3">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Card Identity Number</span>
+                              <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="XXXX XXXX XXXX XXXX" />
+                            </div>
+                            <div className="grid gap-8 sm:grid-cols-2">
+                              <div className="grid gap-3">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Validity (MM/YY)</span>
+                                <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="MM / YY" />
+                              </div>
+                              <div className="grid gap-3">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">Security Verification (CVV)</span>
+                                <input className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]" placeholder="CVV" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {(paymentMethod === "wechat" || paymentMethod === "alipay") && (
+                        <div className="flex flex-col items-center py-6 animate-reveal">
+                          <div className="w-48 h-48 border-4 border-white scrapbook-shadow bg-[var(--paper-deep)] flex items-center justify-center mb-6">
+                            <div className="text-center p-6">
+                              <div className="w-12 h-12 border-2 border-dashed border-[var(--gold)]/40 rounded-full mx-auto mb-4 animate-spin-slow" />
+                              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">Generating Secure QR Code...</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-[var(--muted)] handwritten text-center max-w-[200px]">QR Code will be verified upon dispatch confirmation.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <button type="button" className="btn-primary w-full py-6 text-sm flex items-center justify-center gap-4 group">
+                      <span className="relative z-10">Sign & Secure Dispatch</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="transition-transform group-hover:translate-x-2">
+                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </section>
             </div>
-
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Contact</h1>
-                <button type="button" className="text-sm text-[#2f8ac4]">
-                  Sign in
-                </button>
-              </div>
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Email" />
-              <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" defaultChecked className="h-4 w-4 accent-[#32a5d0]" />
-                Email me with news and offers
-              </label>
-            </section>
-
-            <section className="mt-8 space-y-4">
-              <h2 className="text-2xl font-bold">Delivery</h2>
-              <div className="grid grid-cols-2 rounded-xl bg-[#f2f2f2] p-1">
-                <button className="rounded-lg bg-white py-3 text-sm font-semibold shadow" type="button">
-                  Ship
-                </button>
-                <button className="py-3 text-sm font-semibold" type="button">
-                  Pick up
-                </button>
-              </div>
-              <select className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4">
-                <option>Singapore</option>
-                <option>United States</option>
-                <option>China</option>
-                <option>Malaysia</option>
-              </select>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input className="h-13 rounded-lg border border-[#d8d8d8] px-4" placeholder="First name" />
-                <input className="h-13 rounded-lg border border-[#d8d8d8] px-4" placeholder="Last name" />
-              </div>
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Company (optional)" />
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Address" />
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Apartment, suite, etc. (optional)" />
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Postal code" />
-              <input className="h-13 w-full rounded-lg border border-[#d8d8d8] px-4" placeholder="Phone" />
-              <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" className="h-4 w-4 accent-[#32a5d0]" />
-                Save this information for next time
-              </label>
-            </section>
-
-            <section className="mt-8">
-              <h2 className="text-xl font-bold">Shipping method</h2>
-              <div className="mt-3 rounded-lg bg-[#f2f2f2] px-5 py-5 text-center text-sm text-[#777]">
-                Enter your shipping address to view available shipping methods.
-              </div>
-            </section>
-
-            <section className="mt-8">
-              <h2 className="text-2xl font-bold">Payment</h2>
-              <p className="mt-1 text-sm text-[#777]">All transactions are secure and encrypted.</p>
-              <div className="mt-4 overflow-hidden rounded-lg border border-[#32a5d0]">
-                <div className="flex items-center justify-between bg-[#e9f7fc] px-4 py-3">
-                  <label className="flex items-center gap-3 text-sm font-semibold">
-                    <span className="grid h-4 w-4 place-items-center rounded-full bg-[#32a5d0]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                    </span>
-                    Credit card
-                  </label>
-                  <div className="flex gap-1 text-[0.62rem] font-bold">
-                    <span className="rounded border bg-white px-2 py-1 text-[#1434cb]">VISA</span>
-                    <span className="rounded border bg-white px-2 py-1 text-[#eb001b]">MC</span>
-                    <span className="rounded border bg-white px-2 py-1 text-[#2e77bb]">AMEX</span>
-                    <span className="rounded border bg-white px-2 py-1 text-[#0077a6]">UP</span>
-                  </div>
-                </div>
-                <div className="grid gap-4 bg-[#f7f7f7] p-4">
-                  <input className="h-13 rounded-lg border border-[#d8d8d8] bg-white px-4" placeholder="Card number" />
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <input className="h-13 rounded-lg border border-[#d8d8d8] bg-white px-4" placeholder="Expiration date (MM / YY)" />
-                    <input className="h-13 rounded-lg border border-[#d8d8d8] bg-white px-4" placeholder="Security code" />
-                  </div>
-                  <input className="h-13 rounded-lg border border-[#d8d8d8] bg-white px-4" placeholder="Name on card" />
-                  <label className="flex items-center gap-3 text-sm">
-                    <input type="checkbox" defaultChecked className="h-4 w-4 accent-[#32a5d0]" />
-                    Use shipping address as billing address
-                  </label>
-                </div>
-                <div className="flex items-center justify-between border-t border-[#d8d8d8] px-4 py-4 text-sm">
-                  <label className="flex items-center gap-3">
-                    <span className="h-4 w-4 rounded-full border border-[#d8d8d8]" />
-                    PayPal
-                  </label>
-                  <span className="font-bold italic text-[#003087]">PayPal</span>
-                </div>
-              </div>
-              <button type="button" className="mt-8 h-14 w-full rounded-lg bg-[#32a5d0] text-lg font-bold text-white">
-                Pay now
-              </button>
-            </section>
           </div>
         </section>
 
-        <aside className="border-l border-[#dedede] bg-[#f3f3f3] px-6 py-10 lg:px-12 lg:py-14">
-          <div className="sticky top-28 mx-auto max-w-[31rem]">
-            <div className="flex items-start gap-4">
-              <div className="relative h-16 w-16 overflow-hidden rounded-xl border border-[#d8c7e7] bg-white">
-                <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: `url(${item.image})` }} />
-                <span className="absolute -right-1 -top-2 grid h-6 w-6 place-items-center rounded-full bg-black text-xs text-white">
+        <aside className="border-l border-[var(--line)] bg-[var(--paper-deep)]/40 px-6 py-10 lg:px-16 lg:py-20 relative">
+          <div className="absolute inset-0 bg-grain opacity-40 pointer-events-none" />
+          <div className="sticky top-28 mx-auto max-w-md relative z-10">
+            {/* Field Agent Badge */}
+            {user && (
+              <div className="mb-12 bg-[var(--river-deep)] p-6 shadow-2xl rotate-[-2deg] flex items-center gap-5 border border-white/20">
+                <div className="h-16 w-16 bg-[var(--gold)] flex items-center justify-center text-white font-[family:var(--font-display)] text-2xl border-2 border-white/40">
+                  {user.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">Verified Field Agent</p>
+                  <p className="text-lg text-white font-[family:var(--font-display)] italic">{user.name}</p>
+                  <p className="text-[8px] font-mono text-white/50 mt-1 uppercase tracking-tighter">ID: {user.accountId}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-start gap-8 mb-12 border-b border-[var(--line)] pb-12">
+              <div className="relative rotate-[-4deg] scrapbook-shadow border-[8px] border-white group shrink-0">
+                <div className="absolute -top-4 -left-4 w-10 h-10 bg-[var(--gold)] flex items-center justify-center font-bold text-xs text-white z-10 shadow-lg rotate-12">
                   {item.quantity}
-                </span>
+                </div>
+                <div className="h-28 w-28 bg-cover bg-center" style={{ backgroundImage: `url(${item.image})` }} />
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent_60%)]" />
               </div>
-              <div className="flex-1">
-                <p className="font-medium">{item.name}</p>
-                <p className="mt-1 text-sm text-[#777]">{item.collection}</p>
-              </div>
-              <p className="text-sm">{formatStorePrice(item.price, item.currency)}</p>
-            </div>
-
-            <div className="mt-6 flex gap-2">
-              <input className="h-12 flex-1 rounded-lg border border-[#d8d8d8] bg-white px-4" placeholder="Discount code or gift card" />
-              <button type="button" className="rounded-lg bg-[#e6e6e6] px-5 text-sm font-semibold text-[#666]">
-                Apply
-              </button>
-            </div>
-
-            <div className="mt-9 space-y-4 text-sm">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>SGD ${totals.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-[#666]">
-                <span>Shipping</span>
-                <span>Enter shipping address</span>
-              </div>
-              <div className="flex justify-between text-[#666]">
-                <span>Taxes</span>
-                <span>SGD ${totals.tax.toFixed(2)}</span>
+              <div className="flex-1 pt-2">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--gold)] mb-1">Collection</p>
+                <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] leading-[1.1]">{item.name}</p>
+                <p className="mt-3 text-[11px] leading-relaxed text-[var(--muted)] handwritten line-clamp-2">{item.story}</p>
               </div>
             </div>
 
-            <div className="mt-7 flex items-end justify-between">
-              <div>
-                <p className="text-xl font-bold">Total</p>
-                <p className="mt-1 text-sm text-[#777]">Includes estimated tax</p>
+            <div className="space-y-8">
+              <div className="flex justify-between text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                <span>Field Valuation</span>
+                <span className="text-[var(--river-deep)]">SGD ${totals.subtotal.toFixed(2)}</span>
               </div>
-              <p className="text-2xl font-bold">
-                <span className="mr-2 text-sm font-normal text-[#777]">SGD</span>${totals.total.toFixed(2)}
+              <div className="flex justify-between text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                <span>Logistics & Handling</span>
+                <span className="text-[var(--river-deep)]">SGD ${totals.tax.toFixed(2)}</span>
+              </div>
+
+              <div className="pt-8 border-t border-[var(--line)]">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">Registry Total</p>
+                    <p className="mt-2 text-[11px] text-[var(--muted)] handwritten">Final settlement amount</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-5xl font-[family:var(--font-display)] text-[var(--river-deep)] tracking-tighter">
+                      <span className="mr-3 text-sm font-bold opacity-30">SGD</span>${totals.total.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stamp Overlay */}
+            <div className="mt-20 relative opacity-40 select-none">
+              <div className="w-32 h-32 border-4 border-dashed border-[var(--gold)] rounded-full flex items-center justify-center text-[var(--gold)] font-bold text-center rotate-[-15deg] p-4 text-[10px] uppercase tracking-widest">
+                Field Registry<br />Verified 2026
+              </div>
+            </div>
+
+            <div className="mt-16 bg-white/60 p-8 border border-[var(--line)] scrapbook-shadow rotate-[1.5deg]">
+              <p className="text-[11px] leading-relaxed text-[var(--muted)] handwritten italic">
+                "Objects carry the memory of the route. This dispatch ensures the thread continues from our field to your hands."
               </p>
-            </div>
-
-            <div className="mt-10 rounded-2xl bg-white p-5 text-sm leading-7 text-[#666]">
-              This is a front-end payment demo. It reproduces the checkout experience and can connect to Stripe, PayPal, or a local payment provider in production.
+              <div className="mt-6 flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-[var(--jade)]" />
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">Secure Dispatch Tunnel Active</span>
+              </div>
             </div>
           </div>
         </aside>

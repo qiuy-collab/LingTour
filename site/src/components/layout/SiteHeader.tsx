@@ -89,7 +89,7 @@ export function SiteHeader() {
           <AccountNavLink />
           <Link
             href="/interpreting#booking"
-            className="ml-1 bg-[var(--cinnabar)] px-4 py-2.5 text-sm text-white transition hover:bg-[var(--cinnabar-deep)]"
+            className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
             Reserve
           </Link>
@@ -139,7 +139,7 @@ export function SiteHeader() {
             <div className="grid grid-cols-1 gap-2">
               <Link
                 href="/interpreting#booking"
-                className="bg-[var(--cinnabar)] px-4 py-3 text-center text-sm text-white"
+                className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >
                 Reserve
