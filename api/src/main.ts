@@ -8,11 +8,30 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+  const configuredFrontendUrl = configService.get<string>('frontendUrl');
+  const allowedOrigins = new Set<string>();
 
-  // CORS — allow any localhost origin in dev
+  if (configuredFrontendUrl) {
+    try {
+      allowedOrigins.add(new URL(configuredFrontendUrl).origin);
+    } catch {
+      logger.warn(`Invalid FRONTEND_URL ignored: ${configuredFrontendUrl}`);
+    }
+  }
+
+  // CORS: allow local development hosts plus the configured frontend origin.
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin || /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      const normalizedOrigin = origin ?? '';
+      const isLocalDevOrigin =
+        /^https?:\/\/localhost(:\d+)?$/.test(normalizedOrigin) ||
+        /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin) ||
+        /^https?:\/\/\[::1\](:\d+)?$/.test(normalizedOrigin);
+
+      if (!origin || isLocalDevOrigin || allowedOrigins.has(normalizedOrigin)) {
         callback(null, true);
       } else {
         callback(null, false);
@@ -21,10 +40,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Swagger
   const swaggerConfig = new DocumentBuilder()
     .setTitle('LingTour API')
-    .setDescription('岭风译游 (LingTour) - Headless CMS + E-commerce API')
+    .setDescription('LingTour - Headless CMS + commerce API')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -46,7 +64,6 @@ async function bootstrap() {
     },
   });
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -61,9 +78,9 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3001);
   await app.listen(port);
 
-  logger.log(`🚀 LingTour API running on http://localhost:${port}`);
-  logger.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
-  logger.log(`📁 Static uploads at http://localhost:${port}/uploads`);
+  logger.log(`LingTour API running on http://localhost:${port}`);
+  logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
+  logger.log(`Static uploads at http://localhost:${port}/uploads`);
 }
 
 bootstrap();

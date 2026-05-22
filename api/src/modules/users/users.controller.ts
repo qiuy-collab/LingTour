@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('Users')
 @Controller('api/v1/admin/users')
@@ -23,6 +24,15 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user detail for admin' })
   async detail(@Param('id') id: string) {
     return this.usersService.findManagedById(id);
+  }
+
+  @Patch(':id/profile')
+  @ApiOperation({ summary: 'Update user profile for admin' })
+  async updateProfile(
+    @Param('id') id: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.usersService.updateProfile(id, dto);
   }
 
   @Patch(':id/status')

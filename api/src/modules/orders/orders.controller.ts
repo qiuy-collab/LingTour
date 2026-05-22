@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Body,
   Query,
@@ -18,7 +19,16 @@ import {
 import type { Request } from 'express';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { ShipOrderDto } from './dto/ship-order.dto';
+import { RefundOrderDto } from './dto/refund-order.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import {
+  ORDER_STATUSES,
+  PAYMENT_STATUSES,
+  type OrderStatus,
+  type PaymentStatus,
+} from './entities/order.entity';
 
 @ApiTags('Orders')
 @Controller('api/v1')
@@ -57,13 +67,19 @@ export class OrdersController {
   @ApiOperation({ summary: 'List orders (admin)' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'status', required: false, enum: ORDER_STATUSES })
+  @ApiQuery({
+    name: 'paymentStatus',
+    required: false,
+    enum: PAYMENT_STATUSES,
+  })
   async getOrders(
     @Query('page') page = 1,
     @Query('limit') limit = 20,
-    @Query('status') status?: string,
+    @Query('status') status?: OrderStatus,
+    @Query('paymentStatus') paymentStatus?: PaymentStatus,
   ) {
-    return this.ordersService.findAllAdmin(+page, +limit, status);
+    return this.ordersService.findAllAdmin(+page, +limit, status, paymentStatus);
   }
 
   @Get('admin/orders/:id')
@@ -71,5 +87,35 @@ export class OrdersController {
   @ApiOperation({ summary: 'Get order detail (admin)' })
   async getOrder(@Param('id', ParseUUIDPipe) id: string) {
     return this.ordersService.findByIdAdmin(id);
+  }
+
+  @Patch('admin/orders/:id/status')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update order status (admin)' })
+  async updateOrderStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateOrderStatusDto,
+  ) {
+    return this.ordersService.updateStatusAdmin(id, dto.status);
+  }
+
+  @Patch('admin/orders/:id/ship')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mark order as shipped (admin)' })
+  async shipOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ShipOrderDto,
+  ) {
+    return this.ordersService.shipOrder(id, dto.trackingNo);
+  }
+
+  @Patch('admin/orders/:id/refund')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Refund order (admin)' })
+  async refundOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RefundOrderDto,
+  ) {
+    return this.ordersService.refundOrder(id, dto.reason);
   }
 }

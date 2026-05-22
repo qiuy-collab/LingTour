@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Body,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
@@ -39,15 +40,15 @@ export class UploadController {
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('module') module?: string,
+  ) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
 
-    const result = this.uploadService.getStructuredPath(
-      file.filename,
-      // module not extracted from body in this simple version
-    );
+    const result = this.uploadService.getStructuredPath(file.filename, module);
 
     return {
       url: result.url,

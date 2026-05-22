@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
+import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,14 @@ export class AuthService {
     email: string;
     role: 'admin' | 'editor';
     name: string | null;
+    avatarUrl?: string;
+    country?: string;
+    homeBase?: string;
+    travelStyle?: string;
+    provider?: string;
+    memberSince?: string;
+    bio?: string;
+    profileVisibility?: 'public' | 'community' | 'private';
   }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
@@ -36,6 +45,14 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        avatarUrl: user.avatarUrl ?? '',
+        country: user.country ?? '',
+        homeBase: user.homeBase ?? '',
+        travelStyle: user.travelStyle ?? '',
+        provider: user.provider ?? '',
+        memberSince: user.memberSince ?? '',
+        bio: user.bio ?? '',
+        profileVisibility: user.profileVisibility ?? 'public',
       },
     };
   }
@@ -66,13 +83,27 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await this.usersService.create(email, passwordHash, 'editor', name);
+    const user = await this.usersService.create(
+      email,
+      passwordHash,
+      'editor',
+      name,
+      {
+        provider: 'password',
+        memberSince: new Date().toISOString().slice(0, 10),
+      },
+    );
     return this.buildAuthResponse(user);
   }
 
   async loginWithGoogle(email: string, name?: string) {
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
+      if (!existing.provider || existing.provider !== 'Google') {
+        await this.usersService.touchProvider(existing.id, 'Google');
+        const refreshed = await this.usersService.findByIdOrFail(existing.id);
+        return this.buildAuthResponse(refreshed);
+      }
       return this.buildAuthResponse(existing);
     }
 
@@ -85,19 +116,20 @@ export class AuthService {
       generatedPassword,
       'editor',
       name ?? 'Google Traveler',
+      {
+        provider: 'Google',
+        memberSince: new Date().toISOString().slice(0, 10),
+      },
     );
     return this.buildAuthResponse(user);
   }
 
   async me(userId: string) {
-    const user = await this.usersService.findByIdOrFail(userId);
-    return {
-      id: user.id,
-      accountId: this.formatAccountId(user.id),
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      provider: user.email.endsWith('@lingtour.local') ? 'Google' : undefined,
-    };
+    return this.usersService.getProfileById(userId);
+  }
+
+  async updateMe(userId: string, dto: UpdateProfileDto) {
+    await this.usersService.updateProfile(userId, dto);
+    return this.usersService.getProfileById(userId);
   }
 }

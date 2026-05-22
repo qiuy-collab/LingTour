@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Patch,
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
@@ -14,6 +15,7 @@ import { RegisterDto } from './dto/register.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import type { Request } from 'express';
+import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -60,5 +62,16 @@ export class AuthController {
   async me(@Req() request: Request) {
     const authUser = request['user'] as { sub?: string };
     return this.authService.me(authUser.sub as string);
+  }
+
+  @Patch('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update current user profile' })
+  async updateMe(
+    @Req() request: Request,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    const authUser = request['user'] as { sub?: string };
+    return this.authService.updateMe(authUser.sub as string, dto);
   }
 }

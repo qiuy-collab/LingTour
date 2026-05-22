@@ -28,6 +28,35 @@ export class User {
   @Column({ type: 'varchar', length: 100, nullable: true })
   name: string;
 
+  @Column({ type: 'varchar', length: 500, name: 'avatar_url', default: '' })
+  avatarUrl: string;
+
+  @Column({ type: 'varchar', length: 80, default: '' })
+  country: string;
+
+  @Column({ type: 'varchar', length: 80, name: 'home_base', default: '' })
+  homeBase: string;
+
+  @Column({ type: 'varchar', length: 80, name: 'travel_style', default: '' })
+  travelStyle: string;
+
+  @Column({ type: 'varchar', length: 40, default: '' })
+  provider: string;
+
+  @Column({ type: 'varchar', length: 30, name: 'member_since', default: '' })
+  memberSince: string;
+
+  @Column({ type: 'varchar', length: 600, default: '' })
+  bio: string;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    name: 'profile_visibility',
+    default: 'public',
+  })
+  profileVisibility: 'public' | 'community' | 'private';
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

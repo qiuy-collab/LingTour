@@ -11,6 +11,7 @@ import appConfig from './config/app.config';
 
 // Common
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { I18nInterceptor } from './common/interceptors/i18n.interceptor';
 
@@ -83,6 +84,13 @@ import { EventsModule } from './modules/events/events.module';
       useClass: JwtAuthGuard,
     },
     {
+      // RolesGuard 必须在 JwtAuthGuard 之后注册，
+      // 这样 request.user 已经被 JwtAuthGuard 填充。
+      // NestJS 全局 guard 按 providers 数组顺序执行。
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
@@ -93,4 +101,3 @@ import { EventsModule } from './modules/events/events.module';
   ],
 })
 export class AppModule {}
-
