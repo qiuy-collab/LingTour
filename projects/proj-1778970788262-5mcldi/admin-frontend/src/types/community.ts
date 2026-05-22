@@ -24,6 +24,11 @@ export interface CommunityPost {
   comments: number
   saves: number
   status: PostStatus
+  featured: boolean
+  reviewedBy: string | null
+  reviewedAt: string | null
+  rejectionReason: string | null
+  deletedAt: string | null
 }
 
 // ─── 状态/频道显示映射 ──────────────────────────────

@@ -24,6 +24,11 @@ function normalizePost(raw: any): CommunityPost {
     comments: raw.comments ?? 0,
     saves: raw.saves ?? 0,
     status: raw.status,
+    featured: raw.featured ?? false,
+    reviewedBy: raw.reviewedBy ?? null,
+    reviewedAt: raw.reviewedAt ?? null,
+    rejectionReason: raw.rejectionReason ?? null,
+    deletedAt: raw.deletedAt ?? null,
   }
 }
 
@@ -50,15 +55,26 @@ export const communityApi = {
     return normalizeDetailResponse(res)
   },
 
-  reviewPost(id: string, status: PostStatus) {
-    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/review`, { status })
+  /** 审核帖子状态（通过/隐藏），可附带拒绝原因 */
+  reviewPost(id: string, status: PostStatus, rejectionReason?: string) {
+    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/status`, {
+      status,
+      rejectionReason,
+    })
   },
 
+  /** 切换精选状态 */
   toggleFeatured(id: string, featured: boolean) {
-    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/featured`, { featured })
+    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/status`, { featured })
   },
 
+  /** 软删除帖子 */
   deletePost(id: string) {
     return api.delete<ApiResponse<null>>(`/community/posts/${id}`)
+  },
+
+  /** 恢复软删除的帖子 */
+  restorePost(id: string) {
+    return api.post<ApiResponse<CommunityPost>>(`/community/posts/restore/${id}`)
   },
 }

@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Plus } from '@element-plus/icons-vue'
+import type { FormInstance } from 'element-plus'
+import { ArrowLeft, Calendar, Location, Picture, Plus } from '@element-plus/icons-vue'
 import { eventsApi } from '@/api/events'
+import { citiesApi } from '@/api/cities'
+import { routesApi } from '@/api/routes'
 import type { EventFormData } from '@/types/event'
 import { EventStatusMap } from '@/types/event'
+import { pickI18n, toI18n } from '@/types/common'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
-import { toI18n } from '@/types/common'
+import ImageUpload from '@/components/ImageUpload.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -18,6 +22,15 @@ const pageTitle = computed(() => (isEdit.value ? '编辑活动' : '新增活动'
 
 const loading = ref(false)
 const saving = ref(false)
+const formRef = ref<FormInstance>()
+const cityOptions = ref<Array<{ slug: string; name: string; adcode: number }>>([])
+const routeOptions = ref<Array<{ slug: string; title: string }>>([])
+const newTag = ref('')
+
+const rules = {
+  'title.zh': [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
+  date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
+}
 
 const form = reactive<EventFormData>({
   title: { zh: '', en: '' },
@@ -34,61 +47,104 @@ const form = reactive<EventFormData>({
   status: 'draft',
 })
 
-const newTag = ref('')
+const statusOptions = computed(() =>
+  Object.entries(EventStatusMap).map(([value, label]) => ({ value, label })),
+)
+
+const selectedCity = computed(() =>
+  cityOptions.value.find((item) => item.slug === form.citySlug),
+)
+
+const selectedRoutes = computed(() =>
+  form.relatedRouteSlugs
+    .map((slug) => routeOptions.value.find((item) => item.slug === slug))
+    .filter(Boolean) as Array<{ slug: string; title: string }>,
+)
+
+const checklist = computed(() => [
+  { label: '活动名称', done: Boolean(form.title.zh.trim()) },
+  { label: '开始日期', done: Boolean(form.date) },
+  { label: '关联城市', done: Boolean(form.citySlug || form.city.trim()) },
+  { label: '封面图片', done: Boolean(form.image) },
+  { label: '摘要', done: Boolean(form.summary.zh.trim() || form.summary.en.trim()) },
+  { label: '详情正文', done: Boolean(form.description.zh.trim() || form.description.en.trim()) },
+])
+
 function addTag() {
-  const t = newTag.value.trim()
-  if (t && !form.tags.includes(t)) {
-    form.tags.push(t)
-    newTag.value = ''
-  }
+  const value = newTag.value.trim()
+  if (!value || form.tags.includes(value)) return
+  form.tags.push(value)
+  newTag.value = ''
 }
+
 function removeTag(index: number) {
   form.tags.splice(index, 1)
 }
 
-const newRouteSlug = ref('')
-function addRouteSlug() {
-  const s = newRouteSlug.value.trim()
-  if (s && !form.relatedRouteSlugs.includes(s)) {
-    form.relatedRouteSlugs.push(s)
-    newRouteSlug.value = ''
-  }
-}
-function removeRouteSlug(index: number) {
-  form.relatedRouteSlugs.splice(index, 1)
+function handleCityChange(slug: string) {
+  const city = cityOptions.value.find((item) => item.slug === slug)
+  if (!city) return
+  form.citySlug = city.slug
+  form.city = city.name
+  form.adcode = city.adcode
 }
 
-const statusOptions = computed(() => Object.entries(EventStatusMap).map(([value, label]) => ({ value, label })))
+function fillFromApi(data: any) {
+  Object.assign(form, {
+    title: toI18n(data.title),
+    date: data.date || '',
+    endDate: data.endDate || '',
+    city: data.city || '',
+    citySlug: data.citySlug || '',
+    adcode: Number(data.adcode || 0),
+    tags: Array.isArray(data.tags) ? [...data.tags] : [],
+    summary: toI18n(data.summary),
+    description: toI18n(data.description),
+    relatedRouteSlugs: Array.isArray(data.relatedRouteSlugs) ? [...data.relatedRouteSlugs] : [],
+    image: data.image || '',
+    status: data.status || 'draft',
+  })
+}
 
 onMounted(async () => {
-  if (!isEdit.value) return
   loading.value = true
   try {
+    const [citiesRes, routesRes] = await Promise.all([
+      citiesApi.getCities({ page: 1, pageSize: 200 }),
+      routesApi.getRoutes({ page: 1, pageSize: 200 }),
+    ])
+
+    cityOptions.value = (citiesRes.data.data.items || []).map((item: any) => ({
+      slug: item.slug,
+      name: pickI18n(item.name) || item.slug,
+      adcode: Number(item.adcode || 0),
+    }))
+
+    routeOptions.value = (routesRes.data.data.items || []).map((item: any) => ({
+      slug: item.slug,
+      title: pickI18n(item.title) || item.slug,
+    }))
+
+    if (!isEdit.value) return
+
     const res = await eventsApi.getEvent(route.params.id as string)
-    const ev = res.data.data
-    Object.assign(form, {
-      title: toI18n(ev.title),
-      date: ev.date,
-      endDate: ev.endDate || '',
-      city: ev.city,
-      citySlug: ev.citySlug,
-      adcode: ev.adcode,
-      tags: [...ev.tags],
-      summary: toI18n(ev.summary),
-      description: toI18n(ev.description),
-      relatedRouteSlugs: [...ev.relatedRouteSlugs],
-      image: ev.image,
-      status: ev.status,
-    })
+    fillFromApi(res.data.data)
   } catch {
     ElMessage.error('加载活动数据失败')
-    router.back()
+    router.push('/admin/events')
   } finally {
     loading.value = false
   }
 })
 
 async function handleSave() {
+  try {
+    await formRef.value?.validate()
+  } catch {
+    ElMessage.warning('请检查必填项')
+    return
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {
@@ -99,8 +155,8 @@ async function handleSave() {
       ElMessage.success('活动创建成功')
     }
     router.push('/admin/events')
-  } catch {
-    ElMessage.error('保存失败')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || '保存失败')
   } finally {
     saving.value = false
   }
@@ -114,74 +170,335 @@ function handleCancel() {
 <template>
   <div class="edit-page" v-loading="loading">
     <div class="page-header">
-      <el-button :icon="ArrowLeft" @click="handleCancel">返回</el-button>
-      <h2>{{ pageTitle }}</h2>
-    </div>
-
-    <el-form label-width="140px" label-position="top">
-      <el-card shadow="never" class="form-card">
-        <template #header><span class="card-title">基本信息</span></template>
-        <el-form-item label="活动名称" required>
-          <I18nInput v-model="form.title" />
-        </el-form-item>
-        <el-row :gutter="20">
-          <el-col :span="8"><el-form-item label="开始日期" required><el-date-picker v-model="form.date" type="date" value-format="YYYY-MM-DD" style="width:100%" /></el-form-item></el-col>
-          <el-col :span="8"><el-form-item label="结束日期"><el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width:100%" /></el-form-item></el-col>
-          <el-col :span="8"><el-form-item label="活动状态"><el-select v-model="form.status" style="width:100%"><el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" /></el-select></el-form-item></el-col>
-        </el-row>
-      </el-card>
-
-      <el-card shadow="never" class="form-card">
-        <template #header><span class="card-title">城市信息</span></template>
-        <el-row :gutter="20">
-          <el-col :span="8"><el-form-item label="城市名"><el-input v-model="form.city" /></el-form-item></el-col>
-          <el-col :span="8"><el-form-item label="城市Slug"><el-input v-model="form.citySlug" /></el-form-item></el-col>
-          <el-col :span="8"><el-form-item label="行政区划代码"><el-input-number v-model="form.adcode" :min="0" :max="999999" style="width:100%" /></el-form-item></el-col>
-        </el-row>
-      </el-card>
-
-      <el-card shadow="never" class="form-card">
-        <template #header><span class="card-title">封面与摘要</span></template>
-        <el-form-item label="封面图URL"><el-input v-model="form.image" /></el-form-item>
-        <el-form-item label="摘要">
-          <I18nInput v-model="form.summary" type="textarea" :rows="2" />
-        </el-form-item>
-      </el-card>
-
-      <el-card shadow="never" class="form-card">
-        <template #header><span class="card-title">详细描述（Markdown）</span></template>
-        <el-form-item label="描述">
-          <I18nMarkdownEditor v-model="form.description" :rows="10" placeholder="Markdown 活动详情" />
-        </el-form-item>
-      </el-card>
-
-      <el-card shadow="never" class="form-card">
-        <template #header><span class="card-title">标签与关联路线</span></template>
-        <el-form-item label="活动标签">
-          <div class="tag-list"><el-tag v-for="(tag, idx) in form.tags" :key="tag" closable @close="removeTag(idx)">{{ tag }}</el-tag></div>
-          <div class="tag-input-row"><el-input v-model="newTag" style="width:200px" @keyup.enter="addTag" /><el-button size="small" :icon="Plus" @click="addTag">添加</el-button></div>
-        </el-form-item>
-        <el-form-item label="关联路线Slug">
-          <div class="tag-list"><el-tag v-for="(slug, idx) in form.relatedRouteSlugs" :key="slug" type="success" closable @close="removeRouteSlug(idx)">{{ slug }}</el-tag></div>
-          <div class="tag-input-row"><el-input v-model="newRouteSlug" style="width:280px" @keyup.enter="addRouteSlug" /><el-button size="small" :icon="Plus" @click="addRouteSlug">添加</el-button></div>
-        </el-form-item>
-      </el-card>
-
-      <div class="form-actions">
+      <div class="page-title">
+        <el-button :icon="ArrowLeft" @click="handleCancel">返回</el-button>
+        <h2>{{ pageTitle }}</h2>
+      </div>
+      <div class="page-actions">
         <el-button @click="handleCancel">取消</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </div>
-    </el-form>
+    </div>
+
+    <div class="editor-shell">
+      <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
+        <el-card shadow="never" class="section-card">
+          <template #header>1. 基本信息</template>
+          <el-form-item label="活动名称" prop="title.zh">
+            <I18nInput v-model="form.title" />
+          </el-form-item>
+          <el-row :gutter="16">
+            <el-col :span="8">
+              <el-form-item label="开始日期" prop="date">
+                <el-date-picker v-model="form.date" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="结束日期">
+                <el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="活动状态">
+                <el-select v-model="form.status" style="width: 100%">
+                  <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-card>
+
+        <el-card shadow="never" class="section-card">
+          <template #header>2. 城市与路线关联</template>
+          <el-row :gutter="16">
+            <el-col :span="8">
+              <el-form-item label="关联城市">
+                <el-select
+                  v-model="form.citySlug"
+                  clearable
+                  filterable
+                  placeholder="选择已配置城市"
+                  style="width: 100%"
+                  @change="handleCityChange"
+                >
+                  <el-option
+                    v-for="city in cityOptions"
+                    :key="city.slug"
+                    :label="`${city.name} (${city.slug})`"
+                    :value="city.slug"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="前台显示城市名">
+                <el-input v-model="form.city" placeholder="选择后自动带出，也可微调" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="地图行政区划代码">
+                <el-input-number v-model="form.adcode" :min="0" :max="999999" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-form-item label="关联路线">
+            <el-select
+              v-model="form.relatedRouteSlugs"
+              multiple
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="从现有路线中直接选择"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="routeItem in routeOptions"
+                :key="routeItem.slug"
+                :label="`${routeItem.title} (${routeItem.slug})`"
+                :value="routeItem.slug"
+              />
+            </el-select>
+          </el-form-item>
+
+          <div v-if="selectedRoutes.length" class="selected-grid">
+            <div v-for="routeItem in selectedRoutes" :key="routeItem.slug" class="selected-card">
+              <strong>{{ routeItem.title }}</strong>
+              <span>{{ routeItem.slug }}</span>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card shadow="never" class="section-card">
+          <template #header>3. 封面与摘要</template>
+          <el-form-item label="活动封面">
+            <ImageUpload v-model="form.image" />
+          </el-form-item>
+          <el-form-item label="活动摘要">
+            <I18nInput v-model="form.summary" type="textarea" :rows="3" />
+          </el-form-item>
+        </el-card>
+
+        <el-card shadow="never" class="section-card">
+          <template #header>4. 活动详情</template>
+          <el-form-item label="正文说明">
+            <I18nMarkdownEditor v-model="form.description" :rows="10" />
+          </el-form-item>
+        </el-card>
+
+        <el-card shadow="never" class="section-card">
+          <template #header>5. 标签管理</template>
+          <el-form-item label="活动标签">
+            <div class="tag-list">
+              <el-tag v-for="(tag, index) in form.tags" :key="tag" closable @close="removeTag(index)">
+                {{ tag }}
+              </el-tag>
+            </div>
+            <div class="tag-input-row">
+              <el-input v-model="newTag" placeholder="如：节庆 / 市集 / 非遗" @keyup.enter="addTag" />
+              <el-button :icon="Plus" @click="addTag">添加</el-button>
+            </div>
+          </el-form-item>
+        </el-card>
+      </el-form>
+
+      <aside class="editor-aside">
+        <el-card shadow="never" class="aside-card">
+          <template #header>
+            <div class="aside-title">
+              <el-icon><Calendar /></el-icon>
+              <span>发布摘要</span>
+            </div>
+          </template>
+          <div class="info-list">
+            <div class="info-row">
+              <span>状态</span>
+              <strong>{{ EventStatusMap[form.status] }}</strong>
+            </div>
+            <div class="info-row">
+              <span>开始</span>
+              <strong>{{ form.date || '未设置' }}</strong>
+            </div>
+            <div class="info-row">
+              <span>结束</span>
+              <strong>{{ form.endDate || '未设置' }}</strong>
+            </div>
+            <div class="info-row">
+              <span>标签数</span>
+              <strong>{{ form.tags.length }}</strong>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card shadow="never" class="aside-card">
+          <template #header>
+            <div class="aside-title">
+              <el-icon><Location /></el-icon>
+              <span>关联内容</span>
+            </div>
+          </template>
+          <div class="aside-stack">
+            <div class="city-card">
+              <strong>{{ selectedCity?.name || form.city || '未选择城市' }}</strong>
+              <span>{{ form.citySlug || '未关联 slug' }}</span>
+            </div>
+            <div class="route-count">已关联路线 {{ selectedRoutes.length }} 条</div>
+          </div>
+        </el-card>
+
+        <el-card shadow="never" class="aside-card">
+          <template #header>
+            <div class="aside-title">
+              <el-icon><Picture /></el-icon>
+              <span>完整性检查</span>
+            </div>
+          </template>
+          <div class="check-list">
+            <div v-for="item in checklist" :key="item.label" class="check-row">
+              <span>{{ item.label }}</span>
+              <strong :class="item.done ? 'done' : 'pending'">{{ item.done ? '已完成' : '待补充' }}</strong>
+            </div>
+          </div>
+        </el-card>
+      </aside>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.edit-page { max-width: 1100px; margin: 0 auto; padding-bottom: 40px; }
-.page-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.form-card { margin-bottom: 20px; }
-.card-title { font-weight: 600; font-size: 15px; }
-.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 32px; }
-.tag-input-row { display: flex; gap: 8px; align-items: center; }
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 0; }
+.edit-page {
+  padding-bottom: 40px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 16px;
+}
+
+.page-title,
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.editor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 24vw);
+  gap: 20px;
+  align-items: start;
+}
+
+.section-card,
+.aside-card {
+  margin-bottom: 16px;
+}
+
+.editor-aside {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.selected-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.selected-card,
+.city-card {
+  border: 1px solid #dcdfe6;
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.selected-card strong,
+.city-card strong {
+  display: block;
+  color: #303133;
+}
+
+.selected-card span,
+.city-card span {
+  display: block;
+  margin-top: 4px;
+  color: #909399;
+  font-size: 12px;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 28px;
+  margin-bottom: 10px;
+}
+
+.tag-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.aside-title,
+.info-row,
+.check-row {
+  display: flex;
+  align-items: center;
+}
+
+.aside-title {
+  gap: 8px;
+  font-weight: 600;
+}
+
+.aside-stack,
+.check-list {
+  display: grid;
+  gap: 12px;
+}
+
+.info-list {
+  display: grid;
+  gap: 10px;
+}
+
+.info-row,
+.check-row {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.route-count {
+  font-size: 13px;
+  color: #606266;
+}
+
+.done {
+  color: #67c23a;
+}
+
+.pending {
+  color: #e6a23c;
+}
+
+@media (max-width: 1200px) {
+  .editor-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-aside {
+    position: static;
+  }
+}
 </style>

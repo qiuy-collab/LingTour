@@ -85,8 +85,10 @@ export const mockEvents: Event[] = [
 ]
 
 // ─── 社区帖子 Mock (5条，不同频道/状态) ────────────
+const communityDefaults = { featured: false, reviewedBy: null, reviewedAt: null, rejectionReason: null, deletedAt: null }
 export const mockCommunityPosts: CommunityPost[] = [
   {
+    ...communityDefaults,
     id: 'post_1',
     userName: '林小明',
     userHandle: 'xiaoming_lin',
@@ -107,6 +109,7 @@ export const mockCommunityPosts: CommunityPost[] = [
     status: 'published',
   },
   {
+    ...communityDefaults,
     id: 'post_2',
     userName: 'Emma Wilson',
     userHandle: 'emma_explores',
@@ -127,6 +130,7 @@ export const mockCommunityPosts: CommunityPost[] = [
     status: 'published',
   },
   {
+    ...communityDefaults,
     id: 'post_3',
     userName: '陈志远',
     userHandle: 'zhiyuan_c',
@@ -147,6 +151,7 @@ export const mockCommunityPosts: CommunityPost[] = [
     status: 'published',
   },
   {
+    ...communityDefaults,
     id: 'post_4',
     userName: 'Sarah Thompson',
     userHandle: 'sarah_lingnan',
@@ -167,6 +172,7 @@ export const mockCommunityPosts: CommunityPost[] = [
     status: 'published',
   },
   {
+    ...communityDefaults,
     id: 'post_5',
     userName: '张美玲',
     userHandle: 'meiling_zhang',

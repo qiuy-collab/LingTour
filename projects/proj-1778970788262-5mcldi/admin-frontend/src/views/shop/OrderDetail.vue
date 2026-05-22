@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ordersApi } from '@/api/orders'
-import { OrderStatusMap, OrderStatusColorMap } from '@/types/order'
+import { OrderStatusMap, OrderStatusColorMap, PaymentStatusMap, PaymentStatusColorMap } from '@/types/order'
 import type { Order, OrderStatus } from '@/types/order'
 
 const route = useRoute()
@@ -11,13 +11,12 @@ const router = useRouter()
 const loading = ref(false)
 const order = ref<Order | null>(null)
 
-const statusSteps = ['pending', 'paid', 'shipped', 'delivered'] as OrderStatus[]
+const statusSteps = ['pending', 'confirmed', 'shipped', 'delivered'] as OrderStatus[]
 const statusIndex = computed(() => {
   if (!order.value) return -1
   const s = order.value.status
   if (s === 'cancelled') return -1
-  if (s === 'refunded') return -1
-  return statusSteps.indexOf(s as any)
+  return statusSteps.indexOf(s)
 })
 
 async function fetchDetail() {
@@ -58,7 +57,7 @@ async function handleRefund() {
       { inputPlaceholder: '退款原因（可选）' }
     )
     await ordersApi.markRefunded(order.value.id, reason || undefined)
-    order.value.status = 'refunded'
+    order.value.paymentStatus = 'refunded'
     ElMessage.success('已退款')
   } catch { /* 取消 */ }
 }
@@ -103,26 +102,20 @@ onMounted(() => {
 
     <template v-if="order">
       <!-- 状态步骤条 -->
-      <el-card shadow="never" class="status-card" v-if="!['cancelled', 'refunded'].includes(order.status)">
+      <el-card shadow="never" class="status-card" v-if="order.status !== 'cancelled'">
         <el-steps :active="statusIndex" align-center finish-status="success">
-          <el-step title="待付款" :description="order.status === 'pending' ? '等待支付' : ''" />
-          <el-step title="已付款" :description="order.status === 'paid' ? '待发货' : ''" />
+          <el-step title="待确认" :description="order.status === 'pending' ? '等待确认' : ''" />
+          <el-step title="已确认" :description="order.status === 'confirmed' ? '待发货' : ''" />
           <el-step title="已发货" :description="order.status === 'shipped' ? '运输中' : ''" />
           <el-step title="已签收" />
         </el-steps>
       </el-card>
 
-      <!-- 已取消/已退款标记 -->
+      <!-- 已取消标记 -->
       <el-result
         v-if="order.status === 'cancelled'"
         icon="error"
         title="订单已取消"
-        :sub-title="`订单号：${order.orderNo}`"
-      />
-      <el-result
-        v-if="order.status === 'refunded'"
-        icon="warning"
-        title="订单已退款"
         :sub-title="`订单号：${order.orderNo}`"
       />
 
@@ -131,9 +124,14 @@ onMounted(() => {
         <template #header>
           <div class="card-header">
             <span>订单信息</span>
-            <el-tag :type="OrderStatusColorMap[order.status] as any" size="default">
-              {{ OrderStatusMap[order.status] }}
-            </el-tag>
+            <div style="display: flex; gap: 8px">
+              <el-tag :type="OrderStatusColorMap[order.status] as any" size="default">
+                {{ OrderStatusMap[order.status] }}
+              </el-tag>
+              <el-tag :type="PaymentStatusColorMap[order.paymentStatus] as any" size="default">
+                {{ PaymentStatusMap[order.paymentStatus] }}
+              </el-tag>
+            </div>
           </div>
         </template>
 
@@ -141,10 +139,13 @@ onMounted(() => {
           <el-descriptions-item label="订单号">{{ order.orderNo }}</el-descriptions-item>
           <el-descriptions-item label="币种">{{ order.currency }}</el-descriptions-item>
           <el-descriptions-item label="用户">{{ order.userName }}</el-descriptions-item>
-          <el-descriptions-item label="邮箱">{{ order.userEmail }}</el-descriptions-item>
+          <el-descriptions-item label="邮箱">{{ order.userEmail || order.guestEmail || '-' }}</el-descriptions-item>
           <el-descriptions-item label="支付方式">{{ order.paymentMethod || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="支付时间">{{ formatDate(order.paidAt || '') }}</el-descriptions-item>
           <el-descriptions-item label="下单时间">{{ formatDate(order.createdAt) }}</el-descriptions-item>
           <el-descriptions-item label="最后更新">{{ formatDate(order.updatedAt || '') }}</el-descriptions-item>
+          <el-descriptions-item label="物流单号">{{ order.trackingNo || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="退款原因">{{ order.refundReason || '-' }}</el-descriptions-item>
           <el-descriptions-item label="备注">{{ order.notes || '-' }}</el-descriptions-item>
         </el-descriptions>
       </el-card>
@@ -210,11 +211,10 @@ onMounted(() => {
         <template v-if="order.status === 'pending'">
           <el-button type="danger" @click="handleCancel">取消订单</el-button>
         </template>
-        <template v-if="order.status === 'paid'">
+        <template v-if="order.status === 'confirmed' && order.paymentStatus === 'paid'">
           <el-button type="success" @click="handleShip">确认发货</el-button>
-          <el-button type="warning" @click="handleRefund">退款</el-button>
         </template>
-        <template v-if="order.status === 'shipped'">
+        <template v-if="order.paymentStatus === 'paid' && order.status !== 'cancelled'">
           <el-button type="warning" @click="handleRefund">退款</el-button>
         </template>
       </div>

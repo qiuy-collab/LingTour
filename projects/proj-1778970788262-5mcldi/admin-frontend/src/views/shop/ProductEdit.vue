@@ -2,8 +2,10 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { productsApi } from '@/api/products'
 import { collectionsApi } from '@/api/collections'
+import { citiesApi } from '@/api/cities'
 import { pickI18n, toI18n } from '@/types/common'
 import ImageUpload from '@/components/ImageUpload.vue'
 import I18nInput from '@/components/I18nInput.vue'
@@ -15,7 +17,18 @@ const router = useRouter()
 const isEdit = ref(false)
 const saving = ref(false)
 const loading = ref(false)
+const formRef = ref<FormInstance>()
 const collectionOptions = ref<{ id: string; title: string }[]>([])
+const cityOptions = ref<{ slug: string; name: string; adcode: number }[]>([])
+
+const rules = {
+  slug: [
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case', trigger: 'blur' },
+  ],
+  'name.zh': [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
+  price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
+}
 
 const emptyOriginTrace = () => ({
   location: '',
@@ -56,6 +69,23 @@ async function fetchCollections() {
     id: item.id,
     title: pickI18n(item.title),
   }))
+}
+
+async function fetchCities() {
+  const res = await citiesApi.getCities({ page: 1, pageSize: 200 })
+  cityOptions.value = (res.data.data.items || []).map((item: any) => ({
+    slug: item.slug,
+    name: pickI18n(item.name) || item.slug,
+    adcode: Number(item.adcode || 0),
+  }))
+}
+
+function handleOriginCityChange(slug: string) {
+  const city = cityOptions.value.find((item) => item.slug === slug)
+  if (!city) return
+  form.originTrace.citySlug = city.slug
+  form.originTrace.cityName = city.name
+  form.originTrace.mapAdcode = city.adcode
 }
 
 function fillFromApi(data: any) {
@@ -107,7 +137,7 @@ function toPayload() {
 onMounted(async () => {
   loading.value = true
   try {
-    await fetchCollections()
+    await Promise.all([fetchCollections(), fetchCities()])
     const id = route.params.id as string
     if (id) {
       isEdit.value = true
@@ -122,6 +152,13 @@ onMounted(async () => {
 })
 
 async function handleSave() {
+  try {
+    await formRef.value?.validate()
+  } catch {
+    ElMessage.warning('请检查必填项')
+    return
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {
@@ -151,11 +188,15 @@ async function handleSave() {
     </div>
 
     <div class="editor-shell">
-      <el-form class="editor-form" label-position="top">
+      <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card id="section-basic" shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-row :gutter="16">
-            <el-col :span="12"><el-form-item label="Slug"><el-input v-model="form.slug" /></el-form-item></el-col>
+            <el-col :span="12">
+              <el-form-item label="Slug" prop="slug">
+                <el-input v-model="form.slug" />
+              </el-form-item>
+            </el-col>
             <el-col :span="12">
               <el-form-item label="所属系列">
                 <el-select v-model="form.collectionId" clearable style="width: 100%">
@@ -164,8 +205,12 @@ async function handleSave() {
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="商品名称"><I18nInput v-model="form.name" /></el-form-item>
-          <el-form-item label="商品标签"><I18nInput v-model="form.tag" /></el-form-item>
+          <el-form-item label="商品名称" prop="name.zh">
+            <I18nInput v-model="form.name" />
+          </el-form-item>
+          <el-form-item label="商品标签">
+            <I18nInput v-model="form.tag" />
+          </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
@@ -181,41 +226,99 @@ async function handleSave() {
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="8"><el-form-item label="价格"><el-input-number v-model="form.price" :min="0" :precision="2" style="width: 100%" /></el-form-item></el-col>
-            <el-col :span="8"><el-form-item label="库存"><el-input-number v-model="form.stock" :min="0" style="width: 100%" /></el-form-item></el-col>
+            <el-col :span="8">
+              <el-form-item label="价格" prop="price">
+                <el-input-number v-model="form.price" :min="0" :precision="2" style="width: 100%" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="库存">
+                <el-input-number v-model="form.stock" :min="0" style="width: 100%" />
+              </el-form-item>
+            </el-col>
           </el-row>
         </el-card>
 
         <el-card id="section-images" shadow="never" class="section-card">
           <template #header>图片</template>
-          <el-form-item label="主图"><ImageUpload v-model="form.image" /></el-form-item>
-          <el-form-item label="详情图库"><ImageUpload v-model="form.gallery" multiple :limit="10" /></el-form-item>
+          <el-form-item label="主图">
+            <ImageUpload v-model="form.image" />
+          </el-form-item>
+          <el-form-item label="详情图库">
+            <ImageUpload v-model="form.gallery" multiple :limit="10" />
+          </el-form-item>
         </el-card>
 
         <el-card id="section-story" shadow="never" class="section-card">
           <template #header>商品故事</template>
-          <el-form-item label="故事"><I18nMarkdownEditor v-model="form.story" :rows="8" /></el-form-item>
+          <el-form-item label="故事">
+            <I18nMarkdownEditor v-model="form.story" :rows="8" />
+          </el-form-item>
         </el-card>
 
         <el-card id="section-details" shadow="never" class="section-card">
           <template #header>商品详情</template>
-          <el-form-item label="材质"><I18nInput v-model="form.material" /></el-form-item>
-          <el-form-item label="尺寸"><I18nInput v-model="form.dimensions" /></el-form-item>
-          <el-form-item label="产地"><I18nInput v-model="form.origin" /></el-form-item>
-          <el-form-item label="保养说明"><I18nMarkdownEditor v-model="form.care" :rows="5" /></el-form-item>
+          <el-form-item label="材质">
+            <I18nInput v-model="form.material" />
+          </el-form-item>
+          <el-form-item label="尺寸">
+            <I18nInput v-model="form.dimensions" />
+          </el-form-item>
+          <el-form-item label="产地">
+            <I18nInput v-model="form.origin" />
+          </el-form-item>
+          <el-form-item label="保养说明">
+            <I18nMarkdownEditor v-model="form.care" :rows="5" />
+          </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
           <template #header>产地溯源</template>
           <el-row :gutter="16">
-            <el-col :span="12"><el-form-item label="产地位置"><el-input v-model="form.originTrace.location" /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="城市名称"><el-input v-model="form.originTrace.cityName" /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="城市 Slug"><el-input v-model="form.originTrace.citySlug" /></el-form-item></el-col>
-            <el-col :span="12"><el-form-item label="地图代码"><el-input-number v-model="form.originTrace.mapAdcode" :min="0" style="width: 100%" /></el-form-item></el-col>
+            <el-col :span="12">
+              <el-form-item label="产地位置">
+                <el-input v-model="form.originTrace.location" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="关联城市">
+                <el-select
+                  v-model="form.originTrace.citySlug"
+                  filterable
+                  clearable
+                  placeholder="选择已建城市"
+                  style="width: 100%"
+                  @change="handleOriginCityChange"
+                >
+                  <el-option
+                    v-for="city in cityOptions"
+                    :key="city.slug"
+                    :label="`${city.name} (${city.slug})`"
+                    :value="city.slug"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="城市名称">
+                <el-input v-model="form.originTrace.cityName" placeholder="选择后自动带出，可再微调" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="地图代码">
+                <el-input-number v-model="form.originTrace.mapAdcode" :min="0" style="width: 100%" />
+              </el-form-item>
+            </el-col>
           </el-row>
-          <el-form-item label="原料来源"><el-input v-model="form.originTrace.materialSource" type="textarea" :rows="3" /></el-form-item>
-          <el-form-item label="工艺传统"><el-input v-model="form.originTrace.craftTradition" type="textarea" :rows="3" /></el-form-item>
-          <el-form-item label="制作过程"><el-input v-model="form.originTrace.process" type="textarea" :rows="3" /></el-form-item>
+          <el-form-item label="原料来源">
+            <el-input v-model="form.originTrace.materialSource" type="textarea" :rows="3" />
+          </el-form-item>
+          <el-form-item label="工艺传统">
+            <el-input v-model="form.originTrace.craftTradition" type="textarea" :rows="3" />
+          </el-form-item>
+          <el-form-item label="制作过程">
+            <el-input v-model="form.originTrace.process" type="textarea" :rows="3" />
+          </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
@@ -230,10 +333,36 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page { padding-bottom: 40px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 20px; align-items: start; }
-.section-card { margin-bottom: 16px; }
-@media (max-width: 1100px) { .editor-shell { grid-template-columns: 1fr; } }
+.edit-page {
+  padding-bottom: 40px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.editor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw);
+  gap: 20px;
+  align-items: start;
+}
+
+.section-card {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1100px) {
+  .editor-shell {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

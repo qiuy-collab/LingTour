@@ -20,7 +20,7 @@ function normalizeBooking(raw: any): Booking {
     mode: raw.mode || raw.supportMode || '',
     needs: raw.needs || raw.routeOrNeed || '',
     fastTrack: raw.fastTrack ?? false,
-    status: raw.status === 'new' || raw.status === 'deposit_pending' || raw.status === 'deposit_paid' ? 'pending' : raw.status,
+    status: raw.status,
     assignedInterpreterId: raw.assignedInterpreterId ?? null,
     assignedInterpreterName: raw.assignedInterpreterName ?? null,
   }

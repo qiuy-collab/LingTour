@@ -214,25 +214,31 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/home/HomeConfig.vue'),
         meta: { title: '首页配置' },
       },
+      {
+        path: 'operations/audit',
+        name: 'ContentAudit',
+        component: () => import('@/views/operations/ContentAudit.vue'),
+        meta: { title: '数据体检' },
+      },
       // 用户管理
       {
         path: 'users',
         name: 'Users',
         component: () => import('@/views/users/UsersList.vue'),
-        meta: { title: '用户管理' },
+        meta: { title: '用户管理', roles: ['admin'] },
       },
       {
         path: 'users/:id',
         name: 'UserDetail',
         component: () => import('@/views/users/UserDetail.vue'),
-        meta: { title: '用户详情' },
+        meta: { title: '用户详情', roles: ['admin'] },
       },
       // 系统设置
       {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/settings/Settings.vue'),
-        meta: { title: '系统设置' },
+        meta: { title: '系统设置', roles: ['admin'] },
       },
       // 默认重定向
       {
@@ -256,13 +262,20 @@ const router = createRouter({
   routes,
 })
 
-// 路由守卫：未登录 → /login
+// 路由守卫：未登录 → /login；角色不足 → /admin/dashboard
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth !== false && !authStore.isLoggedIn) {
     next('/login')
   } else if (to.path === '/login' && authStore.isLoggedIn) {
     next('/admin/dashboard')
+  } else if (to.meta.roles && authStore.currentUser) {
+    const allowedRoles = to.meta.roles as string[]
+    if (!allowedRoles.includes(authStore.currentUser.role)) {
+      next('/admin/dashboard')
+    } else {
+      next()
+    }
   } else {
     next()
   }

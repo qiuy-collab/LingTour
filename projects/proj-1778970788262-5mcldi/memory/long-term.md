@@ -106,3 +106,14 @@
 - 登录表单字段使用 email 而非 username
 - 已禁用 Mock 数据导入（注释 main.ts 中的 import('./mock')）
 - 数据类型适配后端响应格式（AdminUser 含 id/accountId/email/name/role；LoginResponse 含 access_token/user）
+
+## 2026-05-21 P0 审计修复
+- **全量审计完成**：审计报告保存至 `outputs/admin-audit-report.md`，评分 API 75%/字段 70%/操控性 60%/规范性 65%
+- **P0 修复已完成**（6项全部通过 vue-tsc + vite build 零错误）：
+  1. **后端订单写端点**：在 NestJS `api/src/modules/orders/` 新增 3 个 PATCH 端点（status/ship/refund），含状态流转校验、DTO 验证、entity 新增 updatedAt/trackingNo/refundReason 列
+  2. **Interpreter 字段类型**：`InterpreterFormData.name/language/city` 从 `string` 改为 `I18nObject`，InterpreterEdit.vue 改用 `<I18nInput>` + `toI18n()` 加载
+  3. **ServiceMode.price 类型**：从 `string` 改为 `I18nObject`，ServiceModeEdit.vue 改用 `<I18nInput>`
+  4. **Booking 状态保留**：`BookingStatus` 扩展为 8 种（new/read/contacted/confirmed/completed/cancelled/deposit_pending/deposit_paid），删除 normalizeBooking 中的状态合并逻辑
+  5. **表单校验**：RouteEdit/CityEdit/ProductEdit/EventEdit 均添加 `:rules` + `formRef.validate()`，slug 含 kebab-case 正则校验
+  6. **关联字段下拉**：RouteEdit.citySlugs 和 HomeConfig.featuredRoutes 从裸文本 tag-input 改为 `el-select multiple filterable`，onMounted 加载选项列表
+- **待后续处理**（P1/P2）：双语字段统一删除 xxxEn 冗余、全局 formatDate、AdminTable 抽象、日历视图全月加载等

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { pickI18n } from '@/types/common'
+import { resolveMediaUrl } from '@/utils/media'
 
 type PreviewType = 'city' | 'route' | 'product'
 type PreviewLocale = 'zh' | 'en'
@@ -13,6 +14,7 @@ const props = defineProps<{
 
 const locale = ref<PreviewLocale>('zh')
 const iframeRef = ref<HTMLIFrameElement | null>(null)
+const frameShellRef = ref<HTMLDivElement | null>(null)
 
 const previewOrigin = (import.meta.env.VITE_SITE_PREVIEW_ORIGIN as string | undefined) || 'http://127.0.0.1:3000'
 const previewSource = window.location.origin
@@ -20,7 +22,26 @@ const previewSessionId =
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+
 const previewKey = computed(() => `admin-preview:${props.type}:${previewSessionId}`)
+const iframeLoaded = ref(false)
+const iframeLoading = ref(true)
+const iframeFailed = ref(false)
+const frameReloadKey = ref(0)
+
+let postTimer: ReturnType<typeof setTimeout> | null = null
+let loadTimeout: ReturnType<typeof setTimeout> | null = null
+let resizeObserver: ResizeObserver | null = null
+let burstTimers: Array<ReturnType<typeof setTimeout>> = []
+
+const shellWidth = ref(0)
+const desktopWidth = 1440
+const desktopHeightMap: Record<PreviewType, number> = {
+  city: 2200,
+  route: 1800,
+  product: 1700,
+}
+const desktopHeight = computed(() => desktopHeightMap[props.type])
 
 function text(value: unknown, fallback = '') {
   return pickI18n(value, locale.value) || fallback
@@ -36,9 +57,9 @@ function buildCityPreview() {
     return {
       title: text(section?.title, `Section ${index + 1}`),
       body: text(section?.body),
-      image: section?.image || '',
+      image: resolveMediaUrl(section?.image),
       stat: statParts.join(' / '),
-      breathImage: section?.breathImage || '',
+      breathImage: resolveMediaUrl(section?.breathImage),
       breathQuote: text(section?.breathQuote),
     }
   })
@@ -50,14 +71,14 @@ function buildCityPreview() {
     label: text(props.model.regionLabel, 'Preview Label'),
     summary: text(props.model.editorIntro),
     narrative: text(props.model.heroNarrative),
-    image: props.model.heroImage || '',
-    gallery: list(props.model.galleryImages),
+    image: resolveMediaUrl(props.model.heroImage),
+    gallery: list(props.model.galleryImages).map((item) => resolveMediaUrl(item)),
     tags: list(props.model.tags).map((item) => text(item)).filter(Boolean),
     food: text(props.model.foodTitle),
     foodDescription: text(props.model.foodDescription),
     routeSlugs: list(props.model.routeSlugs),
     relatedCitySlugs: list(props.model.relatedCitySlugs),
-    foodImages: list(props.model.foodImages),
+    foodImages: list(props.model.foodImages).map((item) => resolveMediaUrl(item)),
     sections,
   }
 }
@@ -78,7 +99,7 @@ function buildRoutePreview() {
     audience: text(props.model.audience),
     summary: text(props.model.summary),
     story: text(props.model.story),
-    image: props.model.coverImage || '',
+    image: resolveMediaUrl(props.model.coverImage),
     mapViewBox: '0 0 900 600',
     itinerary: list(props.model.stops).map((stop: any) => ({
       time: stop?.time || '',
@@ -93,7 +114,7 @@ function buildRoutePreview() {
       meal: text(stop?.meal) || undefined,
       hotel: text(stop?.hotel) || undefined,
       transit: text(stop?.transit) || undefined,
-      image: stop?.image || undefined,
+      image: resolveMediaUrl(stop?.image) || undefined,
     })),
   }
 }
@@ -106,10 +127,10 @@ function buildProductPreview() {
     price: Number(props.model.price || 0),
     currency: props.model.currency || 'SGD',
     tag: text(props.model.tag),
-    image: props.model.image || '',
+    image: resolveMediaUrl(props.model.image),
     materialNotes: text(props.model.material) || undefined,
     story: text(props.model.story),
-    gallery: list(props.model.gallery),
+    gallery: list(props.model.gallery).map((item) => resolveMediaUrl(item)),
   }
 }
 
@@ -131,7 +152,18 @@ const iframeSrc = computed(
     `${previewOrigin}${iframePath.value}?preview=1&previewKey=${encodeURIComponent(previewKey.value)}&previewSource=${encodeURIComponent(previewSource)}`,
 )
 
+const iframeSrcWithReload = computed(() => `${iframeSrc.value}&reloadKey=${frameReloadKey.value}`)
+
+const previewScale = computed(() => {
+  if (!shellWidth.value) return 1
+  return Math.min(shellWidth.value / desktopWidth, 1)
+})
+
+const scaledFrameHeight = computed(() => Math.round(desktopHeight.value * previewScale.value))
+
 function postPreview() {
+  if (!iframeLoaded.value) return
+
   const frame = iframeRef.value?.contentWindow
   if (!frame) return
 
@@ -149,8 +181,79 @@ function postPreview() {
   )
 }
 
-watch(previewPayload, postPreview, { deep: true })
-watch(locale, postPreview)
+function postPreviewBurst() {
+  burstTimers.forEach((timer) => clearTimeout(timer))
+  burstTimers = []
+
+  const delays = [0, 200, 600, 1200, 2400]
+  delays.forEach((delay) => {
+    const timer = setTimeout(() => {
+      postPreview()
+    }, delay)
+    burstTimers.push(timer)
+  })
+}
+
+function schedulePostPreview() {
+  if (postTimer) clearTimeout(postTimer)
+  postTimer = setTimeout(() => {
+    postPreviewBurst()
+  }, 180)
+}
+
+function startLoadTimeout() {
+  if (loadTimeout) clearTimeout(loadTimeout)
+  loadTimeout = setTimeout(() => {
+    if (!iframeLoaded.value) {
+      iframeLoading.value = false
+      iframeFailed.value = true
+    }
+  }, 6000)
+}
+
+function handleFrameLoad() {
+  iframeLoaded.value = true
+  iframeLoading.value = false
+  iframeFailed.value = false
+  if (loadTimeout) clearTimeout(loadTimeout)
+  postPreviewBurst()
+}
+
+function reloadFrame() {
+  iframeLoaded.value = false
+  iframeLoading.value = true
+  iframeFailed.value = false
+  frameReloadKey.value += 1
+  startLoadTimeout()
+}
+
+watch(previewPayload, schedulePostPreview, { deep: true })
+watch(locale, schedulePostPreview)
+watch(iframeSrc, () => {
+  iframeLoaded.value = false
+  iframeLoading.value = true
+  iframeFailed.value = false
+  startLoadTimeout()
+})
+
+onMounted(() => {
+  if (!frameShellRef.value || typeof ResizeObserver === 'undefined') return
+
+  shellWidth.value = frameShellRef.value.clientWidth
+  resizeObserver = new ResizeObserver((entries) => {
+    const entry = entries[0]
+    shellWidth.value = entry?.contentRect.width || frameShellRef.value?.clientWidth || 0
+  })
+  resizeObserver.observe(frameShellRef.value)
+  startLoadTimeout()
+})
+
+onBeforeUnmount(() => {
+  if (postTimer) clearTimeout(postTimer)
+  if (loadTimeout) clearTimeout(loadTimeout)
+  burstTimers.forEach((timer) => clearTimeout(timer))
+  resizeObserver?.disconnect()
+})
 </script>
 
 <template>
@@ -169,12 +272,38 @@ watch(locale, postPreview)
           ]"
           size="small"
         />
-        <a :href="iframeSrc" target="_blank" rel="noreferrer">打开新窗口</a>
+        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">打开新窗口</a>
       </div>
     </div>
 
-    <div class="preview-frame-shell">
-      <iframe ref="iframeRef" :src="iframeSrc" class="preview-frame" title="Frontend page preview" @load="postPreview" />
+    <div ref="frameShellRef" class="preview-frame-shell" :style="{ height: `${scaledFrameHeight}px` }">
+      <div v-if="iframeLoading" class="preview-state">
+        <el-skeleton :rows="6" animated />
+        <p>前台预览加载中...</p>
+      </div>
+
+      <div v-else-if="iframeFailed" class="preview-state preview-state-error">
+        <strong>前台预览加载失败</strong>
+        <p>当前预览地址是 {{ previewOrigin }}，请确认前台站点已经启动。</p>
+        <div class="preview-state-actions">
+          <el-button size="small" type="primary" @click="reloadFrame">重试</el-button>
+          <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">新窗口打开</a>
+        </div>
+      </div>
+
+      <iframe
+        :key="frameReloadKey"
+        ref="iframeRef"
+        :src="iframeSrcWithReload"
+        class="preview-frame"
+        title="Frontend page preview"
+        :style="{
+          width: `${desktopWidth}px`,
+          height: `${desktopHeight}px`,
+          transform: `scale(${previewScale})`,
+        }"
+        @load="handleFrameLoad"
+      />
     </div>
   </aside>
 </template>
@@ -220,28 +349,61 @@ watch(locale, postPreview)
 }
 
 .preview-frame-shell {
+  position: relative;
   overflow: hidden;
   border: 1px solid #dcdfe6;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 12px 32px rgba(17, 25, 35, 0.08);
+  width: 100%;
+}
+
+.preview-state {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.preview-state p {
+  margin: 0;
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.preview-state-error strong {
+  color: #303133;
+  font-size: 16px;
+}
+
+.preview-state-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-state-actions a {
+  color: #409eff;
+  font-size: 13px;
+  text-decoration: none;
 }
 
 .preview-frame {
   display: block;
-  width: 100%;
-  height: min(78vh, 980px);
   border: 0;
   background: #fff;
+  transform-origin: top left;
 }
 
 @media (max-width: 1100px) {
   .frontend-preview {
     position: static;
-  }
-
-  .preview-frame {
-    height: 70vh;
   }
 }
 </style>

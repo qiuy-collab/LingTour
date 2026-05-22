@@ -60,7 +60,7 @@ async function openDrawer(booking: Booking) {
   selectedBooking.value = booking
   drawerVisible.value = true
 
-  if (booking.status === 'pending' || booking.status === 'confirmed') {
+  if (booking.status === 'new' || booking.status === 'read' || booking.status === 'contacted' || booking.status === 'confirmed') {
     selectedInterpreterId.value = booking.assignedInterpreterId || ''
     try {
       const res = await interpretersApi.getInterpreters({
@@ -187,10 +187,14 @@ onMounted(() => {
         @change="handleSearch"
       >
         <el-option label="全部" value="" />
-        <el-option label="待确认" value="pending" />
+        <el-option label="新预约" value="new" />
+        <el-option label="已读" value="read" />
+        <el-option label="已联系" value="contacted" />
         <el-option label="已确认" value="confirmed" />
         <el-option label="已完成" value="completed" />
         <el-option label="已取消" value="cancelled" />
+        <el-option label="待付定金" value="deposit_pending" />
+        <el-option label="定金已付" value="deposit_paid" />
       </el-select>
       <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
@@ -227,7 +231,7 @@ onMounted(() => {
         <template #default="{ row }">
           <el-button size="small" @click="openDrawer(row)">详情</el-button>
           <el-button
-            v-if="row.status === 'pending'"
+            v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted'"
             size="small"
             type="success"
             @click="async () => { selectedBooking = row; await handleConfirm() }"
@@ -235,7 +239,7 @@ onMounted(() => {
             确认
           </el-button>
           <el-popconfirm
-            v-if="row.status === 'pending' || row.status === 'confirmed'"
+            v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted' || row.status === 'confirmed'"
             title="确定取消该预约？"
             @confirm="async () => { selectedBooking = row; await handleCancelBooking() }"
           >
@@ -314,7 +318,7 @@ onMounted(() => {
 
         <!-- Interpreter assignment (only for active bookings) -->
         <div
-          v-if="selectedBooking.status === 'pending' || selectedBooking.status === 'confirmed'"
+          v-if="selectedBooking.status === 'new' || selectedBooking.status === 'read' || selectedBooking.status === 'contacted' || selectedBooking.status === 'confirmed'"
           style="margin-top: 20px"
         >
           <el-divider content-position="left">口译员分配</el-divider>
@@ -343,7 +347,7 @@ onMounted(() => {
 
         <!-- Action buttons -->
         <div style="margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end">
-          <template v-if="selectedBooking.status === 'pending'">
+          <template v-if="selectedBooking.status === 'new' || selectedBooking.status === 'read' || selectedBooking.status === 'contacted'">
             <el-button type="success" @click="handleConfirm">确认预约</el-button>
             <el-button type="warning" @click="handleCancelBooking">取消预约</el-button>
           </template>

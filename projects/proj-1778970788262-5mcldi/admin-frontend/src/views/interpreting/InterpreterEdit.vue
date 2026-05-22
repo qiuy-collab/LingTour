@@ -8,7 +8,7 @@ import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import type { InterpreterFormData } from '@/types/interpreting'
 import type { I18nObject } from '@/types/common'
-import { pickI18n, toI18n } from '@/types/common'
+import { toI18n } from '@/types/common'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,14 +18,14 @@ const loading = ref(false)
 
 const form = reactive<InterpreterFormData>({
   sortOrder: 1,
-  name: '',
-  language: '',
+  name: { zh: '', en: '' },
+  language: { zh: '', en: '' },
   focus: { zh: '', en: '' },
   helps: [],
   avatar: '',
   bio: { zh: '', en: '' },
   status: 'pending_review',
-  city: '',
+  city: { zh: '', en: '' },
 })
 
 const newHelp = reactive<I18nObject>({ zh: '', en: '' })
@@ -43,9 +43,9 @@ function removeHelp(idx: number) {
 }
 
 const rules = {
-  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  language: [{ required: true, message: '请输入服务语种', trigger: 'blur' }],
-  city: [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
+  'name.zh': [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  'language.zh': [{ required: true, message: '请输入服务语种', trigger: 'blur' }],
+  'city.zh': [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
 }
 
 onMounted(async () => {
@@ -58,14 +58,14 @@ onMounted(async () => {
       const data = res.data.data
       Object.assign(form, {
         sortOrder: data.sortOrder,
-        name: pickI18n(data.name),
-        language: pickI18n(data.language),
+        name: toI18n(data.name),
+        language: toI18n(data.language),
         focus: toI18n(data.focus),
         helps: (data.helps || []).map((h: any) => toI18n(h)),
         avatar: data.avatar,
         bio: toI18n(data.bio),
         status: data.status,
-        city: pickI18n(data.city),
+        city: toI18n(data.city),
       })
     } finally {
       loading.value = false
@@ -120,14 +120,14 @@ function handleCancel() {
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item label="姓名" prop="name">
-        <el-input v-model="form.name" placeholder="口译员姓名" />
+      <el-form-item label="姓名" prop="name.zh">
+        <I18nInput v-model="form.name" placeholder="口译员姓名" />
       </el-form-item>
-      <el-form-item label="服务语种" prop="language">
-        <el-input v-model="form.language" placeholder="如 English & Cantonese/Mandarin" />
+      <el-form-item label="服务语种" prop="language.zh">
+        <I18nInput v-model="form.language" placeholder="如 English & Cantonese/Mandarin" />
       </el-form-item>
-      <el-form-item label="服务城市" prop="city">
-        <el-input v-model="form.city" placeholder="如 广州" />
+      <el-form-item label="服务城市" prop="city.zh">
+        <I18nInput v-model="form.city" placeholder="如 广州" />
       </el-form-item>
       <el-form-item label="专注领域">
         <I18nInput v-model="form.focus" placeholder="输入专注领域" />

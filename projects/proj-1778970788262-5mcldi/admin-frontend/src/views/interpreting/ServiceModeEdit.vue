@@ -17,7 +17,7 @@ const loading = ref(false)
 const form = reactive<ServiceModeFormData>({
   sortOrder: 1,
   title: { zh: '', en: '' },
-  price: '',
+  price: { zh: '', en: '' },
   bestFor: { zh: '', en: '' },
   body: { zh: '', en: '' },
   includes: [],
@@ -40,7 +40,7 @@ function removeInclude(idx: number) {
 
 const rules = {
   'title.zh': [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
-  price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
+  'price.zh': [{ required: true, message: '请输入价格', trigger: 'blur' }],
 }
 
 onMounted(async () => {
@@ -54,7 +54,7 @@ onMounted(async () => {
       Object.assign(form, {
         sortOrder: data.sortOrder,
         title: toI18n(data.title),
-        price: typeof data.price === 'string' ? data.price : ((data.price as any)?.zh || (data.price as any)?.en || ''),
+        price: toI18n(data.price),
         bestFor: toI18n(data.bestFor),
         body: toI18n(data.body),
         includes: Array.isArray(data.includes) ? data.includes.map((item: any) => toI18n(item)) : [],
@@ -105,8 +105,8 @@ function handleCancel() {
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="价格" prop="price">
-            <el-input v-model="form.price" placeholder="如 $180 / 小时" />
+          <el-form-item label="价格" prop="price.zh">
+            <I18nInput v-model="form.price" placeholder="如 $180 / 小时" />
           </el-form-item>
         </el-col>
       </el-row>

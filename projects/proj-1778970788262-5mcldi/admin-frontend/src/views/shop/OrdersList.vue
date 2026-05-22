@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ordersApi } from '@/api/orders'
-import { OrderStatusMap, OrderStatusColorMap } from '@/types/order'
+import { OrderStatusMap, OrderStatusColorMap, PaymentStatusMap, PaymentStatusColorMap } from '@/types/order'
 import type { Order } from '@/types/order'
 
 const router = useRouter()
@@ -13,9 +13,14 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const statusFilter = ref('')
+const paymentStatusFilter = ref('')
 const dateRange = ref<[string, string]>(['', ''])
 
 const statusOptions: { label: string; value: string }[] = Object.entries(OrderStatusMap).map(
+  ([value, label]) => ({ label, value })
+)
+
+const paymentStatusOptions: { label: string; value: string }[] = Object.entries(PaymentStatusMap).map(
   ([value, label]) => ({ label, value })
 )
 
@@ -27,6 +32,7 @@ async function fetchList() {
       pageSize: pageSize.value,
     }
     if (statusFilter.value) params.status = statusFilter.value
+    if (paymentStatusFilter.value) params.paymentStatus = paymentStatusFilter.value
     if (dateRange.value[0]) params.startDate = dateRange.value[0]
     if (dateRange.value[1]) params.endDate = dateRange.value[1]
     const res = await ordersApi.getOrders(params)
@@ -44,6 +50,7 @@ function handleSearch() {
 
 function handleReset() {
   statusFilter.value = ''
+  paymentStatusFilter.value = ''
   dateRange.value = ['', '']
   page.value = 1
   fetchList()
@@ -85,7 +92,7 @@ async function handleRefund(row: Order) {
       { inputPlaceholder: '退款原因（可选）', inputType: 'textarea' }
     )
     await ordersApi.markRefunded(row.id, reason || undefined)
-    row.status = 'refunded'
+    row.paymentStatus = 'refunded'
     ElMessage.success(`订单 ${row.orderNo} 已退款`)
   } catch { /* 取消 */ }
 }
@@ -120,13 +127,28 @@ onMounted(() => {
     <div class="search-bar">
       <el-select
         v-model="statusFilter"
-        placeholder="订单状态"
+        placeholder="履约状态"
         clearable
         style="width: 140px"
         @change="handleSearch"
       >
         <el-option
           v-for="opt in statusOptions"
+          :key="opt.value"
+          :label="opt.label"
+          :value="opt.value"
+        />
+      </el-select>
+
+      <el-select
+        v-model="paymentStatusFilter"
+        placeholder="支付状态"
+        clearable
+        style="width: 140px"
+        @change="handleSearch"
+      >
+        <el-option
+          v-for="opt in paymentStatusOptions"
           :key="opt.value"
           :label="opt.label"
           :value="opt.value"
@@ -169,13 +191,23 @@ onMounted(() => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="100" align="center">
+      <el-table-column label="履约状态" width="100" align="center">
         <template #default="{ row }">
           <el-tag
             :type="(OrderStatusColorMap as Record<string, string>)[row.status]"
             size="small"
           >
             {{ (OrderStatusMap as Record<string, string>)[row.status] }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="支付状态" width="100" align="center">
+        <template #default="{ row }">
+          <el-tag
+            :type="(PaymentStatusColorMap as Record<string, string>)[row.paymentStatus]"
+            size="small"
+          >
+            {{ (PaymentStatusMap as Record<string, string>)[row.paymentStatus] }}
           </el-tag>
         </template>
       </el-table-column>
@@ -188,7 +220,7 @@ onMounted(() => {
         <template #default="{ row }">
           <el-button size="small" @click="handleViewDetail(row.id)">详情</el-button>
           <el-button
-            v-if="row.status === 'paid'"
+            v-if="row.status === 'confirmed' && row.paymentStatus === 'paid'"
             size="small"
             type="success"
             @click="handleShip(row)"
@@ -196,7 +228,7 @@ onMounted(() => {
             发货
           </el-button>
           <el-button
-            v-if="row.status === 'paid' || row.status === 'shipped'"
+            v-if="row.paymentStatus === 'paid' && row.status !== 'cancelled'"
             size="small"
             type="warning"
             @click="handleRefund(row)"

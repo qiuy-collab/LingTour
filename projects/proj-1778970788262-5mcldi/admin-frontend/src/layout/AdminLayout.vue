@@ -17,13 +17,12 @@ import {
   HomeFilled,
   Avatar,
   Setting,
+  WarningFilled,
   SwitchButton,
   Expand,
   Fold,
 } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-
-import { watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -53,6 +52,7 @@ interface MenuItem {
   path: string
   title: string
   icon: any
+  roles?: string[] // 为空表示所有角色可见
 }
 
 interface MenuGroup {
@@ -97,16 +97,28 @@ const menuGroups: MenuGroup[] = [
       { path: '/admin/events', title: '活动管理', icon: Present },
       { path: '/admin/community', title: '社区帖子', icon: ChatDotSquare },
       { path: '/admin/home', title: '首页配置', icon: HomeFilled },
+      { path: '/admin/operations/audit', title: '数据体检', icon: WarningFilled },
     ],
   },
   {
     title: '系统管理',
     items: [
-      { path: '/admin/users', title: '用户管理', icon: Avatar },
-      { path: '/admin/settings', title: '系统设置', icon: Setting },
+      { path: '/admin/users', title: '用户管理', icon: Avatar, roles: ['admin'] },
+      { path: '/admin/settings', title: '系统设置', icon: Setting, roles: ['admin'] },
     ],
   },
 ]
+
+// 根据当前用户角色过滤菜单
+const filteredMenuGroups = computed(() => {
+  const role = authStore.currentUser?.role
+  return menuGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.roles || (role && item.roles.includes(role))),
+    }))
+    .filter((group) => group.items.length > 0)
+})
 
 function handleMenuSelect(path: string) {
   router.push(path)
@@ -130,7 +142,7 @@ function handleMenuSelect(path: string) {
         active-text-color="#409EFF"
         @select="handleMenuSelect"
       >
-        <template v-for="group in menuGroups" :key="group.title">
+        <template v-for="group in filteredMenuGroups" :key="group.title">
           <el-menu-item-group :title="group.title">
             <el-menu-item
               v-for="item in group.items"

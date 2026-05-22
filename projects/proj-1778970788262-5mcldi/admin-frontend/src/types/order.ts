@@ -21,52 +21,80 @@ export interface ShippingAddress {
   postalCode: string
 }
 
+/** 履约状态（物流） */
 export type OrderStatus =
   | 'pending'
-  | 'paid'
+  | 'confirmed'
   | 'shipped'
   | 'delivered'
-  | 'refunded'
   | 'cancelled'
+
+/** 支付状态 */
+export type PaymentStatus =
+  | 'unpaid'
+  | 'paid'
+  | 'failed'
+  | 'refunded'
 
 /** 订单实体 */
 export interface Order {
   id: string
-  orderNo: string // 订单号（如 LT202605170001）
-  userId: string // 用户 ID
-  userName: string // 用户姓名
-  userEmail: string // 用户邮箱
-  items: OrderItem[] // 商品明细
-  subtotal: number // 小计
-  shipping: number // 运费
-  tax: number // 税费
-  total: number // 合计
-  currency: string // 币种
-  shippingAddress: ShippingAddress // 收货地址
-  contactEmail: string // 联系邮箱
+  orderNo: string
+  userId: string | null
+  userName: string
+  userEmail: string
+  guestEmail: string | null
+  items: OrderItem[]
+  subtotal: number
+  shipping: number
+  tax: number
+  total: number
+  currency: string
+  shippingAddress: ShippingAddress
+  contactEmail: string
   status: OrderStatus
-  paymentMethod: string // 支付方式
-  createdAt: string // 下单时间
+  paymentStatus: PaymentStatus
+  paymentMethod: string | null
+  paymentId: string | null
+  paidAt: string | null
+  paymentFailureReason: string | null
+  trackingNo: string | null
+  refundReason: string | null
+  createdAt: string
   updatedAt?: string
   notes?: string
 }
 
-/** 订单状态中文映射 */
+/** 履约状态中文映射 */
 export const OrderStatusMap: Record<OrderStatus, string> = {
-  pending: '待付款',
-  paid: '已付款',
+  pending: '待确认',
+  confirmed: '已确认',
   shipped: '已发货',
   delivered: '已签收',
-  refunded: '已退款',
   cancelled: '已取消',
 }
 
-/** 订单状态颜色映射 (Element Plus tag type) */
+/** 履约状态颜色映射 */
 export const OrderStatusColorMap: Record<OrderStatus, string> = {
   pending: 'warning',
-  paid: 'primary',
+  confirmed: 'primary',
   shipped: 'success',
   delivered: '',
-  refunded: 'info',
   cancelled: 'danger',
+}
+
+/** 支付状态中文映射 */
+export const PaymentStatusMap: Record<PaymentStatus, string> = {
+  unpaid: '未支付',
+  paid: '已支付',
+  failed: '支付失败',
+  refunded: '已退款',
+}
+
+/** 支付状态颜色映射 */
+export const PaymentStatusColorMap: Record<PaymentStatus, string> = {
+  unpaid: 'warning',
+  paid: 'success',
+  failed: 'danger',
+  refunded: 'info',
 }

@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { resolveMediaUrl } from '@/utils/media'
 
 const props = withDefaults(
   defineProps<{
@@ -36,12 +37,12 @@ watch(
       fileList.value = val.map((url, index) => ({
         uid: index,
         name: `image-${index}`,
-        url,
+        url: resolveMediaUrl(url),
         status: 'success',
       }))
     } else if (!props.multiple && typeof val === 'string') {
       fileList.value = val
-        ? [{ uid: 0, name: 'image-0', url: val, status: 'success' }]
+        ? [{ uid: 0, name: 'image-0', url: resolveMediaUrl(val), status: 'success' }]
         : []
     }
   },

@@ -46,10 +46,20 @@ function handleViewDetail(post: CommunityPost) {
   router.push(`/admin/community/${post.id}`)
 }
 
-async function handleReview(post: CommunityPost, status: PostStatus) {
+async function handleReview(post: CommunityPost, status: PostStatus, rejectionReason?: string) {
   try {
-    await communityApi.reviewPost(post.id, status)
+    await communityApi.reviewPost(post.id, status, rejectionReason)
     ElMessage.success(status === 'published' ? '审核通过' : '已隐藏')
+    fetchList()
+  } catch {
+    ElMessage.error('操作失败')
+  }
+}
+
+async function handleToggleFeatured(post: CommunityPost) {
+  try {
+    await communityApi.toggleFeatured(post.id, !post.featured)
+    ElMessage.success(post.featured ? '已取消精选' : '已设为精选')
     fetchList()
   } catch {
     ElMessage.error('操作失败')
@@ -59,7 +69,7 @@ async function handleReview(post: CommunityPost, status: PostStatus) {
 async function handleDelete(post: CommunityPost) {
   try {
     await communityApi.deletePost(post.id)
-    ElMessage.success('帖子已删除')
+    ElMessage.success('帖子已删除（软删除）')
     fetchList()
   } catch {
     ElMessage.error('删除失败')
@@ -167,7 +177,12 @@ onMounted(() => { fetchList() })
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="320" fixed="right">
+      <el-table-column label="精选" width="70" align="center">
+        <template #default="{ row }">
+          <el-tag v-if="row.featured" type="warning" size="small">★</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="360" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="handleViewDetail(row)">详情</el-button>
           <template v-if="row.status === 'pending_review'">
@@ -188,7 +203,14 @@ onMounted(() => { fetchList() })
               恢复
             </el-button>
           </template>
-          <el-popconfirm title="确定删除该帖子？" @confirm="handleDelete(row)">
+          <el-button
+            size="small"
+            :type="row.featured ? 'info' : 'warning'"
+            @click="handleToggleFeatured(row)"
+          >
+            {{ row.featured ? '取消精选' : '精选' }}
+          </el-button>
+          <el-popconfirm title="确定删除该帖子？（软删除，可恢复）" @confirm="handleDelete(row)">
             <template #reference>
               <el-button size="small" type="danger">删除</el-button>
             </template>

@@ -2,9 +2,11 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 import { ArrowDown, ArrowUp, Delete, Plus } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
-import { toI18n, toI18nArray } from '@/types/common'
+import { toI18n } from '@/types/common'
+import type { CityFormData } from '@/types/city'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -15,7 +17,17 @@ const route = useRoute()
 const isEdit = computed(() => Boolean(route.params.id))
 const loading = ref(false)
 const saving = ref(false)
+const formRef = ref<FormInstance>()
 const cityOptions = ref<Array<{ id: string; slug: string; name: string }>>([])
+const originalSectionsSnapshot = ref('')
+
+const rules = {
+  slug: [
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case 格式（如 guang-zhou）', trigger: 'blur' },
+  ],
+  'name.zh': [{ required: true, message: '请输入城市名称', trigger: 'blur' }],
+}
 
 const form = reactive<any>({
   slug: '',
@@ -37,6 +49,46 @@ const form = reactive<any>({
 })
 
 const newTag = reactive({ zh: '', en: '' })
+
+function normalizeI18nValue(value: unknown) {
+  return toI18n(value)
+}
+
+function normalizeTagList(value: unknown) {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((item) => normalizeI18nValue(item))
+    .filter((item) => item.zh.trim() || item.en.trim())
+}
+
+function normalizeSection(section: any, index: number) {
+  return {
+    id: section.id || `section-${index}`,
+    title: normalizeI18nValue(section.title),
+    body: normalizeI18nValue(section.body),
+    image: section.image || '',
+    statLabel: normalizeI18nValue(section.statLabel),
+    statValue: normalizeI18nValue(section.statValue),
+    breathImage: section.breathImage || '',
+    breathQuote: normalizeI18nValue(section.breathQuote),
+    sortOrder: section.sortOrder ?? index,
+  }
+}
+
+function serializeSections(sections: any[]) {
+  return JSON.stringify(
+    sections.map((section: any, index: number) => ({
+      title: normalizeI18nValue(section.title),
+      body: normalizeI18nValue(section.body),
+      image: section.image || '',
+      statLabel: normalizeI18nValue(section.statLabel),
+      statValue: normalizeI18nValue(section.statValue),
+      breathImage: section.breathImage || '',
+      breathQuote: normalizeI18nValue(section.breathQuote),
+      sortOrder: section.sortOrder ?? index,
+    })),
+  )
+}
 
 function addTag() {
   if (!newTag.zh.trim() && !newTag.en.trim()) return
@@ -91,6 +143,9 @@ async function loadCityOptions() {
 }
 
 function fillFromApi(data: any) {
+  const normalizedSections = (data.sections || []).map((section: any, index: number) =>
+    normalizeSection(section, index),
+  )
   Object.assign(form, {
     slug: data.slug || '',
     name: toI18n(data.name),
@@ -98,38 +153,29 @@ function fillFromApi(data: any) {
     adcode: data.adcode || 0,
     heroImage: data.heroImage || '',
     heroNarrative: toI18n(data.heroNarrative),
-    tags: toI18nArray(data.tags),
+    tags: normalizeTagList(data.tags),
     editorIntro: toI18n(data.editorIntro),
     galleryImages: data.galleryImages || [],
     foodTitle: toI18n(data.foodTitle),
     foodDescription: toI18n(data.foodDescription),
     foodImages: data.foodImages || [],
-    sections: (data.sections || []).map((section: any, index: number) => ({
-      id: section.id || `section-${index}`,
-      title: toI18n(section.title),
-      body: toI18n(section.body),
-      image: section.image || '',
-      statLabel: toI18n(section.statLabel),
-      statValue: toI18n(section.statValue),
-      breathImage: section.breathImage || '',
-      breathQuote: toI18n(section.breathQuote),
-      sortOrder: section.sortOrder ?? index,
-    })),
+    sections: normalizedSections,
     status: data.published ? 'published' : 'draft',
     routeSlugs: data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
   })
+  originalSectionsSnapshot.value = serializeSections(normalizedSections)
 }
 
-function toPayload() {
-  return {
+function toPayload(options?: { includeSections?: boolean }) {
+  const payload: Partial<CityFormData> = {
     slug: form.slug,
     name: form.name,
     regionLabel: form.regionLabel,
     adcode: form.adcode,
     heroImage: form.heroImage,
     heroNarrative: form.heroNarrative,
-    tags: form.tags,
+    tags: normalizeTagList(form.tags),
     editorIntro: form.editorIntro,
     galleryImages: form.galleryImages,
     foodTitle: form.foodTitle,
@@ -138,17 +184,20 @@ function toPayload() {
     published: form.status === 'published',
     routeSlugs: form.routeSlugs,
     relatedCitySlugs: form.relatedCitySlugs,
-    sections: form.sections.map((section: any, index: number) => ({
-      title: section.title,
-      body: section.body,
-      image: section.image,
-      statLabel: section.statLabel,
-      statValue: section.statValue,
-      breathImage: section.breathImage,
-      breathQuote: section.breathQuote,
-      sortOrder: index,
-    })),
   }
+  if (options?.includeSections) {
+    payload.sections = form.sections.map((section: any, index: number) => ({
+      title: normalizeI18nValue(section.title),
+      body: normalizeI18nValue(section.body),
+      image: section.image || '',
+      statLabel: normalizeI18nValue(section.statLabel),
+      statValue: normalizeI18nValue(section.statValue),
+      breathImage: section.breathImage || '',
+      breathQuote: normalizeI18nValue(section.breathQuote),
+      sortOrder: index,
+    }))
+  }
+  return payload
 }
 
 onMounted(async () => {
@@ -168,13 +217,25 @@ onMounted(async () => {
 })
 
 async function handleSave() {
+  try {
+    await formRef.value?.validate()
+  } catch {
+    ElMessage.warning('请检查必填项')
+    return
+  }
   saving.value = true
   try {
+    const sectionsChanged =
+      isEdit.value && serializeSections(form.sections) !== originalSectionsSnapshot.value
     if (isEdit.value) {
-      await citiesApi.updateCity(route.params.id as string, toPayload())
+      if (sectionsChanged) {
+        ElMessage.error('当前后端暂不支持保存城市 Section 变更，请先保存其他字段')
+        return
+      }
+      await citiesApi.updateCity(route.params.id as string, toPayload({ includeSections: false }))
       ElMessage.success('城市更新成功')
     } else {
-      await citiesApi.createCity(toPayload())
+      await citiesApi.createCity(toPayload({ includeSections: true }) as CityFormData)
       ElMessage.success('城市创建成功')
     }
     router.push('/admin/cities')
@@ -207,12 +268,12 @@ const selectedRelatedCityCards = computed(() =>
     </div>
 
     <div class="editor-shell">
-      <el-form class="editor-form" label-position="top">
+      <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card id="section-basic" shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Slug">
+              <el-form-item label="Slug" prop="slug">
                 <el-input v-model="form.slug" placeholder="guangzhou" />
               </el-form-item>
             </el-col>
@@ -222,7 +283,7 @@ const selectedRelatedCityCards = computed(() =>
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="城市名称">
+          <el-form-item label="城市名称" prop="name.zh">
             <I18nInput v-model="form.name" />
           </el-form-item>
           <el-form-item label="地区标签">
@@ -373,7 +434,7 @@ const selectedRelatedCityCards = computed(() =>
 .edit-page { padding-bottom: 40px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .page-header h2 { margin: 0; font-size: 20px; }
-.editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 20px; align-items: start; }
+.editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw); gap: 20px; align-items: start; }
 .section-card { margin-bottom: 16px; }
 .card-header, .repeat-header, .inline-row, .tag-list { display: flex; align-items: center; gap: 8px; }
 .card-header, .repeat-header { justify-content: space-between; }

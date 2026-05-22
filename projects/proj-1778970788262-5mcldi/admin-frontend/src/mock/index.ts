@@ -502,7 +502,7 @@ function setupMock(axiosInstance: AxiosInstance) {
       const id = ordRefundMatch[1]
       const index = orders.findIndex((o) => o.id === id)
       if (index === -1) return mockError(config, '订单不存在', 404)
-      orders[index] = { ...orders[index], status: 'refunded', updatedAt: new Date().toISOString() }
+      orders[index] = { ...orders[index], paymentStatus: 'refunded', status: 'cancelled', updatedAt: new Date().toISOString() }
       return mockResponse(config, orders[index])
     }
 

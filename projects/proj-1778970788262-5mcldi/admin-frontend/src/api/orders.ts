@@ -3,10 +3,11 @@
 // ============================================
 import api from './index'
 import type { ApiResponse, PaginatedResponse, PageParams } from '@/types/common'
-import type { Order, OrderStatus } from '@/types/order'
+import type { Order, OrderStatus, PaymentStatus } from '@/types/order'
 
 export interface OrderListParams extends PageParams {
-  status?: string
+  status?: OrderStatus | string
+  paymentStatus?: PaymentStatus | string
   startDate?: string
   endDate?: string
 }

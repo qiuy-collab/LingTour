@@ -1,6 +1,6 @@
 // 用户管理 API
 import api from './index'
-import type { ManagedUser, UserStatus } from '@/types/user'
+import type { ManagedUser, UpdateUserProfilePayload, UserStatus } from '@/types/user'
 import type { PaginatedResponse } from '@/types/common'
 
 interface UserListParams {
@@ -28,4 +28,12 @@ export function banUser(id: string): Promise<{ data: { code: number; data: Manag
 /** 解封用户 */
 export function unbanUser(id: string): Promise<{ data: { code: number; data: ManagedUser; message: string } }> {
   return api.patch(`/users/${id}/status`, { status: 'active' as UserStatus })
+}
+
+/** 更新用户档案 */
+export function updateUserProfile(
+  id: string,
+  payload: UpdateUserProfilePayload,
+): Promise<{ data: { code: number; data: ManagedUser; message: string } }> {
+  return api.patch(`/users/${id}/profile`, payload)
 }
