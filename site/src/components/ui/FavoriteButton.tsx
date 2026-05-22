@@ -4,18 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 
 type FavoriteButtonProps = {
   id: string;
-  type: "route" | "product";
+  type: "route" | "product" | "city";
   title: string;
+  image?: string;
   variant?: "light" | "dark";
 };
 
 type FavoriteItem = {
   id: string;
-  type: "route" | "product";
+  type: "route" | "product" | "city";
   title: string;
 };
 
 const storageKey = "lingtour-favorites";
+const tokenKey = "lingtour-token";
 
 function readFavorites(): FavoriteItem[] {
   if (typeof window === "undefined") return [];
@@ -37,7 +39,37 @@ function writeFavorites(items: FavoriteItem[]) {
   }
 }
 
-export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteButtonProps) {
+function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(tokenKey);
+}
+
+async function syncFavoriteToServer(
+  action: "add" | "remove",
+  item: { id: string; type: string; title?: string; image?: string },
+) {
+  const token = getToken();
+  if (!token) return;
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+  try {
+    if (action === "add") {
+      await fetch(`${apiBase}/auth/me/favorites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ targetType: item.type, targetId: item.id, targetTitle: item.title || "", targetImage: item.image || "" }),
+      });
+    } else {
+      await fetch(`${apiBase}/auth/me/favorites/${item.type}/${item.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
+  } catch {
+    // Silently fail — localStorage is the source of truth for offline
+  }
+}
+
+export function FavoriteButton({ id, type, title, image, variant = "light" }: FavoriteButtonProps) {
   const [saved, setSaved] = useState(false);
   const isDark = variant === "dark";
 
@@ -63,7 +95,10 @@ export function FavoriteButton({ id, type, title, variant = "light" }: FavoriteB
       ? favorites.filter((item) => !(item.id === id && item.type === type))
       : [...favorites, { id, type, title }];
     writeFavorites(next);
-  }, [id, type, title]);
+
+    // Sync to server in background
+    syncFavoriteToServer(exists ? "remove" : "add", { id, type, title, image });
+  }, [id, type, title, image]);
 
   return (
     <button

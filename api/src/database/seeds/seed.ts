@@ -39,6 +39,7 @@ async function seed() {
       orders,
       community_posts,
       community_briefs,
+      user_favorites,
       events,
       home_configs,
       app_settings

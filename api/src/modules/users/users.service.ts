@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UserFavorite } from './entities/user-favorite.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
@@ -9,6 +10,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserFavorite)
+    private readonly favoriteRepository: Repository<UserFavorite>,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -105,7 +108,7 @@ export class UsersService {
   }
 
   private async toManagedUser(user: User) {
-    const [ordersCount, bookingsCount, dispatchStats] = await Promise.all([
+    const [ordersCount, bookingsCount, dispatchStats, favorites] = await Promise.all([
       this.userRepository.manager
         .query('SELECT COUNT(*)::int AS count FROM orders WHERE user_id = $1', [
           user.id,
@@ -133,6 +136,11 @@ export class UsersService {
         )
         .then((rows) => rows?.[0] ?? {})
         .catch(() => ({})),
+      this.favoriteRepository.find({
+        where: { userId: user.id },
+        order: { createdAt: 'DESC' },
+        take: 20,
+      }).catch(() => []),
     ]);
 
     const latestDispatchTitle = await this.userRepository.manager
@@ -159,7 +167,14 @@ export class UsersService {
       status: user.status || 'active',
       bookingsCount,
       ordersCount,
-      favorites: [],
+      favorites: favorites.map((f) => ({
+        id: f.id,
+        type: f.targetType,
+        targetId: f.targetId,
+        title: f.targetTitle,
+        image: f.targetImage,
+        savedAt: f.createdAt,
+      })),
       role: user.role,
       provider: user.provider || '',
       country: user.country || '',
@@ -206,5 +221,40 @@ export class UsersService {
       profileVisibility:
         payload.profileVisibility ?? fallback?.profileVisibility ?? 'public',
     };
+  }
+
+  // ── Favorites (Personal Vault) ──
+
+  async getFavorites(userId: string) {
+    const items = await this.favoriteRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+    return { items };
+  }
+
+  async addFavorite(
+    userId: string,
+    data: { targetType: 'route' | 'city' | 'product'; targetId: string; targetTitle: string; targetImage: string },
+  ) {
+    // Upsert: if already exists, just return it
+    const existing = await this.favoriteRepository.findOne({
+      where: { userId, targetType: data.targetType, targetId: data.targetId },
+    });
+    if (existing) return existing;
+
+    const fav = this.favoriteRepository.create({
+      userId,
+      targetType: data.targetType,
+      targetId: data.targetId,
+      targetTitle: data.targetTitle,
+      targetImage: data.targetImage,
+    });
+    return this.favoriteRepository.save(fav);
+  }
+
+  async removeFavorite(userId: string, targetType: string, targetId: string) {
+    await this.favoriteRepository.delete({ userId, targetType: targetType as any, targetId });
+    return { removed: true };
   }
 }
