@@ -1,21 +1,21 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
-import { fetchRouteBySlug } from "@/lib/api-data";
+import { fetchRouteBySlug, fetchRouteCommunityPosts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
-import { IntroHero } from "@/components/routes/IntroHero";
-import { ScrollStoryRoute } from "@/components/routes/ScrollStoryRoute";
-import { MobileStickyActions } from "@/components/layout/MobileStickyActions";
+import { RouteBrief } from "@/components/routes/RouteBrief";
+import { TimeAxisItinerary, type RouteStopTarget } from "@/components/routes/TimeAxisItinerary";
+import { StickyComposeBar } from "@/components/routes/StickyComposeBar";
 import type { StoryRoute } from "@/data/routes";
 
 export function RouteDetailClient({ slug }: { slug: string }) {
   const { locale, setLocale } = useLocale();
-  const router = useRouter();
   const { previewData, previewLocale, previewEnabled } = usePreviewBridge<StoryRoute>("route");
+
+  const [composeTarget, setComposeTarget] = useState<RouteStopTarget | null>(null);
 
   const activeLocale = previewLocale ?? locale;
 
@@ -30,68 +30,77 @@ export function RouteDetailClient({ slug }: { slug: string }) {
     [slug, activeLocale],
   );
 
-  const activeRoute = previewData ?? route;
+  // Cache the last successful route so locale switches / refetches
+  // don't blank the page during the brief in-flight window.
+  const lastRouteRef = useRef<StoryRoute | null>(null);
+  if (route) lastRouteRef.current = route;
+
+  const activeRoute = previewData ?? route ?? lastRouteRef.current;
+
+  // Pull live community posts attached to this route (filtered by route title)
+  const { data: liveCommunityPosts } = useApiQuery(
+    () =>
+      activeRoute
+        ? fetchRouteCommunityPosts({
+            routeSlug: activeRoute.slug,
+            routeTitle: activeRoute.title,
+            locale: activeLocale,
+          })
+        : Promise.resolve([]),
+    [activeRoute?.slug, activeRoute?.title, activeLocale],
+  );
 
   if (previewEnabled && !activeRoute) return <LoadingSpinner text="Loading preview..." />;
   if (loading && !activeRoute) return <LoadingSpinner text="Opening the route..." />;
-  if (error && !activeRoute) return <ErrorState message={error} />;
 
+  // If there's a hard error AND we have no cached route to fall back on,
+  // show the error state so the user can retry — never auto-redirect.
+  if (error && !activeRoute) {
+    return (
+      <ErrorState
+        title="Route file unavailable"
+        message="This route's archive can't be reached right now. Please try again shortly."
+      />
+    );
+  }
+
+  // Truly nothing to show (slug doesn't exist server-side either) — render
+  // the framework's not-found page so the URL returns a real 404.
   if (!activeRoute) {
-    router.push("/routes");
-    return null;
+    notFound();
   }
 
   return (
-    <main className="bg-[var(--background)] bg-grain min-h-screen">
-      <IntroHero title={activeRoute.title} summary={activeRoute.summary} image={activeRoute.image} />
+    <>
+      <main className="bg-[var(--background)] min-h-screen">
+        {/* Section A — Route Brief: marquee title, live position, thumb stack */}
+        <RouteBrief route={activeRoute} />
 
-      <ScrollStoryRoute
-        stops={activeRoute.itinerary}
+        {/* Section B — Time-Axis Itinerary: continuous reader, no cards, no modal */}
+        <TimeAxisItinerary
+          stops={activeRoute.itinerary}
+          routeStory={activeRoute.story}
+          routeTitle={activeRoute.title}
+          onAddStopNote={(stop, index) =>
+            setComposeTarget({ index, time: stop.time, name: stop.stop })
+          }
+        />
+      </main>
+
+      {/* Section C — Sticky Compose Bar: real-time post box pinned to viewport.
+          Rendered OUTSIDE <main> on purpose: globals.css has a `main > div`
+          rule that forces min-height: 100vh on every direct div child of
+          <main> (it's there for the page-transition wrapper). If the sticky
+          bar lived inside <main>, it would be force-stretched to the full
+          viewport and obscure the entire page. */}
+      <StickyComposeBar
+        routeSlug={activeRoute.slug}
         routeTitle={activeRoute.title}
-        routeStory={activeRoute.story}
-        routeImage={activeRoute.image}
+        routeCity={activeRoute.city}
+        initialPosts={liveCommunityPosts ?? []}
+        composeTarget={composeTarget}
+        onClearTarget={() => setComposeTarget(null)}
       />
-
-      <section className="py-24 lg:py-32">
-        <div className="site-container">
-          <div className="relative overflow-hidden border-8 border-white bg-[var(--river-deep)] px-8 py-20 text-center text-white scrapbook-shadow lg:px-24 lg:py-32">
-            <div className="absolute inset-0 bg-grain opacity-[0.05]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.15),transparent_60%)]" />
-            <div className="relative z-10 mx-auto max-w-3xl">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)] handwritten">
-                Complete the experience
-              </p>
-              <h2 className="mt-8 font-[family:var(--font-display)] text-4xl leading-[1.1] md:text-6xl">
-                Turn the route into a <span className="italic text-[var(--gold)]">personal archive.</span>
-              </h2>
-              <p className="mt-8 text-lg leading-relaxed text-white/70 handwritten">
-                Add a local interpreter for timing, context, and the small explanations that turn a simple path into a lifelong memory.
-              </p>
-              <div className="mt-12 flex flex-wrap items-center justify-center gap-6">
-                <Link
-                  href="/interpreting"
-                  className="btn-gold"
-                >
-                  Request Dispatch
-                </Link>
-                <Link
-                  href="/routes"
-                  className="btn-ghost-dark inline-block px-10 py-5 text-xs"
-                >
-                  Browse Atlas
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <MobileStickyActions
-        actions={[
-          { label: "Book This Route", href: "/interpreting#booking", variant: "primary" },
-          { label: "More Routes", href: "/routes", variant: "secondary" },
-        ]}
-      />
-    </main>
+    </>
   );
 }

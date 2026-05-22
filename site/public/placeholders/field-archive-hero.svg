@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Editorial placeholder">
+  <defs>
+    <pattern id="grain" patternUnits="userSpaceOnUse" width="3" height="3">
+      <rect width="3" height="3" fill="#e2ddd4" />
+      <circle cx="0.5" cy="0.5" r="0.4" fill="#000" opacity="0.04" />
+      <circle cx="2" cy="1.7" r="0.3" fill="#000" opacity="0.03" />
+      <circle cx="1.2" cy="2.3" r="0.4" fill="#000" opacity="0.05" />
+    </pattern>
+    <linearGradient id="vignette" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0" />
+      <stop offset="1" stop-color="#000" stop-opacity="0.06" />
+    </linearGradient>
+    <pattern id="ledger" patternUnits="userSpaceOnUse" width="40" height="40">
+      <path d="M0 39.5 H40" stroke="#3a3a3a" stroke-width="0.4" opacity="0.07" />
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#grain)" />
+  <rect width="1600" height="900" fill="url(#ledger)" />
+  <rect width="1600" height="900" fill="url(#vignette)" />
+
+  <!-- corner crosses (registration marks) -->
+  <g stroke="#1f1f1f" stroke-width="1" opacity="0.35">
+    <line x1="44" y1="56" x2="44" y2="84" />
+    <line x1="30" y1="70" x2="58" y2="70" />
+    <line x1="1556" y1="56" x2="1556" y2="84" />
+    <line x1="1542" y1="70" x2="1570" y2="70" />
+    <line x1="44" y1="816" x2="44" y2="844" />
+    <line x1="30" y1="830" x2="58" y2="830" />
+    <line x1="1556" y1="816" x2="1556" y2="844" />
+    <line x1="1542" y1="830" x2="1570" y2="830" />
+  </g>
+
+  <!-- Tape strips (top + lower right, slight rotation) -->
+  <g transform="translate(700, -30) rotate(-2)" opacity="0.55">
+    <rect x="0" y="0" width="240" height="58" fill="#d6c8a8" />
+    <rect x="0" y="0" width="240" height="58" fill="#000" opacity="0.04" />
+    <line x1="0" y1="58" x2="240" y2="58" stroke="#000" stroke-opacity="0.10" stroke-width="1" />
+  </g>
+
+  <!-- main editorial label -->
+  <g transform="translate(800, 380)" text-anchor="middle">
+    <text x="0" y="-110" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" fill="#1f1f1f" opacity="0.55" letter-spacing="6">
+      LINGTOUR · FIELD ARCHIVE
+    </text>
+    <text x="0" y="0" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="120" fill="#1f1f1f" opacity="0.92" letter-spacing="-2">
+      Awaiting editorial
+    </text>
+    <text x="0" y="120" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="120" fill="#1f1f1f" opacity="0.92" letter-spacing="-2">
+      dispatch.
+    </text>
+  </g>
+
+  <!-- bottom small print -->
+  <g transform="translate(80, 800)">
+    <text x="0" y="0" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="13" fill="#1f1f1f" opacity="0.55" letter-spacing="3">
+      ASSIGNMENT · DRAFT · NOT FOR PRESS
+    </text>
+  </g>
+  <g transform="translate(1520, 800)" text-anchor="end">
+    <text x="0" y="0" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="13" fill="#1f1f1f" opacity="0.55" letter-spacing="3">
+      REF · LT-FA-0000
+    </text>
+  </g>
+
+  <!-- hand-stamped marginalia (faint) -->
+  <g transform="translate(1280, 220) rotate(-8)" opacity="0.30">
+    <rect x="0" y="0" width="220" height="66" fill="none" stroke="#9e2b21" stroke-width="3" />
+    <rect x="6" y="6" width="208" height="54" fill="none" stroke="#9e2b21" stroke-width="1" />
+    <text x="110" y="42" text-anchor="middle" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="22" fill="#9e2b21" letter-spacing="6">PENDING</text>
+  </g>
+</svg>

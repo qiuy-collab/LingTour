@@ -24,6 +24,20 @@ export const culture = {
     "culture.progress.intro": "Intro",
     "culture.progress.food": "Food",
     "culture.progress.route": "Route",
+
+    "culture.atlas.eyebrow": "City Culture · The Atlas",
+    "culture.atlas.titlePrimary": "Read the",
+    "culture.atlas.titleItalic": "Province.",
+    "culture.atlas.lede": "Each city carries a different Guangdong: a coastline, a dialect, a table, a craft memory, and a rhythm you only notice when you slow down.",
+    "culture.atlas.archiveLabel": "Archive No.",
+    "culture.atlas.archiveCode": "GD-020-0755",
+    "culture.atlas.empty.title": "City profiles are being filed.",
+    "culture.atlas.empty.body": "Once the editorial team publishes a city, it will appear here.",
+    "culture.atlas.openArchive": "Open archive",
+
+    "culture.cta.eyebrow": "Start with a thread",
+    "culture.cta.title": "The best journeys begin with one detail that refuses to leave you.",
+    "culture.cta.button": "Browse routes",
   },
 
   zh: {
@@ -51,5 +65,19 @@ export const culture = {
     "culture.progress.intro": "导语",
     "culture.progress.food": "美食",
     "culture.progress.route": "路线",
+
+    "culture.atlas.eyebrow": "城市文化·档案册",
+    "culture.atlas.titlePrimary": "阅读这片",
+    "culture.atlas.titleItalic": "土地。",
+    "culture.atlas.lede": "每座城市都带着一份不同的广东：一段海岸、一种方言、一张餐桌、一段手艺记忆，还有只有慢下来才能听见的节奏。",
+    "culture.atlas.archiveLabel": "档案编号",
+    "culture.atlas.archiveCode": "GD-020-0755",
+    "culture.atlas.empty.title": "城市档案正在编辑。",
+    "culture.atlas.empty.body": "编辑团队发布城市档案后，会在此处出现。",
+    "culture.atlas.openArchive": "查看档案",
+
+    "culture.cta.eyebrow": "从一个细节开始",
+    "culture.cta.title": "最好的旅程，往往从那个挥之不去的细节开始。",
+    "culture.cta.button": "浏览路线",
   },
 };

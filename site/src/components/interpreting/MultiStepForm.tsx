@@ -48,24 +48,6 @@ function formatCurrency(amount: number, currency: string) {
   return `${currency} $${amount.toFixed(2)}`;
 }
 
-function getDepositPreview(
-  fastTrack: boolean,
-  mode: string,
-): { amount: number; label: string } {
-  if (fastTrack) {
-    return { amount: 90, label: "Fast Track slot deposit" };
-  }
-
-  const normalized = mode.toLowerCase();
-  if (normalized.includes("group") || normalized.includes("study")) {
-    return { amount: 260, label: "Group visit interpreter deposit" };
-  }
-  if (normalized.includes("story") || normalized.includes("route")) {
-    return { amount: 180, label: "Story-led route interpreter deposit" };
-  }
-  return { amount: 120, label: "City companion interpreter deposit" };
-}
-
 function MultiStepFormInner({
   locale = "en",
   prefillNeeds,
@@ -146,8 +128,6 @@ function MultiStepFormInner({
   }, [depositSession, fastTrack, requestedStep, step]);
 
   const totalSteps = fastTrack ? 2 : 4;
-  const depositPreview = getDepositPreview(fastTrack, form.mode);
-
   const canNext = (): boolean => {
     if (fastTrack) {
       return !!form.name && !!form.contact && !!form.city;
@@ -206,7 +186,7 @@ function MultiStepFormInner({
       await confirmInterpretingDeposit(
         depositSession.bookingId,
         depositSession.deposit.orderNo,
-        `pi_mock_${depositSession.deposit.orderNo}_paid`,
+        `pi_sandbox_${depositSession.deposit.orderNo}_paid`,
       );
       handleSubmit();
     } catch (error) {

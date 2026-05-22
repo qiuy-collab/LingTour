@@ -1,0 +1,46 @@
+/* Journal textures and edges */
+.journal-paper {
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  opacity: 0.98;
+}
+
+.torn-edge {
+  mask-image: linear-gradient(to bottom, black 90%, transparent 100%),
+              radial-gradient(circle at 10px 100%, transparent 8px, black 10px);
+  mask-size: 100% 100%, 20px 20px;
+  mask-repeat: no-repeat, repeat-x;
+  mask-position: 0 0, 0 100%;
+}
+
+.handwritten {
+  font-family: "Kalam", "Segoe Script", cursive;
+}
+
+.scrapbook-shadow {
+  box-shadow: 2px 4px 20px rgba(0, 0, 0, 0.08), 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes tape-stick {
+  0% { transform: scale(1.1) rotate(2deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.tape-effect {
+  position: relative;
+}
+
+.tape-effect::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 60px;
+  height: 20px;
+  background: rgba(244, 236, 220, 0.6);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(0,0,0,0.05);
+  z-index: 10;
+}

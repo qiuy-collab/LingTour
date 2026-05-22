@@ -64,6 +64,35 @@ export type HomeHeroStat = {
   body: string;
 };
 
+/**
+ * Editorial hero block on the home page.
+ *
+ * All fields are optional — when a field is missing the page falls back
+ * to local Journal-style placeholders. The admin UI is responsible for
+ * filling these slots.
+ */
+export type HomeHero = {
+  /** Hero image URL (renders the rotated polaroid card on the right). */
+  image?: string;
+  /** Optional caption / tag rendered alongside the hero. */
+  caption?: string;
+  /** Image used by the bottom-of-page departure CTA. */
+  ctaImage?: string;
+  /**
+   * Optional badge metric overlaying the hero (e.g. { value: "120+", label: "Routes" }).
+   * If unset the page derives one from trustMetrics.
+   */
+  badge?: { value: string; label: string };
+  /**
+   * Optional accent label for the interpreting block image (e.g. "Bilingual Support").
+   */
+  interpretingLabel?: string;
+  /**
+   * Optional image for the interpreting / field-notes block.
+   */
+  interpretingImage?: string;
+};
+
 export type HomeEntryCard = {
   id: string;
   title: string;

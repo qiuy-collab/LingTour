@@ -3,7 +3,12 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost, ApiRequestError } from "@/lib/api-client";
-import { AuthResponse, persistAuthUser, signInWithGoogle } from "@/lib/auth-client";
+import {
+  AuthResponse,
+  persistAuthUser,
+  signInWithGoogle,
+  updateCurrentUserProfile,
+} from "@/lib/auth-client";
 
 export function LoginPanel() {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -74,6 +79,7 @@ export function LoginPanel() {
         });
         localStorage.setItem("lingtour-token", data.access_token);
         persistAuthUser(data.user, { country, travelStyle });
+        await updateCurrentUserProfile({ country, travelStyle });
         router.push("/");
       }
     } catch (err) {

@@ -4,8 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import type { StoryRoute } from "@/data/routes";
 
-const cardStepRem = 21.25;
-
 interface Props {
   routes?: StoryRoute[];
 }
@@ -14,9 +12,6 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const total = routes.length;
   const maxIndex = Math.max(total - 1, 0);
-
-  // Debug logging
-  console.log(`[Carousel] Rendering ${total} routes. Active: ${activeIndex}`);
 
   function showNextRoute() {
     setActiveIndex((current) => (current + 1) % total);
@@ -57,13 +52,15 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
           <div className="flex justify-end overflow-hidden pr-10 sm:pr-16">
             <div
               className="flex flex-row-reverse gap-5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-              style={{ 
-                transform: `translateX(calc(${activeIndex} * (var(--card-width, 17.5rem) + 1.25rem)))` 
+              style={{
+                transform: `translateX(calc(${activeIndex} * (var(--card-width, 17.5rem) + 1.25rem)))`,
               }}
             >
               <style jsx>{`
                 @media (min-width: 640px) {
-                  div { --card-width: 20rem; }
+                  div {
+                    --card-width: 20rem;
+                  }
                 }
               `}</style>
               {routes.map((route) => (
@@ -71,7 +68,9 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                   key={route.slug}
                   href={`/routes/${route.slug}`}
                   className={`group relative h-[32rem] w-[20rem] shrink-0 transition-all duration-700 ${
-                    activeIndex === routes.indexOf(route) ? "scale-100 opacity-100" : "scale-90 opacity-40 grayscale"
+                    activeIndex === routes.indexOf(route)
+                      ? "scale-100 opacity-100"
+                      : "scale-90 opacity-40 grayscale"
                   }`}
                 >
                   <div className="relative h-full w-full scrapbook-shadow border-[0.85rem] border-white overflow-hidden bg-white">
@@ -118,8 +117,19 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                     showPreviousRoute();
                   }}
                 >
-                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 5L9 12L16 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M16 5L9 12L16 19"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               )}
@@ -134,8 +144,19 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                     showNextRoute();
                   }}
                 >
-                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none">
-                    <path d="M8 5L15 12L8 19" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M8 5L15 12L8 19"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               )}

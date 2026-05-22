@@ -1,25 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 
-type FieldKitProps = {
+type FieldKitProps<TChannel extends string> = {
   isOpen: boolean;
   onClose: () => void;
-  onPublish: (draft: { title: string; note: string; channel: any; image?: string }) => void;
+  onPublish: (draft: {
+    title: string;
+    note: string;
+    channel: TChannel;
+    image?: string;
+  }) => void | Promise<void>;
   initialBrief?: {
     title: string;
-    channel: string;
+    channel: TChannel;
     prompt: string;
   };
-  channels: readonly string[];
+  initialDraft?: {
+    title?: string;
+    note?: string;
+    channel?: TChannel;
+    image?: string;
+  };
+  channels: readonly ["All", ...TChannel[]];
+  compact?: boolean;
 };
 
-export function FieldKit({ isOpen, onClose, onPublish, initialBrief, channels }: FieldKitProps) {
+export function FieldKit<TChannel extends string>({
+  isOpen,
+  onClose,
+  onPublish,
+  initialBrief,
+  initialDraft,
+  channels,
+  compact = false,
+}: FieldKitProps<TChannel>) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
-  const [activeChannel, setActiveChannel] = useState(channels[1]); // Default to first non-"All"
+  const [activeChannel, setActiveChannel] = useState<TChannel>(channels[1]);
   const [image, setImage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialBrief) {
@@ -27,148 +49,280 @@ export function FieldKit({ isOpen, onClose, onPublish, initialBrief, channels }:
     }
   }, [initialBrief]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialBrief?.channel) {
+      setActiveChannel(initialBrief.channel);
+    }
+    if (initialDraft?.channel && channels.includes(initialDraft.channel)) {
+      setActiveChannel(initialDraft.channel);
+    }
+    setTitle(initialDraft?.title ?? "");
+    setNote(initialDraft?.note ?? "");
+    setImage(initialDraft?.image ?? null);
+    setError(null);
+    setSubmitting(false);
+  }, [channels, initialBrief, initialDraft, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const canPublish = Boolean(title.trim() || note.trim() || image);
+
+  const handlePublish = async () => {
+    if (!canPublish || submitting) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await onPublish({
+        title,
+        note,
+        channel: activeChannel,
+        image: image || undefined,
+      });
+      setTitle("");
+      setNote("");
+      setImage(null);
+    } catch (publishError) {
+      setError(
+        publishError instanceof Error
+          ? publishError.message
+          : "Could not dispatch this post right now.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handlePublish = () => {
-    onPublish({ title, note, channel: activeChannel, image: image || undefined });
-    setTitle("");
-    setNote("");
-    setImage(null);
-  };
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
       <div
-        className="absolute inset-0 bg-[var(--night)]/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
+        className="absolute inset-0 bg-[var(--night)]/50 backdrop-blur-[2px]"
+        onClick={() => {
+          if (!submitting) onClose();
+        }}
       />
 
       <Reveal delay={0}>
         <div
-          className="relative w-full max-w-2xl overflow-hidden journal-paper scrapbook-shadow"
-          style={{ borderRadius: "10px 60px 20px 50px" }}
+          className={`relative w-full overflow-hidden journal-paper scrapbook-shadow ${
+            compact ? "max-w-2xl" : "max-w-[42rem]"
+          }`}
+          style={{
+            borderRadius: compact ? "24px" : "12px 44px 18px 36px",
+            maxHeight: compact ? "min(80vh, 740px)" : "min(84vh, 820px)",
+          }}
         >
-          {/* Notebook Spiral Decoration */}
-          <div className="absolute left-6 top-0 bottom-0 w-8 flex flex-col justify-around py-8 pointer-events-none opacity-20">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-3 w-8 border-2 border-[var(--river-deep)] rounded-full" />
-            ))}
-          </div>
+          {!compact ? (
+            <div className="pointer-events-none absolute bottom-0 left-6 top-0 flex w-8 flex-col justify-around py-8 opacity-20">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-3 w-8 rounded-full border-2 border-[var(--river-deep)]"
+                />
+              ))}
+            </div>
+          ) : null}
 
-          <div className="p-10 pl-20 sm:p-12 sm:pl-24">
-            <div className="flex items-center justify-between border-b-2 border-[var(--line)] pb-6 mb-8">
+          <div
+            className={`scrollbar-hide overflow-y-auto ${
+              compact
+                ? "max-h-[80vh] p-6 sm:p-7"
+                : "max-h-[84vh] p-8 pl-16 sm:p-10 sm:pl-20"
+            }`}
+          >
+            <div
+              className={`flex items-center justify-between border-b-2 border-[var(--line)] ${
+                compact ? "mb-5 pb-4" : "mb-8 pb-6"
+              }`}
+            >
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">Dispatch Mission</p>
-                <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">Field Note Kit</h2>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                  Dispatch Mission
+                </p>
+                <h2
+                  className={`font-[family:var(--font-display)] text-[var(--river-deep)] ${
+                    compact ? "text-2xl" : "text-3xl"
+                  }`}
+                >
+                  Field Note Kit
+                </h2>
               </div>
               <button
                 onClick={onClose}
-                className="h-10 w-10 rounded-full border border-[var(--line)] flex items-center justify-center text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors"
+                disabled={submitting}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)] disabled:opacity-40"
               >
-                ✕
+                ×
               </button>
             </div>
 
-            {initialBrief && (
-              <div className="mb-8 p-5 bg-[var(--gold)]/10 rounded-xl border border-[var(--gold)]/20 rotate-[-1deg]">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">Active Brief</p>
-                <p className="mt-1 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">{initialBrief.title}</p>
-                <p className="mt-2 text-sm italic text-[var(--muted)] leading-relaxed">"{initialBrief.prompt}"</p>
+            {initialBrief ? (
+              <div
+                className={`border border-[var(--gold)]/20 bg-[var(--gold)]/10 ${
+                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-xl p-5 rotate-[-1deg]"
+                }`}
+              >
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
+                  Active Brief
+                </p>
+                <p
+                  className={`mt-1 font-[family:var(--font-display)] text-[var(--river-deep)] ${
+                    compact ? "text-lg" : "text-xl"
+                  }`}
+                >
+                  {initialBrief.title}
+                </p>
+                <p className="mt-2 text-sm italic leading-relaxed text-[var(--muted)]">
+                  &ldquo;{initialBrief.prompt}&rdquo;
+                </p>
               </div>
-            )}
+            ) : null}
 
-            <div className="space-y-8">
+            <div className={compact ? "grid gap-5" : "space-y-8"}>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] block mb-2">Category</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Category
+                </label>
                 <div className="flex flex-wrap gap-2">
-                  {channels.filter(c => c !== "All").map(channel => (
-                    <button
-                      key={channel}
-                      onClick={() => setActiveChannel(channel)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                        activeChannel === channel
-                        ? "bg-[var(--river-deep)] text-white scale-105 shadow-md"
-                        : "bg-white/50 text-[var(--muted)] hover:bg-white"
-                      }`}
-                    >
-                      {channel}
-                    </button>
-                  ))}
+                  {channels
+                    .filter((channel): channel is TChannel => channel !== "All")
+                    .map((channel) => (
+                      <button
+                        key={channel}
+                        onClick={() => setActiveChannel(channel)}
+                        className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                          activeChannel === channel
+                            ? "scale-105 bg-[var(--river-deep)] text-white shadow-md"
+                            : "bg-white/50 text-[var(--muted)] hover:bg-white"
+                        }`}
+                      >
+                        {channel}
+                      </button>
+                    ))}
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] block mb-2">Signal Title</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Signal Title
+                </label>
                 <input
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="The sound of morning tide..."
-                  className="w-full bg-transparent border-b-2 border-[var(--line)] py-2 font-[family:var(--font-display)] text-2xl outline-none focus:border-[var(--gold)] transition-colors placeholder:opacity-30"
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Optional title for text or image dispatch..."
+                  className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
+                    compact ? "text-xl" : "text-2xl"
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] block mb-2">Observation Detail</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Observation Detail
+                </label>
                 <textarea
-                  rows={4}
+                  rows={compact ? 4 : 5}
                   value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Record what others might miss..."
-                  className="w-full bg-transparent border-2 border-dashed border-[var(--line)] p-4 rounded-xl text-lg leading-relaxed outline-none focus:border-[var(--gold)] transition-colors placeholder:opacity-30 resize-none handwritten"
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="Write a field note, or leave this blank for a pure photo signal..."
+                  className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
+                    compact ? "text-base" : "text-lg"
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] block mb-2">Visual Signal (Optional)</label>
+                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Visual Signal (Optional)
+                </label>
                 <div className="flex gap-4">
-                  <label className="relative flex flex-col items-center justify-center w-32 h-32 rounded-xl border-2 border-dashed border-[var(--line)] hover:border-[var(--gold)] transition-colors cursor-pointer group overflow-hidden bg-white/30 backdrop-blur-sm">
+                  <label
+                    className={`group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--line)] bg-white/30 backdrop-blur-sm transition-colors hover:border-[var(--gold)] ${
+                      compact ? "h-24 w-24" : "h-32 w-32"
+                    }`}
+                  >
                     {image ? (
-                      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}>
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <span className="text-white text-[10px] font-bold uppercase">Change</span>
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${image})` }}
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                          <span className="text-[10px] font-bold uppercase text-white">
+                            Change
+                          </span>
                         </div>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center">
-                        <span className="text-2xl text-[var(--muted)] group-hover:text-[var(--gold)]">📸</span>
-                        <span className="mt-2 text-[10px] font-bold uppercase text-[var(--muted)] group-hover:text-[var(--gold)]">Add Photo</span>
+                        <span className="text-2xl text-[var(--muted)] group-hover:text-[var(--gold)]">
+                          +
+                        </span>
+                        <span className="mt-2 text-[10px] font-bold uppercase text-[var(--muted)] group-hover:text-[var(--gold)]">
+                          Add Photo
+                        </span>
                       </div>
                     )}
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
                   </label>
-                  {image && (
+                  {image ? (
                     <button
                       onClick={() => setImage(null)}
-                      className="h-8 px-3 rounded-full border border-[var(--line)] text-[10px] font-bold uppercase text-[var(--muted)] hover:text-[var(--cinnabar)] hover:border-[var(--cinnabar)] transition-all self-end"
+                      className="h-8 self-end rounded-full border border-[var(--line)] px-3 text-[10px] font-bold uppercase text-[var(--muted)] transition-all hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
                     >
                       Remove
                     </button>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
-              <div className="pt-6">
+              {error ? (
+                <div className="rounded-2xl border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
+                    {error}
+                  </p>
+                </div>
+              ) : null}
+
+              <div className={compact ? "pt-2" : "pt-6"}>
                 <button
                   onClick={handlePublish}
-                  disabled={!title || !note}
-                  className="w-full py-5 rounded-full bg-[var(--night)] text-white font-bold text-lg tracking-widest hover:bg-[var(--cinnabar)] disabled:opacity-30 disabled:hover:bg-[var(--night)] transition-all transform active:scale-95 shadow-2xl"
+                  disabled={!canPublish || submitting}
+                  className={`w-full rounded-full bg-[var(--night)] font-bold tracking-widest text-white shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
+                    compact ? "py-4 text-base" : "py-5 text-lg"
+                  } hover:bg-[var(--cinnabar)]`}
                 >
-                  STAMP & DISPATCH
+                  {submitting ? "DISPATCHING..." : "STAMP & DISPATCH"}
                 </button>
-                <p className="text-center mt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Your signal will be added to the live intelligence feed
+                <p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  Publish as illustrated note, text-only note, or photo-only signal
                 </p>
               </div>
             </div>

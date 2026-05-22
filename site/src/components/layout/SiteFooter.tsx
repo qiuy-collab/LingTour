@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { siteNavigation } from "@/data/navigation";
 import { Container } from "@/components/ui/Container";
 import { useLocale } from "@/lib/locale-context";
 
 export function SiteFooter() {
   const { t } = useLocale();
+  const pathname = usePathname();
+
+  // The admin area renders its own chrome — don't show the marketing footer.
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <footer className="border-t border-black/5 bg-[var(--river-deep)] bg-grain text-white overflow-hidden relative">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { StoreProduct } from "@/data/store";
+import { addToCart } from "@/lib/cart";
 
 type ProductActionsProps = {
   product: StoreProduct;
@@ -14,24 +15,18 @@ export function ProductActions({ product, variant = "dark" }: ProductActionsProp
   const [added, setAdded] = useState(false);
 
   function persistCart(redirect: boolean) {
-    const cartItem = {
+    addToCart({
+      productId: product.id,
       slug: product.slug,
       name: product.name,
       price: product.price,
       currency: product.currency,
       image: product.image,
-      quantity: 1,
-    };
-
-    const existing = window.localStorage.getItem("lingtour-cart");
-    const cart = existing ? JSON.parse(existing) : [];
-    const updated = [...cart, cartItem];
-
-    window.localStorage.setItem("lingtour-cart", JSON.stringify(updated));
+    });
     setAdded(true);
 
     if (redirect) {
-      router.push(`/checkout?product=${product.slug}`);
+      router.push("/checkout");
     }
   }
 

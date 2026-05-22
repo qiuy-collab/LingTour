@@ -8,8 +8,8 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { getLocale, subscribeToLocale, type Locale } from "@/lib/locale";
-import { translate, dictionaries } from "@/translations";
+import { setLocale as setLocaleUtil, subscribeToLocale, type Locale } from "@/lib/locale";
+import { translate } from "@/translations";
 
 interface LocaleContextValue {
   locale: Locale;
@@ -19,21 +19,40 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(() => getLocale());
+interface LocaleProviderProps {
+  children: ReactNode;
+  /** Server-detected locale from cookie. Avoids flash of wrong language. */
+  initialLocale?: Locale;
+}
 
-  // Subscribe to external changes
+export function LocaleProvider({ children, initialLocale = "en" }: LocaleProviderProps) {
+  // Start with server-provided locale to avoid hydration mismatch flash.
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+
+  // After mount: sync from localStorage if user has a stored preference
+  useEffect(() => {
+    const stored = window.localStorage.getItem("lingtour-locale");
+    // Only override if localStorage has an explicit value
+    if (stored === "zh" || stored === "en") {
+      if (stored !== locale) {
+        setLocaleState(stored);
+      }
+      document.documentElement.setAttribute("lang", stored === "zh" ? "zh-CN" : "en");
+    } else {
+      // No stored preference — keep initialLocale, sync lang attribute
+      document.documentElement.setAttribute("lang", locale === "zh" ? "zh-CN" : "en");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subscribe to external changes (other tabs / programmatic setLocale)
   useEffect(() => {
     return subscribeToLocale((l) => setLocaleState(l));
   }, []);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("lingtour-locale", l);
-      document.documentElement.setAttribute("lang", l === "zh" ? "zh-CN" : "en");
-      window.dispatchEvent(new Event("lingtour-locale"));
-    }
+    setLocaleUtil(l);
   }, []);
 
   const t = useCallback(

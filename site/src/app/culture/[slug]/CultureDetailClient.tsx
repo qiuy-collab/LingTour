@@ -2,24 +2,19 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { Reveal } from "@/components/ui/Reveal";
-import { GalleryStack } from "@/components/culture/GalleryStack";
-import { ArticleSplitScreen } from "@/components/culture/ArticleSplitScreen";
-import { BreathingPoint } from "@/components/culture/BreathingPoint";
-import { FoodCollage } from "@/components/culture/FoodCollage";
-import { SectionProgress } from "@/components/culture/SectionProgress";
+import { CityArchivalBook } from "@/components/culture/CityArchivalBook";
 import { RelatedCitiesHub } from "@/components/culture/RelatedCitiesHub";
 import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
-import type { CityCulture } from "@/data/culture";
+import type { CityCulture, CityCultureSection } from "@/data/culture";
 
 export function CultureDetailClient({ slug }: { slug: string }) {
   const { locale, setLocale } = useLocale();
-  const router = useRouter();
   const { previewData, previewLocale, previewEnabled } = usePreviewBridge<CityCulture>("city");
   const activeLocale = previewLocale ?? locale;
 
@@ -50,181 +45,165 @@ export function CultureDetailClient({ slug }: { slug: string }) {
     return <LoadingSpinner text="Loading preview..." />;
   }
 
-  if (loading && !activeCity) return <LoadingSpinner text="Loading city..." />;
-  if (error && !activeCity) return <ErrorState message={error} />;
+  if (loading && !activeCity) return <LoadingSpinner text="Opening the city file…" />;
+  if (error && !activeCity)
+    return (
+      <ErrorState
+        title="City file unavailable"
+        message="This city's archive can't be reached right now. Please try again shortly."
+      />
+    );
 
+  // The fetch finished successfully (no loading, no error) but returned no
+  // city for this slug → render the framework's not-found page so the URL
+  // returns a real 404 instead of silently bouncing somewhere else.
   if (!activeCity) {
-    router.push("/culture");
-    return null;
+    notFound();
   }
 
-  const foodImages = activeCity.foodImages;
-  const relatedCities = (cityCultures ?? []).filter((city) =>
-    activeCity.relatedCitySlugs.includes(city.slug),
+  const relatedCities = (cityCultures ?? []).filter((cityItem) =>
+    activeCity.relatedCitySlugs.includes(cityItem.slug),
   );
   const relatedRoutes = (storyRoutes ?? []).filter((route) =>
     activeCity.routeSlugs.includes(route.slug),
   );
   const showRouteFallback = relatedCities.length === 0 && relatedRoutes.length > 0;
+  const linkedRoute = relatedRoutes[0] ?? null;
 
-  const progressSections = [
-    { id: "section-hero", label: "Overview" },
-    { id: "section-intro", label: "Intro" },
-    ...activeCity.sections.map((section, index) => ({
-      id: `section-${index}`,
-      label: section.title,
-    })),
-    { id: "section-food", label: "Food" },
-    { id: "section-cities", label: "Cities" },
+  const coverChapter: CityCultureSection = {
+    title: activeCity.label || "Field Cover",
+    body: activeCity.summary,
+    image: activeCity.image,
+    images: activeCity.gallery,
+    stat: `City Atlas / Registry ${activeCity.adcode}`,
+    breathImage: activeCity.gallery?.[0],
+    breathQuote: activeCity.narrative,
+  };
+
+  const foodChapter: CityCultureSection | null = activeCity.foodImages.length > 0
+    ? {
+        title: activeCity.food || "Local Flavours",
+        body: activeCity.foodDescription,
+        image: activeCity.foodImages[0],
+        images: activeCity.foodImages,
+        stat: "Local Flavours",
+        breathImage: activeCity.foodImages[1] ?? activeCity.foodImages[0],
+      }
+    : null;
+
+  const bookSections: CityCultureSection[] = [
+    coverChapter,
+    ...activeCity.sections,
+    ...(foodChapter ? [foodChapter] : []),
   ];
 
-  const summaryParts = activeCity.summary.split("\n\n");
-  const hasSummaryTitle = summaryParts[0].startsWith("## ");
-  const displaySummaryTitle = hasSummaryTitle ? summaryParts[0].replace("## ", "") : null;
-  const displaySummaryBody = hasSummaryTitle ? summaryParts.slice(1).join("\n\n") : activeCity.summary;
-
   return (
-    <div className="bg-[var(--background)] bg-grain min-h-screen">
-      <SectionProgress sections={progressSections} />
-
-      <section id="section-hero" className="relative min-h-[85svh] overflow-hidden lg:min-h-screen">
-        <div className="site-container relative flex min-h-[85svh] flex-col items-center justify-center lg:min-h-screen">
-          <div className="grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-20">
-            <div className="z-10 lg:col-span-7">
-              <Reveal>
-                <div className="mb-8 flex items-center gap-4">
-                  <div className="h-px w-12 bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+    <div className="min-h-screen bg-[var(--background)] bg-grain">
+      <section
+        id="section-masthead"
+        className="relative bg-[var(--paper-deep)] bg-grain"
+      >
+        <div className="site-container py-10 lg:py-14">
+          <Reveal>
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-10 bg-[var(--cinnabar)]" />
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     City Atlas / {activeCity.label}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-6xl leading-[0.85] tracking-tight text-[var(--river-deep)] md:text-8xl lg:text-9xl">
+                <h1 className="mt-3 font-[family:var(--font-display)] text-5xl leading-[0.95] tracking-tight text-[var(--river-deep)] md:text-6xl lg:text-7xl">
                   {activeCity.name}
                 </h1>
-                <p className="mt-10 max-w-xl text-xl leading-relaxed text-[var(--muted)] handwritten">
-                  {activeCity.narrative}
-                </p>
-              </Reveal>
-            </div>
-
-            <div className="relative lg:col-span-5">
-              <Reveal delay={200}>
-                <div className="relative aspect-[3/4] rotate-2 overflow-hidden border-[12px] border-white bg-white scrapbook-shadow transition-transform duration-700 hover:rotate-0">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] hover:scale-110"
-                    style={{ backgroundImage: `url(${activeCity.image})` }}
-                  />
-                  <div className="absolute inset-0 bg-black/5" />
-                  <div className="absolute -top-4 left-1/2 z-20 h-10 w-32 -translate-x-1/2 -rotate-2 border border-black/5 bg-white/40 backdrop-blur-[2px]" />
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {activeCity.tags.slice(0, 3).map((tag) => (
+                    <span
+                      key={tag}
+                      className="border border-[var(--line)] bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-
-                <div className="absolute -bottom-10 -left-10 hidden -rotate-3 bg-white p-8 scrapbook-shadow md:block">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">Registry Info</p>
-                  <p className="mt-2 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">{activeCity.adcode}</p>
-                  <div className="mt-4 flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--cinnabar)]" />
-                    <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted)]">Live Signal Tracking</span>
-                  </div>
+                <div className="mt-6 flex flex-wrap gap-4">
+                  <Link
+                    href={`/community?compose=1&location=${encodeURIComponent(activeCity.name)}&channel=Culture%20Desk&title=${encodeURIComponent(activeCity.name)}&note=${encodeURIComponent(`City note from ${activeCity.name}: `)}`}
+                    className="btn-outline px-5 py-3 text-[11px]"
+                  >
+                    Post city note
+                  </Link>
                 </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-4">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[var(--muted)] [writing-mode:vertical-lr]">Scroll</span>
-          <div className="h-12 w-px bg-gradient-to-b from-[var(--muted)]/40 to-transparent" />
-        </div>
-      </section>
-
-      <section id="section-intro" className="py-20 lg:py-32">
-        <div className="site-container">
-          <div className="grid items-center gap-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
-            <Reveal>
-              <div className="relative">
-                <div className="absolute -left-8 -top-8 select-none font-[family:var(--font-display)] text-8xl text-[var(--gold)]/10">"</div>
-                <p className="mb-6 text-label text-[var(--cinnabar)]">Introduction</p>
-                {displaySummaryTitle && (
-                  <h3 className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-5xl">
-                    {displaySummaryTitle}
-                  </h3>
-                )}
-                <p className={`mt-8 ${displaySummaryTitle ? "text-lg leading-relaxed text-[var(--muted)]" : "font-[family:var(--font-display)] text-3xl leading-snug text-[var(--river-deep)] md:text-4xl"}`}>
-                  {displaySummaryBody}
-                </p>
               </div>
-            </Reveal>
-            <Reveal delay={150}>
-              <GalleryStack images={activeCity.gallery} />
-            </Reveal>
-          </div>
-        </div>
-      </section>
 
-      <div className="bg-grain">
-        {activeCity.sections.map((section, index) => {
-          const sectionId = `section-${index}`;
-          return (
-            <div key={section.title}>
-                <ArticleSplitScreen
-                title={section.title}
-                body={section.body}
-                image={section.image || activeCity.gallery[index % activeCity.gallery.length] || activeCity.image}
-                align={index % 2 === 0 ? "left" : "right"}
-                index={index}
-                stat={section.stat}
-                sectionId={sectionId}
-              />
-
-              {(section.breathImage || section.breathQuote) && (
-                <BreathingPoint
-                  image={section.breathImage || section.image || activeCity.image}
-                  quote={section.breathQuote}
-                  attribution={`${activeCity.name} / ${section.title}`}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <section id="section-food" className="bg-[var(--paper-deep)] bg-grain py-20 lg:py-32">
-        <div className="site-container">
-          <div className="grid items-center gap-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
-            <Reveal>
-              <div className="relative">
-                <p className="mb-6 text-label text-[var(--cinnabar)] handwritten">Local Flavours / {activeCity.name}</p>
-                <p className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] sm:text-5xl md:text-6xl">
-                  {activeCity.food}
-                </p>
-                <div className="mt-10 h-px w-20 bg-[var(--gold)]/40" />
-                <p className="mt-10 text-lg leading-relaxed text-[var(--muted)]">
-                  {activeCity.foodDescription}
-                </p>
+              <div className="grid gap-4 self-start lg:self-end">
+                <div className="-rotate-1 border border-[var(--line)] bg-white px-4 py-3 scrapbook-shadow justify-self-start lg:justify-self-end">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[var(--gold)]">Registry</p>
+                  <p className="font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
+                    {activeCity.adcode}
+                  </p>
+                </div>
+                {linkedRoute ? (
+                  <Link
+                    href={`/routes/${linkedRoute.slug}`}
+                    className="group border border-[var(--line)] bg-white/90 p-4 scrapbook-shadow transition-all hover:-rotate-1 hover:border-[var(--cinnabar)] lg:max-w-[22rem]"
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                      Linked Route
+                    </p>
+                    <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
+                      {linkedRoute.title}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <span className="bg-[var(--river-deep)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white">
+                        {linkedRoute.culture}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+                        {linkedRoute.duration}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-[var(--muted)] line-clamp-2">
+                      {linkedRoute.summary}
+                    </p>
+                    <p className="mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition group-hover:translate-x-1">
+                      <span>Open linked route</span>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </p>
+                  </Link>
+                ) : null}
               </div>
-            </Reveal>
-
-            <Reveal delay={150}>
-              <FoodCollage images={foodImages} />
-            </Reveal>
-          </div>
+            </div>
+          </Reveal>
         </div>
-      </section>
 
-      <section id="section-cities" className="border-t border-[var(--line)] bg-[var(--background)] bg-grain py-20 lg:py-32">
-        <div className="site-container">
+        <div id="section-chapters" className="pb-10 lg:pb-14">
+          <CityArchivalBook
+            cityName={activeCity.name}
+            sections={bookSections}
+            fallbackImage={activeCity.image}
+            showIntro={false}
+            immersive
+          />
+        </div>
+
+        <div
+          id="section-cities"
+          className="site-container border-t border-[var(--line)]/60 pt-10 lg:pt-14"
+        >
           <Reveal>
-            <p className="mb-6 text-label text-[var(--cinnabar)] handwritten">
-              {showRouteFallback ? "Connected Routes / Discovery" : "Connected Cities / Discovery"}
+            <p className="mb-4 text-label text-[var(--cinnabar)] handwritten">
+              {showRouteFallback ? "Continue the dispatch" : "Nearby in the same archive"}
             </p>
-            <h2 className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] md:text-6xl">
+            <h2 className="max-w-4xl font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] md:text-5xl">
               {showRouteFallback ? (
                 <>
-                  Routes that open from <span className="italic text-[var(--gold)]">{activeCity.name}</span>
+                  Step out of <span className="italic text-[var(--gold)]">{activeCity.name}</span> and into its linked route.
                 </>
               ) : (
                 <>
-                  Cities that light up around <span className="italic text-[var(--gold)]">{activeCity.name}</span>
+                  Places that continue the story around <span className="italic text-[var(--gold)]">{activeCity.name}</span>.
                 </>
               )}
             </h2>

@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUI } from "@/lib/ui-context";
-import { LocalUser, readStoredUser, signInWithGoogle } from "@/lib/auth-client";
+import {
+  LocalUser,
+  readStoredUser,
+  refreshCurrentUserProfile,
+} from "@/lib/auth-client";
+import { type CartItem, readCart, writeCart } from "@/lib/cart";
 
 type FavoriteItem = { id: string; type: string; title: string };
-type CartItem = { productSlug: string; name: string; quantity: number; price: number; image?: string };
-type RecentRoute = { slug: string; title: string };
-
 const bookingDrafts = [
   {
     city: "Foshan",
@@ -45,6 +47,17 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+function formatVisibility(value?: string) {
+  if (value === "private") return "Private vault";
+  if (value === "community") return "Community only";
+  return "Public profile";
+}
+
+function formatMemberSince(value?: string) {
+  if (!value) return "recently";
+  return value;
+}
+
 function logOut() {
   try {
     window.localStorage.removeItem("lingtour-user");
@@ -61,17 +74,13 @@ export function GlobalDrawer() {
   const [user, setUser] = useState<LocalUser | null>(null);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [recentRoutes, setRecentRoutes] = useState<RecentRoute[]>([]);
   const [stamps, setStamps] = useState(0);
-  const recentOrders: { slug: string; name: string; price: number; currency: string }[] = [];
+  const selectedCart = cart.filter((item) => item.selected !== false);
+  const selectedCartCount = selectedCart.reduce((sum, item) => sum + item.quantity, 0);
+  const selectedCartTotal = selectedCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  async function connectGoogleAccount() {
-    const existing = readStoredUser();
-    await signInWithGoogle({
-      email: existing?.email || "google@lingtour.local",
-      name: existing?.name || "Google Traveler",
-    });
-  }
+  // Don't render the marketing drawer inside the admin area.
+  const isAdminRoute = pathname?.startsWith("/admin") ?? false;
 
   // Load data from localStorage on mount and when drawer opens
   const loadData = () => {
@@ -80,26 +89,66 @@ export function GlobalDrawer() {
     setFavorites(readJSON<FavoriteItem[]>("lingtour-favorites", []).filter(
       (item) => item && typeof item.id === "string" && typeof item.title === "string",
     ));
-    setCart(readJSON<CartItem[]>("lingtour-cart", []));
-    setRecentRoutes(readJSON<RecentRoute[]>("lingtour-recent-routes", []).slice(0, 3));
+    setCart(readCart());
     setStamps(Number(window.localStorage.getItem("lingtour-community-stamps") || "0"));
   };
 
+  function updateCart(nextCart: CartItem[]) {
+    setCart(nextCart);
+    writeCart(nextCart);
+  }
+
+  function adjustQuantity(slug: string, delta: number) {
+    const nextCart = cart
+      .map((item) => item.slug === slug ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item)
+      .filter((item) => item.quantity > 0);
+    updateCart(nextCart);
+  }
+
+  function toggleSelection(slug: string) {
+    updateCart(
+      cart.map((item) => item.slug === slug ? { ...item, selected: item.selected === false } : item),
+    );
+  }
+
+  function toggleSelectAll() {
+    const shouldSelectAll = cart.some((item) => item.selected === false);
+    updateCart(cart.map((item) => ({ ...item, selected: shouldSelectAll })));
+  }
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
     window.addEventListener("lingtour-favorites", loadData);
     window.addEventListener("lingtour-auth", loadData);
+    window.addEventListener("lingtour-cart", loadData);
     return () => {
       window.removeEventListener("lingtour-favorites", loadData);
       window.removeEventListener("lingtour-auth", loadData);
+      window.removeEventListener("lingtour-cart", loadData);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isDrawerOpen || typeof window === "undefined") return;
+    if (!window.localStorage.getItem("lingtour-token")) return;
+
+    let cancelled = false;
+    refreshCurrentUserProfile()
+      .then((profile) => {
+        if (!cancelled) setUser(profile);
+      })
+      .catch(() => {
+        if (!cancelled) setUser(readStoredUser());
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDrawerOpen]);
 
   // Reload when drawer opens
   useEffect(() => {
     if (isDrawerOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadData();
       document.body.style.overflow = "hidden";
     } else {
@@ -114,6 +163,12 @@ export function GlobalDrawer() {
   useEffect(() => {
     closeDrawer();
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // All hooks above are unconditional. Only after them do we bail out for the
+  // admin area, so React keeps a stable hook order across route changes.
+  if (isAdminRoute) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
@@ -174,57 +229,134 @@ export function GlobalDrawer() {
               {/* User Profile Section */}
               {user ? (
                 <section className="relative">
-                  <div className="flex flex-col gap-10">
-                    <div className="flex items-center gap-8">
-                      <div className="relative">
-                        <div className="grid h-28 w-28 shrink-0 place-items-center rounded-2xl bg-white p-1.5 shadow-2xl rotate-2 group transition-transform hover:rotate-0 duration-500">
-                          <div className="h-full w-full rounded-xl overflow-hidden bg-[var(--river-deep)] flex items-center justify-center">
-                            {user.avatarUrl ? (
-                              <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <span className="font-[family:var(--font-display)] text-4xl text-white">{getInitials(user.name)}</span>
-                            )}
+                  <div className="flex flex-col gap-8">
+                    <div className="relative overflow-hidden border border-[var(--line)] bg-[rgba(247,244,236,0.92)] px-7 py-7 scrapbook-shadow rotate-[-0.8deg]">
+                      <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
+                      <div className="absolute right-5 top-5 border border-[var(--gold)]/30 bg-[var(--paper-deep)]/85 px-3 py-1 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                        Field File
+                      </div>
+
+                      <div className="relative z-10 flex items-start gap-6">
+                        <div className="relative mt-1">
+                          <div className="grid h-24 w-20 shrink-0 place-items-center border-[6px] border-white bg-[var(--paper)] shadow-[0_18px_32px_rgba(17,25,35,0.14)] rotate-[-3deg]">
+                            <div className="flex h-full w-full items-center justify-center bg-[var(--river-deep)] text-white">
+                              {user.avatarUrl ? (
+                                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="font-[family:var(--font-display)] text-4xl italic">{getInitials(user.name)}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="absolute -right-3 top-3 h-10 w-10 rotate-12 border border-[var(--gold)]/30 bg-[var(--gold)]/90 px-1 py-2 text-center text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
+                            ID
                           </div>
                         </div>
-                        {/* Light flare on avatar */}
-                        <div className="absolute -top-4 -left-4 w-12 h-12 bg-white blur-2xl opacity-60 pointer-events-none" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="font-[family:var(--font-display)] text-5xl leading-none text-[var(--river-deep)]">
-                          {user.name}
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <span className="h-px w-6 bg-[var(--gold)]" />
-                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-                            {user.country || "Explorer"} / Joined {user.memberSince || "2026"}
+
+                        <div className="min-w-0 flex-1 pt-1">
+                          <p className="text-[9px] font-bold uppercase tracking-[0.35em] text-[var(--gold)]">
+                            Active Registry
                           </p>
+                          <p className="mt-3 font-[family:var(--font-display)] text-5xl italic leading-none text-[var(--river-deep)]">
+                            {user.name}
+                          </p>
+                          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                            <span>{user.country || user.homeBase || "Explorer"}</span>
+                            <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
+                            <span>Joined {formatMemberSince(user.memberSince)}</span>
+                            {user.accountId ? (
+                              <>
+                                <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
+                                <span className="font-mono tracking-[0.18em]">ID {user.accountId}</span>
+                              </>
+                            ) : null}
+                          </div>
+                          <p className="mt-5 max-w-[28ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+                            {user.bio?.trim()
+                              ? user.bio
+                              : "Logged dispatches, saved routes, and collected objects stay pinned to this field record."}
+                          </p>
+                          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                            <div className="border border-[var(--line)] bg-white/60 px-4 py-3">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Base
+                              </p>
+                              <p className="mt-2 text-sm text-[var(--river-deep)]">
+                                {user.homeBase || user.country || "Unlisted"}
+                              </p>
+                            </div>
+                            <div className="border border-[var(--line)] bg-white/60 px-4 py-3">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Travel style
+                              </p>
+                              <p className="mt-2 text-sm text-[var(--river-deep)]">
+                                {user.travelStyle || "Open itinerary"}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Community Rank - Glass Card */}
                     <Link
                       href="/community"
                       onClick={closeDrawer}
-                      className="group relative overflow-hidden rounded-3xl bg-white/40 border border-white/60 p-8 shadow-2xl transition-all hover:bg-white/60"
+                      className="group relative block overflow-hidden border border-[var(--line)] bg-[var(--paper)] px-7 py-6 shadow-[0_24px_50px_rgba(17,25,35,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_28px_60px_rgba(17,25,35,0.14)]"
                     >
-                      {/* Dynamic light gradient on hover */}
-                      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent,rgba(255,255,255,0.4),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                      <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
+                      <div className="absolute right-6 top-6 rotate-[2deg] border border-[var(--gold)]/25 bg-[var(--drawer-badge)] px-3 py-2 text-center shadow-sm">
+                        <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--gold)]">Stamps</p>
+                        <p className="mt-1 text-lg font-[family:var(--font-display)] italic text-[var(--river-deep)]">{stamps}</p>
+                      </div>
 
-                      <div className="flex justify-between items-start relative z-10">
-                        <div className="space-y-6">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--river-deep)] text-white shadow-lg rotate-3 group-hover:rotate-0 transition-transform">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--river-deep)]/12 bg-[var(--river-deep)] text-white shadow-lg">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                           </div>
-                          <div>
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">Field Status</p>
-                            <p className="font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)] mt-1">{stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}</p>
+                          <div className="pt-1">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]">Field Status</p>
+                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
+                              {stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="bg-[var(--gold)]/10 text-[var(--gold)] px-4 py-2 rounded-full text-[10px] font-bold tracking-widest border border-[var(--gold)]/20">
-                            STAMPS: {stamps}
+                        <p className="mt-5 max-w-[30ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+                          Community marks, route notes, and recurring sightings accumulate here like stamps in a paper passport.
+                        </p>
+                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                          <div className="border border-[var(--line)] bg-white/55 px-4 py-3">
+                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                              Dispatches
+                            </p>
+                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
+                              {user.dispatchCount ?? 0}
+                            </p>
                           </div>
+                          <div className="border border-[var(--line)] bg-white/55 px-4 py-3">
+                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                              Photo notes
+                            </p>
+                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
+                              {user.photoDispatchCount ?? 0}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                          <span>{user.provider || "password"}</span>
+                          <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
+                          <span>{formatVisibility(user.profileVisibility)}</span>
+                          {user.latestDispatchTitle ? (
+                            <>
+                              <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
+                              <span className="max-w-[20ch] truncate normal-case tracking-[0.08em]">
+                                Latest: {user.latestDispatchTitle}
+                              </span>
+                            </>
+                          ) : null}
+                        </div>
+                        <div className="mt-6 flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                          <span className="h-px w-8 bg-[var(--gold)]/60" />
+                          Open community record
                         </div>
                       </div>
                     </Link>
@@ -238,7 +370,7 @@ export function GlobalDrawer() {
                         }}
                         className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)] hover:text-[var(--cinnabar)] transition-colors"
                       >
-                        [ Terminate Session ]
+                        [ Close Field Session ]
                       </button>
                       <div className="flex gap-4">
                         <div className="w-1 h-1 rounded-full bg-[var(--gold)]" />
@@ -317,34 +449,89 @@ export function GlobalDrawer() {
                   <div className="space-y-8">
                     <div className="flex items-end justify-between">
                       <h4 className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)]">Objects</h4>
-                      <span className="text-[9px] font-bold text-[var(--gold)] tracking-[0.2em] border-b border-[var(--gold)]/30 pb-1">{cart.length} ACQUIRED</span>
+                      <span className="text-[9px] font-bold text-[var(--gold)] tracking-[0.2em] border-b border-[var(--gold)]/30 pb-1">{selectedCartCount} SELECTED</span>
                     </div>
                     {cart.length > 0 ? (
                       <div className="space-y-10">
+                        <div className="flex items-center justify-between rounded-2xl border border-white/50 bg-white/30 px-4 py-3">
+                          <label className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+                            <input
+                              type="checkbox"
+                              checked={cart.every((item) => item.selected !== false)}
+                              onChange={toggleSelectAll}
+                              className="h-4 w-4 accent-[var(--cinnabar)]"
+                            />
+                            Select all for dispatch
+                          </label>
+                          <span className="text-[11px] font-bold text-[var(--river-deep)]">${selectedCartTotal.toFixed(0)}</span>
+                        </div>
                         <div className="grid gap-6">
                           {cart.map((item) => (
-                            <div key={item.productSlug} className="flex items-center gap-6 group">
-                              <div className="h-20 w-20 shrink-0 rounded-2xl bg-white p-2 shadow-xl -rotate-2 group-hover:rotate-0 transition-transform">
+                            <div
+                              key={item.slug}
+                              className={`flex items-start gap-3 rounded-[1.75rem] border px-3.5 py-4 transition-all ${
+                                item.selected === false
+                                  ? "border-transparent bg-white/10 opacity-60"
+                                  : "border-white/45 bg-white/25"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={item.selected !== false}
+                                onChange={() => toggleSelection(item.slug)}
+                                className="h-4 w-4 shrink-0 accent-[var(--cinnabar)]"
+                                aria-label={`Select ${item.name}`}
+                              />
+                              <div className="h-16 w-16 shrink-0 rounded-2xl bg-white p-2 shadow-xl -rotate-2 transition-transform">
                                 {item.image && <img src={item.image} alt="" className="h-full w-full object-cover rounded-lg" />}
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-lg font-bold text-[var(--river-deep)]">{item.name}</p>
-                                <p className="mt-1 text-[9px] font-bold text-[var(--gold)] uppercase tracking-widest">UNIT_QTY: {item.quantity}</p>
+                              <div className="min-w-0 flex-1 pr-2">
+                                <p className="truncate text-base font-bold leading-tight text-[var(--river-deep)] sm:text-lg">{item.name}</p>
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
+                                  <span className="text-[9px] font-bold text-[var(--gold)] uppercase tracking-widest">UNIT_QTY</span>
+                                  <div className="flex items-center overflow-hidden rounded-full border border-[var(--line)] bg-white/70">
+                                    <button
+                                      type="button"
+                                      onClick={() => adjustQuantity(item.slug, -1)}
+                                      className="grid h-8 w-8 place-items-center text-base text-[var(--river-deep)] transition-colors hover:bg-[var(--paper-deep)]"
+                                      aria-label={`Decrease quantity for ${item.name}`}
+                                    >
+                                      -
+                                    </button>
+                                    <span className="grid min-w-8 place-items-center px-2 text-[11px] font-bold text-[var(--river-deep)]">
+                                      {item.quantity}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => adjustQuantity(item.slug, 1)}
+                                      className="grid h-8 w-8 place-items-center text-base text-[var(--river-deep)] transition-colors hover:bg-[var(--paper-deep)]"
+                                      aria-label={`Increase quantity for ${item.name}`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                              <p className="font-[family:var(--font-display)] text-xl text-[var(--cinnabar)]">
+                              <p className="shrink-0 self-start pl-1 text-right font-[family:var(--font-display)] text-lg leading-none text-[var(--cinnabar)] sm:text-xl">
                                 ${(item.price * item.quantity).toFixed(0)}
                               </p>
                             </div>
                           ))}
                         </div>
-                        <Link
-                          href="/checkout"
-                          onClick={closeDrawer}
-                          className="group relative flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.3em] text-white shadow-2xl"
-                        >
-                          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                          <span>Finalize Collection</span>
-                        </Link>
+                        {selectedCart.length > 0 ? (
+                          <Link
+                            href="/checkout"
+                            onClick={closeDrawer}
+                            className="group relative flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.3em] text-white shadow-2xl"
+                          >
+                            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                            <span>Checkout Selected Objects</span>
+                          </Link>
+                        ) : (
+                          <div className="rounded-2xl border border-dashed border-[var(--gold)]/35 px-5 py-4 text-center text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+                            Select at least one object to continue
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-xs text-[var(--muted)] italic opacity-40">Field bag remains empty.</p>

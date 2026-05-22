@@ -1,0 +1,202 @@
+/* Remove the default Leaflet popup wrapper styling entirely */
+.leaflet-popup.lux-popup-wrapper {
+  /* No margin-bottom override — let Leaflet handle positioning */
+}
+
+.lux-popup-wrapper .leaflet-popup-content-wrapper {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow:
+    0 2px 8px rgba(17, 25, 35, 0.06),
+    0 12px 40px rgba(17, 25, 35, 0.14);
+  border: 1px solid rgba(23, 32, 42, 0.08);
+  padding: 0;
+  overflow: hidden;
+}
+
+.lux-popup-wrapper .leaflet-popup-content {
+  margin: 0;
+  width: 100% !important;
+  min-width: 300px;
+  max-width: 380px;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: #17202a;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Tip / pointer styling */
+.lux-popup-wrapper .leaflet-popup-tip {
+  background: #fff;
+  box-shadow: none;
+  border: 1px solid rgba(23, 32, 42, 0.08);
+  margin-top: -1px;
+}
+
+.lux-popup-wrapper .leaflet-popup-close-button {
+  top: 12px;
+  right: 14px;
+  font-size: 20px;
+  color: #66717d !important;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 300;
+  transition: color 0.2s;
+}
+
+.lux-popup-wrapper .leaflet-popup-close-button:hover {
+  color: #b64235 !important;
+  background: transparent;
+}
+
+/* ════════ INTERNAL POPUP CONTENT ════════ */
+
+.lux-popup {
+  padding: 22px 24px 20px;
+}
+
+.lux-popup-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.lux-popup-num {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 42px;
+  line-height: 1;
+  color: #b64235;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.lux-popup-time {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #66717d;
+  margin-bottom: 2px;
+}
+
+.lux-popup-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #14343d;
+  font-weight: 700;
+  margin: 0;
+}
+
+.lux-popup-details {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 14px;
+}
+
+.lux-popup-details .popup-li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #17202a;
+  margin-bottom: 6px;
+}
+
+.lux-popup-details .popup-li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b64235;
+}
+
+/* Flip button */
+.lux-popup-flip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  color: #b64235;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity 0.2s;
+}
+
+.lux-popup-flip-btn:hover {
+  opacity: 0.7;
+}
+
+.lux-popup-flip-back {
+  margin-top: 12px;
+}
+
+/* Story view */
+.lux-popup-story-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #66717d;
+  margin-bottom: 12px;
+}
+
+.lux-popup-back .popup-lead {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #17202a;
+  margin: 0 0 12px;
+}
+
+.lux-popup-back .popup-body {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(23, 32, 42, 0.7);
+  margin: 0 0 10px;
+}
+
+.lux-popup-clue {
+  margin: 14px 0 0;
+  padding: 10px 0 0 12px;
+  border-left: 2px solid rgba(182, 66, 53, 0.35);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(23, 32, 42, 0.5);
+  font-style: italic;
+}
+
+/* ════════ MAP CORE CONTAINER ════════ */
+.map-core-container {
+  width: 100%;
+  min-height: 65vh;
+  background: #e0dbd2;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.map-core-container .leaflet-control-attribution {
+  font-size: 9px;
+  opacity: 0.5;
+}
+
+.map-core-container .leaflet-control-zoom a {
+  color: #14343d;
+  border-color: rgba(23, 32, 42, 0.1);
+}
+
+.map-core-container .leaflet-control-zoom a:hover {
+  color: #b64235;
+}

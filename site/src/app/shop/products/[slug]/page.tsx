@@ -2,12 +2,11 @@ import { Suspense } from "react";
 import { fetchStoreProducts } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
-// Hardcoded fallbacks from seed data — guarantees build succeeds without API
-const FALLBACK_SLUGS = ["volcanic-soil-bowl"];
+const SEEDED_PRODUCT_SLUGS = ["volcanic-soil-bowl"];
 
 export async function generateStaticParams() {
   const locales: Locale[] = ["en", "zh"];
-  const slugSet = new Set(FALLBACK_SLUGS);
+  const slugSet = new Set(SEEDED_PRODUCT_SLUGS);
 
   for (const locale of locales) {
     try {
@@ -16,7 +15,7 @@ export async function generateStaticParams() {
         slugSet.add(product.slug);
       }
     } catch {
-      // API unavailable — fallback slugs cover the build
+      // Keep build coverage from seeded product slugs when the API is not reachable.
     }
   }
 

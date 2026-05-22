@@ -8,7 +8,6 @@ import { AccountNavLink } from "@/components/layout/AccountNavLink";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
-import { useUI } from "@/lib/ui-context";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
@@ -21,7 +20,12 @@ function isActivePath(pathname: string, href: string) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { toggleDrawer } = useUI();
+
+  // The admin area renders its own chrome — don't double up the public header.
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const leftNavigation = siteNavigation.filter((item) =>
     ["/", "/culture", "/routes", "/interpreting"].includes(item.href),
   );

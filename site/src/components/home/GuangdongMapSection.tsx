@@ -3,20 +3,34 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLocale } from "@/lib/locale-context";
-import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
+import {
+  getMapFeatures,
+  buildProjection,
+  featureToPath,
+  type CityFeature,
+} from "@/lib/map-projection";
+import type { EventData } from "@/lib/api-data";
 import type { Region } from "@/types/content";
-import { mockEvents } from "@/data/mock/events";
 import { Reveal } from "@/components/ui/Reveal";
 
 const initialFeatures = getMapFeatures();
 
 interface Props {
-  cities?: Pick<Region, "slug" | "name" | "adcode" | "label" | "summary" | "image" | "tags" | "gallery">[];
+  cities?: Pick<
+    Region,
+    | "slug"
+    | "name"
+    | "adcode"
+    | "label"
+    | "summary"
+    | "image"
+    | "tags"
+    | "gallery"
+  >[];
+  events?: EventData[];
 }
 
-export function GuangdongMapSection({ cities }: Props) {
-  const { locale } = useLocale();
+export function GuangdongMapSection({ cities, events = [] }: Props) {
   const router = useRouter();
   const showcase = useMemo(() => cities ?? [], [cities]);
   const defaultActiveCode = showcase[0]?.adcode ?? 440800;
@@ -28,14 +42,15 @@ export function GuangdongMapSection({ cities }: Props) {
   const [activeCode, setActiveCode] = useState<number>(defaultActiveCode);
   const [slideIndex, setSlideIndex] = useState(0);
 
-  const events = mockEvents[locale];
   const eventsByCity = useMemo(() => {
     const map = new Map<number, (typeof events)[number]>();
     events.forEach((event) => {
-      if (!map.has(event.adcode)) map.set(event.adcode, event);
+      const city = showcase.find((item) => item.slug === event.citySlug);
+      const cityCode = city?.adcode;
+      if (cityCode && !map.has(cityCode)) map.set(cityCode, event);
     });
     return map;
-  }, [events]);
+  }, [events, showcase]);
 
   const fallbackCity = {
     slug: "zhanjiang",
@@ -60,10 +75,16 @@ export function GuangdongMapSection({ cities }: Props) {
     router.push(`/culture/${city.slug}`);
   };
 
-  const resolvedActiveCode = focusCityByCode.has(activeCode) ? activeCode : defaultActiveCode;
-  const activeCity = focusCityByCode.get(resolvedActiveCode) ?? showcase[0] ?? fallbackCity;
+  const resolvedActiveCode = focusCityByCode.has(activeCode)
+    ? activeCode
+    : defaultActiveCode;
+  const activeCity =
+    focusCityByCode.get(resolvedActiveCode) ?? showcase[0] ?? fallbackCity;
   const activeEvent = eventsByCity.get(resolvedActiveCode) ?? null;
-  const activeGallery = activeCity.gallery && activeCity.gallery.length ? activeCity.gallery : [activeCity.image];
+  const activeGallery =
+    activeCity.gallery && activeCity.gallery.length
+      ? activeCity.gallery
+      : [activeCity.image];
   const activeImage = activeGallery[slideIndex % activeGallery.length] ?? "";
 
   useEffect(() => {
@@ -90,7 +111,9 @@ export function GuangdongMapSection({ cities }: Props) {
       paths: features.map((feature) => ({
         adcode: feature.properties.adcode,
         path: featureToPath(feature, projection.point),
-        point: feature.properties.centroid ? projection.point(feature.properties.centroid) : null,
+        point: feature.properties.centroid
+          ? projection.point(feature.properties.centroid)
+          : null,
       })),
     };
   }, [features]);
@@ -121,7 +144,10 @@ export function GuangdongMapSection({ cities }: Props) {
         <div className="relative min-h-[40rem] lg:min-h-[50rem]">
           <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-[min(82vw,17rem)] rotate-1 border-8 border-white bg-white/95 p-4 backdrop-blur-sm md:w-56 lg:w-52">
             <Reveal delay={400}>
-              <Link href={`/culture/${activeCity.slug}`} className="group block">
+              <Link
+                href={`/culture/${activeCity.slug}`}
+                className="group block"
+              >
                 <div className="relative mb-4 aspect-[4/3] overflow-hidden">
                   <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
@@ -149,7 +175,9 @@ export function GuangdongMapSection({ cities }: Props) {
                       <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
                         {activeEvent.title}
                       </p>
-                      <p className="text-[10px] text-[var(--muted)]">{activeEvent.date}</p>
+                      <p className="text-[10px] text-[var(--muted)]">
+                        {activeEvent.date}
+                      </p>
                     </div>
                   ) : (
                     <p className="handwritten line-clamp-4 text-sm leading-relaxed text-[var(--muted)]">
@@ -179,12 +207,32 @@ export function GuangdongMapSection({ cities }: Props) {
           <div className="pointer-events-none absolute inset-0 z-10">
             <div className="pointer-events-auto h-full w-full opacity-60">
               {mapData ? (
-                <svg viewBox={`0 0 ${mapData.width} ${mapData.height}`} className="h-full w-full" role="img">
-                  <rect width={mapData.width} height={mapData.height} fill="#f2f0ea" />
+                <svg
+                  viewBox={`0 0 ${mapData.width} ${mapData.height}`}
+                  className="h-full w-full"
+                  role="img"
+                >
+                  <rect
+                    width={mapData.width}
+                    height={mapData.height}
+                    fill="#f2f0ea"
+                  />
 
                   <g opacity="0.6">
-                    <path d="M120 528 C250 438 380 492 512 408 S760 346 908 246" fill="none" stroke="#444b54" strokeWidth="1" strokeDasharray="6 6" />
-                    <path d="M92 382 C244 330 302 244 420 236 S648 196 918 114" fill="none" stroke="#444b54" strokeWidth="1" strokeDasharray="6 6" />
+                    <path
+                      d="M120 528 C250 438 380 492 512 408 S760 346 908 246"
+                      fill="none"
+                      stroke="#444b54"
+                      strokeWidth="1"
+                      strokeDasharray="6 6"
+                    />
+                    <path
+                      d="M92 382 C244 330 302 244 420 236 S648 196 918 114"
+                      fill="none"
+                      stroke="#444b54"
+                      strokeWidth="1"
+                      strokeDasharray="6 6"
+                    />
                   </g>
 
                   {mapData.paths.map((city) => {
@@ -238,18 +286,39 @@ export function GuangdongMapSection({ cities }: Props) {
                         onClick={() => openCity(city.adcode)}
                       >
                         {hasEvent ? (
-                          <circle cx={x} cy={y} r={isActive ? 15 : 10} fill="#b64235" opacity="0.1">
-                            <animate attributeName="r" values={isActive ? "12;18;12" : "8;12;8"} dur="3s" repeatCount="indefinite" />
+                          <circle
+                            cx={x}
+                            cy={y}
+                            r={isActive ? 15 : 10}
+                            fill="#b64235"
+                            opacity="0.1"
+                          >
+                            <animate
+                              attributeName="r"
+                              values={isActive ? "12;18;12" : "8;12;8"}
+                              dur="3s"
+                              repeatCount="indefinite"
+                            />
                           </circle>
                         ) : null}
-                        <circle cx={x} cy={y} r={isActive ? 3 : 2} fill={isActive ? "#b64235" : "var(--river-deep)"} />
+                        <circle
+                          cx={x}
+                          cy={y}
+                          r={isActive ? 3 : 2}
+                          fill={isActive ? "#b64235" : "var(--river-deep)"}
+                        />
                         <text
                           x={x + 12}
                           y={y + 4}
                           className={`pointer-events-none select-none font-[family:var(--font-display)] italic transition-all duration-500 ${
-                            isActive ? "opacity-100 translate-x-2" : "opacity-0 -translate-x-2"
+                            isActive
+                              ? "opacity-100 translate-x-2"
+                              : "opacity-0 -translate-x-2"
                           }`}
-                          style={{ fontSize: "16px", fill: "var(--river-deep)" }}
+                          style={{
+                            fontSize: "16px",
+                            fill: "var(--river-deep)",
+                          }}
                         >
                           {focusCity.name}
                         </text>

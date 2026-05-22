@@ -45,6 +45,22 @@ export const routes = {
 
     "routes.progress.stop": "Stop",
     "routes.progress.of": "of",
+
+    "routes.atlas.eyebrow": "Story Routes / Selection",
+    "routes.atlas.titlePrimary": "Follow a",
+    "routes.atlas.titleItalic": "story.",
+    "routes.atlas.lede": "These routes are built like narrative arcs: a first impression, a turning point, a table, a street, and a place that stays with you after the day ends.",
+    "routes.atlas.archiveBadge": "Archive · Story routes",
+    "routes.atlas.dispatchInfo": "Dispatch info",
+    "routes.atlas.waypoints": "Waypoints:",
+    "routes.atlas.empty.title": "Routes are being curated.",
+    "routes.atlas.empty.body":
+      "Story routes are written one by one with local guides. New routes appear here as soon as they're published.",
+
+    "routes.cta.localVoice.eyebrow": "Need a local voice?",
+    "routes.cta.localVoice.title":
+      "Walk the route with someone who knows where the quiet details are hiding.",
+    "routes.cta.localVoice.button": "Plan an interpreter",
   },
 
   zh: {
@@ -93,5 +109,20 @@ export const routes = {
 
     "routes.progress.stop": "站点",
     "routes.progress.of": "／",
+
+    "routes.atlas.eyebrow": "故事路线·精选",
+    "routes.atlas.titlePrimary": "跟随一个",
+    "routes.atlas.titleItalic": "故事。",
+    "routes.atlas.lede": "这些路线像一段叙事：一个第一印象，一个转折，一张餐桌，一条街，和一个在白天结束后仍留在你心里的地方。",
+    "routes.atlas.archiveBadge": "档案·故事路线",
+    "routes.atlas.dispatchInfo": "查看路线",
+    "routes.atlas.waypoints": "途经：",
+    "routes.atlas.empty.title": "路线正在编辑。",
+    "routes.atlas.empty.body":
+      "故事路线由我们和当地向导一条一条写出。新路线发布后会出现在这里。",
+
+    "routes.cta.localVoice.eyebrow": "需要一位本地解说？",
+    "routes.cta.localVoice.title": "和一位知道哪里藏着安静细节的人一起走完这条路线。",
+    "routes.cta.localVoice.button": "预约口译陪同",
   },
 };

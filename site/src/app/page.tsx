@@ -2,56 +2,23 @@
 
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
-import { fetchHomeData, fetchStoreProducts, fetchRoutes } from "@/lib/api-data";
+import {
+  fetchEvents,
+  fetchHomeData,
+  fetchStoreProducts,
+  fetchRoutes,
+} from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { CultureGallery } from "@/components/home/CultureGallery";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
 import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
 import { Reveal } from "@/components/ui/Reveal";
-import { SpotlightPanel } from "@/components/ui/SpotlightPanel";
+import { placeholderFor } from "@/lib/placeholders";
+import { SEED_IMAGES } from "@/lib/seed-images";
 
 function formatStorePrice(price: number, currency: string) {
   return `${currency} $${price.toFixed(2)}`;
 }
-
-const FALLBACK_PRODUCTS = [
-  {
-    slug: "camphorwood-tray",
-    image: "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=900&q=80",
-    name: "Hand-carved Camphorwood Tray",
-    tag: "Masterpiece",
-    collection: "Chaozhou Heritage",
-    price: 128,
-    currency: "SGD",
-  },
-  {
-    slug: "volcanic-soil-bowl",
-    image: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=900&q=82",
-    name: "Volcanic Soil Tea Bowl",
-    tag: "Handcrafted",
-    collection: "Zhanjiang Coast",
-    price: 32,
-    currency: "SGD",
-  },
-  {
-    slug: "lingnan-tea-set",
-    image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=900&q=82",
-    name: "Lingnan Clay Tea Set",
-    tag: "Artisan",
-    collection: "Lingnan Pottery",
-    price: 62,
-    currency: "SGD",
-  },
-  {
-    slug: "chaozhou-embroidery",
-    image: "https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?auto=format&fit=crop&w=900&q=82",
-    name: "Chaozhou Silk Embroidery",
-    tag: "Heritage",
-    collection: "Chaozhou Heritage",
-    price: 88,
-    currency: "SGD",
-  },
-];
 
 export default function Home() {
   const { t, locale } = useLocale();
@@ -66,23 +33,46 @@ export default function Home() {
     [locale],
   );
 
-  const { data: allRoutes } = useApiQuery(
-    () => fetchRoutes(locale),
-    [locale],
-  );
+  const { data: allRoutes } = useApiQuery(() => fetchRoutes(locale), [locale]);
 
-  if (homeLoading) return <LoadingSpinner text="Preparing the journey..." />;
-  if (!homeData) return <ErrorState message="Could not load home data" />;
+  const { data: events } = useApiQuery(() => fetchEvents(locale), [locale]);
 
-  const {
-    regionShowcase,
-    cultureHighlights,
-    testimonials,
-    trustMetrics,
-  } = homeData;
+  if (homeLoading) return <LoadingSpinner text="Opening the field journal…" />;
+  if (!homeData)
+    return (
+      <ErrorState
+        title="Home stories unavailable"
+        message="We can't reach the editorial archive right now. Please try again in a moment."
+      />
+    );
+
+  const { hero, regionShowcase, cultureHighlights, testimonials, trustMetrics } =
+    homeData;
 
   const storeProducts = products ?? [];
   const storyRoutes = allRoutes ?? [];
+  const liveEvents = events ?? [];
+
+  // Image priority: live CMS field → curated backend seed image → local Journal placeholder.
+  // This way admin uploads will replace seed images automatically once available.
+  const heroImage =
+    hero.image ?? SEED_IMAGES.homeHero ?? placeholderFor("portrait");
+  const ctaImage =
+    hero.ctaImage ?? SEED_IMAGES.homeCta ?? placeholderFor("hero");
+  const interpretingImage =
+    hero.interpretingImage ??
+    SEED_IMAGES.homeInterpreting ??
+    placeholderFor("hero");
+
+  // Hero badge: prefer explicit CMS badge, then derive from trust metrics, then a sane default.
+  const heroBadge = hero.badge ??
+    (trustMetrics[0]
+      ? { value: trustMetrics[0].value, label: trustMetrics[0].label }
+      : null);
+
+  // Interpreting accent label (bottom-right of the field-notes block).
+  const interpretingLabel =
+    hero.interpretingLabel ?? t("home.interpreting.label");
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
@@ -100,7 +90,8 @@ export default function Home() {
                 </div>
                 <h1 className="font-[family:var(--font-display)] text-7xl md:text-9xl lg:text-[10rem] leading-[0.82] tracking-[-0.05em] text-[var(--river-deep)]">
                   Guangdong, <br />
-                  <span className="italic text-[var(--gold)]">Deeply</span> <br />
+                  <span className="italic text-[var(--gold)]">Deeply</span>{" "}
+                  <br />
                   Arranged.
                 </h1>
                 <p className="mt-12 max-w-xl text-xl leading-relaxed text-[var(--muted)] handwritten">
@@ -130,30 +121,42 @@ export default function Home() {
                 <div className="relative aspect-[4/5] scrapbook-shadow rotate-3 border-[1rem] border-white overflow-hidden group">
                   <div
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-                    style={{
-                      backgroundImage:
-                        "url(https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1200&q=82)",
-                    }}
+                    style={{ backgroundImage: `url(${heroImage})` }}
                   />
+                  {/* Subtle ink wash, kept on both real and placeholder images */}
                   <div className="absolute inset-0 bg-black/10" />
                 </div>
 
-                {/* Overlapping Stamp/Metric Card */}
-                <div className="absolute -top-10 -right-6 w-32 h-32 rounded-full bg-[var(--gold)] flex flex-col items-center justify-center text-[var(--night)] shadow-2xl -rotate-12 border-4 border-white z-20">
-                  <span className="font-[family:var(--font-display)] text-3xl leading-none">120+</span>
-                  <span className="text-[8px] font-bold uppercase tracking-widest mt-1">Routes</span>
-                </div>
-
-                <div className="absolute -bottom-8 -left-8 bg-white p-6 scrapbook-shadow -rotate-6 hidden md:block z-20">
-                  <div className="flex gap-10">
-                    {trustMetrics.slice(0, 2).map((item: { label: string; value: string }) => (
-                      <div key={item.label}>
-                        <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">{item.value}</p>
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--muted)] mt-1">{item.label}</p>
-                      </div>
-                    ))}
+                {/* Optional badge: editorial highlight from CMS or trust metric */}
+                {heroBadge && heroBadge.value ? (
+                  <div className="absolute -top-10 -right-6 w-32 h-32 rounded-full bg-[var(--gold)] flex flex-col items-center justify-center text-[var(--night)] shadow-2xl -rotate-12 border-4 border-white z-20">
+                    <span className="font-[family:var(--font-display)] text-3xl leading-none">
+                      {heroBadge.value}
+                    </span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest mt-1 px-2 text-center">
+                      {heroBadge.label}
+                    </span>
                   </div>
-                </div>
+                ) : null}
+
+                {trustMetrics.length >= 2 ? (
+                  <div className="absolute -bottom-8 -left-8 bg-white p-6 scrapbook-shadow -rotate-6 hidden md:block z-20">
+                    <div className="flex gap-10">
+                      {trustMetrics
+                        .slice(0, 2)
+                        .map((item: { label: string; value: string }) => (
+                          <div key={item.label}>
+                            <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+                              {item.value}
+                            </p>
+                            <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--muted)] mt-1">
+                              {item.label}
+                            </p>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ) : null}
               </Reveal>
             </div>
           </div>
@@ -162,16 +165,20 @@ export default function Home() {
 
       <div className="relative z-10">
         {/* 2. MAP PILLAR */}
-        <GuangdongMapSection cities={regionShowcase} />
+        <GuangdongMapSection cities={regionShowcase} events={liveEvents} />
 
         {/* Divider */}
-        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
+        <div className="site-container">
+          <div className="h-px bg-[var(--line)]" />
+        </div>
 
         {/* 3. CALENDAR & ROUTE PILLAR */}
-        <GuangdongEventCalendar />
+        <GuangdongEventCalendar events={liveEvents} routes={storyRoutes} />
 
         {/* Divider */}
-        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
+        <div className="site-container">
+          <div className="h-px bg-[var(--line)]" />
+        </div>
 
         {/* 4. SHOP: THE COLLECTOR'S SHELF */}
         <section className="site-container py-24 lg:py-40">
@@ -193,54 +200,83 @@ export default function Home() {
               href="/shop"
               className="group flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)]"
             >
-              <span>Explore full collection</span>
+              <span>{t("home.shop.exploreCollection")}</span>
               <div className="w-10 h-px bg-[var(--river-deep)]/30 transition-all group-hover:w-16 group-hover:bg-[var(--cinnabar)]" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-y-16 md:gap-y-0">
-            {(storeProducts.length > 0 ? storeProducts : FALLBACK_PRODUCTS).slice(0, 3).map((product, idx) => (
-              <Reveal key={product.slug} delay={idx * 150} className={`
+          {storeProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-y-16 md:gap-y-0">
+              {storeProducts.slice(0, 3).map((product, idx) => (
+                <Reveal
+                  key={product.slug}
+                  delay={idx * 150}
+                  className={`
                 md:col-span-4
                 ${idx === 0 ? "md:pr-12" : ""}
                 ${idx === 1 ? "md:px-6 md:pt-24" : ""}
                 ${idx === 2 ? "md:pl-12 md:pt-12" : ""}
-              `}>
-                <Link href={`/shop/products/${product.slug}`} className="group block relative">
-                  <div className={`relative aspect-[3/4] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] ${
-                    idx % 2 === 0 ? "rotate-2" : "-rotate-2"
-                  }`}>
+              `}
+                >
+                  <Link
+                    href={`/shop/products/${product.slug}`}
+                    className="group block relative"
+                  >
                     <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${product.image})` }}
-                    />
-                    <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
+                      className={`relative aspect-[3/4] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] ${
+                        idx % 2 === 0 ? "rotate-2" : "-rotate-2"
+                      }`}
+                    >
+                      <div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${product.image})` }}
+                      />
+                      <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
 
-                    {/* Price Tag Overlay */}
-                    <div className="absolute -bottom-4 -right-4 bg-[var(--gold)] px-4 py-2 text-white shadow-lg rotate-12 z-20">
-                      <p className="text-[10px] font-bold tracking-widest">{formatStorePrice(product.price, product.currency)}</p>
+                      {/* Price Tag Overlay */}
+                      <div className="absolute -bottom-4 -right-4 bg-[var(--gold)] px-4 py-2 text-white shadow-lg rotate-12 z-20">
+                        <p className="text-[10px] font-bold tracking-widest">
+                          {formatStorePrice(product.price, product.currency)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-10 space-y-3">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                      {product.tag ?? (product as any).collection ?? "Handpicked"}
-                    </p>
-                    <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
-                      {product.name}
-                    </h3>
-                    <p className="text-sm text-[var(--muted)] handwritten max-w-[20ch]">
-                      {typeof product.collection === 'string' ? product.collection : ((product as any).collection ?? "Local Archive")}
-                    </p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
+                    <div className="mt-10 space-y-3">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                        {product.tag ??
+                          product.collection ??
+                          t("home.shop.handpicked")}
+                      </p>
+                      <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
+                        {product.name}
+                      </h3>
+                      <p className="text-sm text-[var(--muted)] handwritten max-w-[20ch]">
+                        {product.collection ?? t("home.shop.localArchive")}
+                      </p>
+                    </div>
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+          ) : (
+            <div className="scrapbook-shadow max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                {t("shop.page.title")}
+              </p>
+              <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+                {t("home.shop.empty.title")}
+              </h3>
+              <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
+                {t("home.shop.empty.body")}
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Divider */}
-        <div className="site-container"><div className="h-px bg-[var(--line)]" /></div>
+        <div className="site-container">
+          <div className="h-px bg-[var(--line)]" />
+        </div>
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
         <section className="site-container py-24 lg:py-40">
@@ -257,17 +293,22 @@ export default function Home() {
                   {t("home.interpreting.title")}
                 </h2>
                 <div className="space-y-12">
-                  {testimonials.slice(0, 2).map((item: { name: string; quote: string }, index: number) => (
-                    <div key={item.name} className="relative pl-12">
-                      <div className="absolute left-0 top-0 font-[family:var(--font-display)] text-6xl text-[var(--gold)] opacity-20 italic">“</div>
-                      <p className="text-xl leading-relaxed text-[var(--muted)] handwritten italic mb-4">
-                        {item.quote}
-                      </p>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
-                        — {item.name}
-                      </p>
-                    </div>
-                  ))}
+                  {testimonials
+                    .slice(0, 2)
+                    .map((item: { name: string; quote: string }) => (
+                        <div key={item.name} className="relative pl-12">
+                          <div className="absolute left-0 top-0 font-[family:var(--font-display)] text-6xl text-[var(--gold)] opacity-20 italic">
+                            “
+                          </div>
+                          <p className="text-xl leading-relaxed text-[var(--muted)] handwritten italic mb-4">
+                            {item.quote}
+                          </p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
+                            — {item.name}
+                          </p>
+                        </div>
+                      ),
+                    )}
                 </div>
                 <div className="mt-16">
                   <Link
@@ -283,8 +324,9 @@ export default function Home() {
             <div className="lg:col-span-7 relative">
               <Reveal delay={300}>
                 <div className="relative aspect-[16/10] scrapbook-shadow rotate-1 border-8 border-white overflow-hidden group">
-                  <div className="absolute inset-0 bg-cover bg-center grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 scale-105"
-                    style={{ backgroundImage: "url(https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=84)" }}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 scale-105"
+                    style={{ backgroundImage: `url(${interpretingImage})` }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--river-deep)]/20 to-transparent" />
 
@@ -294,8 +336,12 @@ export default function Home() {
 
                 {/* Floating Meta Tag */}
                 <div className="absolute -bottom-10 right-10 bg-[var(--gold)] p-8 shadow-2xl -rotate-3 z-30">
-                  <p className="text-white text-xs font-bold uppercase tracking-widest leading-none">Bilingual Support</p>
-                  <p className="mt-3 font-[family:var(--font-display)] text-4xl text-white leading-none">Registry 01</p>
+                  <p className="text-white text-xs font-bold uppercase tracking-widest leading-none">
+                    {interpretingLabel}
+                  </p>
+                  <p className="mt-3 font-[family:var(--font-display)] text-2xl text-white leading-tight">
+                    {t("home.interpreting.registry")}
+                  </p>
                 </div>
               </Reveal>
             </div>
@@ -312,24 +358,35 @@ export default function Home() {
         {/* FINAL CTA: THE DEPARTURE LOG */}
         <section className="site-container pb-24 lg:pb-40">
           <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-8 py-24 text-white lg:px-24 lg:py-32 scrapbook-shadow">
-            <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1531844251246-9a1bfaae09fc?auto=format&fit=crop&w=1800&q=82')] bg-cover bg-center grayscale" />
+            <div
+              className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
+              style={{ backgroundImage: `url(${ctaImage})` }}
+            />
             <div className="relative z-10 max-w-4xl">
               <Reveal>
                 <div className="mb-10 opacity-60">
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
-                    Join the field
+                    {t("home.cta.eyebrow")}
                   </p>
                 </div>
                 <h2 className="font-[family:var(--font-display)] text-6xl md:text-8xl leading-[0.85] tracking-[-0.04em] mb-12">
-                  Let the route <br />
-                  <span className="italic text-[var(--gold)]">Speak for itself.</span>
+                  {t("home.cta.title.primary")} <br />
+                  <span className="italic text-[var(--gold)]">
+                    {t("home.cta.title.italic")}
+                  </span>
                 </h2>
                 <div className="flex flex-wrap gap-6 mt-16">
-                  <Link href="/routes" className="btn-gold inline-flex items-center justify-center px-12 py-5 text-xs">
-                    Start your log
+                  <Link
+                    href="/routes"
+                    className="btn-gold inline-flex items-center justify-center px-12 py-5 text-xs"
+                  >
+                    {t("home.cta.startLog")}
                   </Link>
-                  <Link href="/interpreting" className="btn-ghost-dark inline-flex items-center justify-center px-12 py-5 text-xs">
-                    Book coordination
+                  <Link
+                    href="/interpreting"
+                    className="btn-ghost-dark inline-flex items-center justify-center px-12 py-5 text-xs"
+                  >
+                    {t("home.cta.bookCoordination")}
                   </Link>
                 </div>
               </Reveal>
@@ -340,4 +397,3 @@ export default function Home() {
     </div>
   );
 }
-

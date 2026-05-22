@@ -1,7 +1,7 @@
 export const checkout = {
   en: {
     "checkout.page.title": "Checkout",
-    "checkout.page.subtitle": "Review your items and place your order.",
+    "checkout.page.subtitle": "Review your selected objects and confirm delivery details.",
 
     "checkout.summary.title": "Order summary",
     "checkout.summary.subtotal": "Subtotal",
@@ -10,36 +10,36 @@ export const checkout = {
     "checkout.summary.empty": "Your cart is empty.",
     "checkout.summary.continueShopping": "Continue shopping",
 
-    "checkout.form.title": "Shipping details",
+    "checkout.form.title": "Delivery details",
     "checkout.form.name": "Full name",
     "checkout.form.email": "Email",
     "checkout.form.phone": "Phone",
     "checkout.form.address": "Address",
     "checkout.form.city": "City",
     "checkout.form.country": "Country",
-    "checkout.form.placeOrder": "Place order (demo)",
-    "checkout.form.note": "This is a demo checkout. No payment will be processed and no real order will be placed.",
+    "checkout.form.placeOrder": "Create order",
+    "checkout.form.note": "Submitting checkout now creates a live pending order for operations follow-up.",
   },
 
   zh: {
     "checkout.page.title": "结算",
-    "checkout.page.subtitle": "确认商品并提交订单。",
+    "checkout.page.subtitle": "确认已选商品并填写真实配送信息。",
 
     "checkout.summary.title": "订单摘要",
     "checkout.summary.subtotal": "小计",
-    "checkout.summary.shipping": "运费",
+    "checkout.summary.shipping": "配送",
     "checkout.summary.total": "合计",
     "checkout.summary.empty": "购物车为空。",
     "checkout.summary.continueShopping": "继续购物",
 
-    "checkout.form.title": "收货信息",
+    "checkout.form.title": "配送信息",
     "checkout.form.name": "姓名",
     "checkout.form.email": "邮箱",
     "checkout.form.phone": "电话",
     "checkout.form.address": "地址",
     "checkout.form.city": "城市",
     "checkout.form.country": "国家",
-    "checkout.form.placeOrder": "提交订单（演示）",
-    "checkout.form.note": "这是一个演示结算页面，不会处理实际支付，也不会生成真实订单。",
+    "checkout.form.placeOrder": "创建订单",
+    "checkout.form.note": "提交后会创建真实待处理订单，后续由运营继续跟进支付与履约。",
   },
 };

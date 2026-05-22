@@ -115,7 +115,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                   {profile.bestFor ? (
                     <div className="mb-8 p-4 bg-[var(--paper-deep)]/40 border-l border-[var(--gold)]/30 italic">
                       <p className="text-[13px] leading-relaxed text-[var(--muted)] handwritten">
-                        "{profile.bestFor}"
+                        &ldquo;{profile.bestFor}&rdquo;
                       </p>
                     </div>
                   ) : null}

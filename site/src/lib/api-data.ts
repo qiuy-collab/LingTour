@@ -20,6 +20,7 @@ import type {
   Testimonial,
   TrustMetric,
   HomeEntryCard,
+  HomeHero,
 } from "@/types/content";
 import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
@@ -103,6 +104,7 @@ interface ApiStoreCollection {
 }
 
 interface ApiStoreProduct {
+  id: string;
   slug: string;
   price: number;
   currency: string;
@@ -120,6 +122,22 @@ interface ApiStoreProduct {
   story: string;
 }
 
+interface ApiEvent {
+  id: string;
+  slug: string;
+  title: LocalizedText;
+  summary: LocalizedText;
+  description?: LocalizedText;
+  city: string;
+  citySlug: string;
+  date: string;
+  endDate?: string | null;
+  tags: string[];
+  image: string | null;
+  status: string;
+  relatedRouteSlugs: string[];
+}
+
 interface PaginatedResponse<T> {
   data: T[];
   total: number;
@@ -128,9 +146,27 @@ interface PaginatedResponse<T> {
 type LocalizedText = string | { en?: string; zh?: string };
 
 interface ApiHomeConfig {
+  hero?: {
+    image?: string;
+    caption?: LocalizedText;
+    ctaImage?: string;
+    badge?: { value?: string; label?: LocalizedText };
+    interpretingLabel?: LocalizedText;
+    interpretingImage?: string;
+  };
   trustMetrics?: Array<{ value: string; label: LocalizedText }>;
-  entryCards?: Array<{ id: string; title: LocalizedText; body: LocalizedText; href: string }>;
-  cultureHighlights?: Array<{ slug: string; title: LocalizedText; body: LocalizedText; href?: string }>;
+  entryCards?: Array<{
+    id: string;
+    title: LocalizedText;
+    body: LocalizedText;
+    href: string;
+  }>;
+  cultureHighlights?: Array<{
+    slug: string;
+    title: LocalizedText;
+    body: LocalizedText;
+    href?: string;
+  }>;
   testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
   featuredRouteSlugs?: string[];
 }
@@ -166,7 +202,9 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
       meal: s.meal ?? undefined,
       hotel: s.hotel ?? undefined,
       transit: s.transit ?? undefined,
-      image: s.image ?? undefined,
+      // 注意：不再 fallback 到本地 seed 数据。后台没给图就让 UI 走空态。
+      image: s.image || undefined,
+      images: undefined,
     })),
   };
 }
@@ -192,7 +230,8 @@ function mapCity(apiCity: ApiCity): CityCulture {
         title: s.title,
         body: s.body,
         image: s.image,
-        stat: [s.statLabel, s.statValue].filter(Boolean).join(" / ") || undefined,
+        stat:
+          [s.statLabel, s.statValue].filter(Boolean).join(" / ") || undefined,
         breathImage: s.breathImage ?? undefined,
         breathQuote: s.breathQuote ?? undefined,
       })) ?? [],
@@ -201,6 +240,7 @@ function mapCity(apiCity: ApiCity): CityCulture {
 
 function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
   return {
+    id: apiProduct.id,
     slug: apiProduct.slug,
     name: apiProduct.product.name,
     collection: apiProduct.collection?.title ?? "",
@@ -224,10 +264,45 @@ function mapCollection(apiCol: ApiStoreCollection): StoreCollection {
   };
 }
 
-function pickLocalized(value: LocalizedText | undefined, locale: Locale): string {
+export type EventData = {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  city: string;
+  citySlug: string;
+  tags: string[];
+  summary: string;
+  description: string;
+  relatedRouteSlugs: string[];
+  image: string;
+};
+
+function mapEvent(apiEvent: ApiEvent, locale: Locale): EventData {
+  return {
+    id: apiEvent.id,
+    slug: apiEvent.slug,
+    title: pickLocalized(apiEvent.title, locale),
+    date: apiEvent.date,
+    city: apiEvent.city,
+    citySlug: apiEvent.citySlug,
+    tags: apiEvent.tags ?? [],
+    summary: pickLocalized(apiEvent.summary, locale),
+    description: pickLocalized(apiEvent.description, locale),
+    relatedRouteSlugs: apiEvent.relatedRouteSlugs ?? [],
+    image: apiEvent.image ?? "",
+  };
+}
+
+function pickLocalized(
+  value: LocalizedText | undefined,
+  locale: Locale,
+): string {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return locale === "zh" ? (value.zh ?? value.en ?? "") : (value.en ?? value.zh ?? "");
+  return locale === "zh"
+    ? (value.zh ?? value.en ?? "")
+    : (value.en ?? value.zh ?? "");
 }
 
 interface ApiInterpretingMode {
@@ -312,7 +387,10 @@ export async function fetchInterpreting(
 export async function createInterpretingDepositCheckout(
   payload: InterpretingBookingPayload,
 ): Promise<InterpretingDepositCheckout> {
-  return apiPost<InterpretingDepositCheckout>("/public/bookings/checkout", payload);
+  return apiPost<InterpretingDepositCheckout>(
+    "/public/bookings/checkout",
+    payload,
+  );
 }
 
 export async function confirmInterpretingDeposit(
@@ -381,9 +459,12 @@ export async function fetchCityBySlug(
 export async function fetchStoreCollections(
   locale: Locale,
 ): Promise<StoreCollection[]> {
-  const res = await apiGet<{ collections: ApiStoreCollection[] }>("/public/shop/collections", {
-    lang: locale,
-  });
+  const res = await apiGet<{ collections: ApiStoreCollection[] }>(
+    "/public/shop/collections",
+    {
+      lang: locale,
+    },
+  );
   return (res.collections ?? []).map(mapCollection);
 }
 
@@ -419,12 +500,31 @@ export async function fetchStoreProductBySlug(
   }
 }
 
+export async function fetchEvents(locale: Locale): Promise<EventData[]> {
+  const res = await apiGet<{ items: ApiEvent[] }>("/public/events", {
+    page: 1,
+    limit: 50,
+  });
+  return (res.items ?? []).map((item) => mapEvent(item, locale));
+}
+
+export async function fetchEventBySlug(
+  slug: string,
+  locale: Locale,
+): Promise<EventData | null> {
+  try {
+    const res = await apiGet<ApiEvent>(`/public/events/${slug}`);
+    return mapEvent(res, locale);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchRelatedProducts(
   product: StoreProduct,
   allProducts: StoreProduct[],
 ): Promise<StoreProduct[]> {
-  const getCollectionTitle = (p: StoreProduct) =>
-    typeof p.collection === 'string' ? p.collection : (p.collection as any)?.title;
+  const getCollectionTitle = (p: StoreProduct) => p.collection ?? "";
 
   const targetTitle = getCollectionTitle(product);
   return allProducts.filter(
@@ -433,6 +533,7 @@ export async function fetchRelatedProducts(
 }
 
 export interface HomeData {
+  hero: HomeHero;
   regionShowcase: Region[];
   featuredRoutes: FeaturedRoute[];
   cultureHighlights: CultureFeature[];
@@ -442,18 +543,23 @@ export interface HomeData {
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
-  const [routesResult, citiesResult, homeConfigResult] = await Promise.allSettled([
-    fetchRoutes(locale),
-    fetchCities(locale),
-    apiGet<ApiHomeConfig>("/public/home"),
-  ]);
+  const [routesResult, citiesResult, homeConfigResult] =
+    await Promise.allSettled([
+      fetchRoutes(locale),
+      fetchCities(locale),
+      apiGet<ApiHomeConfig>("/public/home"),
+    ]);
 
-  const routes = routesResult.status === 'fulfilled' ? routesResult.value : [];
-  const cities = citiesResult.status === 'fulfilled' ? citiesResult.value : [];
-  const homeConfig = homeConfigResult.status === 'fulfilled' ? homeConfigResult.value : {} as ApiHomeConfig;
+  const routes = routesResult.status === "fulfilled" ? routesResult.value : [];
+  const cities = citiesResult.status === "fulfilled" ? citiesResult.value : [];
+  const homeConfig =
+    homeConfigResult.status === "fulfilled"
+      ? homeConfigResult.value
+      : ({} as ApiHomeConfig);
 
   const featured =
-    routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ?? routes[0];
+    routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ??
+    routes[0];
 
   const regionShowcase: Region[] = cities.map((c) => ({
     slug: c.slug as RegionSlug,
@@ -465,29 +571,34 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
     tags: c.tags,
     food: c.food,
     routeSlugs: c.routeSlugs,
-    serviceLabel: locale === "zh" ? `预约${c.name}口译` : `Book ${c.name} Support`,
+    serviceLabel:
+      locale === "zh" ? `预约${c.name}口译` : `Book ${c.name} Support`,
     serviceHref: "/interpreting",
     image: c.image,
     gallery: c.gallery,
   }));
 
   const featuredRoutes: FeaturedRoute[] = featured
-    ? [{
-        slug: featured.slug,
-        title: featured.title,
-        theme: featured.culture,
-        duration: featured.duration,
-        audience: featured.audience,
-        description: featured.summary,
-      }]
+    ? [
+        {
+          slug: featured.slug,
+          title: featured.title,
+          theme: featured.culture,
+          duration: featured.duration,
+          audience: featured.audience,
+          description: featured.summary,
+        },
+      ]
     : [];
 
-  const cultureHighlightsFromApi = (homeConfig.cultureHighlights ?? []).map((item) => ({
-    slug: item.slug,
-    title: pickLocalized(item.title, locale),
-    body: pickLocalized(item.body, locale),
-    href: item.href ?? `/culture/${item.slug}`,
-  }));
+  const cultureHighlightsFromApi = (homeConfig.cultureHighlights ?? []).map(
+    (item) => ({
+      slug: item.slug,
+      title: pickLocalized(item.title, locale),
+      body: pickLocalized(item.body, locale),
+      href: item.href ?? `/culture/${item.slug}`,
+    }),
+  );
 
   const cultureHighlights: CultureFeature[] =
     cultureHighlightsFromApi.length > 0
@@ -499,7 +610,29 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
           href: `/culture/${city.slug}`,
         }));
 
+  // Map the editorial hero block. All fields fall through to undefined,
+  // letting the page render Journal placeholders cleanly.
+  const heroSrc = homeConfig.hero ?? {};
+  const hero: HomeHero = {
+    image: heroSrc.image || undefined,
+    caption: heroSrc.caption ? pickLocalized(heroSrc.caption, locale) : undefined,
+    ctaImage: heroSrc.ctaImage || undefined,
+    interpretingImage: heroSrc.interpretingImage || undefined,
+    interpretingLabel: heroSrc.interpretingLabel
+      ? pickLocalized(heroSrc.interpretingLabel, locale)
+      : undefined,
+    badge: heroSrc.badge
+      ? {
+          value: heroSrc.badge.value ?? "",
+          label: heroSrc.badge.label
+            ? pickLocalized(heroSrc.badge.label, locale)
+            : "",
+        }
+      : undefined,
+  };
+
   return {
+    hero,
     regionShowcase,
     featuredRoutes,
     cultureHighlights,
@@ -507,15 +640,23 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       quote: pickLocalized(item.quote, locale),
       name: pickLocalized(item.name, locale),
     })),
-    trustMetrics:
-      homeConfig.trustMetrics?.map((item) => ({
-        value: item.value,
-        label: pickLocalized(item.label, locale),
-      })) ?? [
-        { value: String(cities.length || 1), label: locale === "zh" ? "精选城市" : "Featured city" },
-        { value: String(routes.length || 1), label: locale === "zh" ? "故事路线" : "Story route" },
-        { value: "1", label: locale === "zh" ? "文化商品系列" : "Cultural collection" },
-      ],
+    trustMetrics: homeConfig.trustMetrics?.map((item) => ({
+      value: item.value,
+      label: pickLocalized(item.label, locale),
+    })) ?? [
+      {
+        value: String(cities.length || 1),
+        label: locale === "zh" ? "精选城市" : "Featured city",
+      },
+      {
+        value: String(routes.length || 1),
+        label: locale === "zh" ? "故事路线" : "Story route",
+      },
+      {
+        value: "1",
+        label: locale === "zh" ? "文化商品系列" : "Cultural collection",
+      },
+    ],
     homeEntryCards:
       homeConfig.entryCards?.map((item) => ({
         id: item.id,
@@ -529,3 +670,371 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
 // Re-export useApiQuery for convenience
 export { useApiQuery, type AsyncState } from "./use-api-query";
 
+// ───────────────── Community posts (route detail page) ─────────────────
+
+export type CommunityFeedPost = {
+  id: string;
+  title: string;
+  excerpt: string;
+  channel: string;
+  user: { name: string; handle?: string; avatar?: string };
+  image: string;
+  location: string;
+  route: string;
+  createdAt: string;
+  date: string;
+  readTime: string;
+  mood: string;
+  tags: string[];
+  likes: number;
+  comments: number;
+  saves: number;
+  prompt: string;
+  status: string;
+};
+
+export type RouteCommunityPost = Omit<
+  CommunityFeedPost,
+  "date" | "readTime" | "likes" | "comments" | "saves" | "prompt"
+>;
+
+interface ApiCommunityPost {
+  id: string;
+  channel: string;
+  status: string;
+  user: Record<string, unknown>;
+  title: { en: string; zh: string } | string;
+  excerpt: { en: string; zh: string } | string;
+  tags?: string[];
+  image: string | null;
+  location: string;
+  route: string;
+  mood: string;
+  likes?: number;
+  comments?: number;
+  saves?: number;
+  createdAt: string;
+}
+
+function pickLocaleString(
+  value: { en: string; zh: string } | string,
+  locale: Locale,
+): string {
+  if (typeof value === "string") return value;
+  return locale === "zh"
+    ? (value.zh ?? value.en ?? "")
+    : (value.en ?? value.zh ?? "");
+}
+
+function formatPostDate(createdAt: string, locale: Locale): string {
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function normalizeCommunityChannel(channel: string): string {
+  const normalized = channel.trim().toLowerCase();
+  if (normalized === "field-notes") return "Field Notes";
+  if (normalized === "food-map") return "Food Map";
+  if (normalized === "hidden-stop") return "Hidden Stop";
+  if (normalized === "culture-desk") return "Culture Desk";
+  return channel;
+}
+
+function mapCommunityPost(
+  api: ApiCommunityPost,
+  locale: Locale,
+): CommunityFeedPost {
+  const userObj = (api.user ?? {}) as Record<string, unknown>;
+  const location = api.location ?? "";
+  const route = api.route ?? "";
+  const tags = api.tags ?? [];
+  return {
+    id: api.id,
+    title: pickLocaleString(api.title, locale),
+    excerpt: pickLocaleString(api.excerpt, locale),
+    channel: normalizeCommunityChannel(api.channel),
+    user: {
+      name: typeof userObj.name === "string" ? userObj.name : "Field Agent",
+      handle: typeof userObj.handle === "string" ? userObj.handle : undefined,
+      avatar: typeof userObj.avatar === "string" ? userObj.avatar : undefined,
+    },
+    image: api.image ?? "",
+    location,
+    route,
+    createdAt: api.createdAt,
+    date: formatPostDate(api.createdAt, locale),
+    readTime: "1 min",
+    mood: api.mood ?? "",
+    tags,
+    likes: api.likes ?? 0,
+    comments: api.comments ?? 0,
+    saves: api.saves ?? 0,
+    prompt:
+      tags.length > 0
+        ? `Track: ${tags.join(" · ")}`
+        : `Filed from ${location || route || "Guangdong"}.`,
+    status: api.status,
+  };
+}
+
+/**
+ * Fetch community posts attached to a route. The backend `route` field is
+ * a free-form string (the route title). We fetch a generous page and filter
+ * client-side because the API has no native route-slug filter.
+ */
+export async function fetchRouteCommunityPosts(
+  options: {
+    routeSlug: string;
+    routeTitle?: string;
+    stopName?: string;
+    locale: Locale;
+  },
+): Promise<RouteCommunityPost[]> {
+  const { routeSlug, routeTitle, stopName, locale } = options;
+  try {
+    const res = await apiGet<{ items: ApiCommunityPost[] }>(
+      "/public/community/posts",
+      {
+        route: routeSlug,
+        location: stopName,
+        limit: 50,
+      },
+    );
+    const routeTargets = [routeSlug, routeTitle].filter(Boolean).map((value) =>
+      String(value).toLowerCase().trim(),
+    );
+    const stopTarget = stopName?.toLowerCase().trim();
+
+    return (res.items ?? [])
+      .map((p) => mapCommunityPost(p, locale))
+      .filter((p) => {
+        const route = p.route.toLowerCase().trim();
+        const location = p.location.toLowerCase().trim();
+        const routeMatches = routeTargets.length === 0 || routeTargets.includes(route);
+        const stopMatches = !stopTarget || location === stopTarget;
+        return routeMatches && stopMatches;
+      })
+      .map(({ date: _date, readTime: _readTime, likes: _likes, comments: _comments, saves: _saves, prompt: _prompt, ...post }) => {
+        void _date;
+        void _readTime;
+        void _likes;
+        void _comments;
+        void _saves;
+        void _prompt;
+        return post;
+      })
+      .slice(0, 12);
+  } catch {
+    return [];
+  }
+}
+
+export type CreateCommunityPostInput = {
+  body: string;
+  routeSlug: string;
+  routeTitle: string;
+  routeCity: string;
+  stop?: { index: number; time: string; name: string } | null;
+  user: {
+    id?: string;
+    email?: string;
+    name: string;
+    handle?: string;
+    avatar?: string;
+  };
+};
+
+/**
+ * Create a community post tied to the current route. Backend forces
+ * `status: pending_review` for public posts, so the new post will not
+ * immediately show up in fetchRouteCommunityPosts — the caller should
+ * insert the response optimistically into its local state.
+ */
+export async function createCommunityPost(
+  input: CreateCommunityPostInput,
+): Promise<RouteCommunityPost> {
+  // Trim and split the body into a short title (first sentence/line, max 80)
+  // and an excerpt (the rest, capped at 280). Both fields are required by the API.
+  const trimmed = input.body.trim();
+  const firstLineEnd = trimmed.search(/[\n\.\!\?。！？]/);
+  const titleSrc =
+    firstLineEnd > 0 ? trimmed.slice(0, firstLineEnd).trim() : trimmed;
+  const title =
+    titleSrc.length > 80
+      ? `${titleSrc.slice(0, 77)}...`
+      : titleSrc || "Field Note";
+  const excerpt =
+    trimmed.length > 280 ? `${trimmed.slice(0, 277)}...` : trimmed;
+
+  const payload = {
+    channel: "Field Notes",
+    user: input.user as Record<string, unknown>,
+    userId: input.user.id,
+    userEmail: input.user.email,
+    title: { en: title, zh: title },
+    excerpt: { en: excerpt, zh: excerpt },
+    location: input.stop?.name ?? input.routeCity,
+    route: input.routeSlug,
+    mood: input.stop
+      ? `${input.stop.time} · Stop ${input.stop.index + 1}`
+      : "route field note",
+    tags: [
+      "field-note",
+      `route:${input.routeSlug}`,
+      input.stop ? `stop-index:${input.stop.index}` : null,
+      input.stop ? `stop:${input.stop.name}` : null,
+    ].filter((tag): tag is string => Boolean(tag)),
+  };
+
+  const created = await apiPost<ApiCommunityPost>(
+    "/public/community/posts",
+    payload,
+  );
+  const {
+    date: _date,
+    readTime: _readTime,
+    likes: _likes,
+    comments: _comments,
+    saves: _saves,
+    prompt: _prompt,
+    ...post
+  } =
+    mapCommunityPost(created, "en");
+  void _date;
+  void _readTime;
+  void _likes;
+  void _comments;
+  void _saves;
+  void _prompt;
+  return post;
+}
+
+export async function fetchCommunityFeed(
+  locale: Locale,
+  options?: { channel?: string; q?: string; limit?: number },
+): Promise<CommunityFeedPost[]> {
+  const res = await apiGet<{ items: ApiCommunityPost[] }>(
+    "/public/community/posts",
+    {
+      channel:
+        options?.channel && options.channel !== "All"
+          ? options.channel
+          : undefined,
+      q: options?.q?.trim() || undefined,
+      limit: options?.limit ?? 50,
+    },
+  );
+  return (res.items ?? []).map((item) => mapCommunityPost(item, locale));
+}
+
+export type CreateCommunityFeedInput = {
+  title: string;
+  note: string;
+  route: string;
+  location: string;
+  mood: string;
+  channel: string;
+  image?: string;
+  user: {
+    id?: string;
+    email?: string;
+    name: string;
+    handle?: string;
+    avatar?: string;
+  };
+};
+
+export async function createCommunityFeedPost(
+  input: CreateCommunityFeedInput,
+  locale: Locale,
+): Promise<CommunityFeedPost> {
+  const safeTitle =
+    input.title.trim() ||
+    input.note.trim().split(/[\n.!?]/)[0]?.trim() ||
+    `${input.channel} signal`;
+  const safeExcerpt =
+    input.note.trim() ||
+    (input.image ? "Shared as a visual signal from the field." : safeTitle);
+
+  const payload = {
+    channel: input.channel,
+    user: input.user as Record<string, unknown>,
+    userId: input.user.id,
+    userEmail: input.user.email,
+    title: { en: safeTitle, zh: safeTitle },
+    excerpt: { en: safeExcerpt, zh: safeExcerpt },
+    location: input.location,
+    route: input.route,
+    mood: input.mood,
+    tags: [input.channel, input.location, input.route].filter(Boolean),
+    image: input.image ?? null,
+  };
+
+  const created = await apiPost<ApiCommunityPost>(
+    "/public/community/posts",
+    payload,
+  );
+  return mapCommunityPost(created, locale);
+}
+
+// ───────────────── Field Briefs (community brief tasks) ─────────────────
+
+interface ApiCommunityBrief {
+  id: string;
+  slug: string;
+  title: { en: string; zh: string };
+  prompt: { en: string; zh: string };
+  channel: string;
+  location: string;
+  route: string;
+  mood: string;
+  sortOrder: number;
+  active: boolean;
+}
+
+export type FieldBrief = {
+  id: string;
+  slug: string;
+  title: string;
+  prompt: string;
+  channel: string;
+  location: string;
+  route: string;
+  mood: string;
+};
+
+function mapBrief(api: ApiCommunityBrief, locale: Locale): FieldBrief {
+  return {
+    id: api.id,
+    slug: api.slug,
+    title: pickLocaleString(api.title, locale),
+    prompt: pickLocaleString(api.prompt, locale),
+    channel: api.channel || "Field Notes",
+    location: api.location || "",
+    route: api.route || "",
+    mood: api.mood || "",
+  };
+}
+
+/**
+ * Fetch the editorial field briefs the community page surfaces as prompts.
+ * Backend returns them already filtered by `active = true` and sorted by
+ * `sortOrder`. If the request fails, callers get an empty array — the page
+ * falls through to a neutral empty state.
+ */
+export async function fetchCommunityBriefs(
+  locale: Locale,
+): Promise<FieldBrief[]> {
+  try {
+    const res = await apiGet<ApiCommunityBrief[]>(
+      "/public/community/briefs",
+    );
+    return (res ?? []).map((b) => mapBrief(b, locale));
+  } catch {
+    return [];
+  }
+}

@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f2f0ea; /* Neutral cool stone-paper — no yellow cast */
+  --foreground: #17202a;
+  --paper: #f7f5f0;       /* Neutral light paper */
+  --paper-deep: #f2f0ea;
+  --ink: #17202a;
+  --muted: #66717d;
+  --line: rgba(23, 32, 42, 0.13);
+  --river: #24535e;
+  --river-deep: #14343d;
+  --cinnabar: #b64235;
+  --cinnabar-deep: #842b23;
+  --jade: #7c9b86;
+  --gold: #b98a46;
+  --night: #111923;
+  --shadow-soft: 0 22px 70px rgba(17, 25, 35, 0.12);
+  --site-max-width: 82rem;
+
+  /* Parchment scale — archival book & journal textures */
+  --parchment: #f1eadf;
+  --parchment-light: #f6f0e6;
+  --parchment-deep: #eee6da;
+  --parchment-warm: #f3ebdf;
+  --parchment-page: #f2eadf;
+  --parchment-stack-1: #ded3c3;
+  --parchment-stack-2: #e8dfd1;
+  --parchment-tab: #e6dfd1;
+  --bookmark-tape: #efe3a6;
+  --drawer-badge: #e9dfc9;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background-color: var(--background);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100vh;
+}
+
+/* Ensure transition container matches background */
+main > div {
+  background-color: var(--background);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  border: 0;
+  font: inherit;
+}
+
+.site-container {
+  margin-inline: auto;
+  width: min(100%, var(--site-max-width));
+  padding-inline: 1rem;
+}
+
+.text-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 1024px) {
+  .site-container {
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

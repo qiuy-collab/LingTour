@@ -18,10 +18,12 @@ export function getLocale(): Locale {
   return stored === "zh" ? "zh" : "en";
 }
 
-/** Write locale to localStorage and notify subscribers */
+/** Write locale to localStorage + cookie and notify subscribers */
 export function setLocale(locale: Locale): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, locale);
+  // Also write a cookie so the server can read it during SSR
+  document.cookie = `lingtour-locale=${locale};path=/;max-age=31536000;SameSite=Lax`;
   document.documentElement.setAttribute("lang", locale === "zh" ? "zh-CN" : "en");
   window.dispatchEvent(new Event(EVENT_NAME));
   subscribers.forEach((cb) => cb(locale));

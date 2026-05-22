@@ -19,7 +19,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
     const normalizedQuery = query.trim().toLowerCase();
 
     return products.filter((product) => {
-      const productCollection = typeof product.collection === 'string' ? product.collection : (product.collection as any)?.title;
+      const productCollection = product.collection ?? "";
       const matchesQuery =
         normalizedQuery.length === 0 ||
         [product.name, productCollection, product.tag, product.story]

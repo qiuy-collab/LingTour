@@ -30,12 +30,6 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
     };
   }, [features]);
 
-  const collectAdcodes = (route: StoryRoute): number[] => {
-    return route.itinerary
-      .map(() => cityAdcode)
-      .filter((v, i, a) => a.indexOf(v) === i);
-  };
-
   if (routes.length === 0) {
     return (
       <p className="mt-8 text-sm text-[var(--muted)]">

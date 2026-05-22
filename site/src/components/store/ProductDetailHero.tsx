@@ -114,7 +114,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
               <div className="space-y-4 border-t border-dashed border-[var(--river-deep)]/20 pt-8">
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">Story Summary</p>
                 <p className="text-base leading-relaxed text-[var(--river-deep)]/80 italic">
-                  "{shortStory}"
+                  &ldquo;{shortStory}&rdquo;
                 </p>
               </div>
             </Reveal>
@@ -251,6 +251,21 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
 
                 <div className="pt-4">
                   <ProductActions product={product} variant="editorial" />
+                </div>
+
+                <div className="grid gap-3 border-t border-dashed border-[var(--river-deep)]/18 pt-5">
+                  <Link
+                    href="/routes"
+                    className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline"
+                  >
+                    Trace the route behind this object
+                  </Link>
+                  <Link
+                    href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} belongs in the field archive because `)}`}
+                    className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline"
+                  >
+                    Send this object to the community desk
+                  </Link>
                 </div>
 
                 <div className="flex items-center gap-4 pt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]/30 italic">

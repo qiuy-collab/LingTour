@@ -20,9 +20,7 @@ export default function ProductsPage() {
   const products = storeProducts ?? [];
   const collections = Array.from(
     new Set(
-      products.map((product) =>
-        typeof product.collection === "string" ? product.collection : (product.collection as any)?.title,
-      ).filter(Boolean),
+      products.map((product) => product.collection ?? "").filter(Boolean),
     ),
   );
   const tags = Array.from(new Set(products.map((product) => product.tag)));

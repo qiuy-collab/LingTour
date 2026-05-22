@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
@@ -41,16 +42,18 @@ export function ProductDetailClient({ slug }: Props) {
 
   if (previewEnabled && !activeProduct) return <LoadingSpinner text="Loading preview..." />;
   if (loading && !activeProduct) return <LoadingSpinner text="Preparing the object..." />;
-  if (error && !activeProduct) return <ErrorState message={error} />;
-
-  if (!activeProduct) {
+  if (error && !activeProduct)
     return (
-      <div className="site-container flex min-h-[50vh] items-center justify-center">
-        <div className="text-center">
-          <p className="text-sm font-medium text-[var(--cinnabar)]">Not found</p>
-        </div>
-      </div>
+      <ErrorState
+        title="Object file unavailable"
+        message="This object's record can't be reached right now. Please try again shortly."
+      />
     );
+
+  // Fetch finished cleanly with no product → render the framework's
+  // not-found page so the URL returns a real 404.
+  if (!activeProduct) {
+    notFound();
   }
 
   const relatedProducts = (allProducts ?? [])

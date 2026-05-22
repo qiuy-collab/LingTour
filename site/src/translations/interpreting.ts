@@ -1,4 +1,4 @@
-﻿const copy = {
+const copy = {
   "interpreting.page.title": "Interpreting",
   "interpreting.page.subtitle": "Language support for markets, meals, meetings, and travel days.",
   "interpreting.hero.title": "Let the day speak clearly.",
@@ -110,9 +110,51 @@
   "interpreting.cta.subtitle": "Travel with confidence, context, and a local voice beside you.",
   "interpreting.cta.button": "Plan interpreting",
   "interpreting.cta.alt": "Not sure yet? Start with the story routes first.",
+
+  // Decorative atlas labels (used on the service-types card)
+  "interpreting.atlas.baseRate": "Base rate",
+  "interpreting.atlas.perDispatch": "/ Dispatch",
+  "interpreting.atlas.fieldCapabilities": "Field capabilities",
+  "interpreting.atlas.requestDispatch": "Request dispatch",
+  "interpreting.atlas.serviceScenes": "Service scenes",
+  "interpreting.atlas.chooseShape": "Choose the shape of your day.",
+
+  // Pricing matrix (was in two locales hardcoded inside the component)
+  "interpreting.pricing.city": "City",
+  "interpreting.pricing.route": "Route",
+  "interpreting.pricing.group": "Group",
+  "interpreting.pricing.halfDay": "Half-day ref.",
+  "interpreting.pricing.fullDay": "Full-day ref.",
+  "interpreting.pricing.byGroup": "By group size",
+
+  // Profile levels (avoid in-page bilingual literals)
+  "interpreting.levels.junior": "Junior",
+  "interpreting.levels.mid": "Mid-level",
+  "interpreting.levels.senior": "Senior",
+};
+
+const copyZh = {
+  ...copy,
+  "interpreting.atlas.baseRate": "起价",
+  "interpreting.atlas.perDispatch": " / 每次派遣",
+  "interpreting.atlas.fieldCapabilities": "现场能力",
+  "interpreting.atlas.requestDispatch": "申请派遣",
+  "interpreting.atlas.serviceScenes": "服务类型",
+  "interpreting.atlas.chooseShape": "先选场景。",
+
+  "interpreting.pricing.city": "城市同行",
+  "interpreting.pricing.route": "路线讲解",
+  "interpreting.pricing.group": "团体商务",
+  "interpreting.pricing.halfDay": "半日参考",
+  "interpreting.pricing.fullDay": "一日参考",
+  "interpreting.pricing.byGroup": "按人数浮动",
+
+  "interpreting.levels.junior": "初级",
+  "interpreting.levels.mid": "中级",
+  "interpreting.levels.senior": "高级",
 };
 
 export const interpreting = {
   en: copy,
-  zh: copy,
+  zh: copyZh,
 };

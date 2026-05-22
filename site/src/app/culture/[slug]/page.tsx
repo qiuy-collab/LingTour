@@ -2,12 +2,11 @@ import { Suspense } from "react";
 import { fetchCities } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
-// Hardcoded fallbacks from seed data — guarantees build succeeds without API
-const FALLBACK_SLUGS = ["zhanjiang"];
+const SEEDED_CITY_SLUGS = ["zhanjiang"];
 
 export async function generateStaticParams() {
   const locales: Locale[] = ["en", "zh"];
-  const slugSet = new Set(FALLBACK_SLUGS);
+  const slugSet = new Set(SEEDED_CITY_SLUGS);
 
   for (const locale of locales) {
     try {
@@ -16,7 +15,7 @@ export async function generateStaticParams() {
         slugSet.add(city.slug);
       }
     } catch {
-      // API unavailable — fallback slugs cover the build
+      // Keep build coverage from seeded city slugs when the API is not reachable.
     }
   }
 

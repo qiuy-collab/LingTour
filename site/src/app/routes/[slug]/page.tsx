@@ -2,12 +2,11 @@ import { Suspense } from "react";
 import { fetchRoutes } from "@/lib/api-data";
 import type { Locale } from "@/lib/locale";
 
-// Hardcoded fallbacks from seed data — guarantees build succeeds without API
-const FALLBACK_SLUGS = ["southern-sea-table"];
+const SEEDED_ROUTE_SLUGS = ["southern-sea-table"];
 
 export async function generateStaticParams() {
   const locales: Locale[] = ["en", "zh"];
-  const slugSet = new Set(FALLBACK_SLUGS);
+  const slugSet = new Set(SEEDED_ROUTE_SLUGS);
 
   for (const locale of locales) {
     try {
@@ -16,7 +15,7 @@ export async function generateStaticParams() {
         slugSet.add(route.slug);
       }
     } catch {
-      // API unavailable — fallback slugs cover the build
+      // Keep build coverage from seeded route slugs when the API is not reachable.
     }
   }
 

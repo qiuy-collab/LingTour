@@ -1,11 +1,11 @@
 export const account = {
   en: {
     "account.page.title": "My Account",
-    "account.page.subtitle": "Manage your profile, bookings, and saved items.",
+    "account.page.subtitle": "Manage your profile, bookings, saved items, and order history.",
 
     "account.dashboard.title": "Account Overview",
     "account.dashboard.memberSince": "Member since",
-    "account.dashboard.noData": "Demo account — no data stored yet.",
+    "account.dashboard.noData": "Your account is active. Activity will appear here as you book, save, and order.",
 
     "account.tabs.profile": "Profile",
     "account.tabs.bookings": "Bookings",
@@ -17,22 +17,22 @@ export const account = {
     "account.profile.save": "Save changes",
 
     "account.bookings.empty": "No bookings yet.",
-    "account.bookings.emptyHint": "Book an interpreter or route to see it here.",
+    "account.bookings.emptyHint": "Interpreter support and route coordination requests will appear here.",
 
-    "account.favorites.empty": "No favorites yet.",
-    "account.favorites.emptyHint": "Save routes, culture pages, or products you like.",
+    "account.favorites.empty": "No saved items yet.",
+    "account.favorites.emptyHint": "Save routes, city pages, or objects you want to revisit.",
 
     "account.orders.empty": "No orders yet.",
-    "account.orders.emptyHint": "Shop items will appear here after checkout.",
+    "account.orders.emptyHint": "Orders will appear here after checkout is submitted.",
 
     "account.login.title": "Log in to LingTour",
-    "account.login.subtitle": "Access your profile, bookings, and favorites.",
+    "account.login.subtitle": "Access your profile, bookings, and saved items.",
     "account.login.email": "Email",
-    "account.login.emailPlaceholder": "your@email.com",
+    "account.login.emailPlaceholder": "you@example.com",
     "account.login.password": "Password",
     "account.login.passwordPlaceholder": "Enter your password",
     "account.login.button": "Log in",
-    "account.login.demo": "This is a demo login. Any email works.",
+    "account.login.demo": "Use a registered account or connect with Google to continue.",
     "account.login.signup": "Don't have an account?",
     "account.login.signupLink": "Sign up",
 
@@ -47,13 +47,13 @@ export const account = {
 
   zh: {
     "account.page.title": "我的账户",
-    "account.page.subtitle": "管理个人信息、预订与收藏。",
+    "account.page.subtitle": "管理个人资料、预订、收藏与订单记录。",
 
     "account.dashboard.title": "账户概览",
-    "account.dashboard.memberSince": "注册于",
-    "account.dashboard.noData": "演示账户——尚未存储数据。",
+    "account.dashboard.memberSince": "加入时间",
+    "account.dashboard.noData": "你的账户已激活，后续的预订、收藏和订单都会显示在这里。",
 
-    "account.tabs.profile": "个人信息",
+    "account.tabs.profile": "个人资料",
     "account.tabs.bookings": "预订记录",
     "account.tabs.favorites": "收藏",
     "account.tabs.orders": "订单",
@@ -62,23 +62,23 @@ export const account = {
     "account.profile.email": "邮箱",
     "account.profile.save": "保存修改",
 
-    "account.bookings.empty": "暂无预订。",
-    "account.bookings.emptyHint": "预约口译服务或路线后，这里将显示记录。",
+    "account.bookings.empty": "暂时还没有预订。",
+    "account.bookings.emptyHint": "口译支持和路线协调请求提交后，会显示在这里。",
 
-    "account.favorites.empty": "暂无收藏。",
-    "account.favorites.emptyHint": "收藏你喜欢的路线、文化页面或商品。",
+    "account.favorites.empty": "暂时还没有收藏。",
+    "account.favorites.emptyHint": "把想回看的路线、城市页或商品先保存下来。",
 
-    "account.orders.empty": "暂无订单。",
-    "account.orders.emptyHint": "在商城下单后，订单将显示在这里。",
+    "account.orders.empty": "暂时还没有订单。",
+    "account.orders.emptyHint": "提交结算后，订单会显示在这里。",
 
-    "account.login.title": "登录岭风译游",
-    "account.login.subtitle": "访问个人信息、预订与收藏。",
+    "account.login.title": "登录 LingTour",
+    "account.login.subtitle": "访问你的资料、预订记录和收藏内容。",
     "account.login.email": "邮箱",
-    "account.login.emailPlaceholder": "your@email.com",
+    "account.login.emailPlaceholder": "you@example.com",
     "account.login.password": "密码",
-    "account.login.passwordPlaceholder": "请输入密码",
+    "account.login.passwordPlaceholder": "输入密码",
     "account.login.button": "登录",
-    "account.login.demo": "这是演示登录，任意邮箱均可使用。",
+    "account.login.demo": "请使用已注册账户，或连接 Google 继续。",
     "account.login.signup": "还没有账户？",
     "account.login.signupLink": "注册",
 

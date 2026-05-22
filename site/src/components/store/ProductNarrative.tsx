@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type StoreProduct } from "@/data/store";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -12,6 +13,7 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
     typeof product.collection === "string"
       ? product.collection
       : "LingTour Goods";
+  const materialLine = product.materialNotes || "Material notes held in the field archive.";
 
   return (
     <section className="bg-[var(--paper-deep)] bg-grain py-24 lg:py-32 border-y border-[var(--river-deep)]/10">
@@ -24,22 +26,42 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
                   Cultural Connection
                 </p>
                 <h2 className="mt-4 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)] md:text-6xl">
-                  An object should still feel <span className="italic underline decoration-[var(--gold)]/30 underline-offset-8">attached</span> to its place.
+                  An object should still feel <span className="italic underline decoration-[var(--gold)]/30 underline-offset-8">attached</span> to the route it came from.
                 </h2>
               </div>
 
               <div className="space-y-6 text-lg leading-relaxed text-[var(--river-deep)]/70">
                 <p>
-                  At LingTour, the store is not a separate shelf from the
-                  route. <span className="font-bold text-[var(--river-deep)]">{product.name}</span> belongs to the same narrative world as{" "}
-                  {collectionLabel.toLowerCase()}. It carries the material
-                  logic and story rhythm of the places we guide people through.
+                  <span className="font-bold text-[var(--river-deep)]">{product.name}</span> is presented here as more than merchandise. It is a route object:
+                  something you could plausibly encounter after moving through shoreline markets, maker spaces, kitchens, and transport rhythms. The store stays believable only when every object still carries a place, a material logic, and a reason for being remembered.
                 </p>
                 <p className="border-l-2 border-[var(--gold)] pl-6 italic">
-                  The product content system is intentionally lean: collection,
-                  product, material notes, and story. That keeps the page
-                  focused, consistent, and easier to refine.
+                  Material line: {materialLine}
                 </p>
+                <p>
+                  This piece sits inside <span className="font-bold text-[var(--river-deep)]">{collectionLabel}</span>, which means it should read like part of a field archive: photographed, annotated, and linked back to the wider journey rather than floating as a generic e-commerce tile.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-2">
+                <Link
+                  href="/routes"
+                  className="btn-paper px-6 py-3 text-[11px]"
+                >
+                  Explore route atlas
+                </Link>
+                <Link
+                  href="/culture"
+                  className="btn-outline px-6 py-3 text-[11px]"
+                >
+                  Browse city archives
+                </Link>
+                <Link
+                  href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} feels worth recording because `)}`}
+                  className="btn-gold px-6 py-3 text-[11px]"
+                >
+                  Post object note
+                </Link>
               </div>
             </div>
           </Reveal>

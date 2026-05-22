@@ -52,6 +52,20 @@ export const home = {
     "home.trust.routes": "curated route",
     "home.trust.lines": "culture line",
     "home.trust.products": "product",
+
+    "home.interpreting.label": "Bilingual field support",
+    "home.interpreting.registry": "Interpreting · Registry",
+    "home.shop.exploreCollection": "Explore the full collection",
+    "home.shop.handpicked": "Handpicked",
+    "home.shop.localArchive": "Local archive",
+    "home.shop.empty.title": "The next object drop is being catalogued.",
+    "home.shop.empty.body":
+      "Products will appear here once the editorial team publishes them.",
+    "home.cta.eyebrow": "Continue the journey",
+    "home.cta.title.primary": "Let the route",
+    "home.cta.title.italic": "speak for itself.",
+    "home.cta.startLog": "Start your route",
+    "home.cta.bookCoordination": "Book a local interpreter",
   },
 
   zh: {
@@ -107,5 +121,18 @@ export const home = {
     "home.trust.routes": "条精选路线",
     "home.trust.lines": "条文化线路",
     "home.trust.products": "件商品",
+
+    "home.interpreting.label": "中英双语·现场陪同",
+    "home.interpreting.registry": "口译服务·档案",
+    "home.shop.exploreCollection": "查看全部文创",
+    "home.shop.handpicked": "精选",
+    "home.shop.localArchive": "本地档案",
+    "home.shop.empty.title": "下一批文创正在整理上架。",
+    "home.shop.empty.body": "编辑团队上架后，新品会在这里出现。",
+    "home.cta.eyebrow": "继续这段旅途",
+    "home.cta.title.primary": "让路线",
+    "home.cta.title.italic": "替你说话。",
+    "home.cta.startLog": "开始一条路线",
+    "home.cta.bookCoordination": "预约现场口译",
   },
 };

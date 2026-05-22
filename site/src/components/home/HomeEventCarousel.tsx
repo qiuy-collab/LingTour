@@ -3,15 +3,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
-import { mockEvents, type EventData } from "@/data/mock/events";
+import type { EventData } from "@/lib/api-data";
 import { Reveal } from "@/components/ui/Reveal";
 
-export function HomeEventCarousel() {
-  const { locale, t } = useLocale();
-  const events = mockEvents[locale];
+type Props = {
+  events?: EventData[];
+};
+
+export function HomeEventCarousel({ events = [] }: Props) {
+  const { locale } = useLocale();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    if (!events.length) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % events.length);
     }, 6000);
@@ -29,7 +33,9 @@ export function HomeEventCarousel() {
         <div
           key={event.id}
           className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            idx === currentIndex ? "opacity-60 scale-100" : "opacity-0 scale-110"
+            idx === currentIndex
+              ? "opacity-60 scale-100"
+              : "opacity-0 scale-110"
           }`}
           style={{
             backgroundImage: `url(${event.image})`,
@@ -89,7 +95,9 @@ export function HomeEventCarousel() {
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               className={`h-1 transition-all duration-500 ${
-                idx === currentIndex ? "w-12 bg-[var(--gold)]" : "w-6 bg-white/20 hover:bg-white/40"
+                idx === currentIndex
+                  ? "w-12 bg-[var(--gold)]"
+                  : "w-6 bg-white/20 hover:bg-white/40"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
