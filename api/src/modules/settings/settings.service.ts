@@ -50,4 +50,3 @@ export class SettingsService {
     return settings;
   }
 }
-

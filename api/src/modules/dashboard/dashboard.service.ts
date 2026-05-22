@@ -18,11 +18,11 @@ export class DashboardService {
       pendingOrders,
     ] = await Promise.all([
       this.countTable('users'),
-      this.countTable('cities', "published = true"),
-      this.countTable('story_routes', "published = true"),
-      this.countTable('store_products', "published = true"),
+      this.countTable('cities', 'published = true'),
+      this.countTable('story_routes', 'published = true'),
+      this.countTable('store_products', 'published = true'),
       this.countTable('interpreter_profiles'),
-      this.countTable("booking_submissions", "status IN ('new', 'pending')"),
+      this.countTable('booking_submissions', "status IN ('new', 'pending')"),
       this.countTable('orders', "status = 'pending'"),
     ]);
 

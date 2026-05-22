@@ -39,6 +39,9 @@ describe('CitiesService', () => {
       save: jest.fn().mockResolvedValue(mockCity),
       softRemove: jest.fn().mockResolvedValue(mockCity),
       count: jest.fn().mockResolvedValue(1),
+      manager: {
+        query: jest.fn().mockResolvedValue([]),
+      },
     };
 
     sectionRepo = {

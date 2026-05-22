@@ -7,7 +7,10 @@ import { UpdateEventDto } from './dto/update-event.dto';
 
 @Injectable()
 export class EventsService {
-  constructor(@InjectRepository(EventEntity) private readonly repo: Repository<EventEntity>) {}
+  constructor(
+    @InjectRepository(EventEntity)
+    private readonly repo: Repository<EventEntity>,
+  ) {}
 
   async listPublic(query: {
     city?: string;
@@ -19,10 +22,17 @@ export class EventsService {
   }) {
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit = query.limit && query.limit > 0 ? query.limit : 20;
-    const qb = this.repo.createQueryBuilder('e').where('e.status != :draft', { draft: 'draft' });
-    if (query.city) qb.andWhere('(e.citySlug = :city OR e.city = :city)', { city: query.city });
-    if (query.startDate) qb.andWhere('e.date >= :startDate', { startDate: query.startDate });
-    if (query.endDate) qb.andWhere('e.date <= :endDate', { endDate: query.endDate });
+    const qb = this.repo
+      .createQueryBuilder('e')
+      .where('e.status != :draft', { draft: 'draft' });
+    if (query.city)
+      qb.andWhere('(e.citySlug = :city OR e.city = :city)', {
+        city: query.city,
+      });
+    if (query.startDate)
+      qb.andWhere('e.date >= :startDate', { startDate: query.startDate });
+    if (query.endDate)
+      qb.andWhere('e.date <= :endDate', { endDate: query.endDate });
     const [items, total] = await qb
       .orderBy('e.date', 'DESC')
       .skip((page - 1) * limit)
@@ -33,11 +43,17 @@ export class EventsService {
 
   async getPublicBySlug(slug: string) {
     const item = await this.repo.findOne({ where: { slug } });
-    if (!item || item.status === 'draft') throw new NotFoundException('Event not found');
+    if (!item || item.status === 'draft')
+      throw new NotFoundException('Event not found');
     return item;
   }
 
-  async listAdmin(query: { status?: string; city?: string; page?: number; limit?: number }) {
+  async listAdmin(query: {
+    status?: string;
+    city?: string;
+    page?: number;
+    limit?: number;
+  }) {
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit = query.limit && query.limit > 0 ? query.limit : 20;
     const where: Record<string, any> = {};

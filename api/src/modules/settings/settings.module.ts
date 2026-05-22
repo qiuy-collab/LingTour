@@ -11,4 +11,3 @@ import { AppSettings } from './entities/app-settings.entity';
   exports: [SettingsService],
 })
 export class SettingsModule {}
-

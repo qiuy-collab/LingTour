@@ -7,4 +7,3 @@ export class UpdateSettingsDto {
   @IsObject()
   payload?: Record<string, unknown>;
 }
-

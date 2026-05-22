@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -22,7 +32,13 @@ export class EventsController {
     @Query('page') page = 1,
     @Query('limit') limit = 20,
   ) {
-    return this.service.listPublic({ city, startDate, endDate, page: +page, limit: +limit });
+    return this.service.listPublic({
+      city,
+      startDate,
+      endDate,
+      page: +page,
+      limit: +limit,
+    });
   }
 
   @Public()

@@ -30,4 +30,3 @@ export class HomeController {
     return this.homeService.updateAdminHomeConfig(dto);
   }
 }
-

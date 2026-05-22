@@ -45,17 +45,17 @@ export class RoutesController {
   }
 
   @Public()
-  @Get('public/routes/:slug')
-  @ApiOperation({ summary: 'Get route detail by slug (public)' })
-  async findBySlug(@Param('slug') slug: string) {
-    return this.routesService.findBySlugPublished(slug);
-  }
-
-  @Public()
   @Get('public/routes/stats')
   @ApiOperation({ summary: 'Get published route count' })
   async getStats() {
     return this.routesService.getStats();
+  }
+
+  @Public()
+  @Get('public/routes/:slug')
+  @ApiOperation({ summary: 'Get route detail by slug (public)' })
+  async findBySlug(@Param('slug') slug: string) {
+    return this.routesService.findBySlugPublished(slug);
   }
 
   // ── Admin routes ──

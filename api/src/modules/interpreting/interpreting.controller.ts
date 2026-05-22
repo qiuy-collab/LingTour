@@ -48,7 +48,9 @@ export class InterpretingController {
 
   @Public()
   @Post('public/bookings/checkout')
-  @ApiOperation({ summary: 'Submit booking request and create deposit checkout' })
+  @ApiOperation({
+    summary: 'Submit booking request and create deposit checkout',
+  })
   async submitBookingWithDeposit(@Body() dto: CreateBookingDto) {
     return this.interpretingService.submitBookingWithDeposit(dto);
   }
@@ -160,7 +162,10 @@ export class InterpretingController {
 
   @Put('admin/interpreting/profiles/:id')
   @ApiBearerAuth()
-  async updateProfile(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+  async updateProfile(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: any,
+  ) {
     return this.interpretingService.updateProfile(id, body);
   }
 

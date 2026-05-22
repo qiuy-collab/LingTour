@@ -230,7 +230,10 @@ export class CitiesService {
   }
 
   private async replaceRouteLinks(cityId: string, routeSlugs: string[]) {
-    await this.cityRepository.manager.query('DELETE FROM route_city_links WHERE city_id = $1', [cityId]);
+    await this.cityRepository.manager.query(
+      'DELETE FROM route_city_links WHERE city_id = $1',
+      [cityId],
+    );
     if (!routeSlugs.length) return;
     const routes = await this.cityRepository.manager.query(
       'SELECT id, slug FROM story_routes WHERE slug = ANY($1)',

@@ -42,4 +42,3 @@ export class UpdateHomeConfigDto {
   @IsArray()
   featuredCitySlugs?: string[];
 }
-

@@ -79,7 +79,9 @@ export class InterpretingService {
   }
 
   async findProfilesAdmin(page = 1, pageSize = 20, status?: string) {
-    const qb = this.profileRepo.createQueryBuilder('p').orderBy('p.sortOrder', 'ASC');
+    const qb = this.profileRepo
+      .createQueryBuilder('p')
+      .orderBy('p.sortOrder', 'ASC');
     if (status) qb.andWhere('p.status = :status', { status });
     const [items, total] = await qb
       .skip((page - 1) * pageSize)
@@ -117,7 +119,9 @@ export class InterpretingService {
   }
 
   async findFaqsAdmin(page = 1, pageSize = 20, category?: string) {
-    const qb = this.faqRepo.createQueryBuilder('f').orderBy('f.sortOrder', 'ASC');
+    const qb = this.faqRepo
+      .createQueryBuilder('f')
+      .orderBy('f.sortOrder', 'ASC');
     if (category) qb.andWhere('f.category = :category', { category });
     const [items, total] = await qb
       .skip((page - 1) * pageSize)
@@ -308,7 +312,8 @@ export class InterpretingService {
       bookingStatus: saved.status,
       orderNo: paidOrder.orderNo,
       paymentId: paidOrder.paymentId,
-      message: 'Deposit paid. Your interpreter request is now in the matching queue.',
+      message:
+        'Deposit paid. Your interpreter request is now in the matching queue.',
     };
   }
 
@@ -360,7 +365,10 @@ export class InterpretingService {
     return this.bookingRepo.save(booking);
   }
 
-  private normalizeMode(data: Partial<ServiceMode>, fallback?: ServiceMode): Partial<ServiceMode> {
+  private normalizeMode(
+    data: Partial<ServiceMode>,
+    fallback?: ServiceMode,
+  ): Partial<ServiceMode> {
     return {
       sortOrder: data.sortOrder ?? fallback?.sortOrder ?? 0,
       title: this.i18n(data.title ?? fallback?.title),
@@ -402,7 +410,10 @@ export class InterpretingService {
   private i18n(value: any): { en: string; zh: string } {
     if (typeof value === 'string') return { en: value, zh: value };
     if (value && typeof value === 'object') {
-      return { en: String(value.en ?? value.zh ?? ''), zh: String(value.zh ?? value.en ?? '') };
+      return {
+        en: String(value.en ?? value.zh ?? ''),
+        zh: String(value.zh ?? value.en ?? ''),
+      };
     }
     return { en: '', zh: '' };
   }

@@ -7,7 +7,7 @@ export class ConfirmBookingDepositDto {
   @MaxLength(32)
   orderNo: string;
 
-  @ApiProperty({ example: 'pi_mock_LTABC1234_paid_001' })
+  @ApiProperty({ example: 'pi_sandbox_LTABC1234_paid_001' })
   @IsString()
   @MaxLength(100)
   paymentId: string;

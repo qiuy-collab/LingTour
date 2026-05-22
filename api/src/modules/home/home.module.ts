@@ -11,4 +11,3 @@ import { HomeConfig } from './entities/home-config.entity';
   exports: [HomeService],
 })
 export class HomeModule {}
-

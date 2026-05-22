@@ -30,4 +30,3 @@ export class SettingsController {
     return this.settingsService.updateAdminSettings(dto.payload ?? {});
   }
 }
-

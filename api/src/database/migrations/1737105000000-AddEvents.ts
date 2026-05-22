@@ -31,4 +31,3 @@ export class AddEvents1737105000000 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS events CASCADE`);
   }
 }
-
