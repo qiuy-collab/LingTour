@@ -9,9 +9,14 @@ import {
   Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiTags,
@@ -19,6 +24,7 @@ import {
 import { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
 import { CommunityService } from './community.service';
+import { UploadService } from '../upload/upload.service';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
 import { UpdateCommunityStatusDto } from './dto/update-community-status.dto';
 import { UpsertCommunityBriefDto } from './dto/upsert-community-brief.dto';
@@ -34,7 +40,10 @@ interface AuthenticatedRequest extends Request {
 @ApiTags('Community')
 @Controller('api/v1')
 export class CommunityController {
-  constructor(private readonly communityService: CommunityService) {}
+  constructor(
+    private readonly communityService: CommunityService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   @Public()
   @Get('public/community/posts')
@@ -80,6 +89,37 @@ export class CommunityController {
       ...dto,
       status: 'pending_review',
     });
+  }
+
+  @Public()
+  @Post('public/community/upload')
+  @ApiOperation({ summary: 'Upload image for community post (public)' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB for community
+    }),
+  )
+  async uploadCommunityImage(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    const result = this.uploadService.getStructuredPath(file.filename, 'community');
+    return { url: result.url };
+  }
+
+  @Public()
+  @Post('public/community/posts/:id/like')
+  @ApiOperation({ summary: 'Toggle like on a post' })
+  async likePost(@Param('id') id: string) {
+    return this.communityService.incrementEngagement(id, 'likes');
+  }
+
+  @Public()
+  @Post('public/community/posts/:id/save')
+  @ApiOperation({ summary: 'Toggle save on a post' })
+  async savePost(@Param('id') id: string) {
+    return this.communityService.incrementEngagement(id, 'saves');
   }
 
   @Get('admin/community/posts')

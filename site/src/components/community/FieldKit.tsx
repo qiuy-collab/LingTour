@@ -40,6 +40,7 @@ export function FieldKit<TChannel extends string>({
   const [note, setNote] = useState("");
   const [activeChannel, setActiveChannel] = useState<TChannel>(channels[1]);
   const [image, setImage] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,18 +76,44 @@ export function FieldKit<TChannel extends string>({
 
   if (!isOpen) return null;
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Show local preview immediately
     const reader = new FileReader();
     reader.onloadend = () => {
       setImage(reader.result as string);
     };
     reader.readAsDataURL(file);
+
+    // Upload to server
+    setImageUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+      const res = await fetch(`${apiBase}/public/community/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Image upload failed");
+      const data = await res.json();
+      setImage(data.url);
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Image upload failed. Please try again.",
+      );
+      setImage(null);
+    } finally {
+      setImageUploading(false);
+    }
   };
 
-  const canPublish = Boolean(title.trim() || note.trim() || image);
+  const canPublish = Boolean((title.trim() || note.trim() || image) && !imageUploading);
 
   const handlePublish = async () => {
     if (!canPublish || submitting) return;
@@ -319,7 +346,7 @@ export function FieldKit<TChannel extends string>({
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >
-                  {submitting ? "DISPATCHING..." : "STAMP & DISPATCH"}
+                  {submitting ? "DISPATCHING..." : imageUploading ? "UPLOADING IMAGE..." : "STAMP & DISPATCH"}
                 </button>
                 <p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Publish as illustrated note, text-only note, or photo-only signal

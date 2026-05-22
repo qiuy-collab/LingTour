@@ -189,6 +189,22 @@ export class CommunityService {
     return this.getAdminById(id);
   }
 
+  /**
+   * Increment engagement counter (likes/saves) atomically.
+   * Returns the updated count.
+   */
+  async incrementEngagement(id: string, field: 'likes' | 'saves') {
+    await this.postRepo
+      .createQueryBuilder()
+      .update(CommunityPost)
+      .set({ [field]: () => `"${field}" + 1` })
+      .where('id = :id', { id })
+      .execute();
+    const post = await this.postRepo.findOne({ where: { id } });
+    if (!post) throw new NotFoundException('Post not found');
+    return { [field]: post[field] };
+  }
+
   // ── Field Briefs ──
 
   /** 公开端点：列出当前可见的 brief，按 sortOrder 升序。 */

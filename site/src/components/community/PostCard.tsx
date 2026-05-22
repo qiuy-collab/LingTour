@@ -20,9 +20,11 @@ export function PostCard({
 }: PostCardProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [likesDelta, setLikesDelta] = useState(0);
+  const [savesDelta, setSavesDelta] = useState(0);
 
-  const likeCount = liked ? post.likes + 1 : post.likes;
-  const saveCount = saved ? post.saves + 1 : post.saves;
+  const likeCount = post.likes + likesDelta;
+  const saveCount = post.saves + savesDelta;
   const hasImage = Boolean(post.image);
   const hasText = Boolean(post.excerpt.trim());
 
@@ -191,7 +193,12 @@ export function PostCard({
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setLiked((value) => !value);
+                  if (!liked) {
+                    setLiked(true);
+                    setLikesDelta((d) => d + 1);
+                    const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+                    fetch(`${apiBase}/public/community/posts/${post.id}/like`, { method: "POST" }).catch(() => {});
+                  }
                 }}
                 className={`text-xs transition-colors ${
                   liked
@@ -216,7 +223,12 @@ export function PostCard({
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                setSaved((value) => !value);
+                if (!saved) {
+                  setSaved(true);
+                  setSavesDelta((d) => d + 1);
+                  const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+                  fetch(`${apiBase}/public/community/posts/${post.id}/save`, { method: "POST" }).catch(() => {});
+                }
               }}
               className={`text-xs transition-colors ${
                 saved
