@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { routesApi } from '@/api/routes'
 import type { Route } from '@/types/route'
 import type { PaginatedResponse } from '@/types/common'
+import { pickI18n } from '@/types/common'
 
 const router = useRouter()
 
@@ -36,8 +37,8 @@ async function fetchList() {
     const data: PaginatedResponse<Route> = res.data.data
     list.value = data.items
     total.value = data.total
-  } catch {
-    ElMessage.error('获取路线列表失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '获取路线列表失败')
   } finally {
     loading.value = false
   }
@@ -46,7 +47,7 @@ async function fetchList() {
 onMounted(fetchList)
 
 watch(
-  () => pageParams.page,
+  () => [pageParams.page, pageParams.pageSize],
   () => fetchList()
 )
 
@@ -65,12 +66,18 @@ function handleEdit(id: string) {
 }
 
 async function handleDelete(routeItem: Route) {
+  const title = pickI18n(routeItem.title as any) || '该路线'
   try {
+    await ElMessageBox.confirm(
+      `确定删除路线「${title}」?该操作不可恢复。`,
+      '删除确认',
+      { type: 'warning' }
+    )
     await routesApi.deleteRoute(routeItem.id)
-    ElMessage.success(`已删除路线「${routeItem.title || ''}」`)
+    ElMessage.success(`已删除路线「${title}」`)
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
@@ -85,8 +92,8 @@ async function handleToggleStatus(routeItem: Route) {
       routeItem.published = true
       ElMessage.success('已发布')
     }
-  } catch {
-    ElMessage.error('状态更新失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '状态更新失败')
   }
 }
 
@@ -165,11 +172,11 @@ const cityOptions = computed(() => {
           </template>
         </el-table-column>
 
-        <el-table-column prop="title" label="标题" min-width="180">
+        <el-table-column label="标题" min-width="180">
           <template #default="{ row }">
             <div>
-              <div class="route-title">{{ row.title }}</div>
-              <div class="route-title-en">{{ row.titleEn || '' }}</div>
+              <div class="route-title">{{ pickI18n(row.title) }}</div>
+              <div class="route-title-en">{{ pickI18n(row.title, 'en') }}</div>
             </div>
           </template>
         </el-table-column>
@@ -239,18 +246,9 @@ const cityOptions = computed(() => {
             >
               {{ row.published ? '下架' : '发布' }}
             </el-button>
-            <el-popconfirm
-              :title="`确定删除路线「${row.title || ''}」吗？`"
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              @confirm="handleDelete(row)"
-            >
-              <template #reference>
-                <el-button type="danger" link :icon="Delete" size="small">
-                  删除
-                </el-button>
-              </template>
-            </el-popconfirm>
+            <el-button type="danger" link :icon="Delete" size="small" @click="handleDelete(row)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>

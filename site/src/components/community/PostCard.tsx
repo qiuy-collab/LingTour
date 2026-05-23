@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
+import { apiPost } from "@/lib/api-client";
 
 type PostCardProps = {
   post: CommunityFeedPost;
   index: number;
   variant?: "image" | "feature" | "text";
   onOpen?: (post: CommunityFeedPost) => void;
+  isLoggedIn?: boolean;
+  onRequireLogin?: () => void;
 };
 
 const FALLBACK_AVATAR = "/uploads/seed/zhanjiang-hero-1200.jpg";
@@ -17,6 +20,8 @@ export function PostCard({
   index,
   variant = "image",
   onOpen,
+  isLoggedIn = false,
+  onRequireLogin,
 }: PostCardProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -39,6 +44,7 @@ export function PostCard({
   }, [variant]);
 
   const openPost = () => onOpen?.(post);
+  const requireLogin = () => onRequireLogin?.();
 
   return (
     <article
@@ -170,7 +176,7 @@ export function PostCard({
                     : "text-sm italic leading-relaxed text-[var(--muted)] line-clamp-3"
               }`}
             >
-              {variant === "image" ? `“${post.excerpt}”` : post.excerpt}
+              {post.excerpt}
             </p>
           ) : (
             <p className="mt-4 text-sm italic text-[var(--muted)]">
@@ -191,22 +197,33 @@ export function PostCard({
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={(event) => {
+                onClick={async (event) => {
                   event.stopPropagation();
+                  if (!isLoggedIn) {
+                    requireLogin();
+                    return;
+                  }
                   if (!liked) {
                     setLiked(true);
                     setLikesDelta((d) => d + 1);
-                    const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-                    fetch(`${apiBase}/public/community/posts/${post.id}/like`, { method: "POST" }).catch(() => {});
+                    try {
+                      await apiPost(`/public/community/posts/${post.id}/like`);
+                    } catch (error) {
+                      setLiked(false);
+                      setLikesDelta((d) => d - 1);
+                      console.error("Failed to like community post", error);
+                    }
                   }
                 }}
                 className={`text-xs transition-colors ${
-                  liked
-                    ? "text-[var(--cinnabar)]"
-                    : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
+                  !isLoggedIn
+                    ? "cursor-not-allowed text-[var(--muted)] opacity-60"
+                    : liked
+                      ? "text-[var(--cinnabar)]"
+                      : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
                 }`}
               >
-                ♥ {likeCount}
+                Like {likeCount}
               </button>
               <button
                 type="button"
@@ -216,27 +233,38 @@ export function PostCard({
                 }}
                 className="text-xs text-[var(--muted)] hover:text-[var(--river-deep)]"
               >
-                ✎ {post.comments}
+                Comments {post.comments}
               </button>
             </div>
             <button
               type="button"
-              onClick={(event) => {
+              onClick={async (event) => {
                 event.stopPropagation();
+                if (!isLoggedIn) {
+                  requireLogin();
+                  return;
+                }
                 if (!saved) {
                   setSaved(true);
                   setSavesDelta((d) => d + 1);
-                  const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-                  fetch(`${apiBase}/public/community/posts/${post.id}/save`, { method: "POST" }).catch(() => {});
+                  try {
+                    await apiPost(`/public/community/posts/${post.id}/save`);
+                  } catch (error) {
+                    setSaved(false);
+                    setSavesDelta((d) => d - 1);
+                    console.error("Failed to save community post", error);
+                  }
                 }
               }}
               className={`text-xs transition-colors ${
-                saved
-                  ? "text-[var(--gold)]"
-                  : "text-[var(--muted)] hover:text-[var(--gold)]"
+                !isLoggedIn
+                  ? "cursor-not-allowed text-[var(--muted)] opacity-60"
+                  : saved
+                    ? "text-[var(--gold)]"
+                    : "text-[var(--muted)] hover:text-[var(--gold)]"
               }`}
             >
-              {saveCount} saved
+              Save {saveCount}
             </button>
           </div>
         </div>

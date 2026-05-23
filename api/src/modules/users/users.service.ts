@@ -5,6 +5,16 @@ import { User } from './entities/user.entity';
 import { UserFavorite } from './entities/user-favorite.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
+interface ManagedUserStats {
+  ordersCount: number;
+  bookingsCount: number;
+  dispatchCount: number;
+  photoDispatchCount: number;
+  latestDispatchAt: string | Date | null;
+  latestDispatchTitle: Record<string, string> | string | null;
+  favorites: UserFavorite[];
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -52,8 +62,9 @@ export class UsersService {
       .take(pageSize)
       .getManyAndCount();
 
+    const statsMap = await this.loadManagedUserStats(users);
     const items = await Promise.all(
-      users.map((user) => this.toManagedUser(user)),
+      users.map((user) => this.toManagedUser(user, statsMap.get(user.id))),
     );
     return { items, total, page, pageSize };
   }
@@ -107,55 +118,17 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  private async toManagedUser(user: User) {
-    const [ordersCount, bookingsCount, dispatchStats, favorites] = await Promise.all([
-      this.userRepository.manager
-        .query('SELECT COUNT(*)::int AS count FROM orders WHERE user_id = $1', [
-          user.id,
-        ])
-        .then((rows) => Number(rows?.[0]?.count ?? 0))
-        .catch(() => 0),
-      this.userRepository.manager
-        .query(
-          'SELECT COUNT(*)::int AS count FROM booking_submissions WHERE contact = $1',
-          [user.email],
-        )
-        .then((rows) => Number(rows?.[0]?.count ?? 0))
-        .catch(() => 0),
-      this.userRepository.manager
-        .query(
-          `
-            SELECT
-              COUNT(*)::int AS dispatch_count,
-              COUNT(*) FILTER (WHERE COALESCE(image, '') <> '')::int AS photo_dispatch_count,
-              MAX(created_at) AS latest_dispatch_at
-            FROM community_posts
-            WHERE user_id = $1 OR (COALESCE(user_email, '') <> '' AND user_email = $2)
-          `,
-          [user.id, user.email],
-        )
-        .then((rows) => rows?.[0] ?? {})
-        .catch(() => ({})),
-      this.favoriteRepository.find({
-        where: { userId: user.id },
-        order: { createdAt: 'DESC' },
-        take: 20,
-      }).catch(() => []),
-    ]);
-
-    const latestDispatchTitle = await this.userRepository.manager
-      .query(
-        `
-          SELECT title
-          FROM community_posts
-          WHERE user_id = $1 OR (COALESCE(user_email, '') <> '' AND user_email = $2)
-          ORDER BY created_at DESC
-          LIMIT 1
-        `,
-        [user.id, user.email],
-      )
-      .then((rows) => rows?.[0]?.title ?? null)
-      .catch(() => null);
+  private async toManagedUser(user: User, stats?: ManagedUserStats | null) {
+    const resolvedStats =
+      stats ?? (await this.loadManagedUserStats([user])).get(user.id) ?? {
+        ordersCount: 0,
+        bookingsCount: 0,
+        dispatchCount: 0,
+        photoDispatchCount: 0,
+        latestDispatchAt: null,
+        latestDispatchTitle: null,
+        favorites: [],
+      };
 
     return {
       id: user.id,
@@ -165,9 +138,9 @@ export class UsersService {
       locale: 'zh',
       createdAt: user.createdAt,
       status: user.status || 'active',
-      bookingsCount,
-      ordersCount,
-      favorites: favorites.map((f) => ({
+      bookingsCount: resolvedStats.bookingsCount,
+      ordersCount: resolvedStats.ordersCount,
+      favorites: resolvedStats.favorites.map((f) => ({
         id: f.id,
         type: f.targetType,
         targetId: f.targetId,
@@ -183,14 +156,12 @@ export class UsersService {
       memberSince: user.memberSince || '',
       bio: user.bio || '',
       profileVisibility: user.profileVisibility || 'public',
-      dispatchCount: Number(dispatchStats.dispatch_count ?? 0),
-      photoDispatchCount: Number(dispatchStats.photo_dispatch_count ?? 0),
-      latestDispatchAt: dispatchStats.latest_dispatch_at ?? null,
-      latestDispatchTitle:
-        latestDispatchTitle?.en ??
-        latestDispatchTitle?.zh ??
-        latestDispatchTitle ??
-        null,
+      dispatchCount: resolvedStats.dispatchCount,
+      photoDispatchCount: resolvedStats.photoDispatchCount,
+      latestDispatchAt: resolvedStats.latestDispatchAt ?? null,
+      latestDispatchTitle: this.normalizeLatestDispatchTitle(
+        resolvedStats.latestDispatchTitle,
+      ),
     };
   }
 
@@ -205,6 +176,171 @@ export class UsersService {
   private formatAccountId(userId: string) {
     const compact = userId.replace(/-/g, '').slice(0, 8).toUpperCase();
     return `LT-${compact}`;
+  }
+
+  private normalizeLatestDispatchTitle(
+    title: Record<string, string> | string | null,
+  ) {
+    if (!title) {
+      return null;
+    }
+    if (typeof title === 'string') {
+      return title;
+    }
+    return title.en ?? title.zh ?? null;
+  }
+
+  private async loadManagedUserStats(users: User[]) {
+    const stats = new Map<string, ManagedUserStats>();
+
+    for (const user of users) {
+      stats.set(user.id, {
+        ordersCount: 0,
+        bookingsCount: 0,
+        dispatchCount: 0,
+        photoDispatchCount: 0,
+        latestDispatchAt: null,
+        latestDispatchTitle: null,
+        favorites: [],
+      });
+    }
+
+    if (!users.length) {
+      return stats;
+    }
+
+    const userIds = users.map((user) => user.id);
+    const emails = users.map((user) => user.email).filter(Boolean);
+    const manager = this.userRepository.manager;
+
+    const [orderRows, bookingRows, dispatchRows, latestDispatchRows, favoriteRows] =
+      await Promise.all([
+        manager.query(
+          'SELECT user_id AS "userId", COUNT(*)::int AS count FROM orders WHERE user_id = ANY($1::uuid[]) GROUP BY user_id',
+          [userIds],
+        ),
+        manager.query(
+          'SELECT contact, COUNT(*)::int AS count FROM booking_submissions WHERE contact = ANY($1::text[]) GROUP BY contact',
+          [emails],
+        ),
+        manager.query(
+          `
+            SELECT
+              COALESCE(user_id::text, user_email) AS "ownerKey",
+              COUNT(*)::int AS "dispatchCount",
+              COUNT(*) FILTER (WHERE COALESCE(image, '') <> '')::int AS "photoDispatchCount",
+              MAX(created_at) AS "latestDispatchAt"
+            FROM community_posts
+            WHERE user_id = ANY($1::uuid[]) OR user_email = ANY($2::text[])
+            GROUP BY COALESCE(user_id::text, user_email)
+          `,
+          [userIds, emails],
+        ),
+        manager.query(
+          `
+            SELECT DISTINCT ON (COALESCE(user_id::text, user_email))
+              COALESCE(user_id::text, user_email) AS "ownerKey",
+              title
+            FROM community_posts
+            WHERE user_id = ANY($1::uuid[]) OR user_email = ANY($2::text[])
+            ORDER BY COALESCE(user_id::text, user_email), created_at DESC
+          `,
+          [userIds, emails],
+        ),
+        manager.query(
+          `
+            SELECT user_id AS "userId", id, target_type AS "targetType", target_id AS "targetId",
+                   target_title AS "targetTitle", target_image AS "targetImage", created_at AS "createdAt"
+            FROM user_favorites
+            WHERE user_id = ANY($1::uuid[])
+            ORDER BY user_id ASC, created_at DESC
+          `,
+          [userIds],
+        ),
+      ]);
+
+    for (const row of orderRows as Array<{ userId: string; count: number }>) {
+      const current = stats.get(row.userId);
+      if (current) {
+        current.ordersCount = Number(row.count ?? 0);
+      }
+    }
+
+    for (const row of bookingRows as Array<{ contact: string; count: number }>) {
+      const user = users.find((item) => item.email === row.contact);
+      if (user) {
+        const current = stats.get(user.id);
+        if (current) {
+          current.bookingsCount = Number(row.count ?? 0);
+        }
+      }
+    }
+
+    for (const row of dispatchRows as Array<{
+      ownerKey: string;
+      dispatchCount: number;
+      photoDispatchCount: number;
+      latestDispatchAt: string | Date | null;
+    }>) {
+      const user =
+        users.find((item) => item.id === row.ownerKey) ??
+        users.find((item) => item.email === row.ownerKey);
+      if (user) {
+        const current = stats.get(user.id);
+        if (current) {
+          current.dispatchCount = Number(row.dispatchCount ?? 0);
+          current.photoDispatchCount = Number(row.photoDispatchCount ?? 0);
+          current.latestDispatchAt = row.latestDispatchAt ?? null;
+        }
+      }
+    }
+
+    for (const row of latestDispatchRows as Array<{
+      ownerKey: string;
+      title: Record<string, string> | string;
+    }>) {
+      const user =
+        users.find((item) => item.id === row.ownerKey) ??
+        users.find((item) => item.email === row.ownerKey);
+      if (user) {
+        const current = stats.get(user.id);
+        if (current) {
+          current.latestDispatchTitle = row.title;
+        }
+      }
+    }
+
+    const favoritesByUserId = new Map<string, UserFavorite[]>();
+    for (const row of favoriteRows as Array<{
+      userId: string;
+      id: string;
+      targetType: 'route' | 'city' | 'product';
+      targetId: string;
+      targetTitle: string;
+      targetImage: string;
+      createdAt: Date;
+    }>) {
+      const list = favoritesByUserId.get(row.userId) ?? [];
+      list.push({
+        id: row.id,
+        userId: row.userId,
+        targetType: row.targetType,
+        targetId: row.targetId,
+        targetTitle: row.targetTitle,
+        targetImage: row.targetImage,
+        createdAt: row.createdAt,
+      });
+      favoritesByUserId.set(row.userId, list);
+    }
+
+    for (const user of users) {
+      const current = stats.get(user.id);
+      if (current) {
+        current.favorites = (favoritesByUserId.get(user.id) ?? []).slice(0, 20);
+      }
+    }
+
+    return stats;
   }
 
   private normalizeProfilePayload(
@@ -253,8 +389,12 @@ export class UsersService {
     return this.favoriteRepository.save(fav);
   }
 
-  async removeFavorite(userId: string, targetType: string, targetId: string) {
-    await this.favoriteRepository.delete({ userId, targetType: targetType as any, targetId });
+  async removeFavorite(
+    userId: string,
+    targetType: 'route' | 'city' | 'product',
+    targetId: string,
+  ) {
+    await this.favoriteRepository.delete({ userId, targetType, targetId });
     return { removed: true };
   }
 }

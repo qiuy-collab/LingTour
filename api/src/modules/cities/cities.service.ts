@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { City } from './entities/city.entity';
 import { CityCultureSection } from './entities/city-section.entity';
 import { CreateCityDto } from './dto/create-city.dto';
@@ -15,8 +15,7 @@ export class CitiesService {
   constructor(
     @InjectRepository(City)
     private readonly cityRepository: Repository<City>,
-    @InjectRepository(CityCultureSection)
-    private readonly sectionRepository: Repository<CityCultureSection>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // ── Public read ──
@@ -32,21 +31,30 @@ export class CitiesService {
       order: { createdAt: 'DESC' },
     });
 
-    // Enriched with routes
-    const enriched = await Promise.all(
-      data.map(async (city) => {
-        const routes = await this.cityRepository.manager.query(
-          `SELECT r.slug FROM story_routes r
-           INNER JOIN route_city_links l ON l.route_id = r.id
-           WHERE l.city_id = $1 AND r.published = true`,
-          [city.id],
-        );
-        return {
-          ...city,
-          routes: routes.map((r: any) => ({ slug: r.slug })),
-        };
-      }),
-    );
+    const routeRows =
+      data.length === 0
+        ? []
+        : await this.cityRepository.manager.query(
+            `SELECT l.city_id AS "cityId", r.slug
+             FROM route_city_links l
+             INNER JOIN story_routes r
+               ON r.id = l.route_id AND r.published = true
+             WHERE l.city_id = ANY($1::uuid[])
+             ORDER BY l.sort_order ASC`,
+            [data.map((city) => city.id)],
+          );
+
+    const routesByCityId = new Map<string, { slug: string }[]>();
+    for (const row of routeRows as Array<{ cityId: string; slug: string }>) {
+      const list = routesByCityId.get(row.cityId) ?? [];
+      list.push({ slug: row.slug });
+      routesByCityId.set(row.cityId, list);
+    }
+
+    const enriched = data.map((city) => ({
+      ...city,
+      routes: routesByCityId.get(city.id) ?? [],
+    }));
 
     return { data: enriched, total };
   }
@@ -72,7 +80,7 @@ export class CitiesService {
 
     return {
       ...city,
-      routes: routes.map((r: any) => ({ slug: r.slug })),
+      routes: routes.map((routeRow: { slug: string }) => ({ slug: routeRow.slug })),
     };
   }
 
@@ -108,7 +116,7 @@ export class CitiesService {
        ORDER BY l.sort_order ASC`,
       [city.id],
     );
-    return { ...city, routeSlugs: routes.map((r: any) => r.slug) } as City;
+    return { ...city, routeSlugs: routes.map((routeRow: { slug: string }) => routeRow.slug) } as City;
   }
 
   async create(dto: CreateCityDto): Promise<City> {
@@ -121,49 +129,60 @@ export class CitiesService {
       throw new ConflictException(`City slug "${dto.slug}" already exists`);
     }
 
-    const city = this.cityRepository.create({
-      slug: dto.slug,
-      name: dto.name,
-      regionLabel: dto.regionLabel,
-      heroImage: dto.heroImage,
-      heroNarrative: dto.heroNarrative,
-      tags: dto.tags ?? [],
-      editorIntro: dto.editorIntro,
-      galleryImages: dto.galleryImages ?? [],
-      foodTitle: dto.foodTitle,
-      foodDescription: dto.foodDescription,
-      foodImages: dto.foodImages ?? [],
-      relatedCitySlugs: dto.relatedCitySlugs ?? [],
-      adcode: dto.adcode,
-      published: dto.published ?? false,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const saved = await this.cityRepository.save(city);
+    try {
+      const city = queryRunner.manager.create(City, {
+        slug: dto.slug,
+        name: dto.name,
+        regionLabel: dto.regionLabel,
+        heroImage: dto.heroImage,
+        heroNarrative: dto.heroNarrative,
+        tags: dto.tags ?? [],
+        editorIntro: dto.editorIntro,
+        galleryImages: dto.galleryImages ?? [],
+        foodTitle: dto.foodTitle,
+        foodDescription: dto.foodDescription,
+        foodImages: dto.foodImages ?? [],
+        relatedCitySlugs: dto.relatedCitySlugs ?? [],
+        adcode: dto.adcode,
+        published: dto.published ?? false,
+      });
 
-    // Create sections if provided
-    if (dto.sections?.length) {
-      const sections = dto.sections.map((s, i) =>
-        this.sectionRepository.create({
-          cityId: saved.id,
-          title: s.title,
-          body: s.body,
-          image: s.image,
-          statLabel: s.statLabel ?? null,
-          statValue: s.statValue ?? null,
-          breathImage: s.breathImage ?? null,
-          breathQuote: s.breathQuote ?? null,
-          sortOrder: s.sortOrder ?? i,
-        }),
-      );
-      await this.sectionRepository.save(sections);
-      saved.sections = sections;
+      const saved = await queryRunner.manager.save(city);
+
+      if (dto.sections?.length) {
+        const sections = dto.sections.map((s, i) =>
+          queryRunner.manager.create(CityCultureSection, {
+            cityId: saved.id,
+            title: s.title,
+            body: s.body,
+            image: s.image,
+            statLabel: s.statLabel ?? null,
+            statValue: s.statValue ?? null,
+            breathImage: s.breathImage ?? null,
+            breathQuote: s.breathQuote ?? null,
+            sortOrder: s.sortOrder ?? i,
+          }),
+        );
+        await queryRunner.manager.save(sections);
+        saved.sections = sections;
+      }
+
+      if (dto.routeSlugs?.length) {
+        await this.replaceRouteLinks(queryRunner.manager, saved.id, dto.routeSlugs);
+      }
+
+      await queryRunner.commitTransaction();
+      return saved;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (dto.routeSlugs?.length) {
-      await this.replaceRouteLinks(saved.id, dto.routeSlugs);
-    }
-
-    return saved;
   }
 
   async update(id: string, dto: UpdateCityDto): Promise<City> {
@@ -180,36 +199,47 @@ export class CitiesService {
       }
     }
 
-    Object.assign(city, dto);
-    const saved = await this.cityRepository.save(city);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    // Replace sections if provided
-    if (dto.sections !== undefined) {
-      await this.sectionRepository.delete({ cityId: id });
-      if (dto.sections.length > 0) {
-        const sections = dto.sections.map((s, i) =>
-          this.sectionRepository.create({
-            cityId: id,
-            title: s.title,
-            body: s.body,
-            image: s.image,
-            statLabel: s.statLabel ?? null,
-            statValue: s.statValue ?? null,
-            breathImage: s.breathImage ?? null,
-            breathQuote: s.breathQuote ?? null,
-            sortOrder: s.sortOrder ?? i,
-          }),
-        );
-        await this.sectionRepository.save(sections);
-        saved.sections = sections;
+    try {
+      Object.assign(city, dto);
+      const saved = await queryRunner.manager.save(City, city);
+
+      if (dto.sections !== undefined) {
+        await queryRunner.manager.delete(CityCultureSection, { cityId: id });
+        if (dto.sections.length > 0) {
+          const sections = dto.sections.map((s, i) =>
+            queryRunner.manager.create(CityCultureSection, {
+              cityId: id,
+              title: s.title,
+              body: s.body,
+              image: s.image,
+              statLabel: s.statLabel ?? null,
+              statValue: s.statValue ?? null,
+              breathImage: s.breathImage ?? null,
+              breathQuote: s.breathQuote ?? null,
+              sortOrder: s.sortOrder ?? i,
+            }),
+          );
+          await queryRunner.manager.save(sections);
+          saved.sections = sections;
+        }
       }
-    }
 
-    if (dto.routeSlugs !== undefined) {
-      await this.replaceRouteLinks(id, dto.routeSlugs);
-    }
+      if (dto.routeSlugs !== undefined) {
+        await this.replaceRouteLinks(queryRunner.manager, id, dto.routeSlugs);
+      }
 
-    return saved;
+      await queryRunner.commitTransaction();
+      return saved;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async publish(id: string): Promise<City> {
@@ -229,19 +259,22 @@ export class CitiesService {
     await this.cityRepository.softRemove(city);
   }
 
-  private async replaceRouteLinks(cityId: string, routeSlugs: string[]) {
-    await this.cityRepository.manager.query(
-      'DELETE FROM route_city_links WHERE city_id = $1',
-      [cityId],
-    );
+  private async replaceRouteLinks(
+    manager: EntityManager,
+    cityId: string,
+    routeSlugs: string[],
+  ) {
+    await manager.query('DELETE FROM route_city_links WHERE city_id = $1', [
+      cityId,
+    ]);
     if (!routeSlugs.length) return;
-    const routes = await this.cityRepository.manager.query(
-      'SELECT id, slug FROM story_routes WHERE slug = ANY($1)',
+    const routes = await manager.query(
+      'SELECT id, slug FROM story_routes WHERE slug = ANY($1::text[])',
       [routeSlugs],
     );
     for (const route of routes) {
       const sortOrder = routeSlugs.indexOf(route.slug);
-      await this.cityRepository.manager.query(
+      await manager.query(
         `INSERT INTO route_city_links (route_id, city_id, sort_order)
          VALUES ($1, $2, $3)
          ON CONFLICT (route_id, city_id) DO UPDATE SET sort_order = EXCLUDED.sort_order`,

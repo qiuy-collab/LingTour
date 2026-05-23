@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import {
   createCommunityFeedPost,
   fetchCommunityFeed,
@@ -209,6 +210,10 @@ export default function CommunityPage() {
     }
 
     if (compose === "1") {
+      if (!readLoginState()) {
+        setToast(AUTH_PROMPTS.connectGoogleToPublish);
+        return;
+      }
       setIsKitOpen(true);
     }
   }, []);
@@ -277,7 +282,15 @@ export default function CommunityPage() {
   const handleGoogleLogin = async () => {
     await signInWithGoogle();
     syncAuth();
-    setToast("Google connected. You can publish now.");
+    setToast(AUTH_PROMPTS.googleConnectedPublish);
+  };
+
+  const openFieldKit = () => {
+    if (!isLoggedIn) {
+      setToast(AUTH_PROMPTS.connectGoogleToPublish);
+      return;
+    }
+    setIsKitOpen(true);
   };
 
   const handleKitPublish = async (kitDraft: {
@@ -298,8 +311,8 @@ export default function CommunityPage() {
     }));
 
     if (!isLoggedIn) {
-      setToast("Connect Google first, then publish your field note.");
-      throw new Error("Connect Google first, then publish your field note.");
+      setToast(AUTH_PROMPTS.connectGoogleToPublish);
+      throw new Error(AUTH_PROMPTS.connectGoogleToPublish);
     }
 
     if (!title && !note && !kitDraft.image) {
@@ -442,6 +455,10 @@ export default function CommunityPage() {
                           index={index}
                           variant={resolveVariant(post)}
                           onOpen={setSelectedPost}
+                          isLoggedIn={isLoggedIn}
+                          onRequireLogin={() =>
+                            setToast(AUTH_PROMPTS.connectGoogleToInteract)
+                          }
                         />
                       </div>
                     </Reveal>
@@ -509,10 +526,12 @@ export default function CommunityPage() {
                 </p>
                 <div className="mt-8 flex flex-col gap-4">
                   <button
-                    onClick={() => setIsKitOpen(true)}
+                    onClick={openFieldKit}
                     className="w-full rounded-full bg-white py-4 text-sm font-bold text-[var(--night)] transition-transform hover:scale-105 active:scale-95"
                   >
-                    Open Field Kit
+                    {isLoggedIn
+                      ? "Open Field Kit"
+                      : "Connect Google to Publish"}
                   </button>
                   {!isLoggedIn ? (
                     <button
@@ -540,6 +559,10 @@ export default function CommunityPage() {
       <FieldKit
         isOpen={isKitOpen}
         onClose={() => setIsKitOpen(false)}
+        isLoggedIn={isLoggedIn}
+        onRequireLogin={() =>
+          setToast(AUTH_PROMPTS.connectGoogleToPublish)
+        }
         onPublish={handleKitPublish}
         initialBrief={
           selectedBrief

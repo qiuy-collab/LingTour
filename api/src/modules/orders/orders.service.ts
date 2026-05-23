@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import Stripe from 'stripe';
 import {
   Order,
   type OrderStatus,
@@ -27,10 +29,22 @@ const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 @Injectable()
 export class OrdersService {
+  private stripe: Stripe | null = null;
+
   constructor(
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+    if (stripeKey) {
+      this.stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' });
+    }
+  }
+
+  private get isStripeEnabled(): boolean {
+    return this.stripe !== null;
+  }
 
   /**
    * 创建订单（公开端点）。
@@ -59,14 +73,27 @@ export class OrdersService {
 
     const saved = await this.orderRepo.save(order);
 
-    // sandbox client_secret，等真实支付通道接入后替换
+    // Create Stripe PaymentIntent if configured, otherwise sandbox
+    let stripeClientSecret: string;
+    if (this.isStripeEnabled) {
+      const pi = await this.stripe!.paymentIntents.create({
+        amount: Math.round(totalAmount * 100), // cents
+        currency: 'sgd',
+        metadata: { orderNo: saved.orderNo, orderId: saved.id },
+        automatic_payment_methods: { enabled: true },
+      });
+      stripeClientSecret = pi.client_secret!;
+    } else {
+      stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
+    }
+
     return {
       orderId: saved.id,
       orderNo: saved.orderNo,
       totalAmount: saved.totalAmount,
       status: saved.status,
       paymentStatus: saved.paymentStatus,
-      stripeClientSecret: `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`,
+      stripeClientSecret,
     };
   }
 
@@ -108,6 +135,20 @@ export class OrdersService {
 
     const saved = await this.orderRepo.save(order);
 
+    // Create Stripe PaymentIntent if configured, otherwise sandbox
+    let stripeClientSecret: string;
+    if (this.isStripeEnabled) {
+      const pi = await this.stripe!.paymentIntents.create({
+        amount: Math.round(input.depositAmount * 100),
+        currency: (input.currency ?? 'sgd').toLowerCase(),
+        metadata: { orderNo: saved.orderNo, orderId: saved.id, type: 'interpreting-deposit' },
+        automatic_payment_methods: { enabled: true },
+      });
+      stripeClientSecret = pi.client_secret!;
+    } else {
+      stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
+    }
+
     return {
       orderId: saved.id,
       orderNo: saved.orderNo,
@@ -115,24 +156,39 @@ export class OrdersService {
       currency: input.currency ?? 'SGD',
       status: saved.status,
       paymentStatus: saved.paymentStatus,
-      stripeClientSecret: `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`,
+      stripeClientSecret,
     };
   }
 
   /**
    * Stripe webhook 回调入口。
-   * 当前为 sandbox 实现，按事件类型分发处理。
-   * 真实环境需要先校验 signature。
+   * 当 STRIPE_WEBHOOK_SECRET 配置时验证签名，否则直接解析 body。
    */
-  async handleStripeWebhook(_signature: string, rawBody: Buffer) {
-    let eventType = 'unknown';
-    let payload: any = {};
-    try {
-      payload = JSON.parse(rawBody.toString());
-      eventType = payload.type ?? 'unknown';
-    } catch {}
+  async handleStripeWebhook(signature: string, rawBody: Buffer) {
+    let event: any;
+    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
 
-    const data = payload?.data?.object ?? {};
+    if (this.isStripeEnabled && webhookSecret) {
+      try {
+        event = this.stripe!.webhooks.constructEvent(
+          rawBody,
+          signature,
+          webhookSecret,
+        );
+      } catch (err) {
+        throw new BadRequestException(`Webhook signature verification failed: ${err}`);
+      }
+    } else {
+      // Sandbox mode: parse raw body directly
+      try {
+        event = JSON.parse(rawBody.toString());
+      } catch {
+        event = { type: 'unknown', data: {} };
+      }
+    }
+
+    const eventType = event.type ?? 'unknown';
+    const data = event?.data?.object ?? {};
     const orderNo: string | undefined =
       data.metadata?.orderNo ?? data.metadata?.order_no;
     const paymentId: string | undefined = data.id;

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
 import type { City } from '@/types/city'
 import type { PaginatedResponse } from '@/types/common'
+import { pickI18n } from '@/types/common'
 
 const router = useRouter()
 
@@ -13,18 +14,18 @@ const router = useRouter()
 const loading = ref(false)
 const list = ref<City[]>([])
 const total = ref(0)
-const pageParams = reactive({ page: 1, pageSize: 10, keyword: '' })
+const pageParams = reactive({ page: 1, pageSize: 10, keyword: '', status: '' })
 
 // ─── 获取列表 ──────────────────────────────
 async function fetchList() {
   loading.value = true
   try {
-    const res = await citiesApi.getCities(pageParams)
+    const res = await citiesApi.getCities(pageParams as any)
     const data: PaginatedResponse<City> = res.data.data
     list.value = data.items
     total.value = data.total
-  } catch {
-    ElMessage.error('获取城市列表失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '获取城市列表失败')
   } finally {
     loading.value = false
   }
@@ -33,7 +34,7 @@ async function fetchList() {
 onMounted(fetchList)
 
 watch(
-  () => pageParams.page,
+  () => [pageParams.page, pageParams.pageSize],
   () => fetchList()
 )
 
@@ -52,12 +53,18 @@ function handleEdit(id: string) {
 }
 
 async function handleDelete(city: City) {
+  const cityName = pickI18n(city.name as any) || '该城市'
   try {
+    await ElMessageBox.confirm(
+      `确定删除城市「${cityName}」?该操作不可恢复。`,
+      '删除确认',
+      { type: 'warning' }
+    )
     await citiesApi.deleteCity(city.id)
-    ElMessage.success(`已删除城市「${city.name}」`)
+    ElMessage.success(`已删除城市「${cityName}」`)
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
@@ -86,6 +93,17 @@ function regionColor(region: string) {
           @keyup.enter="handleSearch"
           @clear="handleSearch"
         />
+        <el-select
+          v-model="pageParams.status"
+          placeholder="状态"
+          clearable
+          style="width: 120px"
+          @change="handleSearch"
+        >
+          <el-option label="全部" value="" />
+          <el-option label="已发布" value="published" />
+          <el-option label="草稿" value="draft" />
+        </el-select>
         <el-button type="primary" @click="handleSearch">搜索</el-button>
       </div>
       <el-button type="primary" :icon="Plus" @click="handleCreate">
@@ -114,11 +132,11 @@ function regionColor(region: string) {
           </template>
         </el-table-column>
 
-        <el-table-column prop="name" label="城市名" min-width="120">
+        <el-table-column label="城市名" min-width="140">
           <template #default="{ row }">
             <div>
-              <div class="city-name">{{ row.name }}</div>
-              <div class="city-name-en">{{ row.nameEn || '' }}</div>
+              <div class="city-name">{{ pickI18n(row.name) }}</div>
+              <div class="city-name-en">{{ pickI18n(row.name, 'en') }}</div>
             </div>
           </template>
         </el-table-column>
@@ -128,11 +146,11 @@ function regionColor(region: string) {
         <el-table-column label="地区标签" width="160">
           <template #default="{ row }">
             <el-tag
-              :color="regionColor(row.regionLabel || '')"
+              :color="regionColor(pickI18n(row.regionLabel) || '')"
               effect="dark"
               size="small"
             >
-              {{ row.regionLabel }}
+              {{ pickI18n(row.regionLabel) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -178,18 +196,9 @@ function regionColor(region: string) {
             >
               编辑
             </el-button>
-            <el-popconfirm
-              :title="`确定删除城市「${row.name}」吗？`"
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              @confirm="handleDelete(row)"
-            >
-              <template #reference>
-                <el-button type="danger" link :icon="Delete" size="small">
-                  删除
-                </el-button>
-              </template>
-            </el-popconfirm>
+            <el-button type="danger" link :icon="Delete" size="small" @click="handleDelete(row)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>

@@ -21,6 +21,7 @@ import {
   SwitchButton,
   Expand,
   Fold,
+  Picture,
 } from '@element-plus/icons-vue'
 import { ref, computed, watch } from 'vue'
 
@@ -98,6 +99,7 @@ const menuGroups: MenuGroup[] = [
       { path: '/admin/community', title: '社区帖子', icon: ChatDotSquare },
       { path: '/admin/home', title: '首页配置', icon: HomeFilled },
       { path: '/admin/operations/audit', title: '数据体检', icon: WarningFilled },
+      { path: '/admin/media', title: '媒体库', icon: Picture },
     ],
   },
   {

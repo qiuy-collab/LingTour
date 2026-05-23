@@ -58,6 +58,32 @@ function formatMemberSince(value?: string) {
   return value;
 }
 
+function profileCompletion(user: LocalUser) {
+  const fields = [
+    user.avatarUrl,
+    user.country,
+    user.homeBase,
+    user.travelStyle,
+    user.bio,
+  ];
+  const filled = fields.filter((value) => Boolean(value?.trim())).length;
+  return Math.round((filled / fields.length) * 100);
+}
+
+function nextProfileStep(user: LocalUser) {
+  if (!user.country && !user.homeBase) return "Add your base city";
+  if (!user.travelStyle) return "Choose a travel style";
+  if (!user.bio) return "Write a short bio";
+  if (!user.avatarUrl) return "Add a profile photo";
+  return "Profile ready for checkout";
+}
+
+function activityLabel(stamps: number) {
+  if (stamps >= 10) return "Route Master";
+  if (stamps >= 5) return "Pathfinder";
+  return "Field Starter";
+}
+
 function logOut() {
   try {
     window.localStorage.removeItem("lingtour-user");
@@ -204,11 +230,11 @@ export function GlobalDrawer() {
                 <div className="flex items-center gap-3">
                   <div className="h-1.5 w-1.5 rounded-full bg-[var(--gold)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--river-deep)]">
-                    Registry_01
+                    Member Registry
                   </p>
                 </div>
                 <h2 className="font-[family:var(--font-display)] text-5xl italic tracking-[-0.02em] text-[var(--river-deep)]">
-                  Personal Vault
+                  Traveler Passport
                 </h2>
               </div>
               <button
@@ -225,21 +251,28 @@ export function GlobalDrawer() {
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-10 py-4 space-y-16 relative z-10 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-10 py-4 space-y-12 relative z-10 scrollbar-hide">
               {/* User Profile Section */}
               {user ? (
                 <section className="relative">
-                  <div className="flex flex-col gap-8">
-                    <div className="relative overflow-hidden border border-[var(--line)] bg-[rgba(247,244,236,0.92)] px-7 py-7 scrapbook-shadow rotate-[-0.8deg]">
-                      <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
-                      <div className="absolute right-5 top-5 border border-[var(--gold)]/30 bg-[var(--paper-deep)]/85 px-3 py-1 text-[8px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-                        Field File
-                      </div>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.45em] text-[var(--gold)]">
+                        Layer 01
+                      </span>
+                      <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+                        Identity
+                      </span>
+                    </div>
 
-                      <div className="relative z-10 flex items-start gap-6">
-                        <div className="relative mt-1">
-                          <div className="grid h-24 w-20 shrink-0 place-items-center border-[6px] border-white bg-[var(--paper)] shadow-[0_18px_32px_rgba(17,25,35,0.14)] rotate-[-3deg]">
-                            <div className="flex h-full w-full items-center justify-center bg-[var(--river-deep)] text-white">
+                    <div className="relative overflow-hidden border border-[var(--line)] bg-[linear-gradient(180deg,rgba(248,244,236,0.98),rgba(239,234,225,0.92))] px-6 py-6 shadow-[0_20px_40px_rgba(17,25,35,0.08)]">
+                      <div className="absolute inset-0 bg-grain opacity-[0.06] pointer-events-none" />
+
+                      <div className="relative z-10 flex items-start gap-5">
+                        <div className="relative shrink-0">
+                          <div className="grid h-24 w-20 place-items-center border-[5px] border-white bg-[var(--paper)] shadow-[0_18px_32px_rgba(17,25,35,0.14)]">
+                            <div className="flex h-full w-full items-center justify-center overflow-hidden bg-[var(--river-deep)] text-white">
                               {user.avatarUrl ? (
                                 <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
                               ) : (
@@ -247,19 +280,27 @@ export function GlobalDrawer() {
                               )}
                             </div>
                           </div>
-                          <div className="absolute -right-3 top-3 h-10 w-10 rotate-12 border border-[var(--gold)]/30 bg-[var(--gold)]/90 px-1 py-2 text-center text-[8px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
-                            ID
-                          </div>
                         </div>
 
-                        <div className="min-w-0 flex-1 pt-1">
-                          <p className="text-[9px] font-bold uppercase tracking-[0.35em] text-[var(--gold)]">
-                            Active Registry
-                          </p>
-                          <p className="mt-3 font-[family:var(--font-display)] text-5xl italic leading-none text-[var(--river-deep)]">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.35em] text-[var(--gold)]">
+                              Active Member
+                            </p>
+                            <span className="rounded-full border border-[var(--gold)]/20 bg-white/75 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.22em] text-[var(--muted)]">
+                              {user.profileVisibility === "private"
+                                ? "Private"
+                                : user.profileVisibility === "community"
+                                  ? "Community"
+                                  : "Public"}
+                            </span>
+                          </div>
+
+                          <p className="mt-2 font-[family:var(--font-display)] text-4xl italic leading-none text-[var(--river-deep)]">
                             {user.name}
                           </p>
-                          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+
+                          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
                             <span>{user.country || user.homeBase || "Explorer"}</span>
                             <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
                             <span>Joined {formatMemberSince(user.memberSince)}</span>
@@ -270,96 +311,124 @@ export function GlobalDrawer() {
                               </>
                             ) : null}
                           </div>
-                          <p className="mt-5 max-w-[28ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+
+                          <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
                             {user.bio?.trim()
                               ? user.bio
-                              : "Logged dispatches, saved routes, and collected objects stay pinned to this field record."}
+                              : "Your travel profile powers checkout, community activity, and saved routes from one place."}
                           </p>
-                          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                            <div className="border border-[var(--line)] bg-white/60 px-4 py-3">
+                        </div>
+                      </div>
+
+                      <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-2">
+                        <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
+                          <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                            Base
+                          </p>
+                          <p className="mt-2 text-sm text-[var(--river-deep)]">
+                            {user.homeBase || user.country || "Unlisted"}
+                          </p>
+                        </div>
+                        <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
+                          <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                            Travel style
+                          </p>
+                          <p className="mt-2 text-sm text-[var(--river-deep)]">
+                            {user.travelStyle || "Open itinerary"}
+                          </p>
+                        </div>
+                        <div className="border border-[var(--gold)]/18 bg-[var(--gold)]/8 px-4 py-3 sm:col-span-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
                               <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                                Base
+                                Profile completeness
                               </p>
-                              <p className="mt-2 text-sm text-[var(--river-deep)]">
-                                {user.homeBase || user.country || "Unlisted"}
+                              <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
+                                {profileCompletion(user)}%
                               </p>
                             </div>
-                            <div className="border border-[var(--line)] bg-white/60 px-4 py-3">
-                              <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                                Travel style
-                              </p>
-                              <p className="mt-2 text-sm text-[var(--river-deep)]">
-                                {user.travelStyle || "Open itinerary"}
-                              </p>
+                            <div className="h-2 w-32 overflow-hidden rounded-full bg-white/80">
+                              <div
+                                className="h-full rounded-full bg-[linear-gradient(90deg,var(--cinnabar),var(--gold))]"
+                                style={{ width: `${profileCompletion(user)}%` }}
+                              />
                             </div>
                           </div>
+                          <p className="mt-2 text-[10px] leading-5 text-[var(--muted)]">
+                            Next step: {nextProfileStep(user)}
+                          </p>
                         </div>
                       </div>
                     </div>
 
-                    <Link
-                      href="/community"
-                      onClick={closeDrawer}
-                      className="group relative block overflow-hidden border border-[var(--line)] bg-[var(--paper)] px-7 py-6 shadow-[0_24px_50px_rgba(17,25,35,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_28px_60px_rgba(17,25,35,0.14)]"
-                    >
-                      <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
-                      <div className="absolute right-6 top-6 rotate-[2deg] border border-[var(--gold)]/25 bg-[var(--drawer-badge)] px-3 py-2 text-center shadow-sm">
-                        <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--gold)]">Stamps</p>
-                        <p className="mt-1 text-lg font-[family:var(--font-display)] italic text-[var(--river-deep)]">{stamps}</p>
-                      </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.45em] text-[var(--gold)]">
+                        Layer 02
+                      </span>
+                      <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+                        Workflow
+                      </span>
+                    </div>
 
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--river-deep)]/12 bg-[var(--river-deep)] text-white shadow-lg">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+                      <Link
+                        href={pathname?.startsWith("/checkout") ? "/checkout" : "/community"}
+                        onClick={closeDrawer}
+                        className="group relative block overflow-hidden border border-[var(--line)] bg-[var(--paper)] px-7 py-6 shadow-[0_24px_50px_rgba(17,25,35,0.1)] transition-all hover:-translate-y-1 hover:shadow-[0_28px_60px_rgba(17,25,35,0.14)]"
+                      >
+                        <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--river-deep)]/12 bg-[var(--river-deep)] text-white shadow-lg">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                              </div>
+                              <div className="pt-1">
+                                <p className="text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]">Activity tier</p>
+                                <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
+                                  {activityLabel(stamps)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-[var(--gold)]/25 bg-[var(--drawer-badge)] px-4 py-3 text-center shadow-sm">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--gold)]">Stamps</p>
+                              <p className="mt-1 text-2xl font-[family:var(--font-display)] italic text-[var(--river-deep)]">{stamps}</p>
+                            </div>
                           </div>
-                          <div className="pt-1">
-                            <p className="text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]">Field Status</p>
-                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
-                              {stamps >= 10 ? "Route Master" : stamps >= 5 ? "Pathfinder" : "Fresh Recruit"}
-                            </p>
+                          <p className="mt-5 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+                            {user.latestDispatchTitle
+                              ? `Latest activity: ${user.latestDispatchTitle}.`
+                              : "Activity, saved routes, and community marks all accumulate here as one user record."}
+                          </p>
+                        </div>
+                      </Link>
+
+                      <div className="grid gap-3">
+                        <Link
+                          href="/login"
+                          onClick={closeDrawer}
+                          className="group flex items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
+                        >
+                          <div>
+                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Edit profile</p>
+                            <p className="mt-2 text-sm text-[var(--river-deep)]">Update name, bio, and travel style</p>
                           </div>
-                        </div>
-                        <p className="mt-5 max-w-[30ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
-                          Community marks, route notes, and recurring sightings accumulate here like stamps in a paper passport.
-                        </p>
-                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                          <div className="border border-[var(--line)] bg-white/55 px-4 py-3">
-                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                              Dispatches
-                            </p>
-                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
-                              {user.dispatchCount ?? 0}
-                            </p>
+                          <span className="text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
+                        </Link>
+                        <Link
+                          href={pathname?.startsWith("/checkout") ? "/checkout" : "/community"}
+                          onClick={closeDrawer}
+                          className="group flex items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
+                        >
+                          <div>
+                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Continue flow</p>
+                            <p className="mt-2 text-sm text-[var(--river-deep)]">Return to checkout or keep browsing</p>
                           </div>
-                          <div className="border border-[var(--line)] bg-white/55 px-4 py-3">
-                            <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                              Photo notes
-                            </p>
-                            <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
-                              {user.photoDispatchCount ?? 0}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
-                          <span>{user.provider || "password"}</span>
-                          <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
-                          <span>{formatVisibility(user.profileVisibility)}</span>
-                          {user.latestDispatchTitle ? (
-                            <>
-                              <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
-                              <span className="max-w-[20ch] truncate normal-case tracking-[0.08em]">
-                                Latest: {user.latestDispatchTitle}
-                              </span>
-                            </>
-                          ) : null}
-                        </div>
-                        <div className="mt-6 flex items-center gap-3 text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-                          <span className="h-px w-8 bg-[var(--gold)]/60" />
-                          Open community record
-                        </div>
+                          <span className="text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
+                        </Link>
                       </div>
-                    </Link>
+                    </div>
 
                     <div className="flex items-center justify-between">
                       <button
@@ -399,6 +468,16 @@ export function GlobalDrawer() {
                   </Link>
                 </section>
               )}
+
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-bold uppercase tracking-[0.45em] text-[var(--gold)]">
+                  Layer 03
+                </span>
+                <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+                  Data
+                </span>
+              </div>
 
               {/* Data Layers */}
               <section className="space-y-12">

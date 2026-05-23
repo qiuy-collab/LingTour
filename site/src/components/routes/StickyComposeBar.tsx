@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FieldKit } from "@/components/community/FieldKit";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
+import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import { createCommunityPost, type RouteCommunityPost } from "@/lib/api-data";
 
 type RouteStopTarget = { index: number; time: string; name: string };
@@ -45,6 +46,7 @@ export function StickyComposeBar({
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<RouteCommunityPost[]>(initialPosts);
   const [user, setUser] = useState<LocalUser | null>(null);
+  const isLoggedIn = Boolean(user);
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -62,10 +64,14 @@ export function StickyComposeBar({
   }, []);
 
   useEffect(() => {
-    if (composeTarget) {
+    if (composeTarget && isLoggedIn) {
       setOpen(true);
+      setError(null);
+    } else if (composeTarget && !isLoggedIn) {
+      setOpen(false);
+      setError(AUTH_PROMPTS.connectGoogleToRoutePublish);
     }
-  }, [composeTarget]);
+  }, [composeTarget, isLoggedIn]);
 
   const postingContext = composeTarget
     ? `${routeTitle} · Stop ${composeTarget.index + 1} · ${composeTarget.name}`
@@ -81,6 +87,11 @@ export function StickyComposeBar({
     const note = draft.note.trim();
     const body = [title, note].filter(Boolean).join("\n");
     if (submitting) return;
+    if (!isLoggedIn || !user) {
+      const message = AUTH_PROMPTS.connectGoogleToRoutePublish;
+      setError(message);
+      throw new Error(message);
+    }
     if (!body) {
       const message = "Add a title or note before posting on this route.";
       setError(message);
@@ -97,15 +108,13 @@ export function StickyComposeBar({
         routeTitle,
         routeCity,
         stop: composeTarget,
-        user: user
-          ? {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              handle: user.email?.split("@")[0],
-              avatar: user.avatarUrl,
-            }
-          : { name: "Anonymous Field Agent" },
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          handle: user.email?.split("@")[0],
+          avatar: user.avatarUrl,
+        },
       });
 
       setPosts((prev) => [created, ...prev]);
@@ -138,6 +147,10 @@ export function StickyComposeBar({
             onClearTarget?.();
           }
         }}
+        isLoggedIn={isLoggedIn}
+        onRequireLogin={() =>
+          setError(AUTH_PROMPTS.connectGoogleToRoutePublish)
+        }
         onPublish={handlePublish}
         initialBrief={{
           title: routeTitle,
@@ -155,7 +168,13 @@ export function StickyComposeBar({
       >
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            if (!isLoggedIn) {
+              setError(AUTH_PROMPTS.connectGoogleToRoutePublish);
+              return;
+            }
+            setOpen(true);
+          }}
           className="site-container flex w-full items-center justify-between gap-4 py-3.5 text-left transition hover:bg-[var(--paper-deep)]/40"
         >
           <div className="flex min-w-0 items-center gap-3">
@@ -177,7 +196,7 @@ export function StickyComposeBar({
               {posts.length} {posts.length === 1 ? "note" : "notes"}
             </span>
             <span className="inline-flex items-center gap-2 bg-[var(--cinnabar)] px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-white">
-              Leave Note
+              {isLoggedIn ? "Leave Note" : "Connect Google"}
               <span aria-hidden>↗</span>
             </span>
           </div>

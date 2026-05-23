@@ -42,6 +42,15 @@ export const SEED_IMAGES = {
 
   routesHero: uploaded("/uploads/seed/southern-coast-1400.jpg"),
   routesCta: uploaded("/uploads/seed/southern-sea-table-cover.jpg"),
+  routeHuguangyan: uploaded("/uploads/seed/route-huguangyan.jpg"),
+  routeDongfeng: uploaded("/uploads/seed/route-dongfeng.jpg"),
+  routeXiashan: uploaded("/uploads/seed/route-xiashan.jpg"),
+  routeJinsha: uploaded("/uploads/seed/route-jinsha.jpg"),
+  routeSouthernCoast1200: uploaded("/uploads/seed/southern-coast-1200.jpg"),
+  routeSouthernCoast1400: uploaded("/uploads/seed/southern-coast-1400.jpg"),
+  routeVolcanicLandscape1200: uploaded("/uploads/seed/volcanic-landscape-1200.jpg"),
+  routeVolcanicLandscape800: uploaded("/uploads/seed/volcanic-landscape-800.jpg"),
+  routeSeafoodDishes800: uploaded("/uploads/seed/seafood-dishes-800.jpg"),
 
   shopHero: uploaded("/uploads/seed/zhanjiang-hero-1400-shop.jpg"),
   shopProduct: uploaded("/uploads/seed/volcanic-soil-bowl-1200.jpg"),

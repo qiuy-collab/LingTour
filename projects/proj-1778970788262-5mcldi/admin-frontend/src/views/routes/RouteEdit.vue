@@ -220,6 +220,21 @@ async function handleSave() {
     return
   }
 
+  // 自定义校验:经纬度范围 + 站点完整性
+  for (let i = 0; i < form.stops.length; i++) {
+    const s = form.stops[i] as any
+    const lat = Number(s.lat || 0)
+    const lng = Number(s.lng || 0)
+    if (lat < -90 || lat > 90) {
+      ElMessage.error(`第 ${i + 1} 个站点纬度需在 -90 到 90 之间`)
+      return
+    }
+    if (lng < -180 || lng > 180) {
+      ElMessage.error(`第 ${i + 1} 个站点经度需在 -180 到 180 之间`)
+      return
+    }
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {
@@ -371,12 +386,14 @@ async function handleSave() {
               </el-col>
               <el-col :span="8">
                 <el-form-item label="纬度">
-                  <el-input-number v-model="stop.lat" :precision="6" style="width: 100%" />
+                  <el-input-number v-model="stop.lat" :min="-90" :max="90" :precision="6" :step="0.0001" style="width: 100%" />
+                  <div class="form-hint-text">范围 -90 ~ 90</div>
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="经度">
-                  <el-input-number v-model="stop.lng" :precision="6" style="width: 100%" />
+                  <el-input-number v-model="stop.lng" :min="-180" :max="180" :precision="6" :step="0.0001" style="width: 100%" />
+                  <div class="form-hint-text">范围 -180 ~ 180</div>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -530,6 +547,12 @@ async function handleSave() {
   width: 100%;
   display: grid;
   gap: 10px;
+}
+
+.form-hint-text {
+  font-size: 11px;
+  color: #909399;
+  margin-top: 2px;
 }
 
 .detail-row {

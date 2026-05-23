@@ -81,8 +81,8 @@ export class CommunityController {
     return this.communityService.getPublicPostById(id);
   }
 
-  @Public()
   @Post('public/community/posts')
+  @ApiBearerAuth()
   async createPublicPost(@Body() dto: UpsertCommunityPostDto) {
     // 公开端点强制走审核，避免前端绕过
     return this.communityService.create({
@@ -91,8 +91,8 @@ export class CommunityController {
     });
   }
 
-  @Public()
   @Post('public/community/upload')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload image for community post (public)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -108,15 +108,15 @@ export class CommunityController {
     return { url: result.url };
   }
 
-  @Public()
   @Post('public/community/posts/:id/like')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle like on a post' })
   async likePost(@Param('id') id: string) {
     return this.communityService.incrementEngagement(id, 'likes');
   }
 
-  @Public()
   @Post('public/community/posts/:id/save')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle save on a post' })
   async savePost(@Param('id') id: string) {
     return this.communityService.incrementEngagement(id, 'saves');

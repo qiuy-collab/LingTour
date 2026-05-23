@@ -311,6 +311,97 @@ function StopNoteButton({ onClick }: { onClick?: () => void }) {
   );
 }
 
+function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string }) {
+  const frames = [...(stop.images ?? []), stop.image].filter(
+    (frame): frame is string => Boolean(frame?.trim()),
+  );
+  const uniqueFrames = Array.from(new Set(frames)).slice(0, 3);
+  const leadFrame = uniqueFrames[0];
+  const supportFrames = uniqueFrames.slice(1);
+
+  return (
+    <motion.section
+      className="mt-20 overflow-hidden border border-[var(--line)] bg-[linear-gradient(180deg,rgba(250,246,238,0.98),rgba(243,238,229,0.95))] shadow-[0_24px_60px_rgba(17,25,35,0.08)]"
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-12%" }}
+      transition={{ duration: 0.55, ease: "easeOut" }}
+    >
+      <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="relative min-h-[22rem] overflow-hidden bg-[var(--paper)]">
+          {leadFrame ? (
+            <img
+              src={leadFrame}
+              alt={stop.stop}
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.06),rgba(17,25,35,0.28))]" />
+          <div className="absolute left-6 top-6 border border-white/45 bg-white/85 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
+            Closing frame
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-8">
+            <p className="font-mono text-[9px] uppercase tracking-[0.32em] text-white/72">
+              End of route
+            </p>
+            <h3 className="mt-3 font-[family:var(--font-display)] text-4xl leading-[1.02] lg:text-5xl">
+              {routeTitle}
+            </h3>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-white/82">
+              The route closes where the coast, the market, and the table begin to overlap.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 p-6 lg:p-8">
+          <div>
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
+              Final note
+            </p>
+            <p className="mt-3 font-[family:var(--font-display)] text-2xl leading-[1.18] text-[var(--river-deep)]">
+              Last image, last meal, last look back.
+            </p>
+            <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
+              This closing spread uses the final stop imagery to keep the page visually complete all the way to the footer.
+            </p>
+          </div>
+
+          {supportFrames.length ? (
+            <div className="grid grid-cols-2 gap-3">
+              {supportFrames.map((frame, index) => (
+                <div
+                  key={`${frame}-${index}`}
+                  className={`overflow-hidden border border-white/70 bg-white shadow-[0_12px_30px_rgba(17,25,35,0.1)] ${
+                    index === 1 ? "col-span-2" : ""
+                  }`}
+                >
+                  <img
+                    src={frame}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="rounded-2xl border border-[var(--gold)]/25 bg-[var(--gold)]/10 px-4 py-4">
+            <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[var(--gold)]">
+              Archive note
+            </p>
+            <p className="mt-2 text-sm leading-7 text-[var(--river-deep)]/88">
+              The journey ends on the coast, but the sequence stays open for the next chapter.
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
 function StopNode({
   stop,
   index,
@@ -395,9 +486,10 @@ export function TimeAxisItinerary({ stops, routeStory, routeTitle, onAddStopNote
   const briefStory = useMemo(() => routeStory.trim(), [routeStory]);
 
   if (stops.length === 0) return null;
+  const lastStop = stops[stops.length - 1];
 
   return (
-    <section ref={sectionRef} id="itinerary" className="relative overflow-hidden bg-[var(--background)] bg-grain pb-20 pt-16 lg:pb-32 lg:pt-24">
+    <section ref={sectionRef} id="itinerary" className="relative overflow-hidden bg-[var(--background)] bg-grain pb-28 pt-16 lg:pb-40 lg:pt-24">
       <div className="site-container relative z-10">
         <header className="mx-auto mb-20 max-w-3xl text-center">
           <div className="flex items-center justify-center gap-4">
@@ -435,8 +527,10 @@ export function TimeAxisItinerary({ stops, routeStory, routeTitle, onAddStopNote
             />
           ))}
 
+          {lastStop ? <RouteEpilogue stop={lastStop} routeTitle={routeTitle} /> : null}
+
           <motion.div
-            className="mt-16 flex flex-col items-center"
+            className="mt-20 flex flex-col items-center pb-8"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-10%" }}

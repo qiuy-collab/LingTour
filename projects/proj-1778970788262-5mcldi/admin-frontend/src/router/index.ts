@@ -220,6 +220,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/operations/ContentAudit.vue'),
         meta: { title: '数据体检' },
       },
+      // 媒体库
+      {
+        path: 'media',
+        name: 'MediaLibrary',
+        component: () => import('@/views/media/MediaLibrary.vue'),
+        meta: { title: '媒体库' },
+      },
       // 用户管理
       {
         path: 'users',
@@ -262,23 +269,36 @@ const router = createRouter({
   routes,
 })
 
-// 路由守卫：未登录 → /login；角色不足 → /admin/dashboard
+// 路由守卫:未登录 → /login(并保留来源路径 redirect);已登录访问 /login → dashboard;角色不足拒绝
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
-  if (to.meta.requiresAuth !== false && !authStore.isLoggedIn) {
-    next('/login')
-  } else if (to.path === '/login' && authStore.isLoggedIn) {
-    next('/admin/dashboard')
-  } else if (to.meta.roles && authStore.currentUser) {
-    const allowedRoles = to.meta.roles as string[]
-    if (!allowedRoles.includes(authStore.currentUser.role)) {
-      next('/admin/dashboard')
-    } else {
-      next()
-    }
-  } else {
-    next()
+  const requiresAuth = to.meta.requiresAuth !== false
+  const requiredRoles = to.meta.roles as string[] | undefined
+
+  if (requiresAuth && !authStore.isLoggedIn) {
+    // 未登录,记录目标地址用于登录后跳回
+    next({
+      path: '/login',
+      query: to.fullPath !== '/login' ? { redirect: to.fullPath } : undefined,
+    })
+    return
   }
+
+  if (to.path === '/login' && authStore.isLoggedIn) {
+    next('/admin/dashboard')
+    return
+  }
+
+  if (requiredRoles && requiredRoles.length > 0) {
+    // 角色受限路由必须有合法用户对象,否则拒绝并强制重新登录
+    const role = authStore.currentUser?.role
+    if (!role || !requiredRoles.includes(role)) {
+      next('/login')
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

@@ -32,8 +32,35 @@ export class ApiRequestError extends Error {
 export interface RequestOptions extends Omit<RequestInit, "body"> {
   /** URL query parameters */
   params?: Record<string, string | number | undefined>;
-  /** JSON body — will be JSON.stringify'd and Content-Type set automatically */
+  /** Request body. Plain objects are JSON-stringified automatically. */
   body?: unknown;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== "object") return false;
+  return Object.prototype.toString.call(value) === "[object Object]";
+}
+
+function isBodyInit(value: unknown): value is BodyInit {
+  if (typeof value === "string") return true;
+  if (typeof FormData !== "undefined" && value instanceof FormData) return true;
+  if (typeof Blob !== "undefined" && value instanceof Blob) return true;
+  if (typeof URLSearchParams !== "undefined" && value instanceof URLSearchParams) return true;
+  if (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) return true;
+  if (typeof ReadableStream !== "undefined" && value instanceof ReadableStream) return true;
+  if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(value)) return true;
+  return false;
+}
+
+function serializeBody(body: unknown): BodyInit | undefined {
+  if (body === undefined) return undefined;
+  if (isBodyInit(body)) {
+    return body;
+  }
+  if (isPlainObject(body) || Array.isArray(body)) {
+    return JSON.stringify(body);
+  }
+  return String(body);
 }
 
 /**
@@ -46,7 +73,6 @@ export async function apiClient<T = unknown>(
   const { params, body, headers: customHeaders, ...rest } = options;
   const baseUrl = getBaseUrl();
 
-  // ── Build URL ──
   const fullPath = `${baseUrl}${endpoint}`;
   const url = new URL(
     fullPath,
@@ -60,18 +86,18 @@ export async function apiClient<T = unknown>(
     });
   }
 
-  // ── Build headers ──
   const headers: Record<string, string> = {
     Accept: "application/json",
     ...(customHeaders as Record<string, string>),
   };
 
-  // JSON content-type for request bodies
-  if (body !== undefined && !headers["Content-Type"]) {
+  const requestBody = serializeBody(body);
+  const isMultipart = typeof FormData !== "undefined" && body instanceof FormData;
+
+  if (requestBody !== undefined && !isMultipart && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  // JWT auth token
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("lingtour-token");
     if (token) {
@@ -79,7 +105,6 @@ export async function apiClient<T = unknown>(
     }
   }
 
-  // Locale header → backend I18nInterceptor resolves {en,zh} objects
   if (typeof window !== "undefined") {
     const locale = localStorage.getItem("lingtour-locale");
     if (locale === "zh") {
@@ -87,22 +112,20 @@ export async function apiClient<T = unknown>(
     }
   }
 
-  // ── Fire request ──
   let response: Response;
   try {
     response = await fetch(url.toString(), {
       ...rest,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   } catch (err) {
     throw new ApiRequestError({
       statusCode: 0,
-      message: err instanceof Error ? err.message : "Network error — unable to reach server",
+      message: err instanceof Error ? err.message : "Network error - unable to reach server",
     });
   }
 
-  // ── Handle non-2xx ──
   if (!response.ok) {
     let apiError: ApiError;
     try {
@@ -116,7 +139,6 @@ export async function apiClient<T = unknown>(
     throw new ApiRequestError(apiError);
   }
 
-  // ── Parse JSON response ──
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
     return response.json() as Promise<T>;
@@ -124,8 +146,6 @@ export async function apiClient<T = unknown>(
 
   return (await response.text()) as unknown as T;
 }
-
-// ───────────── Convenience wrappers ─────────────
 
 export function apiGet<T = unknown>(
   endpoint: string,

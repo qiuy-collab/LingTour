@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { productsApi } from '@/api/products'
+import { collectionsApi } from '@/api/collections'
 import type { Product } from '@/types/product'
+import { pickI18n } from '@/types/common'
 
 const router = useRouter()
 const loading = ref(false)
@@ -15,8 +17,20 @@ const keyword = ref('')
 const statusFilter = ref('')
 const collectionIdFilter = ref('')
 
-// 系列选项（从现有列表提取）
+// 系列选项 - 一次性从 API 加载,避免依赖商品列表分页
 const collectionOptions = ref<{ id: string; title: string }[]>([])
+
+async function fetchCollections() {
+  try {
+    const res = await collectionsApi.getCollections({ page: 1, pageSize: 100 } as any)
+    collectionOptions.value = (res.data.data.items || []).map((c: any) => ({
+      id: c.id,
+      title: pickI18n(c.title) || c.slug || c.id,
+    }))
+  } catch {
+    /* keep silent */
+  }
+}
 
 async function fetchList() {
   loading.value = true
@@ -31,15 +45,8 @@ async function fetchList() {
     const res = await productsApi.getProducts(params)
     list.value = res.data.data.items
     total.value = res.data.data.total
-    // 提取系列选项
-    const seen = new Set(collectionOptions.value.map((c) => c.id))
-    for (const p of list.value) {
-      const cid = p.collectionId || ''
-      if (cid && !seen.has(cid)) {
-        seen.add(cid)
-        collectionOptions.value.push({ id: cid, title: p.collectionName || '' })
-      }
-    }
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '加载商品列表失败')
   } finally {
     loading.value = false
   }
@@ -72,27 +79,37 @@ function handleEdit(id: string) {
 async function handleToggleStatus(row: Product) {
   const newStatus = !row.published
   const label = newStatus ? '上架' : '下架'
+  const productName = pickI18n(row.name as any) || '该商品'
   try {
-    // 假设后端 updateProduct 包含 published 字段的更新
+    await ElMessageBox.confirm(`确定${label}「${productName}」?`, `${label}确认`, {
+      type: newStatus ? 'success' : 'warning',
+    })
     await productsApi.updateProduct(row.id, { published: newStatus })
     row.published = newStatus
-    ElMessage.success(`${row.name} 已${label}`)
-  } catch {
-    ElMessage.error('操作失败')
+    ElMessage.success(`${productName} 已${label}`)
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
   }
 }
 
-async function handleDelete(id: string, name: string) {
+async function handleDelete(row: Product) {
+  const productName = pickI18n(row.name as any) || '该商品'
   try {
-    await productsApi.deleteProduct(id)
-    ElMessage.success(`商品「${name}」已删除`)
+    await ElMessageBox.confirm(
+      `确定删除商品「${productName}」?该操作不可恢复。`,
+      '删除确认',
+      { type: 'warning' }
+    )
+    await productsApi.deleteProduct(row.id)
+    ElMessage.success(`商品「${productName}」已删除`)
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
 onMounted(() => {
+  fetchCollections()
   fetchList()
 })
 </script>
@@ -153,11 +170,15 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="商品名称" min-width="180">
         <template #default="{ row }">
-          <div>{{ row.name || '' }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.nameEn || '' }}</div>
+          <div>{{ pickI18n(row.name) }}</div>
+          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.name, 'en') }}</div>
         </template>
       </el-table-column>
-      <el-table-column prop="collectionName" label="所属系列" width="140" />
+      <el-table-column label="所属系列" width="160">
+        <template #default="{ row }">
+          {{ pickI18n(row.collectionName) || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column label="价格" width="120" align="right">
         <template #default="{ row }">
           <span style="font-weight: 600">{{ row.currency }} {{ row.price }}</span>
@@ -187,14 +208,7 @@ onMounted(() => {
           >
             {{ row.published ? '下架' : '上架' }}
           </el-button>
-          <el-popconfirm
-            title="确定删除该商品？"
-            @confirm="handleDelete(row.id, row.name)"
-          >
-            <template #reference>
-              <el-button size="small" type="danger">删除</el-button>
-            </template>
-          </el-popconfirm>
+          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

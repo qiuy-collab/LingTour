@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue'
+import { Plus, Delete, ZoomIn, Loading } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { resolveMediaUrl } from '@/utils/media'
 
@@ -24,6 +24,13 @@ const emit = defineEmits<{
 
 // 处理 modelValue
 const fileList = ref<any[]>([])
+const uploading = ref(false)
+
+/** 上传请求自动注入鉴权头 */
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+})
 
 // 同步初始值
 watch(
@@ -50,7 +57,17 @@ watch(
 )
 
 function handleSuccess(response: any) {
+  uploading.value = false
+  // 后端响应如非 0/null 视作业务错误
+  if (response && typeof response === 'object' && 'code' in response && response.code !== 0 && response.code !== 200) {
+    ElMessage.error(response.message || '上传失败')
+    return
+  }
   const url = response?.data?.url || response?.url || ''
+  if (!url) {
+    ElMessage.error('上传响应未返回 url')
+    return
+  }
   if (props.multiple) {
     const urls = [...(Array.isArray(props.modelValue) ? props.modelValue : [])]
     urls.push(url)
@@ -58,6 +75,19 @@ function handleSuccess(response: any) {
   } else {
     emit('update:modelValue', url)
   }
+  ElMessage.success('上传成功')
+}
+
+function handleError(err: any) {
+  uploading.value = false
+  let msg = '上传失败'
+  try {
+    const parsed = typeof err === 'string' ? JSON.parse(err) : err
+    msg = parsed?.message || parsed?.statusText || msg
+  } catch {
+    /* ignore */
+  }
+  ElMessage.error(msg)
 }
 
 function handleRemove(index: number) {
@@ -81,6 +111,7 @@ function beforeUpload(file: File) {
     ElMessage.error('图片大小不能超过 5MB')
     return false
   }
+  uploading.value = true
   return true
 }
 
@@ -122,13 +153,16 @@ const uploadLimit = computed(() => {
       <el-upload
         v-if="fileList.length < uploadLimit"
         :action="'/api/admin/upload'"
+        :headers="uploadHeaders"
         :show-file-list="false"
         :before-upload="beforeUpload"
         :on-success="handleSuccess"
+        :on-error="handleError"
         :accept="accept"
         class="upload-trigger"
       >
-        <el-icon class="upload-icon"><Plus /></el-icon>
+        <el-icon v-if="uploading" class="upload-icon is-loading"><Loading /></el-icon>
+        <el-icon v-else class="upload-icon"><Plus /></el-icon>
       </el-upload>
     </div>
   </div>
@@ -206,5 +240,15 @@ const uploadLimit = computed(() => {
 .upload-icon {
   font-size: 28px;
   color: #c0c4cc;
+}
+
+.upload-icon.is-loading {
+  animation: rotate 1s linear infinite;
+  color: #409eff;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

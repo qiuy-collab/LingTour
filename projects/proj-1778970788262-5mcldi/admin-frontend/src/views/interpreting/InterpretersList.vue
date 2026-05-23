@@ -14,6 +14,12 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = ref(10)
 const statusFilter = ref('')
+const keyword = ref('')
+
+/** 安全提取 I18nObject 中文，用于消息提示和头像首字符 */
+function nameZh(row: Interpreter): string {
+  return pickI18n(row.name) || '该口译员'
+}
 
 async function fetchList() {
   loading.value = true
@@ -22,9 +28,12 @@ async function fetchList() {
       page: page.value,
       pageSize: pageSize.value,
       status: statusFilter.value,
+      keyword: keyword.value || undefined,
     } as any)
     list.value = res.data.data.items
     total.value = res.data.data.total
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '加载口译员列表失败')
   } finally {
     loading.value = false
   }
@@ -54,25 +63,30 @@ function handleEdit(id: string) {
   router.push(`/admin/interpreting/profiles/${id}/edit`)
 }
 
-async function handleDelete(id: string, name: string) {
+async function handleDelete(row: Interpreter) {
   try {
-    await interpretersApi.deleteInterpreter(id)
-    ElMessage.success(`口译员「${name}」已删除`)
+    await ElMessageBox.confirm(
+      `确定删除口译员「${nameZh(row)}」?该操作不可恢复。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+    await interpretersApi.deleteInterpreter(row.id)
+    ElMessage.success(`口译员「${nameZh(row)}」已删除`)
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
 async function handleApprove(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `确定审核通过「${row.name}」？通过后将变为已激活状态。`,
+      `确定审核通过「${nameZh(row)}」?通过后将变为已激活状态。`,
       '审核确认',
       { confirmButtonText: '通过', cancelButtonText: '取消', type: 'success' }
     )
     await interpretersApi.updateStatus(row.id, 'active')
-    ElMessage.success(`${row.name} 审核通过，已激活`)
+    ElMessage.success(`${nameZh(row)} 审核通过,已激活`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -80,12 +94,12 @@ async function handleApprove(row: Interpreter) {
 async function handleReject(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `确定拒绝「${row.name}」的申请？拒绝后将变为已禁用状态。`,
+      `确定拒绝「${nameZh(row)}」的申请?拒绝后将变为已禁用状态。`,
       '拒绝确认',
       { confirmButtonText: '拒绝', cancelButtonText: '取消', type: 'warning' }
     )
     await interpretersApi.updateStatus(row.id, 'inactive')
-    ElMessage.info(`${row.name} 已拒绝，状态变为已禁用`)
+    ElMessage.info(`${nameZh(row)} 已拒绝,状态变为已禁用`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -93,20 +107,27 @@ async function handleReject(row: Interpreter) {
 async function handleDisable(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `确定禁用「${row.name}」？`,
+      `确定禁用「${nameZh(row)}」?`,
       '禁用确认',
       { confirmButtonText: '禁用', cancelButtonText: '取消', type: 'warning' }
     )
     await interpretersApi.updateStatus(row.id, 'inactive')
-    ElMessage.info(`${row.name} 已禁用`)
+    ElMessage.info(`${nameZh(row)} 已禁用`)
     fetchList()
   } catch { /* cancelled */ }
 }
 
 async function handleEnable(row: Interpreter) {
-  await interpretersApi.updateStatus(row.id, 'active')
-  ElMessage.success(`${row.name} 已启用`)
-  fetchList()
+  try {
+    await ElMessageBox.confirm(
+      `确定启用「${nameZh(row)}」?`,
+      '启用确认',
+      { confirmButtonText: '启用', cancelButtonText: '取消', type: 'success' }
+    )
+    await interpretersApi.updateStatus(row.id, 'active')
+    ElMessage.success(`${nameZh(row)} 已启用`)
+    fetchList()
+  } catch { /* cancelled */ }
 }
 
 onMounted(() => {
@@ -122,35 +143,53 @@ onMounted(() => {
     </div>
 
     <div class="search-bar">
+      <el-input
+        v-model="keyword"
+        placeholder="搜索姓名/语种"
+        clearable
+        style="width: 240px"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      />
       <el-select v-model="statusFilter" placeholder="状态筛选" clearable style="width: 160px" @change="handleSearch">
         <el-option label="全部" value="" />
         <el-option label="待审核" value="pending_review" />
         <el-option label="已激活" value="active" />
         <el-option label="已禁用" value="inactive" />
       </el-select>
+      <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
-    <el-table :data="list" v-loading="loading" stripe>
+    <el-table :data="list" v-loading="loading" stripe empty-text="暂无口译员数据">
       <el-table-column label="头像" width="70">
         <template #default="{ row }">
           <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
-          <el-avatar v-else :size="40">{{ row.name.charAt(0) }}</el-avatar>
+          <el-avatar v-else :size="40">{{ nameZh(row).charAt(0) }}</el-avatar>
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="姓名" width="100" />
-      <el-table-column prop="language" label="服务语种" width="200" show-overflow-tooltip />
-      <el-table-column label="专注领域" min-width="180">
+      <el-table-column label="姓名" width="140">
         <template #default="{ row }">
-          <div>{{ row.focus || '' }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.focusEn || '' }}</div>
+          <div>{{ pickI18n(row.name) }}</div>
+          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.name, 'en') }}</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="服务语种" width="200" show-overflow-tooltip>
+        <template #default="{ row }">{{ pickI18n(row.language) }}</template>
+      </el-table-column>
+      <el-table-column label="专注领域" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div>{{ pickI18n(row.focus) }}</div>
+          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.focus, 'en') }}</div>
         </template>
       </el-table-column>
       <el-table-column label="能力标签" min-width="200">
         <template #default="{ row }">
-          <el-tag v-for="h in row.helps" :key="pickI18n(h)" size="small" style="margin: 2px 2px">{{ pickI18n(h) }}</el-tag>
+          <el-tag v-for="(h, i) in row.helps" :key="i" size="small" style="margin: 2px 2px">{{ pickI18n(h) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="city" label="服务城市" width="100" align="center" />
+      <el-table-column label="服务城市" width="120" align="center">
+        <template #default="{ row }">{{ pickI18n(row.city) }}</template>
+      </el-table-column>
       <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">
           <el-tag :type="(InterpreterStatusColorMap as Record<string, string>)[row.status]" size="small">
@@ -171,11 +210,7 @@ onMounted(() => {
           <template v-if="row.status === 'inactive'">
             <el-button size="small" type="success" @click="handleEnable(row)">启用</el-button>
           </template>
-          <el-popconfirm title="确定删除该口译员？" @confirm="handleDelete(row.id, row.name)">
-            <template #reference>
-              <el-button size="small" type="danger">删除</el-button>
-            </template>
-          </el-popconfirm>
+          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

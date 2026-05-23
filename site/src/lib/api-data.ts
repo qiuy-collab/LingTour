@@ -25,6 +25,7 @@ import type {
 import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
+import { SEED_IMAGES } from "@/lib/seed-images";
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Internal API response types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -44,6 +45,7 @@ interface ApiRouteStop {
   hotel: string | null;
   transit: string | null;
   placeDetail?: string;
+  images?: string[];
 }
 
 interface ApiStoryRoute {
@@ -174,6 +176,16 @@ interface ApiHomeConfig {
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Mappers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
+  const southernSeaTableStopImages =
+    apiRoute.slug === "southern-sea-table"
+      ? [
+          [SEED_IMAGES.routeHuguangyan, SEED_IMAGES.routeVolcanicLandscape1200, SEED_IMAGES.routeVolcanicLandscape800],
+          [SEED_IMAGES.routeDongfeng, SEED_IMAGES.routeSeafoodDishes800, SEED_IMAGES.routeSouthernCoast1200],
+          [SEED_IMAGES.routeXiashan, SEED_IMAGES.routeSouthernCoast1400, SEED_IMAGES.routeSouthernCoast1200],
+          [SEED_IMAGES.routeJinsha, SEED_IMAGES.routeSouthernCoast1400, SEED_IMAGES.routeSeafoodDishes800],
+        ]
+      : [];
+
   return {
     slug: apiRoute.slug,
     title: apiRoute.title,
@@ -189,23 +201,32 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     story: apiRoute.story,
     image: apiRoute.coverImage,
     mapViewBox: "0 0 900 600",
-    itinerary: (apiRoute.stops ?? []).map((s) => ({
-      time: s.time,
-      stop: s.stopName,
-      plan: s.plan ?? "",
-      story: s.story,
-      details: s.details ?? [],
-      culturalStory: s.culturalStory,
-      lat: s.lat ?? 0,
-      lng: s.lng ?? 0,
-      placeDetail: s.placeDetail,
-      meal: s.meal ?? undefined,
-      hotel: s.hotel ?? undefined,
-      transit: s.transit ?? undefined,
-      // 注意：不再 fallback 到本地 seed 数据。后台没给图就让 UI 走空态。
-      image: s.image || undefined,
-      images: undefined,
-    })),
+    itinerary: (apiRoute.stops ?? []).map((s, index) => {
+      const fallbackImages = southernSeaTableStopImages[index] ?? [];
+      const images = [
+        ...(s.images ?? []),
+        s.image,
+        ...fallbackImages,
+      ].filter((frame): frame is string => Boolean(frame?.trim()));
+      const uniqueImages = Array.from(new Set(images)).slice(0, 3);
+
+      return {
+        time: s.time,
+        stop: s.stopName,
+        plan: s.plan ?? "",
+        story: s.story,
+        details: s.details ?? [],
+        culturalStory: s.culturalStory,
+        lat: s.lat ?? 0,
+        lng: s.lng ?? 0,
+        placeDetail: s.placeDetail,
+        meal: s.meal ?? undefined,
+        hotel: s.hotel ?? undefined,
+        transit: s.transit ?? undefined,
+        image: uniqueImages[0] ?? s.image,
+        images: uniqueImages.length > 1 ? uniqueImages : undefined,
+      };
+    }),
   };
 }
 

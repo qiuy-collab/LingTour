@@ -52,6 +52,7 @@ export class Order {
   @Column({ type: 'varchar', length: 32, unique: true, name: 'order_no' })
   orderNo: string;
 
+  @Index()
   @Column({ type: 'uuid', name: 'user_id', nullable: true })
   userId: string | null;
 

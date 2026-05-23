@@ -29,6 +29,7 @@ import { HomeModule } from './modules/home/home.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { CommunityModule } from './modules/community/community.module';
 import { EventsModule } from './modules/events/events.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { EventsModule } from './modules/events/events.module';
     SettingsModule,
     CommunityModule,
     EventsModule,
+    HealthModule,
   ],
   providers: [
     {

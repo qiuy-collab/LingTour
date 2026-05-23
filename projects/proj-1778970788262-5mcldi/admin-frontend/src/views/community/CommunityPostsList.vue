@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { communityApi } from '@/api/community'
 import type { CommunityPost, PostChannel, PostStatus } from '@/types/community'
 import { PostChannelMap, PostChannelColorMap, PostStatusMap, PostStatusColorMap } from '@/types/community'
@@ -16,6 +16,7 @@ const page = ref(1)
 const pageSize = ref(10)
 const channelFilter = ref('')
 const statusFilter = ref('')
+const keyword = ref('')
 
 async function fetchList() {
   loading.value = true
@@ -25,9 +26,12 @@ async function fetchList() {
       pageSize: pageSize.value,
       channel: channelFilter.value,
       status: statusFilter.value,
-    })
+      keyword: keyword.value || undefined,
+    } as any)
     list.value = res.data.data.items
     total.value = res.data.data.total
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '加载帖子列表失败')
   } finally {
     loading.value = false
   }
@@ -47,12 +51,19 @@ function handleViewDetail(post: CommunityPost) {
 }
 
 async function handleReview(post: CommunityPost, status: PostStatus, rejectionReason?: string) {
+  const isPublish = status === 'published'
+  const actionText = isPublish ? '审核通过' : '隐藏帖子'
   try {
+    await ElMessageBox.confirm(
+      `确定${actionText}「${post.title || '该帖子'}」?`,
+      `${actionText}确认`,
+      { type: isPublish ? 'success' : 'warning' }
+    )
     await communityApi.reviewPost(post.id, status, rejectionReason)
-    ElMessage.success(status === 'published' ? '审核通过' : '已隐藏')
+    ElMessage.success(isPublish ? '审核通过' : '已隐藏')
     fetchList()
-  } catch {
-    ElMessage.error('操作失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
   }
 }
 
@@ -61,18 +72,23 @@ async function handleToggleFeatured(post: CommunityPost) {
     await communityApi.toggleFeatured(post.id, !post.featured)
     ElMessage.success(post.featured ? '已取消精选' : '已设为精选')
     fetchList()
-  } catch {
-    ElMessage.error('操作失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '操作失败')
   }
 }
 
 async function handleDelete(post: CommunityPost) {
   try {
+    await ElMessageBox.confirm(
+      `确定删除「${post.title || '该帖子'}」?为软删除,可在后台恢复。`,
+      '删除确认',
+      { type: 'warning' }
+    )
     await communityApi.deletePost(post.id)
-    ElMessage.success('帖子已删除（软删除）')
+    ElMessage.success('帖子已删除(软删除)')
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
@@ -104,6 +120,14 @@ onMounted(() => { fetchList() })
 
     <!-- 筛选栏 -->
     <div class="search-bar">
+      <el-input
+        v-model="keyword"
+        placeholder="搜索标题/作者"
+        clearable
+        style="width: 240px"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      />
       <el-select
         v-model="channelFilter"
         placeholder="频道筛选"
@@ -210,11 +234,7 @@ onMounted(() => { fetchList() })
           >
             {{ row.featured ? '取消精选' : '精选' }}
           </el-button>
-          <el-popconfirm title="确定删除该帖子？（软删除，可恢复）" @confirm="handleDelete(row)">
-            <template #reference>
-              <el-button size="small" type="danger">删除</el-button>
-            </template>
-          </el-popconfirm>
+          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

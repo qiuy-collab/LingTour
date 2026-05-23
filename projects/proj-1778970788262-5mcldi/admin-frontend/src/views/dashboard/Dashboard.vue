@@ -23,8 +23,8 @@ async function fetchData() {
     data.value = res.data.data
     await nextTick()
     renderCharts()
-  } catch {
-    ElMessage.error('获取仪表盘数据失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '获取仪表盘数据失败')
   } finally {
     loading.value = false
   }
@@ -45,6 +45,9 @@ function renderTrendChart() {
   const dates = data.value.orderTrend.map((t) => t.date.slice(5)) // MM-DD
   const amounts = data.value.orderTrend.map((t) => t.amount)
   const counts = data.value.orderTrend.map((t) => t.count)
+  // yAxis 上限根据数据动态计算,避免硬编码截断
+  const maxCount = Math.max(0, ...counts)
+  const countMax = Math.max(5, Math.ceil((maxCount + 1) / 5) * 5)
 
   trendChart.setOption({
     tooltip: {
@@ -77,8 +80,8 @@ function renderTrendChart() {
         type: 'value',
         name: '订单数',
         min: 0,
-        max: 15,
-        interval: 3,
+        max: countMax,
+        minInterval: 1,
       },
     ],
     series: [

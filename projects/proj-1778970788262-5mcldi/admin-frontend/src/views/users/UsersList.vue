@@ -6,6 +6,7 @@ import type { ManagedUser, UserStatus } from '@/types/user'
 import { UserStatusMap, UserStatusColorMap, LocaleMap } from '@/types/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import { formatDate } from '@/utils/format'
 
 const router = useRouter()
 
@@ -33,8 +34,8 @@ async function fetchUsers() {
     const data = res.data.data
     users.value = data.items
     total.value = data.total
-  } catch {
-    ElMessage.error('获取用户列表失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '获取用户列表失败')
   } finally {
     loading.value = false
   }
@@ -50,6 +51,12 @@ function handlePageChange(page: number) {
   fetchUsers()
 }
 
+function handleSizeChange(size: number) {
+  filters.pageSize = size
+  filters.page = 1
+  fetchUsers()
+}
+
 function handleViewDetail(user: ManagedUser) {
   router.push(`/admin/users/${user.id}`)
 }
@@ -57,35 +64,27 @@ function handleViewDetail(user: ManagedUser) {
 async function handleBan(user: ManagedUser) {
   try {
     await ElMessageBox.confirm(
-      `确定要封禁用户「${user.name}」吗？封禁后该用户将无法登录和使用服务。`,
+      `确定要封禁用户「${user.name}」吗?封禁后该用户将无法登录和使用服务。`,
       '封禁确认',
       { confirmButtonText: '确定封禁', cancelButtonText: '取消', type: 'warning' }
     )
     await banUser(user.id)
     ElMessage.success(`已封禁用户「${user.name}」`)
     fetchUsers()
-  } catch {
-    // 取消操作
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '封禁失败')
   }
 }
 
 async function handleUnban(user: ManagedUser) {
   try {
+    await ElMessageBox.confirm(`确定解封用户「${user.name}」?`, '解封确认', { type: 'success' })
     await unbanUser(user.id)
     ElMessage.success(`已解封用户「${user.name}」`)
     fetchUsers()
-  } catch {
-    ElMessage.error('解封失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '解封失败')
   }
-}
-
-function formatDate(dateStr: string) {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
 }
 
 onMounted(() => {
@@ -156,8 +155,8 @@ onMounted(() => {
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column prop="bookingsCount" label="预约次数" width="90" align="center" sortable />
-        <el-table-column prop="ordersCount" label="订单次数" width="90" align="center" sortable />
+        <el-table-column prop="bookingsCount" label="预约次数" width="90" align="center" />
+        <el-table-column prop="ordersCount" label="订单次数" width="90" align="center" />
         <el-table-column prop="status" label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="(UserStatusColorMap as Record<string, string>)[row.status]" size="small">
@@ -171,16 +170,7 @@ onMounted(() => {
               详情
             </el-button>
             <template v-if="row.status === 'active'">
-              <el-popconfirm
-                title="确定封禁该用户？"
-                confirm-button-text="确定"
-                cancel-button-text="取消"
-                @confirm="handleBan(row)"
-              >
-                <template #reference>
-                  <el-button size="small" type="danger" link>封禁</el-button>
-                </template>
-              </el-popconfirm>
+              <el-button size="small" type="danger" link @click="handleBan(row)">封禁</el-button>
             </template>
             <template v-else>
               <el-button size="small" type="success" link @click="handleUnban(row)">
@@ -195,10 +185,12 @@ onMounted(() => {
       <div class="pagination-wrap">
         <el-pagination
           v-model:current-page="filters.page"
-          :page-size="filters.pageSize"
+          v-model:page-size="filters.pageSize"
           :total="total"
-          layout="total, prev, pager, next"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next"
           @current-change="handlePageChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </el-card>

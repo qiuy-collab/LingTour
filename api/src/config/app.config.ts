@@ -1,7 +1,7 @@
 export default () => ({
   port: parseInt(process.env.PORT ?? '3001', 10),
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'dev-secret',
+    secret: process.env.JWT_SECRET ?? '',
     expiration: process.env.JWT_EXPIRATION ?? '24h',
   },
   upload: {

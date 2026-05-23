@@ -15,6 +15,7 @@ export class BookingSubmission {
   @Column({ type: 'varchar', length: 200 })
   name: string;
 
+  @Index()
   @Column({ type: 'varchar', length: 300 })
   contact: string;
 
@@ -48,6 +49,7 @@ export class BookingSubmission {
   })
   assignedInterpreterName: string | null;
 
+  @Index()
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

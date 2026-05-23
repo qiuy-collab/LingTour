@@ -7,12 +7,15 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
+import { ConfigService } from '@nestjs/config';
+import { resolveJwtExpiration } from '../../common/auth/jwt-config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   private formatAccountId(userId: string): string {
@@ -35,10 +38,11 @@ export class AuthService {
     profileVisibility?: 'public' | 'community' | 'private';
   }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
+    const expiresIn = resolveJwtExpiration(this.configService);
 
     return {
-      access_token: this.jwtService.sign(payload),
-      expires_in: '24h',
+      access_token: this.jwtService.sign(payload, { expiresIn }),
+      expires_in: expiresIn,
       user: {
         id: user.id,
         accountId: this.formatAccountId(user.id),

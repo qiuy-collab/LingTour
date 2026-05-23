@@ -2,6 +2,14 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/store/auth'
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function readNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
 const instance = axios.create({
   baseURL: '/api/admin',
   timeout: 10000,
@@ -24,8 +32,8 @@ instance.interceptors.response.use(
     const url = response.config.url || ''
     if (url.includes('/auth/')) return response
 
-    const body = response.data
-    if (body && typeof body === 'object' && 'code' in body) {
+    const body = response.data as unknown
+    if (isPlainObject(body) && 'code' in body) {
       return response
     }
 
@@ -38,26 +46,29 @@ instance.interceptors.response.use(
       return response
     }
 
-    if (body && typeof body === 'object') {
-      if ('items' in body && Array.isArray((body as any).items)) {
+    if (isPlainObject(body)) {
+      const items = body.items
+      const data = body.data
+
+      if (Array.isArray(items)) {
         response.data = {
           code: 200,
           data: {
-            items: (body as any).items,
-            total: (body as any).total ?? (body as any).items.length,
-            page: (body as any).page ?? 1,
-            pageSize: (body as any).pageSize ?? (body as any).size ?? (body as any).limit ?? (body as any).items.length,
+            items,
+            total: readNumber(body.total, items.length),
+            page: readNumber(body.page, 1),
+            pageSize: readNumber(body.pageSize ?? body.size ?? body.limit, items.length),
           },
           message: 'success',
         }
-      } else if ('data' in body && Array.isArray((body as any).data)) {
+      } else if (Array.isArray(data)) {
         response.data = {
           code: 200,
           data: {
-            items: (body as any).data,
-            total: (body as any).total ?? (body as any).data.length,
-            page: (body as any).page ?? 1,
-            pageSize: (body as any).pageSize ?? (body as any).size ?? (body as any).limit ?? (body as any).data.length,
+            items: data,
+            total: readNumber(body.total, data.length),
+            page: readNumber(body.page, 1),
+            pageSize: readNumber(body.pageSize ?? body.size ?? body.limit, data.length),
           },
           message: 'success',
         }

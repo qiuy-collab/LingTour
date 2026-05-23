@@ -12,6 +12,8 @@
     "codegen:api": "openapi-typescript http://localhost:8000/api/docs-json -o src/types/api-generated.ts"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.4.0",
+    "@stripe/stripe-js": "^9.6.0",
     "@types/leaflet": "^1.9.21",
     "framer-motion": "^12.38.0",
     "leaflet": "^1.9.4",

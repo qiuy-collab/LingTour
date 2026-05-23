@@ -1,10 +1,15 @@
 import {
   Controller,
   Post,
+  Get,
+  Delete,
+  Param,
+  Query,
   Body,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -14,6 +19,26 @@ import { UploadService } from './upload.service';
 @Controller('api/v1/admin/upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
+
+  @Get('files')
+  @ApiOperation({ summary: 'List uploaded files (media library)' })
+  async listFiles(
+    @Query('page') page = '1',
+    @Query('limit') limit = '30',
+    @Query('module') module?: string,
+  ) {
+    return this.uploadService.listFiles(+page, +limit, module);
+  }
+
+  @Delete('files/:filename')
+  @ApiOperation({ summary: 'Delete an uploaded file' })
+  async deleteFile(@Param('filename') filename: string) {
+    const deleted = await this.uploadService.deleteFile(filename);
+    if (!deleted) {
+      throw new NotFoundException('File not found');
+    }
+    return { deleted: true, filename };
+  }
 
   @Post()
   @ApiOperation({ summary: 'Upload file (image)' })

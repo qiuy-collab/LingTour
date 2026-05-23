@@ -4,6 +4,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -30,11 +31,20 @@ describe('AuthService', () => {
       sign: jest.fn().mockReturnValue('mock-jwt-token'),
     };
 
+    const configService = {
+      get: jest.fn((key: string) => {
+        if (key === 'jwt.expiration') return '24h';
+        if (key === 'jwt.secret') return 'test-secret';
+        return undefined;
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
+        { provide: ConfigService, useValue: configService },
       ],
     }).compile();
 
@@ -108,7 +118,7 @@ describe('AuthService', () => {
         sub: mockUser.id,
         email: mockUser.email,
         role: mockUser.role,
-      });
+      }, { expiresIn: '24h' });
     });
   });
 });

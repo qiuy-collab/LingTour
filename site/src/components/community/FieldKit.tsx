@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
+import { AUTH_PROMPTS } from "@/lib/auth-prompts";
+import { apiClient, ApiRequestError } from "@/lib/api-client";
 
 type FieldKitProps<TChannel extends string> = {
   isOpen: boolean;
   onClose: () => void;
+  isLoggedIn?: boolean;
+  onRequireLogin?: () => void;
   onPublish: (draft: {
     title: string;
     note: string;
@@ -30,6 +34,8 @@ type FieldKitProps<TChannel extends string> = {
 export function FieldKit<TChannel extends string>({
   isOpen,
   onClose,
+  isLoggedIn = false,
+  onRequireLogin,
   onPublish,
   initialBrief,
   initialDraft,
@@ -43,6 +49,7 @@ export function FieldKit<TChannel extends string>({
   const [imageUploading, setImageUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locked = !isLoggedIn;
 
   useEffect(() => {
     if (initialBrief) {
@@ -77,6 +84,14 @@ export function FieldKit<TChannel extends string>({
   if (!isOpen) return null;
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (locked) {
+      const message = AUTH_PROMPTS.connectGoogleToUpload;
+      setError(message);
+      onRequireLogin?.();
+      event.currentTarget.value = "";
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -93,15 +108,18 @@ export function FieldKit<TChannel extends string>({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-      const res = await fetch(`${apiBase}/public/community/upload`, {
+      const data = await apiClient<{ url: string }>("/public/community/upload", {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) throw new Error("Image upload failed");
-      const data = await res.json();
       setImage(data.url);
     } catch (uploadError) {
+      if (uploadError instanceof ApiRequestError && uploadError.statusCode === 401) {
+        setError(AUTH_PROMPTS.connectGoogleToUpload);
+        onRequireLogin?.();
+        setImage(null);
+        return;
+      }
       setError(
         uploadError instanceof Error
           ? uploadError.message
@@ -113,7 +131,9 @@ export function FieldKit<TChannel extends string>({
     }
   };
 
-  const canPublish = Boolean((title.trim() || note.trim() || image) && !imageUploading);
+  const canPublish = Boolean(
+    !locked && (title.trim() || note.trim() || image) && !imageUploading,
+  );
 
   const handlePublish = async () => {
     if (!canPublish || submitting) return;
@@ -205,6 +225,14 @@ export function FieldKit<TChannel extends string>({
               </button>
             </div>
 
+            {locked ? (
+              <div className="mb-6 rounded-2xl border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
+                  {AUTH_PROMPTS.connectGoogleToUpload}
+                </p>
+              </div>
+            ) : null}
+
             {initialBrief ? (
               <div
                 className={`border border-[var(--gold)]/20 bg-[var(--gold)]/10 ${
@@ -236,11 +264,14 @@ export function FieldKit<TChannel extends string>({
                   {channels
                     .filter((channel): channel is TChannel => channel !== "All")
                     .map((channel) => (
-                      <button
+                  <button
+                        disabled={locked}
                         key={channel}
                         onClick={() => setActiveChannel(channel)}
                         className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
-                          activeChannel === channel
+                          locked
+                            ? "cursor-not-allowed bg-white/30 text-[var(--muted)] opacity-50"
+                            : activeChannel === channel
                             ? "scale-105 bg-[var(--river-deep)] text-white shadow-md"
                             : "bg-white/50 text-[var(--muted)] hover:bg-white"
                         }`}
@@ -258,11 +289,12 @@ export function FieldKit<TChannel extends string>({
                 <input
                   type="text"
                   value={title}
+                  disabled={locked}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder="Optional title for text or image dispatch..."
                   className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
-                    compact ? "text-xl" : "text-2xl"
-                  }`}
+                    locked ? "cursor-not-allowed opacity-50" : ""
+                  } ${compact ? "text-xl" : "text-2xl"}`}
                 />
               </div>
 
@@ -273,11 +305,12 @@ export function FieldKit<TChannel extends string>({
                 <textarea
                   rows={compact ? 4 : 5}
                   value={note}
+                  disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder="Write a field note, or leave this blank for a pure photo signal..."
                   className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
-                    compact ? "text-base" : "text-lg"
-                  }`}
+                    locked ? "cursor-not-allowed opacity-50" : ""
+                  } ${compact ? "text-base" : "text-lg"}`}
                 />
               </div>
 
@@ -287,9 +320,11 @@ export function FieldKit<TChannel extends string>({
                 </label>
                 <div className="flex gap-4">
                   <label
-                    className={`group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--line)] bg-white/30 backdrop-blur-sm transition-colors hover:border-[var(--gold)] ${
-                      compact ? "h-24 w-24" : "h-32 w-32"
-                    }`}
+                    className={`group relative flex flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--line)] bg-white/30 backdrop-blur-sm transition-colors ${
+                      locked
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer hover:border-[var(--gold)]"
+                    } ${compact ? "h-24 w-24" : "h-32 w-32"}`}
                   >
                     {image ? (
                       <div
@@ -316,6 +351,7 @@ export function FieldKit<TChannel extends string>({
                       type="file"
                       className="hidden"
                       accept="image/*"
+                      disabled={locked}
                       onChange={handleImageUpload}
                     />
                   </label>
@@ -341,7 +377,7 @@ export function FieldKit<TChannel extends string>({
               <div className={compact ? "pt-2" : "pt-6"}>
                 <button
                   onClick={handlePublish}
-                  disabled={!canPublish || submitting}
+                  disabled={locked || !canPublish || submitting}
                   className={`w-full rounded-full bg-[var(--night)] font-bold tracking-widest text-white shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}

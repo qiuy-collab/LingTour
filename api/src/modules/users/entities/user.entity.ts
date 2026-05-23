@@ -22,6 +22,7 @@ export class User {
   @Column({ type: 'varchar', length: 50, default: 'editor' })
   role: 'admin' | 'editor';
 
+  @Index()
   @Column({ type: 'varchar', length: 20, default: 'active' })
   status: 'active' | 'banned';
 
@@ -57,6 +58,7 @@ export class User {
   })
   profileVisibility: 'public' | 'community' | 'private';
 
+  @Index()
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

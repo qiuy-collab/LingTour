@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiPost } from "@/lib/api-client";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
 import { readCart } from "@/lib/cart";
+import { StripePaymentForm } from "./StripePaymentForm";
 import type { StoreProduct } from "@/data/store";
 
 type CheckoutItem = StoreProduct & {
@@ -62,6 +63,7 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderResult, setOrderResult] = useState<CheckoutResponse | null>(null);
+  const [paymentComplete, setPaymentComplete] = useState(false);
   const [user, setUser] = useState<LocalUser | null>(null);
   const [form, setForm] = useState<CheckoutForm>(INITIAL_FORM);
 
@@ -173,6 +175,16 @@ export function CheckoutClient() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const isSandboxSecret = (secret: string) => secret.startsWith("pi_sandbox_");
+
+  const handlePaymentSuccess = useCallback(() => {
+    setPaymentComplete(true);
+  }, []);
+
+  const handlePaymentError = useCallback((message: string) => {
+    setError(message);
+  }, []);
+
   const submitOrder = async () => {
     if (!canSubmit || submitting) return;
 
@@ -249,20 +261,61 @@ export function CheckoutClient() {
     );
   }
 
+  if (orderResult && !isSandboxSecret(orderResult.stripeClientSecret) && !paymentComplete) {
+    return (
+      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
+        <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+            Complete payment
+          </p>
+          <h1 className="mt-4 font-[family:var(--font-display)] text-4xl italic">
+            Almost there.
+          </h1>
+          <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
+            Order <span className="font-bold">{orderResult.orderNo}</span> has
+            been created. Complete payment below to confirm your order.
+          </p>
+
+          <div className="mt-6 mb-2 flex items-end justify-between border-b border-[var(--line)] pb-4">
+            <span className="text-sm text-[var(--muted)]">Total</span>
+            <span className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+              SGD ${orderResult.totalAmount.toFixed(2)}
+            </span>
+          </div>
+
+          {error && (
+            <div className="my-4 border-l-2 border-[var(--cinnabar)] bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar)]">
+              {error}
+            </div>
+          )}
+
+          <div className="mt-6">
+            <StripePaymentForm
+              clientSecret={orderResult.stripeClientSecret}
+              orderNo={orderResult.orderNo}
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+            />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (orderResult) {
     return (
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-3xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-            Order logged
+            {paymentComplete ? "Payment confirmed" : "Order logged"}
           </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
-            Registry confirmed.
+            {paymentComplete ? "Thank you." : "Registry confirmed."}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
-            Your order is now in the system as a live pending request. We have
-            created the order record and the operations team can continue from
-            the admin console with payment follow-up and fulfillment.
+            {paymentComplete
+              ? "Your payment has been processed successfully. We'll begin preparing your order for shipment shortly."
+              : "Your order is now in the system as a live pending request. We have created the order record and the operations team can continue from the admin console with payment follow-up and fulfillment."}
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -532,13 +585,12 @@ export function CheckoutClient() {
                     : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
                 }`}
               >
-                {submitting ? "Creating order..." : "Create live order"}
+                {submitting ? "Creating order..." : "Place order"}
               </button>
 
               <p className="mt-4 text-xs leading-6 text-[var(--muted)]">
-                This checkout creates a real pending order in the backend and
-                makes it available in the admin panel. Payment capture is still
-                handled as a follow-up operational step.
+                Your order will be created and you&apos;ll proceed to secure
+                payment via Stripe. No charges until you confirm.
               </p>
             </div>
           </div>

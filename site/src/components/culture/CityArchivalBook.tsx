@@ -281,17 +281,20 @@ function NarrativePage({
             </div>
 
             {section.breathQuote ? (
-              <blockquote className="mx-auto max-w-[26rem] pt-2">
-                <div className="border-t border-b border-[var(--gold)]/55 px-2 py-5 text-center">
-                  <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                    Pull quote
-                  </p>
-                  <p className="mt-3 font-[family:var(--font-display)] text-[1.65rem] italic leading-[1.45] text-[var(--river-deep)]/84 lg:text-[1.8rem]">
-                    &ldquo;{section.breathQuote}&rdquo;
-                  </p>
-                  <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--muted)]">
-                    Field Voice / {cityName}
-                  </p>
+              <blockquote className="mx-auto mt-2 max-w-[30rem] rounded-[1.5rem] border border-[var(--gold)]/35 bg-white/25 px-5 py-5 shadow-[0_14px_34px_rgba(17,25,35,0.06)] backdrop-blur-[1px] lg:px-6 lg:py-6">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1 h-12 w-px shrink-0 bg-[var(--cinnabar)]/45" />
+                  <div className="min-w-0">
+                    <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+                      Pull quote
+                    </p>
+                    <p className="mt-3 font-[family:var(--font-display)] text-[1.4rem] italic leading-[1.58] tracking-[-0.01em] text-[var(--river-deep)]/84 lg:text-[1.55rem]">
+                      &ldquo;{section.breathQuote}&rdquo;
+                    </p>
+                    <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--muted)]">
+                      Field Voice / {cityName}
+                    </p>
+                  </div>
                 </div>
               </blockquote>
             ) : null}

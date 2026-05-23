@@ -38,9 +38,11 @@ export class CommunityPost {
   @Column({ type: 'jsonb' })
   user: Record<string, unknown>;
 
+  @Index()
   @Column({ type: 'uuid', name: 'user_id', nullable: true })
   userId: string | null;
 
+  @Index()
   @Column({ type: 'varchar', length: 255, name: 'user_email', default: '' })
   userEmail: string;
 

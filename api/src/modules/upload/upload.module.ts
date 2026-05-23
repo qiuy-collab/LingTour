@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { UploadService } from './upload.service';
 import { UploadController } from './upload.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { mkdir } from 'fs/promises';
+import { sanitizeUploadModule } from './upload-path';
 
 @Module({
   imports: [
@@ -14,10 +16,33 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         storage: diskStorage({
-          destination: join(
-            process.cwd(),
-            configService.get<string>('UPLOAD_DIR', './uploads'),
-          ),
+          destination: async (req, _file, callback) => {
+            try {
+              const uploadRoot = join(
+                process.cwd(),
+                configService.get<string>('UPLOAD_DIR', './uploads'),
+              );
+              const moduleFromBody =
+                typeof req?.body?.module === 'string'
+                  ? req.body.module
+                  : undefined;
+              const moduleFromRoute = String(req?.originalUrl ?? '').includes(
+                '/public/community/upload',
+              )
+                ? 'community'
+                : undefined;
+              const module = sanitizeUploadModule(
+                moduleFromBody ?? moduleFromRoute,
+              );
+              const destination = module
+                ? join(uploadRoot, module)
+                : uploadRoot;
+              await mkdir(destination, { recursive: true });
+              callback(null, destination);
+            } catch (error) {
+              callback(error as Error, '');
+            }
+          },
           filename: (_req, file, callback) => {
             const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
             callback(null, uniqueName);

@@ -9,6 +9,7 @@ import {
   Delete,
   Param,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -99,8 +100,12 @@ export class AuthController {
     @Body() body: { targetType: string; targetId: string; targetTitle?: string; targetImage?: string },
   ) {
     const authUser = request['user'] as { sub?: string };
+    const targetType = body.targetType as 'route' | 'city' | 'product';
+    if (!['route', 'city', 'product'].includes(targetType)) {
+      throw new BadRequestException('Invalid favorite target type');
+    }
     return this.usersService.addFavorite(authUser.sub as string, {
-      targetType: body.targetType as 'route' | 'city' | 'product',
+      targetType,
       targetId: body.targetId,
       targetTitle: body.targetTitle || '',
       targetImage: body.targetImage || '',
@@ -112,10 +117,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Remove a favorite' })
   async removeFavorite(
     @Req() request: Request,
-    @Param('targetType') targetType: string,
+    @Param('targetType') targetType: 'route' | 'city' | 'product',
     @Param('targetId') targetId: string,
   ) {
     const authUser = request['user'] as { sub?: string };
+    if (!['route', 'city', 'product'].includes(targetType)) {
+      throw new BadRequestException('Invalid favorite target type');
+    }
     return this.usersService.removeFavorite(authUser.sub as string, targetType, targetId);
   }
 }

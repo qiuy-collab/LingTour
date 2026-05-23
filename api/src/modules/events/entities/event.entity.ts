@@ -28,9 +28,11 @@ export class EventEntity {
   @Column({ type: 'varchar', length: 120, default: '' })
   city: string;
 
+  @Index()
   @Column({ type: 'varchar', length: 120, name: 'city_slug', default: '' })
   citySlug: string;
 
+  @Index()
   @Column({ type: 'date' })
   date: string;
 

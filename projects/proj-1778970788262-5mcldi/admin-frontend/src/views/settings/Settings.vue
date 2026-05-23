@@ -12,6 +12,7 @@ const saving = ref(false)
 const seoTitle = ref('')
 const seoDescription = ref('')
 const languages = ref<string[]>(['en', 'zh'])
+const defaultLocale = ref('zh')
 const defaultCurrency = ref('SGD')
 const taxRate = ref(7.6)
 const serviceCities = ref<string[]>([])
@@ -84,6 +85,7 @@ async function fetchSettings() {
     seoTitle.value = data.seoTitle
     seoDescription.value = data.seoDescription
     languages.value = data.languages || ['en', 'zh']
+    defaultLocale.value = data.defaultLocale || (data.languages?.[0] ?? 'zh')
     defaultCurrency.value = data.defaultCurrency || 'SGD'
     taxRate.value = data.taxRate ?? 7.6
     shippingTemplates.value = JSON.parse(JSON.stringify(data.shippingTemplates || []))
@@ -114,6 +116,7 @@ async function handleSave() {
       seoTitle: seoTitle.value,
       seoDescription: seoDescription.value,
       languages: languages.value,
+      defaultLocale: defaultLocale.value,
       defaultCurrency: defaultCurrency.value,
       taxRate: taxRate.value,
       shippingTemplates: templates,
@@ -126,8 +129,8 @@ async function handleSave() {
     }
     await updateSettings(data)
     ElMessage.success('系统设置已保存')
-  } catch {
-    ElMessage.error('保存设置失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '保存设置失败')
   } finally {
     saving.value = false
   }
@@ -213,14 +216,15 @@ onMounted(() => {
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="默认语言">
-          <el-select v-model="defaultCurrency" style="width: 200px">
+          <el-select v-model="defaultLocale" style="width: 200px">
             <el-option
-              v-for="cur in currencyOptions"
-              :key="cur.value"
-              :label="cur.label"
-              :value="cur.value"
+              v-for="lang in languageOptions.filter(l => languages.includes(l.value))"
+              :key="lang.value"
+              :label="lang.label"
+              :value="lang.value"
             />
           </el-select>
+          <span class="form-hint">从已勾选的支持语种中选择</span>
         </el-form-item>
       </el-card>
 

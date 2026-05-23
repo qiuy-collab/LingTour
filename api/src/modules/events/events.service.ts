@@ -56,7 +56,7 @@ export class EventsService {
   }) {
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit = query.limit && query.limit > 0 ? query.limit : 20;
-    const where: Record<string, any> = {};
+    const where: { status?: string; citySlug?: string } = {};
     if (query.status) where.status = query.status;
     if (query.city) where.citySlug = query.city;
     const [items, total] = await this.repo.findAndCount({

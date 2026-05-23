@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { collectionsApi } from '@/api/collections'
 import type { StoreCollection } from '@/types/collection'
+import { pickI18n } from '@/types/common'
 
 const router = useRouter()
 const loading = ref(false)
@@ -23,6 +24,8 @@ async function fetchList() {
     } as any)
     list.value = res.data.data.items
     total.value = res.data.data.total
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '加载系列列表失败')
   } finally {
     loading.value = false
   }
@@ -52,13 +55,19 @@ function handleEdit(id: string) {
   router.push(`/admin/shop/collections/${id}/edit`)
 }
 
-async function handleDelete(id: string, title: string) {
+async function handleDelete(row: StoreCollection) {
+  const title = pickI18n(row.title as any) || '该系列'
   try {
-    await collectionsApi.deleteCollection(id)
+    await ElMessageBox.confirm(
+      `确定删除系列「${title}」?该操作不可恢复。`,
+      '删除确认',
+      { type: 'warning' }
+    )
+    await collectionsApi.deleteCollection(row.id)
     ElMessage.success(`系列「${title}」已删除`)
     fetchList()
-  } catch {
-    ElMessage.error('删除失败')
+  } catch (err: any) {
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
@@ -97,12 +106,17 @@ onMounted(() => {
           />
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="系列名称" min-width="160">
+      <el-table-column label="系列名称" min-width="180">
         <template #default="{ row }">
-          <div>{{ row.title || '' }}</div>
+          <div>{{ pickI18n(row.title) }}</div>
+          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.title, 'en') }}</div>
         </template>
       </el-table-column>
-      <el-table-column prop="routeName" label="关联路线" width="140" />
+      <el-table-column label="关联路线" width="160">
+        <template #default="{ row }">
+          {{ pickI18n(row.routeName) || '-' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="productCount" label="商品数" width="80" align="center">
         <template #default="{ row }">
           <el-badge :value="row.productCount" type="primary" />
@@ -118,14 +132,7 @@ onMounted(() => {
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>
-          <el-popconfirm
-            title="确定删除该系列？"
-            @confirm="handleDelete(row.id, row.title)"
-          >
-            <template #reference>
-              <el-button size="small" type="danger">删除</el-button>
-            </template>
-          </el-popconfirm>
+          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
