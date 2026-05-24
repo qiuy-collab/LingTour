@@ -19,6 +19,8 @@ import {
 import { useApiQuery } from "@/lib/use-api-query";
 import { PostCard } from "@/components/community/PostCard";
 import { PostDetailDialog } from "@/components/community/PostDetailDialog";
+import { BriefCard } from "@/components/community/BriefCard";
+import { DispatchCard } from "@/components/community/DispatchCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { FieldKit } from "@/components/community/FieldKit";
 import { useLocale } from "@/lib/locale-context";
@@ -243,6 +245,43 @@ export default function CommunityPage() {
     return sortPosts(bySearch, sortMode);
   }, [activeChannel, allPosts, query, sortMode]);
 
+  // Combine posts, briefs, and dispatch card into a single masonry array
+  const masonryItems = useMemo(() => {
+    type MasonryItem =
+      | { type: "post"; data: CommunityFeedPost }
+      | { type: "brief"; data: FieldBrief }
+      | { type: "dispatch"; id: string };
+
+    const items: MasonryItem[] = [];
+    const posts = [...filteredPosts];
+    const briefs = [...fieldBriefs];
+
+    // Always insert dispatch CTA near the top
+    items.push({ type: "dispatch", id: "dispatch-cta" });
+
+    // Mix posts and briefs
+    let postIndex = 0;
+    let briefIndex = 0;
+
+    // Pattern: 2 posts, 1 brief, 3 posts, 1 brief, etc.
+    while (postIndex < posts.length || briefIndex < briefs.length) {
+      if (postIndex < posts.length) {
+        items.push({ type: "post", data: posts[postIndex++] });
+      }
+      if (postIndex < posts.length) {
+        items.push({ type: "post", data: posts[postIndex++] });
+      }
+      if (briefIndex < briefs.length) {
+        items.push({ type: "brief", data: briefs[briefIndex++] });
+      }
+      if (postIndex < posts.length) {
+        items.push({ type: "post", data: posts[postIndex++] });
+      }
+    }
+
+    return items;
+  }, [filteredPosts, fieldBriefs]);
+
   const selectBrief = (brief: FieldBrief) => {
     setSelectedBrief(brief);
     const channel = coerceChannel(brief.channel);
@@ -364,184 +403,137 @@ export default function CommunityPage() {
             <p className="text-label tracking-[0.3em] text-[var(--cinnabar)]">
               The LingTour Field Room
             </p>
-            <h1 className="mt-8 font-[family:var(--font-display)] text-6xl leading-[0.85] tracking-[-0.05em] md:text-9xl lg:text-[10rem]">
-              Captured <br />
-              <span className="italic text-[var(--gold)]">Signals.</span>
+            <h1 className="mt-6 font-[family:var(--font-display)] text-5xl leading-[0.85] tracking-tight md:text-8xl lg:text-[8rem]">
+              Inspiration <br />
+              <span className="italic text-[var(--gold)]">Exchange.</span>
             </h1>
-            <p className="handwritten mx-auto mt-12 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
-              Pick a brief, publish a dispatch, and trade useful replies. <br />
-              Turn quiet details into shared route intelligence.
+            <p className="handwritten mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
+              Read field notes, pick a brief, and trade useful intelligence. <br />
+              Turn quiet details into shared routes.
             </p>
           </Reveal>
         </div>
       </section>
 
-      <section className="site-container py-12">
-        <div className="grid gap-12 lg:grid-cols-[1fr_22rem]">
-          <div className="space-y-16">
-            <div className="flex flex-wrap items-center justify-between gap-6 border-b border-[var(--line)] pb-8">
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {channels.map((channel) => (
-                  <button
-                    key={channel}
-                    type="button"
-                    onClick={() => setActiveChannel(channel)}
-                    className={`shrink-0 rounded-full px-6 py-2 text-sm font-bold transition-all ${
-                      activeChannel === channel
-                        ? "scale-105 bg-[var(--river-deep)] text-white shadow-lg"
-                        : "bg-white/40 text-[var(--muted)] hover:bg-white"
-                    }`}
-                  >
-                    {channel}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-4">
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Filter by mood, route..."
-                  className="h-11 w-48 rounded-full border border-[var(--line)] bg-white/50 px-5 text-sm outline-none focus:border-[var(--cinnabar)] focus:bg-white"
-                />
-              </div>
+      <section className="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/90 backdrop-blur-md py-4">
+        <div className="site-container flex flex-wrap items-center justify-between gap-4">
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {channels.map((channel) => (
+              <button
+                key={channel}
+                type="button"
+                onClick={() => setActiveChannel(channel)}
+                className={`shrink-0 rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-widest transition-all ${
+                  activeChannel === channel
+                    ? "bg-[var(--river-deep)] text-white shadow-md"
+                    : "border border-[var(--line)] bg-white/40 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
+                }`}
+              >
+                {channel}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search signals..."
+                className="h-10 w-48 rounded-full border border-[var(--line)] bg-white/60 pl-9 pr-4 text-sm outline-none focus:border-[var(--cinnabar)] focus:bg-white transition-colors"
+              />
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {loading && !allPosts.length ? (
-              <div className="py-20 text-center">
-                <p className="handwritten text-lg text-[var(--muted)]">
-                  Collecting live dispatches...
-                </p>
-              </div>
-            ) : error && !allPosts.length ? (
-              <div className="py-20 text-center">
-                <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
-                  Feed offline.
-                </p>
-                <p className="mt-4 text-sm text-[var(--muted)]">{error}</p>
-                <button
-                  type="button"
-                  onClick={refetch}
-                  className="mt-6 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)] transition hover:bg-[var(--river-deep)] hover:text-white"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <div className="grid gap-x-8 gap-y-16 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-                {filteredPosts.length ? (
-                  filteredPosts.map((post, index) => (
-                    <Reveal key={post.id} delay={index * 50}>
-                      <div
-                        className={`
-                          ${index % 3 === 0 ? "md:col-span-2 lg:col-span-1" : ""}
-                          ${index % 4 === 1 ? "md:translate-y-12" : ""}
-                          ${index % 4 === 2 ? "md:-translate-y-8" : ""}
-                        `}
-                      >
-                        <PostCard
-                          post={post}
+      <section className="site-container py-12 lg:py-16">
+        {loading && !masonryItems.length ? (
+          <div className="py-20 text-center">
+            <p className="handwritten text-lg text-[var(--muted)]">
+              Collecting live dispatches...
+            </p>
+          </div>
+        ) : error && !masonryItems.length ? (
+          <div className="py-20 text-center">
+            <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
+              Feed offline.
+            </p>
+            <p className="mt-4 text-sm text-[var(--muted)]">{error}</p>
+            <button
+              type="button"
+              onClick={refetch}
+              className="mt-6 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)] transition hover:bg-[var(--river-deep)] hover:text-white"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-20">
+            {masonryItems.length ? (
+              masonryItems.map((item, index) => {
+                if (item.type === "dispatch") {
+                  return (
+                    <div key={item.id} className="break-inside-avoid">
+                      <Reveal delay={index * 40}>
+                        <DispatchCard
+                          stampCount={stampCount}
+                          onDispatch={openFieldKit}
+                          isLoggedIn={isLoggedIn}
+                          onLogin={handleGoogleLogin}
+                        />
+                      </Reveal>
+                    </div>
+                  );
+                }
+
+                if (item.type === "brief") {
+                  return (
+                    <div key={item.data.id} className="break-inside-avoid">
+                      <Reveal delay={index * 40}>
+                        <BriefCard
+                          brief={item.data}
                           index={index}
-                          variant={resolveVariant(post)}
+                          onSelect={(brief) => {
+                            selectBrief(brief);
+                            openFieldKit();
+                          }}
+                        />
+                      </Reveal>
+                    </div>
+                  );
+                }
+
+                if (item.type === "post") {
+                  return (
+                    <div key={item.data.id} className="break-inside-avoid">
+                      <Reveal delay={index * 40}>
+                        <PostCard
+                          post={item.data}
+                          index={index}
+                          variant={resolveVariant(item.data)}
                           onOpen={setSelectedPost}
                           isLoggedIn={isLoggedIn}
-                          onRequireLogin={() =>
-                            setToast(AUTH_PROMPTS.connectGoogleToInteract)
-                          }
+                          onRequireLogin={() => setToast(AUTH_PROMPTS.connectGoogleToInteract)}
                         />
-                      </div>
-                    </Reveal>
-                  ))
-                ) : (
-                  <div className="col-span-full py-20 text-center">
-                    <p className="font-[family:var(--font-display)] text-4xl text-[var(--muted)] opacity-30">
-                      No signals in this range.
-                    </p>
-                  </div>
-                )}
+                      </Reveal>
+                    </div>
+                  );
+                }
+
+                return null;
+              })
+            ) : (
+              <div className="col-span-full py-20 text-center break-inside-avoid">
+                <p className="font-[family:var(--font-display)] text-4xl text-[var(--muted)] opacity-30">
+                  No signals in this range.
+                </p>
               </div>
             )}
           </div>
-
-          <aside className="space-y-12">
-            <div className="sticky top-24 space-y-12">
-              <div className="scrapbook-shadow rounded-[2rem] border border-[var(--line)] bg-white/40 p-8">
-                <p className="text-label text-[var(--cinnabar)]">
-                  Active Briefs
-                </p>
-                {fieldBriefs.length === 0 ? (
-                  <p className="mt-6 text-sm leading-relaxed text-[var(--muted)] handwritten">
-                    No briefs published yet. The editorial team is preparing the
-                    next round.
-                  </p>
-                ) : (
-                  <div className="mt-8 space-y-6">
-                    {fieldBriefs.map((brief) => {
-                      const isActive = selectedBrief?.id === brief.id;
-                      return (
-                        <button
-                          key={brief.id}
-                          onClick={() => selectBrief(brief)}
-                          className={`group block w-full text-left transition-all ${
-                            isActive ? "scale-105" : "hover:translate-x-2"
-                          }`}
-                        >
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                            {brief.channel}
-                          </p>
-                          <p
-                            className={`mt-1 font-[family:var(--font-display)] text-xl transition-colors ${
-                              isActive
-                                ? "text-[var(--cinnabar)]"
-                                : "text-[var(--river-deep)] group-hover:text-[var(--cinnabar)]"
-                            }`}
-                          >
-                            {brief.title}
-                          </p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div className="rotate-1 bg-[var(--night)] p-8 text-white shadow-2xl">
-                <h3 className="font-[family:var(--font-display)] text-3xl italic text-[var(--gold)]">
-                  Dispatch Now
-                </h3>
-                <p className="mt-4 text-sm leading-relaxed text-white/50">
-                  Field work is about the unseen. Share a detail that is not on
-                  the main map.
-                </p>
-                <div className="mt-8 flex flex-col gap-4">
-                  <button
-                    onClick={openFieldKit}
-                    className="w-full rounded-full bg-white py-4 text-sm font-bold text-[var(--night)] transition-transform hover:scale-105 active:scale-95"
-                  >
-                    {isLoggedIn
-                      ? "Open Field Kit"
-                      : "Connect Google to Publish"}
-                  </button>
-                  {!isLoggedIn ? (
-                    <button
-                      type="button"
-                      onClick={handleGoogleLogin}
-                      className="w-full rounded-full border border-white/20 py-4 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
-                    >
-                      Connect Google
-                    </button>
-                  ) : (
-                    <Link
-                      href="/routes"
-                      className="w-full rounded-full border border-white/20 py-4 text-center text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
-                    >
-                      Browse active routes
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
+        )}
       </section>
 
       <FieldKit
