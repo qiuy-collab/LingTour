@@ -371,7 +371,7 @@ export function GlobalDrawer() {
                       </span>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+                    <div className="grid gap-4">
                       <Link
                         href={pathname?.startsWith("/checkout") ? "/checkout" : "/community"}
                         onClick={closeDrawer}
@@ -379,16 +379,18 @@ export function GlobalDrawer() {
                       >
                         <div className="absolute inset-0 bg-grain opacity-[0.08] pointer-events-none" />
                         <div className="relative z-10">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--river-deep)]/12 bg-[var(--river-deep)] text-white shadow-lg">
+                          <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[var(--river-deep)]/12 bg-[var(--river-deep)] text-white shadow-lg">
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.74z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                              </div>
-                              <div className="pt-1">
-                                <p className="text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]">Activity tier</p>
-                                <p className="mt-2 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)]">
-                                  {activityLabel(stamps)}
-                                </p>
+                                </div>
+                                <div className="min-w-0 pt-1">
+                                  <p className="text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]">Activity tier</p>
+                                  <p className="mt-2 break-words font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)]">
+                                    {activityLabel(stamps)}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                             <div className="rounded-2xl border border-[var(--gold)]/25 bg-[var(--drawer-badge)] px-4 py-3 text-center shadow-sm">
@@ -396,7 +398,7 @@ export function GlobalDrawer() {
                               <p className="mt-1 text-2xl font-[family:var(--font-display)] italic text-[var(--river-deep)]">{stamps}</p>
                             </div>
                           </div>
-                          <p className="mt-5 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+                          <p className="mt-5 max-w-[38ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
                             {user.latestDispatchTitle
                               ? `Latest activity: ${user.latestDispatchTitle}.`
                               : "Activity, saved routes, and community marks all accumulate here as one user record."}
@@ -404,28 +406,28 @@ export function GlobalDrawer() {
                         </div>
                       </Link>
 
-                      <div className="grid gap-3">
+                      <div className="grid gap-3 sm:grid-cols-2">
                         <Link
                           href="/login"
                           onClick={closeDrawer}
-                          className="group flex items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
+                          className="group flex min-w-0 items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
                         >
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Edit profile</p>
-                            <p className="mt-2 text-sm text-[var(--river-deep)]">Update name, bio, and travel style</p>
+                            <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]">Update name, bio, and travel style</p>
                           </div>
-                          <span className="text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
+                          <span className="shrink-0 text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
                         </Link>
                         <Link
                           href={pathname?.startsWith("/checkout") ? "/checkout" : "/community"}
                           onClick={closeDrawer}
-                          className="group flex items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
+                          className="group flex min-w-0 items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
                         >
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Continue flow</p>
-                            <p className="mt-2 text-sm text-[var(--river-deep)]">Return to checkout or keep browsing</p>
+                            <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]">Return to checkout or keep browsing</p>
                           </div>
-                          <span className="text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
+                          <span className="shrink-0 text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
                         </Link>
                       </div>
                     </div>

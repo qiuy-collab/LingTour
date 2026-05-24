@@ -106,6 +106,11 @@ const cityOptions = computed(() => {
 
 <template>
   <div class="routes-page">
+    <div class="page-header">
+      <h2>路线管理</h2>
+      <el-button type="primary" :icon="Plus" @click="handleCreate">新增路线</el-button>
+    </div>
+
     <!-- 搜索筛选栏 -->
     <div class="toolbar">
       <div class="toolbar-left">
@@ -146,13 +151,10 @@ const cityOptions = computed(() => {
         </el-select>
         <el-button type="primary" @click="handleSearch">搜索</el-button>
       </div>
-      <el-button type="primary" :icon="Plus" @click="handleCreate">
-        新增路线
-      </el-button>
     </div>
 
     <!-- 列表表格 -->
-    <el-card shadow="never">
+    <el-card shadow="never" class="table-card">
       <el-table
         v-loading="loading"
         :data="list"
@@ -227,7 +229,7 @@ const cityOptions = computed(() => {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button
               type="primary"
@@ -273,25 +275,9 @@ const cityOptions = computed(() => {
   padding: 0;
 }
 
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.toolbar-left {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .route-title {
   font-weight: 600;
-  color: #303133;
+  color: var(--lt-text-primary, #303133);
 }
 
 .route-title-en {

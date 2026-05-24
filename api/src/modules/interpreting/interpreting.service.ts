@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { DataSource, EntityManager, EntityTarget, Repository } from 'typeorm';
 import { ServiceMode } from './entities/service-mode.entity';
 import { InterpreterProfile } from './entities/interpreter-profile.entity';
 import { Faq } from './entities/faq.entity';
@@ -57,14 +57,27 @@ export class InterpretingService {
   }
 
   async createMode(data: Partial<ServiceMode>) {
-    const mode = this.modeRepo.create(this.normalizeMode(data));
-    return this.modeRepo.save(mode);
+    const sortOrder = await this.getNextSortOrder(this.modeRepo);
+    const mode = this.modeRepo.create({
+      ...this.normalizeMode(data),
+      sortOrder,
+    });
+    const saved = await this.modeRepo.save(mode);
+    if (typeof data.sortOrder === 'number' && data.sortOrder !== sortOrder) {
+      return this.moveEntityToSortOrder(this.modeRepo, saved.id, data.sortOrder);
+    }
+    return saved;
   }
 
   async updateMode(id: string, data: Partial<ServiceMode>) {
     const mode = await this.findModeByIdAdmin(id);
-    Object.assign(mode, this.normalizeMode(data, mode));
-    return this.modeRepo.save(mode);
+    const requestedSortOrder = data.sortOrder;
+    Object.assign(mode, this.normalizeMode({ ...data, sortOrder: mode.sortOrder }, mode));
+    const saved = await this.modeRepo.save(mode);
+    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
+      return this.moveEntityToSortOrder(this.modeRepo, id, requestedSortOrder);
+    }
+    return saved;
   }
 
   async deleteMode(id: string) {
@@ -73,9 +86,7 @@ export class InterpretingService {
   }
 
   async updateModeSort(id: string, sortOrder: number) {
-    const mode = await this.findModeByIdAdmin(id);
-    mode.sortOrder = sortOrder;
-    return this.modeRepo.save(mode);
+    return this.moveEntityToSortOrder(this.modeRepo, id, sortOrder);
   }
 
   async findProfilesAdmin(page = 1, pageSize = 20, status?: string) {
@@ -97,14 +108,27 @@ export class InterpretingService {
   }
 
   async createProfile(data: Partial<InterpreterProfile>) {
-    const profile = this.profileRepo.create(this.normalizeProfile(data));
-    return this.profileRepo.save(profile);
+    const sortOrder = await this.getNextSortOrder(this.profileRepo);
+    const profile = this.profileRepo.create({
+      ...this.normalizeProfile(data),
+      sortOrder,
+    });
+    const saved = await this.profileRepo.save(profile);
+    if (typeof data.sortOrder === 'number' && data.sortOrder !== sortOrder) {
+      return this.moveEntityToSortOrder(this.profileRepo, saved.id, data.sortOrder);
+    }
+    return saved;
   }
 
   async updateProfile(id: string, data: Partial<InterpreterProfile>) {
     const profile = await this.findProfileByIdAdmin(id);
-    Object.assign(profile, this.normalizeProfile(data, profile));
-    return this.profileRepo.save(profile);
+    const requestedSortOrder = data.sortOrder;
+    Object.assign(profile, this.normalizeProfile({ ...data, sortOrder: profile.sortOrder }, profile));
+    const saved = await this.profileRepo.save(profile);
+    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
+      return this.moveEntityToSortOrder(this.profileRepo, id, requestedSortOrder);
+    }
+    return saved;
   }
 
   async deleteProfile(id: string) {
@@ -137,14 +161,27 @@ export class InterpretingService {
   }
 
   async createFaq(data: Partial<Faq>) {
-    const faq = this.faqRepo.create(this.normalizeFaq(data));
-    return this.faqRepo.save(faq);
+    const sortOrder = await this.getNextSortOrder(this.faqRepo);
+    const faq = this.faqRepo.create({
+      ...this.normalizeFaq(data),
+      sortOrder,
+    });
+    const saved = await this.faqRepo.save(faq);
+    if (typeof data.sortOrder === 'number' && data.sortOrder !== sortOrder) {
+      return this.moveEntityToSortOrder(this.faqRepo, saved.id, data.sortOrder);
+    }
+    return saved;
   }
 
   async updateFaq(id: string, data: Partial<Faq>) {
     const faq = await this.findFaqByIdAdmin(id);
-    Object.assign(faq, this.normalizeFaq(data, faq));
-    return this.faqRepo.save(faq);
+    const requestedSortOrder = data.sortOrder;
+    Object.assign(faq, this.normalizeFaq({ ...data, sortOrder: faq.sortOrder }, faq));
+    const saved = await this.faqRepo.save(faq);
+    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
+      return this.moveEntityToSortOrder(this.faqRepo, id, requestedSortOrder);
+    }
+    return saved;
   }
 
   async deleteFaq(id: string) {
@@ -153,9 +190,7 @@ export class InterpretingService {
   }
 
   async updateFaqSort(id: string, sortOrder: number) {
-    const faq = await this.findFaqByIdAdmin(id);
-    faq.sortOrder = sortOrder;
-    return this.faqRepo.save(faq);
+    return this.moveEntityToSortOrder(this.faqRepo, id, sortOrder);
   }
 
   // ── Admin: Full replace operations ──
@@ -167,9 +202,9 @@ export class InterpretingService {
     try {
       await queryRunner.manager.delete(ServiceMode, {});
       if (modes.length) {
-        const entities = modes.map((m) =>
+        const entities = modes.map((m, index) =>
           queryRunner.manager.create(ServiceMode, {
-            sortOrder: m.sortOrder,
+            sortOrder: index,
             ...this.normalizeMode(m),
             accent: m.accent ?? 'light',
             featured: m.featured ?? false,
@@ -194,9 +229,9 @@ export class InterpretingService {
     try {
       await queryRunner.manager.delete(InterpreterProfile, {});
       if (profiles.length) {
-        const entities = profiles.map((p) =>
+        const entities = profiles.map((p, index) =>
           queryRunner.manager.create(InterpreterProfile, {
-            sortOrder: p.sortOrder,
+            sortOrder: index,
             ...this.normalizeProfile(p),
           }),
         );
@@ -219,9 +254,9 @@ export class InterpretingService {
     try {
       await queryRunner.manager.delete(Faq, {});
       if (faqs.length) {
-        const entities = faqs.map((f) =>
+        const entities = faqs.map((f, index) =>
           queryRunner.manager.create(Faq, {
-            sortOrder: f.sortOrder,
+            sortOrder: index,
             ...this.normalizeFaq(f),
           }),
         );
@@ -405,6 +440,79 @@ export class InterpretingService {
       answer: this.i18n(data.answer ?? fallback?.answer),
       category: data.category ?? fallback?.category ?? 'interpreting',
     };
+  }
+
+  private async getNextSortOrder<T extends { sortOrder: number }>(
+    repo: Repository<T>,
+  ) {
+    const top = await repo
+      .createQueryBuilder('item')
+      .orderBy('item.sortOrder', 'DESC')
+      .limit(1)
+      .getOne();
+    return (top?.sortOrder ?? -1) + 1;
+  }
+
+  private async moveEntityToSortOrder<T extends { id: string; sortOrder: number }>(
+    repo: Repository<T>,
+    id: string,
+    requestedSortOrder: number,
+  ): Promise<T> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const target = repo.target as EntityTarget<T>;
+      const items = await queryRunner.manager
+        .createQueryBuilder<T>(target, 'item')
+        .orderBy('item.sortOrder', 'ASC')
+        .getMany();
+      const currentIndex = items.findIndex((item) => item.id === id);
+      if (currentIndex === -1) {
+        throw new NotFoundException('Sorted entity not found');
+      }
+
+      const [current] = items.splice(currentIndex, 1);
+      const safeIndex = Math.max(0, Math.min(requestedSortOrder, items.length));
+      items.splice(safeIndex, 0, current);
+
+      await this.resequenceSortOrder(queryRunner.manager, target, items);
+      await queryRunner.commitTransaction();
+
+      return queryRunner.manager.findOneOrFail(target as EntityTarget<T>, {
+        where: { id } as any,
+      });
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private async resequenceSortOrder<T extends { id: string; sortOrder: number }>(
+    manager: EntityManager,
+    target: EntityTarget<T>,
+    items: T[],
+  ) {
+    for (let index = 0; index < items.length; index += 1) {
+      await manager
+        .createQueryBuilder()
+        .update(target)
+        .set({ sortOrder: items.length + index + 1 } as any)
+        .where('id = :id', { id: items[index].id })
+        .execute();
+    }
+
+    for (let index = 0; index < items.length; index += 1) {
+      await manager
+        .createQueryBuilder()
+        .update(target)
+        .set({ sortOrder: index } as any)
+        .where('id = :id', { id: items[index].id })
+        .execute();
+    }
   }
 
   private i18n(value: any): { en: string; zh: string } {

@@ -189,6 +189,7 @@ onMounted(() => {
           :total="total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next"
+          background
           @current-change="handlePageChange"
           @size-change="handleSizeChange"
         />
@@ -202,26 +203,12 @@ onMounted(() => {
   padding: 0;
 }
 
-.page-header {
-  margin-bottom: 16px;
-}
-
-.page-header h2 {
-  margin: 0 0 4px 0;
-  font-size: 20px;
-  color: #303133;
-}
-
 .page-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
 }
 
 .filter-card {
-  margin-bottom: 16px;
-}
-
-.table-card {
   margin-bottom: 16px;
 }
 
@@ -239,18 +226,12 @@ onMounted(() => {
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: var(--lt-text-primary, #303133);
 }
 
 .user-email {
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
   margin-top: 2px;
-}
-
-.pagination-wrap {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 </style>

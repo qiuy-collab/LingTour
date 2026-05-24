@@ -22,6 +22,7 @@ export interface Event {
 }
 
 export interface EventFormData {
+  slug?: string
   title: I18nObject
   date: string
   endDate?: string

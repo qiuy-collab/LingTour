@@ -80,6 +80,48 @@ function archivalMetadata(index: number, activeFrame: number, frameCount: number
   ].join(" · ");
 }
 
+function sectionHeightWeight(
+  section: CityCultureSection,
+  fallbackImage: string,
+) {
+  const paragraphs = section.body
+    .split(/\n\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const frameCount = sectionFrames(section, fallbackImage).length;
+  const bodyLength = paragraphs.join(" ").length;
+  const quoteLength = section.breathQuote?.trim().length ?? 0;
+
+  return (
+    bodyLength +
+    quoteLength * 0.9 +
+    paragraphs.length * 180 +
+    Math.max(frameCount - 1, 0) * 130 +
+    (section.stat ? 120 : 0)
+  );
+}
+
+function uniformBookHeightClass(
+  sections: CityCultureSection[],
+  fallbackImage: string,
+  immersive?: boolean,
+) {
+  const heaviestSection = sections.reduce((maxWeight, section) => {
+    return Math.max(maxWeight, sectionHeightWeight(section, fallbackImage));
+  }, 0);
+
+  if (immersive) {
+    if (heaviestSection >= 2600) return "min-h-[70rem]";
+    if (heaviestSection >= 1800) return "min-h-[62rem]";
+    if (heaviestSection >= 1200) return "min-h-[56rem]";
+    return "min-h-[50rem]";
+  }
+
+  if (heaviestSection >= 2200) return "min-h-[52rem]";
+  if (heaviestSection >= 1400) return "min-h-[46rem]";
+  return "min-h-[40rem]";
+}
+
 function VisualPlate({
   section,
   index,
@@ -232,6 +274,14 @@ function NarrativePage({
   const leadParagraph = paragraphs[0] ?? "";
   const bodyParagraphs = paragraphs.slice(1);
   const lead = splitLeadParagraph(leadParagraph);
+  const compactLayout =
+    bodyParagraphs.length === 0 &&
+    (leadParagraph.length < 260 || sectionHeightWeight(section, section.image) < 900);
+  const pageBodyClass = compactLayout
+    ? "justify-center pb-10 xl:pb-12"
+    : section.breathQuote
+      ? "justify-between"
+      : "justify-start";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[var(--parchment-light)] bg-grain px-7 py-8 lg:px-9">
@@ -257,48 +307,50 @@ function NarrativePage({
         ) : null}
       </div>
 
-      <div className="relative z-10 mt-4 flex min-h-0 flex-1 flex-col">
-        <div className="scrollbar-hide flex-1 overflow-y-auto overscroll-contain pr-1">
-          <div className="space-y-6">
-            <div className="space-y-5">
-              {leadParagraph ? (
-                <p className="text-[17px] leading-[1.9] text-[var(--river-deep)]">
-                  <span className="float-left mr-3 pt-1 font-[family:var(--font-display)] text-6xl leading-[0.82] text-[var(--cinnabar)] lg:text-7xl">
-                    {lead.initial}
-                  </span>
-                  <span className="handwritten">{lead.rest}</span>
-                </p>
-              ) : null}
+      <div className={`relative z-10 mt-4 flex flex-1 flex-col ${pageBodyClass}`}>
+        <div
+          className={`space-y-6 pr-1 ${
+            compactLayout ? "mx-auto max-w-[40rem]" : ""
+          }`}
+        >
+          <div className="space-y-5">
+            {leadParagraph ? (
+              <p className="text-[17px] leading-[1.9] text-[var(--river-deep)]">
+                <span className="float-left mr-3 pt-1 font-[family:var(--font-display)] text-6xl leading-[0.82] text-[var(--cinnabar)] lg:text-7xl">
+                  {lead.initial}
+                </span>
+                <span className="handwritten">{lead.rest}</span>
+              </p>
+            ) : null}
 
-              {bodyParagraphs.map((paragraph, paragraphIndex) => (
-                <div key={`${section.title}-p-${paragraphIndex}`} className="space-y-4">
-                  <div className="h-px w-14 bg-[var(--gold)]/65" />
-                  <p className="text-base leading-7 text-[var(--muted)]">
-                    {paragraph}
+            {bodyParagraphs.map((paragraph, paragraphIndex) => (
+              <div key={`${index}-${section.title}-p-${paragraphIndex}`} className="space-y-4">
+                <div className="h-px w-14 bg-[var(--gold)]/65" />
+                <p className="text-base leading-7 text-[var(--muted)]">
+                  {paragraph}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {section.breathQuote ? (
+            <blockquote className="mx-auto mt-2 max-w-[30rem] rounded-[1.5rem] border border-[var(--gold)]/35 bg-white/25 px-5 py-5 shadow-[0_14px_34px_rgba(17,25,35,0.06)] backdrop-blur-[1px] lg:px-6 lg:py-6">
+              <div className="flex items-start gap-4">
+                <div className="mt-1 h-12 w-px shrink-0 bg-[var(--cinnabar)]/45" />
+                <div className="min-w-0">
+                  <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+                    Pull quote
+                  </p>
+                  <p className="mt-3 font-[family:var(--font-display)] text-[1.4rem] italic leading-[1.58] tracking-[-0.01em] text-[var(--river-deep)]/84 lg:text-[1.55rem]">
+                    &ldquo;{section.breathQuote}&rdquo;
+                  </p>
+                  <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--muted)]">
+                    Field Voice / {cityName}
                   </p>
                 </div>
-              ))}
-            </div>
-
-            {section.breathQuote ? (
-              <blockquote className="mx-auto mt-2 max-w-[30rem] rounded-[1.5rem] border border-[var(--gold)]/35 bg-white/25 px-5 py-5 shadow-[0_14px_34px_rgba(17,25,35,0.06)] backdrop-blur-[1px] lg:px-6 lg:py-6">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1 h-12 w-px shrink-0 bg-[var(--cinnabar)]/45" />
-                  <div className="min-w-0">
-                    <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                      Pull quote
-                    </p>
-                    <p className="mt-3 font-[family:var(--font-display)] text-[1.4rem] italic leading-[1.58] tracking-[-0.01em] text-[var(--river-deep)]/84 lg:text-[1.55rem]">
-                      &ldquo;{section.breathQuote}&rdquo;
-                    </p>
-                    <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.3em] text-[var(--muted)]">
-                      Field Voice / {cityName}
-                    </p>
-                  </div>
-                </div>
-              </blockquote>
-            ) : null}
-          </div>
+              </div>
+            </blockquote>
+          ) : null}
         </div>
       </div>
     </div>
@@ -392,7 +444,7 @@ function Bookmarks({
         const isActive = index === activeIdx;
         return (
           <button
-            key={section.title}
+            key={`${index}-${section.title}`}
             type="button"
             aria-label={`Turn to ${section.title}`}
             onClick={() => onSelect(index)}
@@ -429,6 +481,9 @@ function BookSpread({
   onSelectSection,
   onPrevPage,
   onNextPage,
+  widthClass,
+  heightClass,
+  minHeightPx,
   immersive,
 }: {
   sections: CityCultureSection[];
@@ -439,6 +494,9 @@ function BookSpread({
   onSelectSection: (index: number) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
+  widthClass: string;
+  heightClass: string;
+  minHeightPx?: number | null;
   immersive?: boolean;
 }) {
   const visibleIdx = flipState?.to ?? activeIdx;
@@ -448,12 +506,11 @@ function BookSpread({
 
   return (
     <div
-      className={`relative mx-auto ${
-        immersive
-          ? "h-[clamp(48rem,84vh,62rem)] min-h-[48rem] w-[min(92rem,calc(100vw-3rem))]"
-          : "h-[min(72vh,48rem)] min-h-[38rem] w-[min(78rem,calc(100vw-8rem))]"
-      }`}
-      style={{ perspective: "1500px" }}
+      className={`relative mx-auto ${widthClass} ${heightClass}`}
+      style={{
+        perspective: "1500px",
+        ...(minHeightPx ? { minHeight: `${Math.ceil(minHeightPx)}px` } : {}),
+      }}
     >
       <div className="absolute inset-x-8 -bottom-5 h-8 bg-black/10 blur-2xl" />
       <div className="absolute inset-0 translate-x-4 translate-y-4 border border-[var(--line)] bg-[var(--parchment-stack-1)]" />
@@ -588,7 +645,7 @@ function MobileStack({
         <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
           {sections.map((section, index) => (
             <button
-              key={`${section.title}-mobile-tab`}
+              key={`${index}-${section.title}-mobile-tab`}
               type="button"
               onClick={() => onSelectSection(index)}
               className={`shrink-0 border px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition ${
@@ -607,7 +664,7 @@ function MobileStack({
         <div className="grid gap-12">
           {sections.map((section, index) => (
             <article
-              key={`${section.title}-mobile`}
+              key={`${index}-${section.title}-mobile`}
               ref={(node) => setMobileRef(node, index)}
               className="border border-[var(--line)] bg-[var(--parchment-page)] bg-grain shadow-[0_22px_60px_rgba(17,25,35,0.14)]"
             >
@@ -639,13 +696,22 @@ export function CityArchivalBook({
   immersive = false,
 }: Props) {
   const mobileRefs = useRef<(HTMLElement | null)[]>([]);
+  const measurementRefs = useRef<(HTMLDivElement | null)[]>([]);
   const flipTimerRef = useRef<number | null>(null);
   const desktopActiveIdxRef = useRef(0);
   const [desktopActiveIdx, setDesktopActiveIdx] = useState(0);
   const [flipState, setFlipState] = useState<FlipState | null>(null);
   const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
+  const [measuredBookHeight, setMeasuredBookHeight] = useState<number | null>(null);
   const isDesktop = useDesktopLayout();
   const activeIdx = isDesktop ? (flipState?.to ?? desktopActiveIdx) : mobileActiveIdx;
+  const widthClass = immersive
+    ? "w-[min(92rem,calc(100vw-3rem))]"
+    : "w-[min(78rem,calc(100vw-8rem))]";
+  const desktopHeightClass = useMemo(
+    () => uniformBookHeightClass(sections, fallbackImage, immersive),
+    [fallbackImage, immersive, sections],
+  );
 
   const turnDesktopPage = useCallback(
     (target: number | ((currentIndex: number) => number)) => {
@@ -692,9 +758,17 @@ export function CityArchivalBook({
     mobileRefs.current[index] = node;
   }, []);
 
+  const setMeasurementRef = useCallback((node: HTMLDivElement | null, index: number) => {
+    measurementRefs.current[index] = node;
+  }, []);
+
   useEffect(() => {
     desktopActiveIdxRef.current = desktopActiveIdx;
   }, [desktopActiveIdx]);
+
+  useEffect(() => {
+    setMeasuredBookHeight(null);
+  }, [fallbackImage, immersive, sections]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -724,6 +798,42 @@ export function CityArchivalBook({
     });
     return () => observers.forEach((observer) => observer.disconnect());
   }, [isDesktop, sections.length]);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    const nodes = measurementRefs.current.filter(
+      (node): node is HTMLDivElement => Boolean(node),
+    );
+    if (!nodes.length) return;
+
+    const updateHeight = () => {
+      const nextHeight = nodes.reduce((maxHeight, node) => {
+        return Math.max(maxHeight, node.getBoundingClientRect().height);
+      }, 0);
+
+      if (nextHeight > 0) {
+        setMeasuredBookHeight((current) => {
+          const rounded = Math.ceil(nextHeight);
+          return current === rounded ? current : rounded;
+        });
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    nodes.forEach((node) => resizeObserver.observe(node));
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [fallbackImage, isDesktop, sections]);
 
   useEffect(() => {
     return () => {
@@ -766,8 +876,40 @@ export function CityArchivalBook({
         </div>
       ) : null}
 
+      <div className="invisible pointer-events-none absolute left-0 top-0 -z-10 hidden lg:block">
+        <div className={widthClass}>
+          {sections.map((section, index) => (
+            <div
+              key={`${index}-${section.title}-measure`}
+              ref={(node) => setMeasurementRef(node, index)}
+              className="relative mx-auto"
+            >
+              <div className="relative grid grid-cols-2 overflow-visible">
+                <div className="relative overflow-hidden border-r border-black/10 text-left">
+                  <VisualPlate
+                    section={section}
+                    index={index}
+                    fallbackImage={fallbackImage}
+                    cityName={cityName}
+                  />
+                </div>
+
+                <div className="relative overflow-hidden text-left">
+                  <NarrativePage
+                    section={section}
+                    index={index}
+                    total={sections.length}
+                    cityName={cityName}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="relative z-10 hidden lg:block">
-        <div className={`flex items-center ${showIntro ? "min-h-[calc(100vh-6rem)] py-12" : "py-2 pb-12"}`}>
+        <div className={`flex items-start ${showIntro ? "py-12" : "py-2 pb-8 lg:pb-10"}`}>
           <BookSpread
             sections={sections}
             activeIdx={desktopActiveIdx}
@@ -777,6 +919,9 @@ export function CityArchivalBook({
             onSelectSection={selectSection}
             onPrevPage={turnPrev}
             onNextPage={turnNext}
+            widthClass={widthClass}
+            heightClass={desktopHeightClass}
+            minHeightPx={measuredBookHeight}
             immersive={immersive}
           />
         </div>

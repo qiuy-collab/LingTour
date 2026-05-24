@@ -52,7 +52,7 @@ export interface InterpreterFormData {
   avatar: string
   bio: I18nObject
   status: InterpreterStatus
-  city: I18nObject
+  city: string
 }
 
 export type BookingStatus =

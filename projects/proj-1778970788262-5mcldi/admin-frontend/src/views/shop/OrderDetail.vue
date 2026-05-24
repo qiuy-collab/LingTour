@@ -77,8 +77,10 @@ async function handleCancel() {
 }
 
 function formatDate(d: string) {
-  if (!d) return '-'
-  return new Date(d).toLocaleString('zh-CN', {
+  if (!d || (typeof d === 'object' && Object.keys(d as any).length === 0)) return '-'
+  const date = new Date(d)
+  if (isNaN(date.getTime())) return '-'
+  return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -250,7 +252,7 @@ onMounted(() => {
 .action-bar {
   margin-top: 20px;
   padding: 16px;
-  background: #f5f7fa;
+  background: var(--lt-bg-card, #f5f7fa);
   border-radius: 8px;
   display: flex;
   gap: 12px;

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
-import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
+import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
 import { ProductDetailHero } from "@/components/store/ProductDetailHero";
 import { ProductNarrative } from "@/components/store/ProductNarrative";
 import { StoreProductCard } from "@/components/store/StoreProductCard";
@@ -21,6 +21,11 @@ export function ProductDetailClient({ slug }: Props) {
   const { locale, setLocale } = useLocale();
   const { previewData, previewLocale, previewEnabled } = usePreviewBridge<StoreProduct>("product");
   const activeLocale = previewLocale ?? locale;
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (previewLocale && previewLocale !== locale) {
@@ -40,24 +45,24 @@ export function ProductDetailClient({ slug }: Props) {
 
   const activeProduct = previewData ?? product;
 
+  if (!hydrated) return <LoadingSpinner text="Preparing the object..." />;
   if (previewEnabled && !activeProduct) return <LoadingSpinner text="Loading preview..." />;
   if (loading && !activeProduct) return <LoadingSpinner text="Preparing the object..." />;
-  if (error && !activeProduct)
+  if (error && !activeProduct) {
     return (
       <ErrorState
         title="Object file unavailable"
         message="This object's record can't be reached right now. Please try again shortly."
       />
     );
+  }
 
-  // Fetch finished cleanly with no product → render the framework's
-  // not-found page so the URL returns a real 404.
   if (!activeProduct) {
     notFound();
   }
 
   const relatedProducts = (allProducts ?? [])
-    .filter((p) => p.slug !== activeProduct.slug)
+    .filter((item) => item.slug !== activeProduct.slug)
     .slice(0, 3);
 
   return (
@@ -68,7 +73,7 @@ export function ProductDetailClient({ slug }: Props) {
       {relatedProducts.length > 0 && (
         <section className="site-container py-24 lg:py-32">
           <Reveal>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div className="max-w-xl">
                 <p className="font-handwritten text-xl text-[var(--gold)]">
                   Related items
@@ -87,9 +92,9 @@ export function ProductDetailClient({ slug }: Props) {
           </Reveal>
 
           <div className="mt-16 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {relatedProducts.map((p, i) => (
-              <div key={p.slug} className={i === 1 ? "lg:mt-12" : i === 2 ? "lg:mt-6" : ""}>
-                <StoreProductCard product={p} index={i} />
+            {relatedProducts.map((item, index) => (
+              <div key={item.slug} className={index === 1 ? "lg:mt-12" : index === 2 ? "lg:mt-6" : ""}>
+                <StoreProductCard product={item} index={index} />
               </div>
             ))}
           </div>

@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 /**
- * Middleware reads the lingtour-locale cookie and passes it
+ * Proxy reads the lingtour-locale cookie and passes it
  * to server components via a response header. This allows
  * layout.tsx to set the correct initial locale on the server,
  * eliminating the English flash on page load for ZH users.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const locale = request.cookies.get("lingtour-locale")?.value || "en";
   const response = NextResponse.next();
   response.headers.set("x-lingtour-locale", locale);

@@ -12,15 +12,63 @@ export interface OrderListParams extends PageParams {
   endDate?: string
 }
 
+/** 将后端订单数据适配为前端 Order 类型 */
+function normalizeOrder(raw: any): Order {
+  const addr = raw.shippingAddr || {}
+  return {
+    id: raw.id,
+    orderNo: raw.orderNo || '',
+    userId: raw.userId || null,
+    userName: addr.recipientName || raw.userName || '',
+    userEmail: raw.guestEmail || raw.userEmail || '',
+    guestEmail: raw.guestEmail || null,
+    items: raw.items || [],
+    subtotal: parseFloat(raw.totalAmount) || 0,
+    shipping: 0,
+    tax: 0,
+    total: parseFloat(raw.totalAmount) || 0,
+    currency: raw.currency || 'SGD',
+    shippingAddress: {
+      fullName: addr.recipientName || '',
+      phone: addr.phone || '',
+      country: addr.country || '',
+      city: addr.city || '',
+      address: [addr.street, addr.state].filter(Boolean).join(', '),
+      postalCode: addr.postalCode || '',
+    },
+    contactEmail: raw.guestEmail || raw.userEmail || '',
+    status: raw.status || 'pending',
+    paymentStatus: raw.paymentStatus || 'unpaid',
+    paymentMethod: raw.paymentMethod || null,
+    paymentId: raw.paymentId || null,
+    paidAt: raw.paidAt || null,
+    paymentFailureReason: raw.paymentFailureReason || null,
+    trackingNo: raw.trackingNo || null,
+    refundReason: raw.refundReason || null,
+    createdAt: raw.createdAt || '',
+    updatedAt: raw.updatedAt || '',
+    notes: raw.notes || '',
+  }
+}
+
 export const ordersApi = {
-  getOrders(params: OrderListParams) {
-    return api.get<ApiResponse<PaginatedResponse<Order>>>('/orders', {
+  async getOrders(params: OrderListParams) {
+    const res = await api.get<ApiResponse<PaginatedResponse<Order>>>('/orders', {
       params: { ...params, limit: params.pageSize },
     })
+    // Normalize items
+    if (res.data?.data?.items) {
+      res.data.data.items = res.data.data.items.map(normalizeOrder)
+    }
+    return res
   },
 
-  getOrder(id: string) {
-    return api.get<ApiResponse<Order>>(`/orders/${id}`)
+  async getOrder(id: string) {
+    const res = await api.get<ApiResponse<Order>>(`/orders/${id}`)
+    if (res.data?.data) {
+      res.data.data = normalizeOrder(res.data.data)
+    }
+    return res
   },
 
   updateOrderStatus(id: string, status: OrderStatus) {

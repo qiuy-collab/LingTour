@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface AsyncState<T> {
   data: T | null;
@@ -48,10 +48,7 @@ export function useApiQuery<T>(
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
-  // Track mounted state to avoid setting state on unmounted component
   const mountedRef = useRef(true);
-
-  // Store fetcher in a ref to avoid it being a dependency of execute
   const fetcherRef = useRef(fetcher);
 
   useEffect(() => {
@@ -59,7 +56,7 @@ export function useApiQuery<T>(
   }, [fetcher]);
 
   const refetch = useCallback(() => {
-    setVersion((v) => v + 1);
+    setVersion((value) => value + 1);
   }, []);
 
   useEffect(() => {
@@ -72,7 +69,6 @@ export function useApiQuery<T>(
 
     let cancelled = false;
 
-    // Only clear data if keepPreviousData is false
     if (!keepPreviousData) {
       setData(null);
     }
@@ -90,7 +86,6 @@ export function useApiQuery<T>(
         if (cancelled || !mountedRef.current) return;
 
         if (attempt < retryCount) {
-          // Exponential backoff: delay * 2^attempt
           const delay = retryDelay * Math.pow(2, attempt);
           await new Promise<void>((resolve) => {
             setTimeout(resolve, delay);
@@ -98,12 +93,9 @@ export function useApiQuery<T>(
           if (!cancelled && mountedRef.current) {
             return attemptFetch(attempt + 1);
           }
-        } else {
-          // All retries exhausted
-          if (!cancelled && mountedRef.current) {
-            setError(err instanceof Error ? err.message : "An error occurred");
-            setLoading(false);
-          }
+        } else if (!cancelled && mountedRef.current) {
+          setError(err instanceof Error ? err.message : "An error occurred");
+          setLoading(false);
         }
       }
     };
@@ -120,13 +112,13 @@ export function useApiQuery<T>(
   return { data, loading, error, refetch };
 }
 
-// ───────────── Shared loading/error components ─────────────
+// Shared loading/error components
 
 /**
  * Lightweight loading state used while data is in-flight.
  *
  * Default copy is intentionally restrained ("Opening the file…") to fit the
- * Journal aesthetic — callers can still override `text` for context-specific
+ * journal aesthetic. Callers can still override `text` for context-specific
  * wording.
  */
 export function LoadingSpinner({
@@ -146,7 +138,7 @@ export function LoadingSpinner({
 
 /**
  * Friendly error state. Defaults shape the wording around "we couldn't reach
- * the archive" — callers can pass a more specific `message` when useful.
+ * the archive". Callers can pass a more specific `message` when useful.
  */
 export function ErrorState({
   message = "We couldn't reach the archive right now. Please try again in a moment.",
@@ -161,7 +153,7 @@ export function ErrorState({
     <div className="flex min-h-[40vh] items-center justify-center px-6">
       <div className="max-w-md text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-          ✦ {title}
+          ! {title}
         </p>
         <p className="mt-4 text-base leading-relaxed text-[var(--muted)] handwritten">
           {message}

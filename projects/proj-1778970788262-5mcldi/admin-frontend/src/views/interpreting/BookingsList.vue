@@ -164,7 +164,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <div>
     <div class="page-header">
       <h2>口译预约管理</h2>
     </div>
@@ -206,69 +206,73 @@ onMounted(() => {
       <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
-    <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column prop="name" label="预约人" width="120" />
-      <el-table-column prop="contact" label="联系方式" width="180" show-overflow-tooltip />
-      <el-table-column prop="city" label="城市" width="80" align="center" />
-      <el-table-column label="日期" width="110" align="center">
-        <template #default="{ row }">{{ row.date }}</template>
-      </el-table-column>
-      <el-table-column prop="mode" label="服务模式" width="120" />
-      <el-table-column prop="groupSize" label="人数" width="80" align="center" />
-      <el-table-column label="快速通道" width="90" align="center">
-        <template #default="{ row }">
-          <el-tag v-if="row.fastTrack" type="danger" size="small">快速</el-tag>
-          <span v-else style="color: #c0c4cc">普通</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100" align="center">
-        <template #default="{ row }">
-          <el-tag :type="getBookingStatusColor(row.status)" size="small">
-            {{ getBookingStatusLabel(row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="分配口译员" min-width="120">
-        <template #default="{ row }">
-          <span v-if="row.assignedInterpreterName">{{ row.assignedInterpreterName }}</span>
-          <span v-else style="color: #c0c4cc">未分配</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="140" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" @click="openDrawer(row)">详情</el-button>
-          <el-button
-            v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted'"
-            size="small"
-            type="success"
-            @click="async () => { selectedBooking = row; await handleConfirm() }"
-          >
-            确认
-          </el-button>
-          <el-popconfirm
-            v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted' || row.status === 'confirmed'"
-            title="确定取消该预约？"
-            @confirm="async () => { selectedBooking = row; await handleCancelBooking() }"
-          >
-            <template #reference>
-              <el-button size="small" type="warning">取消</el-button>
-            </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card shadow="never" class="table-card">
+      <el-table :data="list" v-loading="loading" stripe>
+        <el-table-column prop="name" label="预约人" width="120" />
+        <el-table-column prop="contact" label="联系方式" width="180" show-overflow-tooltip />
+        <el-table-column prop="city" label="城市" width="80" align="center" />
+        <el-table-column label="日期" width="110" align="center">
+          <template #default="{ row }">{{ row.date }}</template>
+        </el-table-column>
+        <el-table-column prop="mode" label="服务模式" width="120" />
+        <el-table-column prop="groupSize" label="人数" width="80" align="center" />
+        <el-table-column label="快速通道" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.fastTrack" type="danger" size="small">快速</el-tag>
+            <span v-else style="color: #c0c4cc">普通</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getBookingStatusColor(row.status)" size="small">
+              {{ getBookingStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="分配口译员" min-width="120">
+          <template #default="{ row }">
+            <span v-if="row.assignedInterpreterName">{{ row.assignedInterpreterName }}</span>
+            <span v-else style="color: #c0c4cc">未分配</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="openDrawer(row)">详情</el-button>
+            <el-button
+              v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted'"
+              type="success"
+              link
+              size="small"
+              @click="async () => { selectedBooking = row; await handleConfirm() }"
+            >
+              确认
+            </el-button>
+            <el-popconfirm
+              v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted' || row.status === 'confirmed'"
+              title="确定取消该预约？"
+              @confirm="async () => { selectedBooking = row; await handleCancelBooking() }"
+            >
+              <template #reference>
+                <el-button type="warning" link size="small">取消</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <div class="pagination-wrap" v-if="total > pageSize">
-      <el-pagination
-        v-model:current-page="page"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next"
-        @current-change="handlePageChange"
-        @size-change="handleSizeChange"
-      />
-    </div>
+      <div class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next"
+          background
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
+    </el-card>
 
     <!-- Booking Detail Drawer -->
     <el-drawer
@@ -369,9 +373,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.page-container { padding: 20px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

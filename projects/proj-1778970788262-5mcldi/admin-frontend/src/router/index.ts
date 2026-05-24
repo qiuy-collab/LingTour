@@ -247,6 +247,20 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/settings/Settings.vue'),
         meta: { title: '系统设置', roles: ['admin'] },
       },
+      // 操作日志
+      {
+        path: 'system/audit-logs',
+        name: 'AuditLogs',
+        component: () => import('@/views/system/AuditLogs.vue'),
+        meta: { title: '操作日志', roles: ['admin'] },
+      },
+      // 通知中心
+      {
+        path: 'system/notifications',
+        name: 'Notifications',
+        component: () => import('@/views/system/Notifications.vue'),
+        meta: { title: '通知中心' },
+      },
       // 默认重定向
       {
         path: '',
@@ -260,7 +274,9 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/admin/dashboard',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
+    meta: { title: '页面不存在', requiresAuth: false },
   },
 ]
 

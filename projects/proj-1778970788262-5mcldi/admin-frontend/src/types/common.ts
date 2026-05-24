@@ -41,7 +41,18 @@ export function toI18n(val: unknown): I18nObject {
 
 export function pickI18n(val: unknown, locale: keyof I18nObject = 'zh'): string {
   if (!val) return ''
-  if (typeof val === 'string') return val
+  if (typeof val === 'string') {
+    // Handle JSON-stringified I18nObject (e.g. '{"en":"...","zh":"..."}')
+    if (val.startsWith('{') && val.includes('"')) {
+      try {
+        const parsed = JSON.parse(val)
+        if (typeof parsed === 'object' && parsed !== null) {
+          return String(parsed[locale] ?? parsed.zh ?? parsed.en ?? val)
+        }
+      } catch { /* not JSON, return as-is */ }
+    }
+    return val
+  }
   if (typeof val === 'object') {
     const obj = val as Record<string, unknown>
     return String(obj[locale] ?? obj.zh ?? obj.en ?? '')

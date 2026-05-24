@@ -8,6 +8,7 @@ import { citiesApi } from '@/api/cities'
 import type { HomeConfig } from '@/types/home'
 import { HomeConfigBlockLabels } from '@/types/home'
 import { pickI18n, toI18n } from '@/types/common'
+import { extractErrorMessage } from '@/utils/i18n'
 import ImageUpload from '@/components/ImageUpload.vue'
 import I18nInput from '@/components/I18nInput.vue'
 
@@ -75,8 +76,8 @@ onMounted(async () => {
         avatar: t.avatar || '',
       })),
     })
-  } catch {
-    ElMessage.error('加载首页配置失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '加载首页配置失败'))
   } finally {
     loading.value = false
   }
@@ -129,12 +130,19 @@ function removeTestimonial(index: number) {
 }
 
 async function handleSave() {
+  // 基础校验：heroStats 至少需要标题
+  const hasEmptyHeroTitle = config.heroStats.some((s) => !s.title?.zh?.trim())
+  if (hasEmptyHeroTitle) {
+    ElMessage.warning('统计卡片的标题（中文）不能为空')
+    return
+  }
+
   saving.value = true
   try {
     await homeApi.updateHomeConfig({ ...config })
     ElMessage.success('首页配置保存成功')
-  } catch {
-    ElMessage.error('保存失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '保存失败'))
   } finally {
     saving.value = false
   }

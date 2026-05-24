@@ -10,6 +10,12 @@ import {
   type CommunityFeedPost,
   type FieldBrief,
 } from "@/lib/api-data";
+import {
+  mergeCommunityPosts,
+  readSyncedCommunityPosts,
+  subscribeSyncedCommunityPosts,
+  writeSyncedCommunityPosts,
+} from "@/lib/community-sync";
 import { useApiQuery } from "@/lib/use-api-query";
 import { PostCard } from "@/components/community/PostCard";
 import { PostDetailDialog } from "@/components/community/PostDetailDialog";
@@ -39,7 +45,6 @@ type Draft = {
   image?: string;
 };
 
-const LOCAL_POSTS_KEY = "lingtour-community-posts";
 const LOCAL_STAMPS_KEY = "lingtour-community-stamps";
 
 /**
@@ -69,21 +74,6 @@ function readLoginState() {
 
 function readUser(): LocalUser | null {
   return readStoredUser();
-}
-
-function readLocalPosts() {
-  if (typeof window === "undefined") return [] as CommunityFeedPost[];
-  try {
-    const raw = window.localStorage.getItem(LOCAL_POSTS_KEY);
-    return raw ? (JSON.parse(raw) as CommunityFeedPost[]) : [];
-  } catch {
-    return [] as CommunityFeedPost[];
-  }
-}
-
-function writeLocalPosts(posts: CommunityFeedPost[]) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(LOCAL_POSTS_KEY, JSON.stringify(posts));
 }
 
 function sortPosts(posts: CommunityFeedPost[], sortMode: SortMode) {
@@ -171,13 +161,17 @@ export default function CommunityPage() {
 
   useEffect(() => {
     syncAuth();
-    setOptimisticPosts(readLocalPosts());
+    setOptimisticPosts(readSyncedCommunityPosts());
     const storedStamps = Number(
       window.localStorage.getItem(LOCAL_STAMPS_KEY) || "0",
     );
     setStampCount(Number.isFinite(storedStamps) ? storedStamps : 0);
     window.addEventListener("lingtour-auth", syncAuth);
-    return () => window.removeEventListener("lingtour-auth", syncAuth);
+    const unsubscribe = subscribeSyncedCommunityPosts(setOptimisticPosts);
+    return () => {
+      window.removeEventListener("lingtour-auth", syncAuth);
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -219,13 +213,7 @@ export default function CommunityPage() {
   }, []);
 
   const allPosts = useMemo(() => {
-    const merged = [...optimisticPosts, ...(remotePosts ?? [])];
-    const seen = new Set<string>();
-    return merged.filter((post) => {
-      if (seen.has(post.id)) return false;
-      seen.add(post.id);
-      return true;
-    });
+    return mergeCommunityPosts([...optimisticPosts, ...(remotePosts ?? [])]);
   }, [optimisticPosts, remotePosts]);
 
   const filteredPosts = useMemo(() => {
@@ -345,7 +333,7 @@ export default function CommunityPage() {
       const nextStamps = stampCount + 1;
       setOptimisticPosts(nextPosts);
       setStampCount(nextStamps);
-      writeLocalPosts(nextPosts);
+      writeSyncedCommunityPosts(nextPosts);
       window.localStorage.setItem(LOCAL_STAMPS_KEY, String(nextStamps));
       setDraft(draftFromBrief(selectedBrief));
       setActiveChannel("All");

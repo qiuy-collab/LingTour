@@ -16,7 +16,7 @@ function normalizePost(raw: any): CommunityPost {
     content: pickI18n(raw.content ?? raw.excerpt),
     location: raw.location || '',
     route: raw.route || '',
-    date: raw.createdAt ? new Date(raw.createdAt).toLocaleDateString('zh-CN') : '',
+    date: (raw.createdAt && typeof raw.createdAt === 'string') ? new Date(raw.createdAt).toLocaleDateString('zh-CN') : '',
     channel: raw.channel,
     mood: raw.mood || '',
     tags: Array.isArray(raw.tags) ? raw.tags : [],

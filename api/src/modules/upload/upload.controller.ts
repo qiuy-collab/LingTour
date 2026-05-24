@@ -63,6 +63,14 @@ export class UploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed.'), false);
+        }
+      },
     }),
   )
   async uploadFile(
@@ -73,7 +81,7 @@ export class UploadController {
       throw new BadRequestException('File is required');
     }
 
-    const result = this.uploadService.getStructuredPath(file.filename, module);
+    const result = await this.uploadService.storeUploadedFile(file, module);
 
     return {
       url: result.url,

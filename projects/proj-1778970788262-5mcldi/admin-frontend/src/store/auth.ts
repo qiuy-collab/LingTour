@@ -7,9 +7,14 @@ import router from '@/router'
 export const useAuthStore = defineStore('auth', () => {
   // State
   const token = ref<string | null>(localStorage.getItem('token'))
-  const user = ref<AdminUser | null>(
-    JSON.parse(localStorage.getItem('user') || 'null')
-  )
+  const user = ref<AdminUser | null>((() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      localStorage.removeItem('user')
+      return null
+    }
+  })())
 
   // Getters
   const isLoggedIn = computed(() => !!token.value)

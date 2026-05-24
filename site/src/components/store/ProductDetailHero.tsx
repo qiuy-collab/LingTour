@@ -44,7 +44,10 @@ type ProductDetailHeroProps = {
 
 export function ProductDetailHero({ product }: ProductDetailHeroProps) {
   const images = useMemo(
-    () => Array.from(new Set([product.image, ...(product.gallery || [])])),
+    () =>
+      Array.from(new Set([product.image, ...(product.gallery || [])])).filter(
+        (image): image is string => Boolean(image?.trim()),
+      ),
     [product.gallery, product.image],
   );
   const [activeIndex, setActiveIndex] = useState(0);
@@ -144,24 +147,32 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 <div className="absolute -top-4 left-1/2 h-10 w-32 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm border border-white/20" />
 
                 <div className="relative flex h-full w-full items-center justify-center">
-                  <img
-                    src={activeImage}
-                    alt={product.name}
-                    className="max-h-full w-auto max-w-full object-contain transition-transform duration-700 hover:scale-105"
-                  />
+                  {activeImage ? (
+                    <img
+                      src={activeImage}
+                      alt={product.name}
+                      className="max-h-full w-auto max-w-full object-contain transition-transform duration-700 hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--paper)] text-center text-sm text-[var(--muted)]">
+                      Product image pending
+                    </div>
+                  )}
 
                   {/* Navigation Buttons */}
                   <button
                     type="button"
                     onClick={() => setActiveIndex((c) => (c === 0 ? images.length - 1 : c - 1))}
                     className="absolute -left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
+                    disabled={images.length <= 1}
                   >
                     <span className="text-2xl mt-[-2px] pr-[2px]">&#8249;</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveIndex((c) => (c + 1) % images.length)}
+                    onClick={() => setActiveIndex((c) => (c + 1) % Math.max(images.length, 1))}
                     className="absolute -right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
+                    disabled={images.length <= 1}
                   >
                     <span className="text-2xl mt-[-2px] pl-[2px]">&#8250;</span>
                   </button>

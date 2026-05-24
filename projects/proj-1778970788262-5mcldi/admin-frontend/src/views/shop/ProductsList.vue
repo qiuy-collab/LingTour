@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productsApi } from '@/api/products'
@@ -112,10 +112,12 @@ onMounted(() => {
   fetchCollections()
   fetchList()
 })
+
+watch([page, pageSize], () => fetchList())
 </script>
 
 <template>
-  <div class="page-container">
+  <div>
     <div class="page-header">
       <h2>商品管理</h2>
       <el-button type="primary" @click="handleCreate">新增商品</el-button>
@@ -157,6 +159,7 @@ onMounted(() => {
       <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
+    <el-card shadow="never" class="table-card">
     <el-table :data="list" v-loading="loading" stripe>
       <el-table-column label="主图" width="80">
         <template #default="{ row }">
@@ -198,39 +201,36 @@ onMounted(() => {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="280" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>
+          <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
           <el-button
-            size="small"
             :type="row.published ? 'warning' : 'success'"
+            link
+            size="small"
             @click="handleToggleStatus(row)"
           >
             {{ row.published ? '下架' : '上架' }}
           </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+          <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <div class="pagination-wrap" v-if="total > pageSize">
+    <div class="pagination-wrap">
       <el-pagination
         v-model:current-page="page"
         v-model:page-size="pageSize"
         :total="total"
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
-        @current-change="handlePageChange"
-        @size-change="handleSizeChange"
+        background
       />
     </div>
+    </el-card>
   </div>
 </template>
 
 <style scoped>
-.page-container { padding: 20px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+.search-bar { margin-bottom: 16px; }
 </style>

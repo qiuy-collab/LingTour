@@ -28,9 +28,12 @@ export class HomeService {
 
   private async getOrCreateConfig() {
     try {
-      let config = await this.homeConfigRepo.findOne({
+      const [existingConfig] = await this.homeConfigRepo.find({
         order: { createdAt: 'ASC' },
+        take: 1,
       });
+
+      let config = existingConfig;
       if (!config) {
         config = this.homeConfigRepo.create({
           hero: {},

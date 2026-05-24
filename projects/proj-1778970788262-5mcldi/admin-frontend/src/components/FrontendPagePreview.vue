@@ -2,9 +2,9 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { pickI18n } from '@/types/common'
 import { resolveMediaUrl } from '@/utils/media'
+import { useEditorLocale } from '@/composables/useEditorLocale'
 
 type PreviewType = 'city' | 'route' | 'product'
-type PreviewLocale = 'zh' | 'en'
 
 const props = defineProps<{
   type: PreviewType
@@ -12,7 +12,7 @@ const props = defineProps<{
   meta?: Record<string, any>
 }>()
 
-const locale = ref<PreviewLocale>('zh')
+const { editorLocale } = useEditorLocale()
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 const frameShellRef = ref<HTMLDivElement | null>(null)
 
@@ -44,7 +44,7 @@ const desktopHeightMap: Record<PreviewType, number> = {
 const desktopHeight = computed(() => desktopHeightMap[props.type])
 
 function text(value: unknown, fallback = '') {
-  return pickI18n(value, locale.value) || fallback
+  return pickI18n(value, editorLocale.value) || fallback
 }
 
 function list(values: unknown) {
@@ -172,7 +172,7 @@ function postPreview() {
       channel: 'lingtour-preview',
       key: previewKey.value,
       type: props.type,
-      locale: locale.value,
+      locale: editorLocale.value,
       source: previewSource,
       data: previewPayload.value,
       timestamp: Date.now(),
@@ -228,7 +228,7 @@ function reloadFrame() {
 }
 
 watch(previewPayload, schedulePostPreview, { deep: true })
-watch(locale, schedulePostPreview)
+watch(editorLocale, schedulePostPreview)
 watch(iframeSrc, () => {
   iframeLoaded.value = false
   iframeLoading.value = true
@@ -264,14 +264,7 @@ onBeforeUnmount(() => {
         <p>{{ iframePath }}</p>
       </div>
       <div class="toolbar-actions">
-        <el-segmented
-          v-model="locale"
-          :options="[
-            { label: '中文', value: 'zh' },
-            { label: 'EN', value: 'en' },
-          ]"
-          size="small"
-        />
+        <span class="toolbar-locale-hint">跟随顶部编辑语言</span>
         <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">打开新窗口</a>
       </div>
     </div>
@@ -340,6 +333,11 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.toolbar-locale-hint {
+  font-size: 12px;
+  color: #909399;
 }
 
 .toolbar-actions a {

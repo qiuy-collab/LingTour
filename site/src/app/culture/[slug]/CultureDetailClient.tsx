@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
-import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
+import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
 import { Reveal } from "@/components/ui/Reveal";
 import { CityArchivalBook } from "@/components/culture/CityArchivalBook";
 import { RelatedCitiesHub } from "@/components/culture/RelatedCitiesHub";
@@ -17,6 +17,11 @@ export function CultureDetailClient({ slug }: { slug: string }) {
   const { locale, setLocale } = useLocale();
   const { previewData, previewLocale, previewEnabled } = usePreviewBridge<CityCulture>("city");
   const activeLocale = previewLocale ?? locale;
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (previewLocale && previewLocale !== locale) {
@@ -41,22 +46,29 @@ export function CultureDetailClient({ slug }: { slug: string }) {
 
   const activeCity = previewData ?? city;
 
+  if (!hydrated) {
+    return <LoadingSpinner text="Opening the city file..." />;
+  }
+
   if (previewEnabled && !activeCity) {
     return <LoadingSpinner text="Loading preview..." />;
   }
 
-  if (loading && !activeCity) return <LoadingSpinner text="Opening the city file…" />;
-  if (error && !activeCity)
+  if (loading && !activeCity) {
+    return <LoadingSpinner text="Opening the city file..." />;
+  }
+
+  if (error && !activeCity) {
     return (
       <ErrorState
         title="City file unavailable"
         message="This city's archive can't be reached right now. Please try again shortly."
       />
     );
+  }
 
-  // The fetch finished successfully (no loading, no error) but returned no
-  // city for this slug → render the framework's not-found page so the URL
-  // returns a real 404 instead of silently bouncing somewhere else.
+  // The fetch finished successfully but returned no city for this slug, so
+  // render the framework's not-found page instead of silently bouncing.
   if (!activeCity) {
     notFound();
   }
@@ -67,7 +79,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
   const relatedRoutes = (storyRoutes ?? []).filter((route) =>
     activeCity.routeSlugs.includes(route.slug),
   );
-  const showRouteFallback = relatedCities.length === 0 && relatedRoutes.length > 0;
+  const showRoutes = relatedRoutes.length > 0;
   const linkedRoute = relatedRoutes[0] ?? null;
 
   const coverChapter: CityCultureSection = {
@@ -194,10 +206,10 @@ export function CultureDetailClient({ slug }: { slug: string }) {
         >
           <Reveal>
             <p className="mb-4 text-label text-[var(--cinnabar)] handwritten">
-              {showRouteFallback ? "Continue the dispatch" : "Nearby in the same archive"}
+              {showRoutes ? "Continue the dispatch" : "Nearby in the same archive"}
             </p>
             <h2 className="max-w-4xl font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] md:text-5xl">
-              {showRouteFallback ? (
+              {showRoutes ? (
                 <>
                   Step out of <span className="italic text-[var(--gold)]">{activeCity.name}</span> and into its linked route.
                 </>
@@ -209,7 +221,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
             </h2>
           </Reveal>
 
-          {showRouteFallback ? (
+          {showRoutes ? (
             <RelatedRouteHub
               routes={relatedRoutes}
               cityAdcode={activeCity.adcode}

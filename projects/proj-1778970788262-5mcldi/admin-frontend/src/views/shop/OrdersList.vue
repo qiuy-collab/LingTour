@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ordersApi } from '@/api/orders'
@@ -121,10 +121,12 @@ function itemsSummary(items: Order['items']) {
 onMounted(() => {
   fetchList()
 })
+
+watch([page, pageSize], () => fetchList())
 </script>
 
 <template>
-  <div class="page-container">
+  <div>
     <div class="page-header">
       <h2>订单管理</h2>
     </div>
@@ -185,6 +187,7 @@ onMounted(() => {
       <el-button @click="handleReset">重置</el-button>
     </div>
 
+    <el-card shadow="never" class="table-card">
     <el-table :data="list" v-loading="loading" stripe>
       <el-table-column prop="orderNo" label="订单号" width="180" />
       <el-table-column label="用户" min-width="140">
@@ -230,21 +233,23 @@ onMounted(() => {
           {{ formatDateTime(row.createdAt) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button size="small" @click="handleViewDetail(row.id)">详情</el-button>
+          <el-button type="primary" link size="small" @click="handleViewDetail(row.id)">详情</el-button>
           <el-button
             v-if="row.status === 'confirmed' && row.paymentStatus === 'paid'"
-            size="small"
             type="success"
+            link
+            size="small"
             @click="handleShip(row)"
           >
             发货
           </el-button>
           <el-button
             v-if="row.paymentStatus === 'paid' && row.status !== 'cancelled'"
-            size="small"
             type="warning"
+            link
+            size="small"
             @click="handleRefund(row)"
           >
             退款
@@ -260,19 +265,14 @@ onMounted(() => {
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next"
-        @current-change="handlePageChange"
-        @size-change="handleSizeChange"
+        background
       />
     </div>
+    </el-card>
   </div>
 </template>
 
 <style scoped>
-.page-container { padding: 20px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 .items-summary {
   overflow: hidden;
   text-overflow: ellipsis;

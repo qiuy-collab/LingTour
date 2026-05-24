@@ -1,10 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FieldKit } from "@/components/community/FieldKit";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
 import { AUTH_PROMPTS } from "@/lib/auth-prompts";
-import { createCommunityPost, type RouteCommunityPost } from "@/lib/api-data";
+import {
+  createCommunityPost,
+  type CommunityFeedPost,
+  type RouteCommunityPost,
+} from "@/lib/api-data";
+import {
+  appendSyncedCommunityPost,
+  mergeCommunityPosts,
+  readSyncedCommunityPosts,
+  subscribeSyncedCommunityPosts,
+} from "@/lib/community-sync";
 
 type RouteStopTarget = { index: number; time: string; name: string };
 
@@ -44,13 +54,9 @@ export function StickyComposeBar({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [posts, setPosts] = useState<RouteCommunityPost[]>(initialPosts);
   const [user, setUser] = useState<LocalUser | null>(null);
+  const [syncedPosts, setSyncedPosts] = useState<CommunityFeedPost[]>([]);
   const isLoggedIn = Boolean(user);
-
-  useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
 
   useEffect(() => {
     const sync = () => setUser(readStoredUser());
@@ -62,6 +68,22 @@ export function StickyComposeBar({
       window.removeEventListener("storage", sync);
     };
   }, []);
+
+  useEffect(() => {
+    const routeTargets = [routeSlug, routeTitle]
+      .filter(Boolean)
+      .map((value) => value.toLowerCase().trim());
+
+    const selectRoutePosts = (posts: CommunityFeedPost[]) =>
+      posts.filter((post) =>
+        routeTargets.includes(post.route.toLowerCase().trim()),
+      );
+
+    setSyncedPosts(selectRoutePosts(readSyncedCommunityPosts()));
+    return subscribeSyncedCommunityPosts((posts) =>
+      setSyncedPosts(selectRoutePosts(posts)),
+    );
+  }, [routeSlug, routeTitle]);
 
   useEffect(() => {
     if (composeTarget && isLoggedIn) {
@@ -117,7 +139,20 @@ export function StickyComposeBar({
         },
       });
 
-      setPosts((prev) => [created, ...prev]);
+      appendSyncedCommunityPost({
+        ...created,
+        date: new Date(created.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        readTime: "1 min",
+        likes: 0,
+        comments: 0,
+        saves: 0,
+        prompt: composeTarget
+          ? `Track: Stop ${composeTarget.index + 1} · ${composeTarget.name}`
+          : `Filed from ${routeCity}.`,
+      });
       setOpen(false);
       onClearTarget?.();
     } catch (err) {
@@ -131,6 +166,21 @@ export function StickyComposeBar({
       setSubmitting(false);
     }
   };
+
+  const posts = useMemo(() => {
+    const routePosts = syncedPosts.map(
+      ({ date: _date, readTime: _readTime, likes: _likes, comments: _comments, saves: _saves, prompt: _prompt, ...post }) => {
+        void _date;
+        void _readTime;
+        void _likes;
+        void _comments;
+        void _saves;
+        void _prompt;
+        return post;
+      },
+    );
+    return mergeCommunityPosts<RouteCommunityPost>([...routePosts, ...initialPosts]);
+  }, [initialPosts, syncedPosts]);
 
   const latestPost = posts[0];
 

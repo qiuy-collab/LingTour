@@ -24,12 +24,14 @@ export const productsApi = {
     return api.put<ApiResponse<Product>>(`/shop/products/${id}`, data)
   },
 
+  /** 上下架 — 后端无独立 /status 端点，通过 PUT 更新 published 字段 */
   updateProductStatus(id: string, published: boolean) {
-    return api.patch<ApiResponse<Product>>(`/shop/products/${id}/status`, { published })
+    return api.put<ApiResponse<Product>>(`/shop/products/${id}`, { published })
   },
 
+  /** 库存调整 — 后端无独立 /stock 端点，通过 PUT 更新 stock 字段 */
   updateStock(id: string, stock: number) {
-    return api.patch<ApiResponse<Product>>(`/shop/products/${id}/stock`, { stock })
+    return api.put<ApiResponse<Product>>(`/shop/products/${id}`, { stock })
   },
 
   deleteProduct(id: string) {

@@ -4,6 +4,17 @@ import * as echarts from 'echarts'
 import { getDashboardStats } from '@/api/dashboard'
 import type { DashboardData } from '@/types/dashboard'
 import { ElMessage } from 'element-plus'
+import {
+  User,
+  MapLocation,
+  Guide,
+  Goods,
+  Microphone,
+  Calendar,
+  Tickets,
+} from '@element-plus/icons-vue'
+
+const iconMap: Record<string, any> = { User, MapLocation, Guide, Goods, Microphone, Calendar, Tickets }
 
 const loading = ref(false)
 const data = ref<DashboardData | null>(null)
@@ -235,9 +246,13 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard" v-loading="loading">
+    <div class="page-header">
+      <h2>仪表盘</h2>
+    </div>
+
     <!-- 统计卡片 -->
-    <el-row :gutter="16" class="stats-row">
-      <el-col :xs="12" :sm="8" :md="6" :lg="3" v-for="card in [
+    <div class="stats-grid">
+      <div v-for="card in [
         { key: 'totalUsers', label: '用户总数', icon: 'User', color: '#409EFF' },
         { key: 'totalCities', label: '覆盖城市', icon: 'MapLocation', color: '#67C23A' },
         { key: 'totalRoutes', label: '已发布路线', icon: 'Guide', color: '#E6A23C' },
@@ -250,7 +265,7 @@ onUnmounted(() => {
           <div class="stat-content">
             <div class="stat-icon" :style="{ background: card.color + '1a', color: card.color }">
               <el-icon :size="24">
-                <component :is="card.icon" />
+                <component :is="iconMap[card.icon]" />
               </el-icon>
             </div>
             <div class="stat-text">
@@ -261,8 +276,8 @@ onUnmounted(() => {
             </div>
           </div>
         </el-card>
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 图表区域 -->
     <el-row :gutter="16" class="charts-row">
@@ -304,12 +319,15 @@ onUnmounted(() => {
   padding: 0;
 }
 
-.stats-row {
-  margin-bottom: 16px;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  margin-bottom: 12px;
+  height: 100%;
 }
 
 .stat-content {
@@ -335,7 +353,7 @@ onUnmounted(() => {
 
 .stat-label {
   font-size: 13px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
   margin-bottom: 4px;
 }
 
@@ -352,6 +370,7 @@ onUnmounted(() => {
 .chart-title {
   font-size: 15px;
   font-weight: 600;
+  color: var(--lt-text-primary, #303133);
 }
 
 .chart-container {
@@ -359,6 +378,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
   .stat-value {
     font-size: 18px;
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
+import { AnimatePresence, motion, useSpring } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Stop = {
@@ -476,14 +476,37 @@ function StopNode({
 }
 
 export function TimeAxisItinerary({ stops, routeStory, routeTitle, onAddStopNote }: Props) {
+  const [spineProgress, setSpineProgress] = useState(0);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start 62%", "end 72%"],
+  const spineScale = useSpring(spineProgress, {
+    stiffness: 90,
+    damping: 24,
+    mass: 0.25,
   });
-  const spineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.25 });
 
   const briefStory = useMemo(() => routeStory.trim(), [routeStory]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const updateProgress = () => {
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 1;
+      const travel = rect.height + viewportHeight;
+      const progressed = (viewportHeight - rect.top) / Math.max(travel, 1);
+      setSpineProgress(Math.min(1, Math.max(0, progressed)));
+    };
+
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+
+    return () => {
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
+  }, [stops.length, routeTitle]);
 
   if (stops.length === 0) return null;
   const lastStop = stops[stops.length - 1];

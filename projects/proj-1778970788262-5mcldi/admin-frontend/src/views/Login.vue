@@ -102,10 +102,12 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #1a2a6c, #304156, #2d4a68);
+  padding: 20px;
 }
 
 .login-card-wrapper {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .login-header {
@@ -134,5 +136,11 @@ async function handleLogin() {
 
 .login-btn {
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .login-title {
+    font-size: 22px;
+  }
 }
 </style>

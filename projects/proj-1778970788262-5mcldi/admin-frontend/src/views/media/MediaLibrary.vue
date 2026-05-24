@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { CopyDocument, Delete } from '@element-plus/icons-vue'
 import { getMediaFiles, deleteMediaFile, uploadMediaFile } from '@/api/media'
 import type { MediaFile } from '@/api/media'
 import { resolveMediaUrl } from '@/utils/media'

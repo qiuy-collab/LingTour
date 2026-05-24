@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { I18nObject } from '@/types/common'
+import { useEditorLocale } from '@/composables/useEditorLocale'
 
 const props = defineProps<{
   modelValue: I18nObject
@@ -14,55 +15,49 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: I18nObject): void
 }>()
 
+const { editorLocale } = useEditorLocale()
+
 const internalValue = computed({
   get: () => props.modelValue || { zh: '', en: '' },
-  set: (val) => emit('update:modelValue', val)
+  set: (val) => emit('update:modelValue', val),
 })
 
-const updateZh = (val: string) => {
-  internalValue.value = { ...internalValue.value, zh: val }
-}
+const currentValue = computed(() => internalValue.value[editorLocale.value] || '')
 
-const updateEn = (val: string) => {
-  internalValue.value = { ...internalValue.value, en: val }
+const currentPlaceholder = computed(() =>
+  props.placeholder ||
+  (editorLocale.value === 'zh' ? '请输入中文内容' : 'Enter English content'),
+)
+
+const localeLabel = computed(() => (editorLocale.value === 'zh' ? '中文 (ZH)' : 'English (EN)'))
+
+const updateCurrent = (val: string) => {
+  internalValue.value = { ...internalValue.value, [editorLocale.value]: val }
 }
 </script>
 
 <template>
   <div class="i18n-input">
-    <el-tabs type="border-card">
-      <el-tab-pane label="中文 (ZH)">
-        <el-input
-          :model-value="internalValue.zh"
-          @update:model-value="updateZh"
-          :type="type"
-          :rows="rows"
-          :placeholder="placeholder || '请输入中文内容'"
-        />
-      </el-tab-pane>
-      <el-tab-pane label="English (EN)">
-        <el-input
-          :model-value="internalValue.en"
-          @update:model-value="updateEn"
-          :type="type"
-          :rows="rows"
-          :placeholder="placeholder || 'Enter English content'"
-        />
-      </el-tab-pane>
-    </el-tabs>
+    <div class="locale-indicator">{{ localeLabel }}</div>
+    <el-input
+      :model-value="currentValue"
+      @update:model-value="updateCurrent"
+      :type="type"
+      :rows="rows"
+      :placeholder="currentPlaceholder"
+    />
   </div>
 </template>
 
 <style scoped>
 .i18n-input {
-  margin-bottom: 0;
   width: 100%;
 }
-:deep(.el-tabs--border-card) {
-  border: 1px solid #dcdfe6;
-  box-shadow: none;
-}
-:deep(.el-tabs__content) {
-  padding: 12px;
+
+.locale-indicator {
+  margin-bottom: 8px;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1;
 }
 </style>

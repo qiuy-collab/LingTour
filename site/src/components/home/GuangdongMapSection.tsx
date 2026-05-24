@@ -57,7 +57,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     name: "Zhanjiang",
     label: "Southern coast",
     summary: "",
-    image: "",
+    image: "/uploads/seed/zhanjiang-hero-1200.jpg",
     tags: [],
     adcode: 440800,
     gallery: [],
@@ -84,8 +84,10 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   const activeGallery =
     activeCity.gallery && activeCity.gallery.length
       ? activeCity.gallery
-      : [activeCity.image];
-  const activeImage = activeGallery[slideIndex % activeGallery.length] ?? "";
+      : [activeCity.image].filter(Boolean);
+  const activeImage =
+    activeGallery[slideIndex % Math.max(activeGallery.length, 1)] ??
+    fallbackCity.image;
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -149,10 +151,14 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 className="group block"
               >
                 <div className="relative mb-4 aspect-[4/3] overflow-hidden">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-                    style={{ backgroundImage: `url(${activeImage})` }}
-                  />
+                  {activeImage ? (
+                    <div
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
+                      style={{ backgroundImage: `url(${activeImage})` }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(20,52,61,0.14),rgba(182,66,53,0.08))]" />
+                  )}
                   <div className="absolute -top-2 left-1/2 z-20 h-6 w-20 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm" />
                 </div>
               </Link>

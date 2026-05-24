@@ -10,6 +10,7 @@ import { routesApi } from '@/api/routes'
 import type { EventFormData } from '@/types/event'
 import { EventStatusMap } from '@/types/event'
 import { pickI18n, toI18n } from '@/types/common'
+import { extractErrorMessage } from '@/utils/i18n'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -28,11 +29,16 @@ const routeOptions = ref<Array<{ slug: string; title: string }>>([])
 const newTag = ref('')
 
 const rules = {
+  slug: [
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case', trigger: 'blur' },
+  ],
   'title.zh': [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
   date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
 }
 
 const form = reactive<EventFormData>({
+  slug: '',
   title: { zh: '', en: '' },
   date: '',
   endDate: '',
@@ -91,6 +97,7 @@ function handleCityChange(slug: string) {
 
 function fillFromApi(data: any) {
   Object.assign(form, {
+    slug: data.slug || '',
     title: toI18n(data.title),
     date: data.date || '',
     endDate: data.endDate || '',
@@ -129,8 +136,8 @@ onMounted(async () => {
 
     const res = await eventsApi.getEvent(route.params.id as string)
     fillFromApi(res.data.data)
-  } catch {
-    ElMessage.error('加载活动数据失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '加载活动数据失败'))
     router.push('/admin/events')
   } finally {
     loading.value = false
@@ -145,6 +152,16 @@ async function handleSave() {
     return
   }
 
+  // 结束日期不能早于开始日期
+  if (form.endDate && form.date) {
+    const start = new Date(form.date as string)
+    const end = new Date(form.endDate as string)
+    if (!isNaN(end.getTime()) && end < start) {
+      ElMessage.error('结束日期不能早于开始日期')
+      return
+    }
+  }
+
   saving.value = true
   try {
     if (isEdit.value) {
@@ -156,7 +173,7 @@ async function handleSave() {
     }
     router.push('/admin/events')
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || '保存失败')
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
@@ -184,6 +201,9 @@ function handleCancel() {
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
           <template #header>1. 基本信息</template>
+          <el-form-item label="Slug" prop="slug">
+            <el-input v-model="form.slug" placeholder="如 dragon-boat-2026（kebab-case）" />
+          </el-form-item>
           <el-form-item label="活动名称" prop="title.zh">
             <I18nInput v-model="form.title" />
           </el-form-item>

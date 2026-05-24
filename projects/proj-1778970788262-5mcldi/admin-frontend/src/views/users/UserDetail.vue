@@ -15,6 +15,8 @@ import {
   UserStatusMap,
   VisibilityMap,
 } from '@/types/user'
+import { formatDateTime } from '@/utils/format'
+import { extractErrorMessage } from '@/utils/i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -57,8 +59,8 @@ async function fetchUser() {
     const res = await getUser(id)
     user.value = res.data.data
     applyForm(res.data.data)
-  } catch {
-    ElMessage.error('获取用户信息失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '获取用户信息失败'))
   } finally {
     loading.value = false
   }
@@ -66,6 +68,10 @@ async function fetchUser() {
 
 async function saveProfile() {
   if (!user.value) return
+  if (!form.name?.trim()) {
+    ElMessage.warning('请输入显示名称')
+    return
+  }
   saving.value = true
   try {
     const res = await updateUserProfile(user.value.id, {
@@ -80,8 +86,8 @@ async function saveProfile() {
     user.value = res.data.data
     applyForm(res.data.data)
     ElMessage.success('资料已更新')
-  } catch {
-    ElMessage.error('资料更新失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '资料更新失败'))
   } finally {
     saving.value = false
   }
@@ -93,8 +99,8 @@ async function handleBan() {
     await banUser(user.value.id)
     ElMessage.success(`已封禁用户 ${user.value.name}`)
     fetchUser()
-  } catch {
-    ElMessage.error('封禁失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '封禁失败'))
   }
 }
 
@@ -104,24 +110,13 @@ async function handleUnban() {
     await unbanUser(user.value.id)
     ElMessage.success(`已解封用户 ${user.value.name}`)
     fetchUser()
-  } catch {
-    ElMessage.error('解封失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '解封失败'))
   }
 }
 
 function goBack() {
   router.push('/admin/users')
-}
-
-function formatDateTime(dateStr: string) {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 onMounted(() => {

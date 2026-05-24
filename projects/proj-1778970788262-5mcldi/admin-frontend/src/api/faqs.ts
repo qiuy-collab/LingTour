@@ -26,7 +26,8 @@ export const faqsApi = {
     return api.delete<ApiResponse<null>>(`/interpreting/faqs/${id}`)
   },
 
+  /** 更新排序 — 后端 /sort 端点不可用，通过 PUT 更新 sortOrder */
   updateSort(id: string, sortOrder: number) {
-    return api.patch<ApiResponse<FAQ>>(`/interpreting/faqs/${id}/sort`, { sortOrder })
+    return api.put<ApiResponse<FAQ>>(`/interpreting/faqs/${id}`, { sortOrder })
   },
 }

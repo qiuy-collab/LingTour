@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { join } from 'path';
+import { extname, join } from 'path';
 import { Dirent } from 'fs';
-import { readdir, stat, unlink } from 'fs/promises';
+import { mkdir, readdir, stat, unlink, writeFile } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import {
   buildPublicUploadUrl,
   buildStoredUploadPath,
@@ -21,6 +22,11 @@ export class UploadService {
       process.cwd(),
       this.configService.get<string>('UPLOAD_DIR', './uploads'),
     );
+  }
+
+  private getUploadDestination(module?: string): string {
+    const safeModule = sanitizeUploadModule(module);
+    return safeModule ? join(this.uploadDir, safeModule) : this.uploadDir;
   }
 
   /**
@@ -45,6 +51,34 @@ export class UploadService {
     return {
       url: buildPublicUploadUrl(filename, module),
       filename: structuredFilename,
+    };
+  }
+
+  async storeUploadedFile(
+    file: Express.Multer.File,
+    module?: string,
+  ): Promise<{ url: string; filename: string }> {
+    const safeModule = sanitizeUploadModule(module);
+
+    if (file.filename) {
+      return this.getStructuredPath(file.filename, safeModule);
+    }
+
+    if (!file.buffer) {
+      throw new BadRequestException('Uploaded file buffer is missing');
+    }
+
+    const destination = this.getUploadDestination(safeModule);
+    await mkdir(destination, { recursive: true });
+
+    const ext = extname(file.originalname || '');
+    const uniqueFilename = `${uuidv4()}${ext}`;
+    const storedPath = buildStoredUploadPath(uniqueFilename, safeModule);
+    await writeFile(join(destination, uniqueFilename), file.buffer);
+
+    return {
+      url: buildPublicUploadUrl(storedPath),
+      filename: storedPath,
     };
   }
 

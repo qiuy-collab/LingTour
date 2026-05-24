@@ -223,37 +223,70 @@ export class OrdersService {
    * idempotent：重复调用同一个 orderNo 不会重复推进。
    */
   async markPaid(orderNo: string, paymentId: string) {
-    const order = await this.orderRepo.findOne({ where: { orderNo } });
-    if (!order) {
-      throw new NotFoundException(`Order "${orderNo}" not found`);
+    // Retry mechanism for potential race conditions or lock acquisition failures
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await this.orderRepo.manager.transaction(async (manager) => {
+          const order = await manager.findOne(Order, {
+            where: { orderNo },
+            lock: { mode: 'pessimistic_write' },
+          });
+
+          if (!order) {
+            throw new NotFoundException(`Order "${orderNo}" not found`);
+          }
+
+          if (order.paymentStatus === 'paid') {
+            return order; // Idempotent
+          }
+
+          order.paymentStatus = 'paid';
+          order.paymentId = paymentId;
+          order.paidAt = new Date();
+          order.paymentFailureReason = null;
+
+          if (order.status === 'pending') {
+            order.status = 'confirmed';
+          }
+
+          return await manager.save(Order, order);
+        });
+      } catch (error) {
+        if (error instanceof NotFoundException) throw error;
+        if (attempt === 3) throw error;
+        // Wait before retrying (exponential backoff)
+        await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
+      }
     }
-
-    if (order.paymentStatus === 'paid') {
-      return order; // 幂等
-    }
-
-    order.paymentStatus = 'paid';
-    order.paymentId = paymentId;
-    order.paidAt = new Date();
-    order.paymentFailureReason = null;
-
-    // 履约自动从 pending → confirmed（如果还在 pending）
-    if (order.status === 'pending') {
-      order.status = 'confirmed';
-    }
-
-    return this.orderRepo.save(order);
   }
 
   async markPaymentFailed(orderNo: string, reason?: string) {
-    const order = await this.orderRepo.findOne({ where: { orderNo } });
-    if (!order) {
-      throw new NotFoundException(`Order "${orderNo}" not found`);
-    }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        return await this.orderRepo.manager.transaction(async (manager) => {
+          const order = await manager.findOne(Order, {
+            where: { orderNo },
+            lock: { mode: 'pessimistic_write' },
+          });
 
-    order.paymentStatus = 'failed';
-    order.paymentFailureReason = reason ?? 'Unknown';
-    return this.orderRepo.save(order);
+          if (!order) {
+            throw new NotFoundException(`Order "${orderNo}" not found`);
+          }
+
+          if (order.paymentStatus === 'failed') {
+            return order; // Idempotent
+          }
+
+          order.paymentStatus = 'failed';
+          order.paymentFailureReason = reason ?? 'Unknown';
+          return await manager.save(Order, order);
+        });
+      } catch (error) {
+        if (error instanceof NotFoundException) throw error;
+        if (attempt === 3) throw error;
+        await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
+      }
+    }
   }
 
   /** @deprecated 旧接口，仅供向后兼容；推荐用 markPaid */

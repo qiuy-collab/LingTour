@@ -5,7 +5,9 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { ArrowDown, ArrowUp, Delete, Plus } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
+import { routesApi } from '@/api/routes'
 import { toI18n } from '@/types/common'
+import { extractErrorMessage } from '@/utils/i18n'
 import type { CityFormData } from '@/types/city'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
@@ -18,13 +20,15 @@ const isEdit = computed(() => Boolean(route.params.id))
 const loading = ref(false)
 const saving = ref(false)
 const formRef = ref<FormInstance>()
+const activeChapter = ref('overview')
+
 const cityOptions = ref<Array<{ id: string; slug: string; name: string }>>([])
-const originalSectionsSnapshot = ref('')
+const routeOptions = ref<Array<{ id: string; slug: string; title: string; cityName: string }>>([])
 
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case 格式（如 guang-zhou）', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case 格式', trigger: 'blur' },
   ],
   'name.zh': [{ required: true, message: '请输入城市名称', trigger: 'blur' }],
 }
@@ -75,21 +79,6 @@ function normalizeSection(section: any, index: number) {
   }
 }
 
-function serializeSections(sections: any[]) {
-  return JSON.stringify(
-    sections.map((section: any, index: number) => ({
-      title: normalizeI18nValue(section.title),
-      body: normalizeI18nValue(section.body),
-      image: section.image || '',
-      statLabel: normalizeI18nValue(section.statLabel),
-      statValue: normalizeI18nValue(section.statValue),
-      breathImage: section.breathImage || '',
-      breathQuote: normalizeI18nValue(section.breathQuote),
-      sortOrder: section.sortOrder ?? index,
-    })),
-  )
-}
-
 function addTag() {
   if (!newTag.zh.trim() && !newTag.en.trim()) return
   form.tags.push({ zh: newTag.zh.trim(), en: newTag.en.trim() })
@@ -113,11 +102,17 @@ function addSection() {
     breathQuote: { zh: '', en: '' },
     sortOrder: form.sections.length,
   })
+  activeChapter.value = `section-${form.sections.length - 1}`
 }
 
 function removeSection(index: number) {
   form.sections.splice(index, 1)
   reindexSections()
+  if (form.sections.length === 0) {
+    activeChapter.value = 'overview'
+    return
+  }
+  activeChapter.value = `section-${Math.min(index, form.sections.length - 1)}`
 }
 
 function moveSection(index: number, delta: -1 | 1) {
@@ -133,6 +128,40 @@ function reindexSections() {
   })
 }
 
+const chapterTabs = computed(() => [
+  { key: 'overview', label: 'Overview' },
+  { key: 'intro', label: 'Intro' },
+  ...form.sections.map((section: any, index: number) => ({
+    key: `section-${index}`,
+    label: section.title?.zh?.trim() || section.title?.en?.trim() || `Section ${index + 1}`,
+    badge: `#${index + 1}`,
+  })),
+  { key: 'food', label: 'Food' },
+  { key: 'related', label: 'Routes' },
+  { key: 'publish', label: 'Publish' },
+])
+
+const activeSectionIndex = computed(() => {
+  const match = /^section-(\d+)$/.exec(activeChapter.value)
+  return match ? Number(match[1]) : -1
+})
+
+const activeSection = computed(() =>
+  activeSectionIndex.value >= 0 ? form.sections[activeSectionIndex.value] : null,
+)
+
+const isSectionChapter = computed(() => activeSectionIndex.value >= 0)
+
+function moveActiveSection(delta: -1 | 1) {
+  if (activeSectionIndex.value < 0) return
+  const currentIndex = activeSectionIndex.value
+  moveSection(currentIndex, delta)
+  const targetIndex = currentIndex + delta
+  if (targetIndex >= 0 && targetIndex < form.sections.length) {
+    activeChapter.value = `section-${targetIndex}`
+  }
+}
+
 async function loadCityOptions() {
   const res = await citiesApi.getCities({ page: 1, pageSize: 200 })
   cityOptions.value = (res.data.data.items || []).map((item: any) => ({
@@ -142,10 +171,17 @@ async function loadCityOptions() {
   }))
 }
 
+async function loadRouteOptions() {
+  const res = await routesApi.getRoutes({ page: 1, pageSize: 200 })
+  routeOptions.value = (res.data.data.items || []).map((item: any) => ({
+    id: item.id,
+    slug: item.slug,
+    title: item.title?.zh || item.title?.en || item.slug,
+    cityName: item.cityName?.zh || item.cityName?.en || '',
+  }))
+}
+
 function fillFromApi(data: any) {
-  const normalizedSections = (data.sections || []).map((section: any, index: number) =>
-    normalizeSection(section, index),
-  )
   Object.assign(form, {
     slug: data.slug || '',
     name: toI18n(data.name),
@@ -159,16 +195,15 @@ function fillFromApi(data: any) {
     foodTitle: toI18n(data.foodTitle),
     foodDescription: toI18n(data.foodDescription),
     foodImages: data.foodImages || [],
-    sections: normalizedSections,
+    sections: (data.sections || []).map((section: any, index: number) => normalizeSection(section, index)),
     status: data.published ? 'published' : 'draft',
     routeSlugs: data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
   })
-  originalSectionsSnapshot.value = serializeSections(normalizedSections)
 }
 
-function toPayload(options?: { includeSections?: boolean }) {
-  const payload: Partial<CityFormData> = {
+function toPayload() {
+  return {
     slug: form.slug,
     name: form.name,
     regionLabel: form.regionLabel,
@@ -184,9 +219,7 @@ function toPayload(options?: { includeSections?: boolean }) {
     published: form.status === 'published',
     routeSlugs: form.routeSlugs,
     relatedCitySlugs: form.relatedCitySlugs,
-  }
-  if (options?.includeSections) {
-    payload.sections = form.sections.map((section: any, index: number) => ({
+    sections: form.sections.map((section: any, index: number) => ({
       title: normalizeI18nValue(section.title),
       body: normalizeI18nValue(section.body),
       image: section.image || '',
@@ -195,21 +228,20 @@ function toPayload(options?: { includeSections?: boolean }) {
       breathImage: section.breathImage || '',
       breathQuote: normalizeI18nValue(section.breathQuote),
       sortOrder: index,
-    }))
+    })),
   }
-  return payload
 }
 
 onMounted(async () => {
   loading.value = true
   try {
-    await loadCityOptions()
+    await Promise.all([loadCityOptions(), loadRouteOptions()])
     if (isEdit.value) {
       const res = await citiesApi.getCity(route.params.id as string)
       fillFromApi(res.data.data)
     }
-  } catch {
-    ElMessage.error('加载城市数据失败')
+  } catch (err: any) {
+    ElMessage.error(extractErrorMessage(err, '加载城市数据失败'))
     router.push('/admin/cities')
   } finally {
     loading.value = false
@@ -223,36 +255,27 @@ async function handleSave() {
     ElMessage.warning('请检查必填项')
     return
   }
+
   saving.value = true
   try {
-    const sectionsChanged =
-      isEdit.value && serializeSections(form.sections) !== originalSectionsSnapshot.value
     if (isEdit.value) {
-      if (sectionsChanged) {
-        ElMessage.error('当前后端暂不支持保存城市 Section 变更，请先保存其他字段')
-        return
-      }
-      await citiesApi.updateCity(route.params.id as string, toPayload({ includeSections: false }))
+      await citiesApi.updateCity(route.params.id as string, toPayload())
       ElMessage.success('城市更新成功')
     } else {
-      await citiesApi.createCity(toPayload({ includeSections: true }) as CityFormData)
+      await citiesApi.createCity(toPayload() as CityFormData)
       ElMessage.success('城市创建成功')
     }
     router.push('/admin/cities')
   } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || '保存失败')
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
 }
 
-const availableRelatedCities = computed(() =>
-  cityOptions.value.filter((item) => item.slug !== form.slug),
-)
-
-const selectedRelatedCityCards = computed(() =>
-  form.relatedCitySlugs
-    .map((slug: string) => availableRelatedCities.value.find((item) => item.slug === slug))
+const selectedRouteCards = computed(() =>
+  form.routeSlugs
+    .map((slug: string) => routeOptions.value.find((item) => item.slug === slug))
     .filter(Boolean),
 )
 </script>
@@ -262,14 +285,14 @@ const selectedRelatedCityCards = computed(() =>
     <div class="page-header">
       <h2>{{ isEdit ? '编辑城市' : '新增城市' }}</h2>
       <div>
-        <el-button @click="router.push('/admin/cities')">取消</el-button>
+        <el-button @click="router.push('/admin/cities')">返回</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </div>
     </div>
 
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
-        <el-card id="section-basic" shadow="never" class="section-card">
+        <el-card shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-row :gutter="16">
             <el-col :span="12">
@@ -303,125 +326,167 @@ const selectedRelatedCityCards = computed(() =>
           </el-form-item>
         </el-card>
 
-        <el-card id="section-overview" shadow="never" class="section-card">
-          <template #header>1. Overview（图文）</template>
-          <el-form-item label="Overview 主图">
-            <ImageUpload v-model="form.heroImage" />
-          </el-form-item>
-          <el-form-item label="Overview 文案">
-            <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
-          </el-form-item>
-        </el-card>
-
-        <el-card id="section-intro" shadow="never" class="section-card">
-          <template #header>2. Intro（图文）</template>
-          <el-form-item label="Intro 正文">
-            <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
-          </el-form-item>
-          <el-form-item label="Intro 图片组">
-            <ImageUpload v-model="form.galleryImages" multiple :limit="12" />
-          </el-form-item>
-        </el-card>
-
-        <el-card shadow="never" class="section-card">
+        <el-card shadow="never" class="section-card chapter-workspace">
           <template #header>
-            <div class="card-header">
-              <span>3. Section（可变数组）</span>
-              <el-button size="small" type="primary" :icon="Plus" @click="addSection">添加 Section</el-button>
-            </div>
-          </template>
-          <div v-for="(section, index) in form.sections" :id="`city-section-${index}`" :key="section.id" class="repeat-item">
-            <div class="repeat-header">
-              <strong>Section {{ Number(index) + 1 }}</strong>
-              <div>
-                <el-button text :icon="ArrowUp" :disabled="Number(index) === 0" @click="moveSection(Number(index), -1)" />
-                <el-button text :icon="ArrowDown" :disabled="Number(index) === form.sections.length - 1" @click="moveSection(Number(index), 1)" />
-                <el-button text type="danger" :icon="Delete" @click="removeSection(Number(index))" />
+            <div class="chapter-toolbar">
+              <div class="chapter-intro">
+                <div class="chapter-eyebrow">City Story Workspace</div>
+                <div class="chapter-headline">
+                  <h3>章节工作台</h3>
+                  <span class="chapter-active-pill">
+                    {{ chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview' }}
+                  </span>
+                </div>
+                <p>按章节切换城市内容，减少长表单滚动，Section 的新增、排序和删除也集中在这里处理。</p>
+              </div>
+              <div class="chapter-tabs">
+                <button
+                  v-for="chapter in chapterTabs"
+                  :key="chapter.key"
+                  type="button"
+                  class="chapter-tab"
+                  :class="{ active: activeChapter === chapter.key }"
+                  @click="activeChapter = chapter.key"
+                >
+                  {{ chapter.label }}
+                </button>
+              </div>
+              <div class="chapter-actions">
+                <el-button size="small" type="primary" :icon="Plus" @click="addSection">新增 Section</el-button>
+                <el-button
+                  size="small"
+                  :icon="ArrowUp"
+                  :disabled="!isSectionChapter || activeSectionIndex === 0"
+                  @click="moveActiveSection(-1)"
+                >
+                  上移
+                </el-button>
+                <el-button
+                  size="small"
+                  :icon="ArrowDown"
+                  :disabled="!isSectionChapter || activeSectionIndex === form.sections.length - 1"
+                  @click="moveActiveSection(1)"
+                >
+                  下移
+                </el-button>
+                <el-button
+                  size="small"
+                  type="danger"
+                  :icon="Delete"
+                  :disabled="!isSectionChapter"
+                  @click="removeSection(activeSectionIndex)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
+          </template>
 
+          <div v-if="activeChapter === 'overview'" class="chapter-panel">
+            <div class="chapter-title">Overview（图文）</div>
+            <el-form-item label="Overview 主图">
+              <ImageUpload v-model="form.heroImage" />
+            </el-form-item>
+            <el-form-item label="Overview 文案">
+              <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
+            </el-form-item>
+          </div>
+
+          <div v-else-if="activeChapter === 'intro'" class="chapter-panel">
+            <div class="chapter-title">Intro（图文）</div>
+            <el-form-item label="Intro 正文">
+              <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
+            </el-form-item>
+            <el-form-item label="Intro 图片组">
+              <ImageUpload v-model="form.galleryImages" multiple :limit="12" />
+            </el-form-item>
+          </div>
+
+          <div v-else-if="isSectionChapter && activeSection" class="chapter-panel">
+            <div class="chapter-title">
+              {{ activeSection.title?.zh?.trim() || activeSection.title?.en?.trim() || `Section ${activeSectionIndex + 1}` }}
+            </div>
             <el-form-item label="Section 图片">
-              <ImageUpload v-model="section.image" />
+              <ImageUpload v-model="activeSection.image" />
             </el-form-item>
             <el-form-item label="Section 标题">
-              <I18nInput v-model="section.title" />
+              <I18nInput v-model="activeSection.title" />
             </el-form-item>
-            <el-form-item label="Section 正文（按 Markdown 渲染）">
-              <I18nMarkdownEditor v-model="section.body" :rows="8" />
+            <el-form-item label="Section 正文">
+              <I18nMarkdownEditor v-model="activeSection.body" :rows="8" />
             </el-form-item>
             <el-row :gutter="12">
               <el-col :span="12">
-                <el-form-item label="段尾固定小字标题">
-                  <I18nInput v-model="section.statLabel" />
+                <el-form-item label="数据标签">
+                  <I18nInput v-model="activeSection.statLabel" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="段尾固定小字内容">
-                  <I18nInput v-model="section.statValue" />
+                <el-form-item label="数据内容">
+                  <I18nInput v-model="activeSection.statValue" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="Section 间隔图">
-              <ImageUpload v-model="section.breathImage" />
+            <el-form-item label="呼吸图">
+              <ImageUpload v-model="activeSection.breathImage" />
             </el-form-item>
-            <el-form-item label="Section 间隔引语">
-              <I18nInput v-model="section.breathQuote" type="textarea" :rows="3" />
+            <el-form-item label="引语">
+              <I18nInput v-model="activeSection.breathQuote" type="textarea" :rows="3" />
             </el-form-item>
           </div>
-          <el-empty v-if="form.sections.length === 0" description="暂无 Section" :image-size="60" />
-        </el-card>
 
-        <el-card id="section-food" shadow="never" class="section-card">
-          <template #header>4. Food（图文）</template>
-          <el-form-item label="Food 标题">
-            <I18nInput v-model="form.foodTitle" />
-          </el-form-item>
-          <el-form-item label="Food 正文">
-            <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
-          </el-form-item>
-          <el-form-item label="Food 图片组">
-            <ImageUpload v-model="form.foodImages" multiple :limit="10" />
-          </el-form-item>
-        </el-card>
+          <div v-else-if="activeChapter === 'food'" class="chapter-panel">
+            <div class="chapter-title">Food（图文）</div>
+            <el-form-item label="Food 标题">
+              <I18nInput v-model="form.foodTitle" />
+            </el-form-item>
+            <el-form-item label="Food 正文">
+              <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
+            </el-form-item>
+            <el-form-item label="Food 图片组">
+              <ImageUpload v-model="form.foodImages" multiple :limit="10" />
+            </el-form-item>
+          </div>
 
-        <el-card id="section-related-cities" shadow="never" class="section-card">
-          <template #header>5. 经过的城市</template>
-          <el-form-item label="选择现有城市">
-            <el-select
-              v-model="form.relatedCitySlugs"
-              multiple
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="直接选择已有城市"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="city in availableRelatedCities"
-                :key="city.id"
-                :label="`${city.name} (${city.slug})`"
-                :value="city.slug"
-              />
-            </el-select>
-            <p class="field-hint">选中的城市会在前台真实预览里显示为联动卡片，并在地图上高亮。</p>
-          </el-form-item>
-          <div v-if="selectedRelatedCityCards.length" class="selected-city-grid">
-            <div v-for="city in selectedRelatedCityCards" :key="city.slug" class="selected-city-card">
-              <strong>{{ city.name }}</strong>
-              <span>{{ city.slug }}</span>
+          <div v-else-if="activeChapter === 'related'" class="chapter-panel">
+            <div class="chapter-title">关联路线</div>
+            <el-form-item label="选择现有路线">
+              <el-select
+                v-model="form.routeSlugs"
+                multiple
+                filterable
+                collapse-tags
+                collapse-tags-tooltip
+                placeholder="直接选择已配置路线"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="routeItem in routeOptions"
+                  :key="routeItem.id"
+                  :label="`${routeItem.title} (${routeItem.slug})`"
+                  :value="routeItem.slug"
+                />
+              </el-select>
+              <p class="field-hint">选中的路线会在前台城市页中作为延伸阅读或联动入口出现，便于从城市继续进入具体路线。</p>
+            </el-form-item>
+            <div v-if="selectedRouteCards.length" class="selected-city-grid">
+              <div v-for="routeItem in selectedRouteCards" :key="routeItem.slug" class="selected-city-card">
+                <strong>{{ routeItem.title }}</strong>
+                <span>{{ routeItem.cityName || routeItem.slug }}</span>
+              </div>
             </div>
+            <el-empty v-else description="还没有关联路线" :image-size="56" />
           </div>
-          <el-empty v-else description="还没有选择经过的城市" :image-size="56" />
-        </el-card>
 
-        <el-card shadow="never" class="section-card">
-          <template #header>发布状态</template>
-          <el-form-item label="状态">
-            <el-radio-group v-model="form.status">
-              <el-radio value="draft">草稿</el-radio>
-              <el-radio value="published">已发布</el-radio>
-            </el-radio-group>
-          </el-form-item>
+          <div v-else-if="activeChapter === 'publish'" class="chapter-panel">
+            <div class="chapter-title">发布状态</div>
+            <el-form-item label="状态">
+              <el-radio-group v-model="form.status">
+                <el-radio value="draft">草稿</el-radio>
+                <el-radio value="published">已发布</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
         </el-card>
       </el-form>
 
@@ -436,16 +501,114 @@ const selectedRelatedCityCards = computed(() =>
 .page-header h2 { margin: 0; font-size: 20px; }
 .editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw); gap: 20px; align-items: start; }
 .section-card { margin-bottom: 16px; }
-.card-header, .repeat-header, .inline-row, .tag-list { display: flex; align-items: center; gap: 8px; }
-.card-header, .repeat-header { justify-content: space-between; }
+.inline-row, .tag-list { display: flex; align-items: center; gap: 8px; }
 .inline-row { width: 100%; }
 .inline-row .el-input { max-width: 260px; }
 .tag-list { flex-wrap: wrap; min-height: 28px; margin-bottom: 8px; }
-.repeat-item { padding: 14px; margin-bottom: 14px; border: 1px solid #ebeef5; border-radius: 8px; background: #fafbfc; }
 .field-hint { margin: 8px 0 0; color: #909399; font-size: 12px; line-height: 1.5; }
 .selected-city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .selected-city-card { border: 1px solid #dcdfe6; border-radius: 8px; padding: 12px; background: #f8fbff; }
 .selected-city-card strong { display: block; color: #303133; }
 .selected-city-card span { display: block; margin-top: 4px; color: #909399; font-size: 12px; }
-@media (max-width: 1100px) { .editor-shell { grid-template-columns: 1fr; } }
+.chapter-workspace :deep(.el-card__header) { padding-bottom: 18px; }
+.chapter-workspace :deep(.el-card__body) { padding-top: 18px; }
+.chapter-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px 18px;
+  align-items: start;
+}
+.chapter-intro {
+  grid-column: 1 / -1;
+  padding: 18px 20px;
+  border: 1px solid #d9ecff;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(64, 158, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, #f7fbff 0%, #ffffff 65%);
+}
+.chapter-eyebrow {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #409eff;
+}
+.chapter-headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.chapter-headline h3 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #1f2a37;
+}
+.chapter-active-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(64, 158, 255, 0.12);
+  color: #1767c6;
+  font-size: 12px;
+  font-weight: 600;
+}
+.chapter-intro p {
+  margin: 10px 0 0;
+  max-width: 720px;
+  color: #5b6472;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chapter-tabs { display: flex; flex-wrap: wrap; gap: 10px; }
+.chapter-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid #d7deea;
+  background: #fff;
+  color: #526071;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+.chapter-tab:hover {
+  border-color: #b9d9ff;
+  box-shadow: 0 8px 20px rgba(31, 42, 55, 0.06);
+  transform: translateY(-1px);
+}
+.chapter-tab.active {
+  border-color: #409eff;
+  background: linear-gradient(135deg, #eff7ff 0%, #f7fbff 100%);
+  color: #1767c6;
+  box-shadow: 0 10px 24px rgba(64, 158, 255, 0.14);
+}
+.chapter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+.chapter-panel { min-height: 320px; }
+.chapter-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+@media (max-width: 1100px) {
+  .editor-shell { grid-template-columns: 1fr; }
+  .chapter-toolbar { grid-template-columns: 1fr; }
+  .chapter-actions { justify-content: flex-start; }
+}
 </style>

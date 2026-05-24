@@ -204,8 +204,13 @@ export class CitiesService {
     await queryRunner.startTransaction();
 
     try {
-      Object.assign(city, dto);
-      const saved = await queryRunner.manager.save(City, city);
+      // Apply scalar fields only — sections are managed explicitly below to avoid
+      // OneToMany cascade conflicting with the delete-and-recreate approach.
+      const { sections: _sectionsFromDto, ...scalarUpdates } = dto;
+      await queryRunner.manager.update(City, id, scalarUpdates);
+      const saved = await queryRunner.manager.findOneOrFail(City, {
+        where: { id },
+      });
 
       if (dto.sections !== undefined) {
         await queryRunner.manager.delete(CityCultureSection, { cityId: id });
@@ -225,6 +230,8 @@ export class CitiesService {
           );
           await queryRunner.manager.save(sections);
           saved.sections = sections;
+        } else {
+          saved.sections = [];
         }
       }
 

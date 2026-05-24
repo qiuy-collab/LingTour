@@ -104,7 +104,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <div>
     <div class="page-header">
       <h2>常见问题管理</h2>
       <el-button type="primary" @click="handleCreate">新增FAQ</el-button>
@@ -128,56 +128,54 @@ onMounted(() => {
       <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
-    <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column label="排序" width="80" align="center">
-        <template #default="{ row, $index }">
-          <div class="sort-actions">
-            <el-button size="small" text :disabled="$index === 0" @click="handleMoveUp($index)">↑</el-button>
-            <span class="sort-num">{{ row.sortOrder }}</span>
-            <el-button size="small" text :disabled="$index === list.length - 1" @click="handleMoveDown($index)">↓</el-button>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="问题" min-width="280">
-        <template #default="{ row }">
-          <div class="qa-text">{{ pickI18n(row.question) }}</div>
-          <div class="qa-sub">{{ pickI18n(row.question, 'en') }}</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="答案" min-width="320" show-overflow-tooltip>
-        <template #default="{ row }">
-          <div class="qa-text">{{ pickI18n(row.answer) }}</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="分类" width="120" align="center">
-        <template #default="{ row }">
-          <el-tag size="small">{{ (FAQCategoryMap as Record<string, string>)[row.category] }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right">
-        <template #default="{ row, $index }">
-          <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>
-          <el-button size="small" @click="handleMoveUp($index)" :disabled="$index === 0">上移</el-button>
-          <el-button size="small" @click="handleMoveDown($index)" :disabled="$index === list.length - 1">下移</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-card shadow="never" class="table-card">
+      <el-table :data="list" v-loading="loading" stripe>
+        <el-table-column label="排序" width="80" align="center">
+          <template #default="{ row, $index }">
+            <div class="sort-actions">
+              <el-button size="small" text :disabled="$index === 0" @click="handleMoveUp($index)">↑</el-button>
+              <span class="sort-num">{{ row.sortOrder }}</span>
+              <el-button size="small" text :disabled="$index === list.length - 1" @click="handleMoveDown($index)">↓</el-button>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="问题" min-width="280">
+          <template #default="{ row }">
+            <div class="qa-text">{{ pickI18n(row.question) }}</div>
+            <div class="qa-sub">{{ pickI18n(row.question, 'en') }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="答案" min-width="320" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="qa-text">{{ pickI18n(row.answer) }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="分类" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag size="small">{{ (FAQCategoryMap as Record<string, string>)[row.category] }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row, $index }">
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
+            <el-button type="primary" link size="small" @click="handleMoveUp($index)" :disabled="$index === 0">上移</el-button>
+            <el-button type="primary" link size="small" @click="handleMoveDown($index)" :disabled="$index === list.length - 1">下移</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <div class="footer-info" v-if="total > 0">
-      共 {{ total }} 条 FAQ
-    </div>
+      <div class="pagination-wrap" v-if="total > 0">
+        <span class="footer-info">共 {{ total }} 条 FAQ</span>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <style scoped>
-.page-container { padding: 20px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; }
 .sort-actions { display: flex; align-items: center; gap: 4px; justify-content: center; }
 .sort-num { min-width: 20px; text-align: center; font-weight: 500; }
 .qa-text { font-size: 14px; }
-.qa-sub { font-size: 12px; color: #909399; margin-top: 2px; }
-.footer-info { margin-top: 16px; font-size: 12px; color: #909399; text-align: right; }
+.qa-sub { font-size: 12px; color: var(--lt-text-secondary, #909399); margin-top: 2px; }
+.footer-info { font-size: 12px; color: var(--lt-text-secondary, #909399); }
 </style>

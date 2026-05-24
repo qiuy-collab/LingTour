@@ -160,7 +160,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="page-container">
+  <div>
     <div class="page-header">
       <h2>活动管理</h2>
       <div style="display: flex; gap: 12px; align-items: center">
@@ -228,93 +228,109 @@ onMounted(() => {
     <!-- ============================================ -->
     <!-- 列表视图 -->
     <!-- ============================================ -->
-    <el-table v-if="viewMode === 'list'" :data="list" v-loading="loading" stripe>
-      <el-table-column label="封面" width="100">
-        <template #default="{ row }">
-          <el-image
-            v-if="row.image"
-            :src="row.image"
-            style="width: 60px; height: 40px; border-radius: 4px"
-            fit="cover"
-            preview-teleported
-          />
-          <span v-else style="color: #c0c4cc">无图</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="title" label="活动名称" min-width="180">
-        <template #default="{ row }">
-          <div>{{ row.title || '' }}</div>
-          <div style="font-size: 12px; color: #909399">{{ row.titleEn || '' }}</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="日期" width="200" align="center">
-        <template #default="{ row }">
-          <span v-if="row.endDate && row.endDate !== row.date">
-            {{ row.date }} ~ {{ row.endDate }}
-          </span>
-          <span v-else>{{ row.date }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="city" label="城市" width="80" align="center" />
-      <el-table-column label="标签" width="200">
-        <template #default="{ row }">
-          <el-tag
-            v-for="tag in row.tags.slice(0, 3)"
-            :key="tag"
-            size="small"
-            style="margin-right: 4px"
-          >
-            {{ tag }}
-          </el-tag>
-          <el-tag v-if="row.tags.length > 3" size="small" type="info">
-            +{{ row.tags.length - 3 }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100" align="center">
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)" size="small">
-            {{ getStatusLabel(row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="关联路线" width="120" align="center">
-        <template #default="{ row }">
-          <span v-if="row.relatedRouteSlugs.length">{{ row.relatedRouteSlugs.length }}条</span>
-          <span v-else style="color: #c0c4cc">—</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="280" fixed="right">
-        <template #default="{ row }">
-          <el-button size="small" @click="handleEdit(row.id)">编辑</el-button>
-          <template v-if="row.status === 'draft'">
-            <el-button size="small" type="success" @click="handleStatusChange(row, 'upcoming')">
-              发布
-            </el-button>
+    <el-card v-if="viewMode === 'list'" shadow="never" class="table-card">
+      <el-table :data="list" v-loading="loading" stripe>
+        <el-table-column label="封面" width="100">
+          <template #default="{ row }">
+            <el-image
+              v-if="row.image"
+              :src="row.image"
+              style="width: 60px; height: 40px; border-radius: 4px"
+              fit="cover"
+              preview-teleported
+            />
+            <span v-else style="color: #c0c4cc">无图</span>
           </template>
-          <template v-if="row.status === 'upcoming'">
-            <el-button size="small" type="success" @click="handleStatusChange(row, 'ongoing')">
-              开始
-            </el-button>
+        </el-table-column>
+        <el-table-column prop="title" label="活动名称" min-width="180">
+          <template #default="{ row }">
+            <div>{{ row.title || '' }}</div>
+            <div style="font-size: 12px; color: #909399">{{ row.titleEn || '' }}</div>
           </template>
-          <template v-if="row.status === 'ongoing'">
-            <el-button size="small" type="info" @click="handleStatusChange(row, 'past')">
-              结束
-            </el-button>
+        </el-table-column>
+        <el-table-column label="日期" width="200" align="center">
+          <template #default="{ row }">
+            <span v-if="row.endDate && row.endDate !== row.date">
+              {{ row.date }} ~ {{ row.endDate }}
+            </span>
+            <span v-else>{{ row.date }}</span>
           </template>
-          <template v-if="row.status === 'past' || row.status === 'upcoming'">
-            <el-button size="small" type="warning" @click="handleStatusChange(row, 'draft')">
-              撤回草稿
-            </el-button>
+        </el-table-column>
+        <el-table-column prop="city" label="城市" width="80" align="center" />
+        <el-table-column label="标签" width="200">
+          <template #default="{ row }">
+            <el-tag
+              v-for="tag in row.tags.slice(0, 3)"
+              :key="tag"
+              size="small"
+              style="margin-right: 4px"
+            >
+              {{ tag }}
+            </el-tag>
+            <el-tag v-if="row.tags.length > 3" size="small" type="info">
+              +{{ row.tags.length - 3 }}
+            </el-tag>
           </template>
-          <el-popconfirm title="确定删除该活动？" @confirm="handleDelete(row)">
-            <template #reference>
-              <el-button size="small" type="danger">删除</el-button>
+        </el-table-column>
+        <el-table-column label="状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)" size="small">
+              {{ getStatusLabel(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="关联路线" width="120" align="center">
+          <template #default="{ row }">
+            <span v-if="row.relatedRouteSlugs.length">{{ row.relatedRouteSlugs.length }}条</span>
+            <span v-else style="color: #c0c4cc">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
+            <template v-if="row.status === 'draft'">
+              <el-button type="success" link size="small" @click="handleStatusChange(row, 'upcoming')">
+                发布
+              </el-button>
             </template>
-          </el-popconfirm>
-        </template>
-      </el-table-column>
-    </el-table>
+            <template v-if="row.status === 'upcoming'">
+              <el-button type="success" link size="small" @click="handleStatusChange(row, 'ongoing')">
+                开始
+              </el-button>
+            </template>
+            <template v-if="row.status === 'ongoing'">
+              <el-button type="info" link size="small" @click="handleStatusChange(row, 'past')">
+                结束
+              </el-button>
+            </template>
+            <template v-if="row.status === 'past' || row.status === 'upcoming'">
+              <el-button type="warning" link size="small" @click="handleStatusChange(row, 'draft')">
+                撤回草稿
+              </el-button>
+            </template>
+            <el-popconfirm title="确定删除该活动？" @confirm="handleDelete(row)">
+              <template #reference>
+                <el-button type="danger" link size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50]"
+          layout="total, sizes, prev, pager, next"
+          background
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
+    </el-card>
 
     <!-- ============================================ -->
     <!-- 日历视图 -->
@@ -367,29 +383,10 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <!-- 分页 -->
-    <div class="pagination-wrap" v-if="viewMode === 'list' && total > pageSize">
-      <el-pagination
-        v-model:current-page="page"
-        v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next"
-        @current-change="handlePageChange"
-        @size-change="handleSizeChange"
-      />
-    </div>
   </div>
 </template>
 
 <style scoped>
-.page-container { padding: 20px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
-
 /* 日历视图 */
 .calendar-view { margin-top: 8px; }
 .calendar-nav {
@@ -406,7 +403,7 @@ onMounted(() => {
 }
 .calendar-event-count {
   margin-left: 16px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
   font-size: 14px;
 }
 
@@ -425,7 +422,7 @@ onMounted(() => {
   padding: 8px 0;
   font-weight: 600;
   font-size: 13px;
-  color: #606266;
+  color: var(--lt-text-regular, #606266);
   border-bottom: 1px solid #ebeef5;
 }
 .calendar-body {
@@ -448,7 +445,7 @@ onMounted(() => {
 }
 .calendar-day-num {
   font-size: 13px;
-  color: #606266;
+  color: var(--lt-text-regular, #606266);
   margin-bottom: 4px;
   text-align: right;
   padding-right: 4px;

@@ -1,0 +1,110 @@
+/* ===== Responsive Breakpoints ===== */
+/* sm: 640px, md: 768px, lg: 1024px, xl: 1280px */
+
+/* Mobile: sidebar overlay */
+@media (max-width: 768px) {
+  .admin-aside {
+    position: fixed !important;
+    z-index: 2000;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .admin-aside.mobile-open {
+    transform: translateX(0);
+  }
+
+  .admin-header .header-title {
+    font-size: 14px;
+  }
+
+  .admin-main {
+    padding: 12px !important;
+  }
+
+  /* Stack search bar items vertically */
+  .search-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-bar .el-input,
+  .search-bar .el-select {
+    width: 100% !important;
+  }
+
+  /* Table responsive */
+  .el-table {
+    font-size: 12px;
+  }
+
+  /* Form card full width */
+  .form-card {
+    max-width: 100% !important;
+  }
+
+  /* Dialog full screen on mobile */
+  .el-dialog {
+    width: 95% !important;
+    margin: 5vh auto !important;
+  }
+
+  .el-drawer {
+    width: 100% !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .admin-main {
+    padding: 16px !important;
+  }
+
+  .form-card {
+    max-width: 100% !important;
+  }
+
+  .el-dialog {
+    width: 80% !important;
+  }
+}
+
+/* Desktop large */
+@media (min-width: 1280px) {
+  .admin-main {
+    padding: 24px;
+  }
+}
+
+/* Mobile overlay backdrop */
+.mobile-sidebar-mask {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--lt-bg-mask, rgba(0, 0, 0, 0.5));
+  z-index: 1999;
+}
+
+@media (max-width: 768px) {
+  .mobile-sidebar-mask.visible {
+    display: block;
+  }
+}
+
+/* Utility: hide on mobile */
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* Utility: hide on desktop */
+@media (min-width: 769px) {
+  .hide-on-desktop {
+    display: none !important;
+  }
+}

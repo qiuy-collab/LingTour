@@ -95,8 +95,8 @@ async function fetchSettings() {
     sectionTitleFontSize.value = data.sectionTitleFontSize ?? 15
     bodyFontSize.value = data.bodyFontSize ?? 14
     hintFontSize.value = data.hintFontSize ?? 12
-  } catch {
-    ElMessage.error('获取系统设置失败')
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '获取系统设置失败')
   } finally {
     loading.value = false
   }
@@ -104,6 +104,20 @@ async function fetchSettings() {
 
 // ─── 保存 ─────────────────────────────────────────
 async function handleSave() {
+  // 手动校验必填项
+  if (!seoTitle.value.trim()) {
+    ElMessage.warning('请输入 SEO 标题')
+    return
+  }
+  if (taxRate.value < 0) {
+    ElMessage.warning('税率不能为负数')
+    return
+  }
+  if (pageTitleFontSize.value < 10 || pageTitleFontSize.value > 72) {
+    ElMessage.warning('页面标题字号需在 10-72 之间')
+    return
+  }
+
   saving.value = true
   try {
     // 为运费模板中没有 ID 的项生成临时 ID
@@ -387,12 +401,12 @@ onMounted(() => {
 .page-header h2 {
   margin: 0 0 4px 0;
   font-size: 20px;
-  color: #303133;
+  color: var(--lt-text-primary, #303133);
 }
 
 .page-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
 }
 
 .section-card {
@@ -413,12 +427,12 @@ onMounted(() => {
 .form-hint {
   margin-left: 10px;
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary, #909399);
 }
 
 .shipping-tpl-card {
-  background: #fafafa;
-  border: 1px solid #ebeef5;
+  background: var(--lt-bg-card, #fafafa);
+  border: 1px solid var(--lt-border-color, #ebeef5);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 12px;
@@ -434,7 +448,7 @@ onMounted(() => {
 .tpl-index {
   font-size: 14px;
   font-weight: 600;
-  color: #606266;
+  color: var(--lt-text-regular, #606266);
 }
 
 .city-input-row {
@@ -449,13 +463,19 @@ onMounted(() => {
 }
 
 .empty-hint {
-  color: #c0c4cc;
+  color: var(--lt-text-placeholder, #c0c4cc);
   font-size: 13px;
 }
 
 .save-bar {
+  position: sticky;
+  bottom: 0;
   display: flex;
   justify-content: center;
-  margin: 24px 0 40px;
+  padding: 16px 0;
+  margin: 24px -24px -20px;
+  background: var(--lt-bg-page, #f0f2f5);
+  border-top: 1px solid var(--lt-border-light, #f0f0f0);
+  z-index: 10;
 }
 </style>

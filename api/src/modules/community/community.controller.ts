@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -11,7 +13,6 @@ import {
   Req,
   UploadedFile,
   UseInterceptors,
-  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -77,14 +78,13 @@ export class CommunityController {
 
   @Public()
   @Get('public/community/posts/:id')
-  async getPublicPost(@Param('id') id: string) {
+  async getPublicPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.getPublicPostById(id);
   }
 
   @Post('public/community/posts')
   @ApiBearerAuth()
   async createPublicPost(@Body() dto: UpsertCommunityPostDto) {
-    // 公开端点强制走审核，避免前端绕过
     return this.communityService.create({
       ...dto,
       status: 'pending_review',
@@ -97,28 +97,28 @@ export class CommunityController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB for community
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   async uploadCommunityImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    const result = this.uploadService.getStructuredPath(file.filename, 'community');
+    const result = await this.uploadService.storeUploadedFile(file, 'community');
     return { url: result.url };
   }
 
   @Post('public/community/posts/:id/like')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle like on a post' })
-  async likePost(@Param('id') id: string) {
+  async likePost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.incrementEngagement(id, 'likes');
   }
 
   @Post('public/community/posts/:id/save')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle save on a post' })
-  async savePost(@Param('id') id: string) {
+  async savePost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.incrementEngagement(id, 'saves');
   }
 
@@ -148,7 +148,7 @@ export class CommunityController {
 
   @Get('admin/community/posts/:id')
   @ApiBearerAuth()
-  async getAdminPost(@Param('id') id: string) {
+  async getAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.getAdminById(id, true);
   }
 
@@ -161,7 +161,7 @@ export class CommunityController {
   @Put('admin/community/posts/:id')
   @ApiBearerAuth()
   async updateAdminPost(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpsertCommunityPostDto,
   ) {
     return this.communityService.update(id, dto);
@@ -170,7 +170,7 @@ export class CommunityController {
   @Patch('admin/community/posts/:id/status')
   @ApiBearerAuth()
   async updateAdminPostStatus(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCommunityStatusDto,
     @Req() req: AuthenticatedRequest,
   ) {
@@ -183,7 +183,7 @@ export class CommunityController {
   @Patch('admin/community/posts/:id/review')
   @ApiBearerAuth()
   async reviewAdminPost(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCommunityStatusDto,
     @Req() req: AuthenticatedRequest,
   ) {
@@ -196,7 +196,7 @@ export class CommunityController {
   @Patch('admin/community/posts/:id/featured')
   @ApiBearerAuth()
   async toggleFeatured(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body('featured') featured: boolean,
   ) {
     return this.communityService.toggleFeatured(id, featured);
@@ -204,19 +204,17 @@ export class CommunityController {
 
   @Delete('admin/community/posts/:id')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '软删除（仍保留记录，可恢复）' })
-  async deleteAdminPost(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Soft-delete a post' })
+  async deleteAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.remove(id);
   }
 
   @Post('admin/community/posts/:id/restore')
   @ApiBearerAuth()
-  @ApiOperation({ summary: '恢复已软删除的帖子' })
-  async restoreAdminPost(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Restore a soft-deleted post' })
+  async restoreAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.restore(id);
   }
-
-  // ── Field Briefs (运营给社区抛出的拍摄/记录任务) ──
 
   @Public()
   @Get('public/community/briefs')
@@ -233,7 +231,7 @@ export class CommunityController {
 
   @Get('admin/community/briefs/:id')
   @ApiBearerAuth()
-  async getAdminBrief(@Param('id') id: string) {
+  async getAdminBrief(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.getAdminBriefById(id);
   }
 
@@ -246,7 +244,7 @@ export class CommunityController {
   @Put('admin/community/briefs/:id')
   @ApiBearerAuth()
   async updateAdminBrief(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpsertCommunityBriefDto,
   ) {
     return this.communityService.updateBrief(id, dto);
@@ -254,7 +252,7 @@ export class CommunityController {
 
   @Delete('admin/community/briefs/:id')
   @ApiBearerAuth()
-  async deleteAdminBrief(@Param('id') id: string) {
+  async deleteAdminBrief(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.removeBrief(id);
   }
 }
