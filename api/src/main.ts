@@ -8,6 +8,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+
+  // Process-level safety net for unhandled errors
+  process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled Rejection:', reason);
+  });
+  process.on('uncaughtException', (err) => {
+    logger.error('Uncaught Exception:', err);
+    process.exit(1);
+  });
   const configuredFrontendUrl = configService.get<string>('frontendUrl');
   const allowedOrigins = new Set<string>();
 
@@ -40,29 +49,35 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('LingTour API')
-    .setDescription('LingTour - Headless CMS + commerce API')
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter JWT from POST /api/v1/auth/login',
-      },
-      'JWT-auth',
-    )
-    .build();
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
-    },
-  });
+  // Only expose Swagger in non-production environments
+  if (nodeEnv !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('LingTour API')
+      .setDescription('LingTour - Headless CMS + commerce API')
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter JWT from POST /api/v1/auth/login',
+        },
+        'JWT-auth',
+      )
+      .build();
+
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+      },
+    });
+    logger.log(`Swagger docs at http://localhost:${configService.get<number>('PORT', 3001)}/api/docs`);
+  }
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -79,7 +94,6 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`LingTour API running on http://localhost:${port}`);
-  logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
   logger.log(`Static uploads at http://localhost:${port}/uploads`);
 }
 

@@ -106,13 +106,10 @@ export function persistAuthUser(
   return localUser;
 }
 
-export async function signInWithGoogle(payload?: {
-  email?: string;
-  name?: string;
-}) {
+export async function signInWithGoogle(credential: string, name?: string) {
   const data = await apiPost<AuthResponse>("/auth/google", {
-    email: payload?.email || "google@lingtour.local",
-    name: payload?.name || "Google Traveler",
+    credential,
+    name: name || "Google Traveler",
   });
 
   window.localStorage.setItem("lingtour-token", data.access_token);

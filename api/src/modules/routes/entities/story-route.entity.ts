@@ -43,6 +43,7 @@ export class StoryRoute {
   @Column({ type: 'varchar', length: 500, name: 'cover_image' })
   coverImage: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   published: boolean;
 

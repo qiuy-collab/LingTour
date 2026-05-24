@@ -23,6 +23,12 @@ import { SetFaqsDto } from './dto/set-faqs.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { ConfirmBookingDepositDto } from './dto/confirm-booking-deposit.dto';
+import { CreateModeDto } from './dto/create-mode.dto';
+import { UpdateModeDto } from './dto/update-mode.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
+import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Public } from '../../common/decorators/public.decorator';
 
 @ApiTags('Interpreting')
@@ -113,13 +119,13 @@ export class InterpretingController {
 
   @Post('admin/interpreting/modes')
   @ApiBearerAuth()
-  async createMode(@Body() body: any) {
+  async createMode(@Body() body: CreateModeDto) {
     return this.interpretingService.createMode(body);
   }
 
   @Put('admin/interpreting/modes/:id')
   @ApiBearerAuth()
-  async updateMode(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+  async updateMode(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateModeDto) {
     return this.interpretingService.updateMode(id, body);
   }
 
@@ -156,7 +162,7 @@ export class InterpretingController {
 
   @Post('admin/interpreting/profiles')
   @ApiBearerAuth()
-  async createProfile(@Body() body: any) {
+  async createProfile(@Body() body: CreateProfileDto) {
     return this.interpretingService.createProfile(body);
   }
 
@@ -164,7 +170,7 @@ export class InterpretingController {
   @ApiBearerAuth()
   async updateProfile(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: any,
+    @Body() body: UpdateProfileDto,
   ) {
     return this.interpretingService.updateProfile(id, body);
   }
@@ -202,13 +208,13 @@ export class InterpretingController {
 
   @Post('admin/interpreting/faqs')
   @ApiBearerAuth()
-  async createFaq(@Body() body: any) {
+  async createFaq(@Body() body: CreateFaqDto) {
     return this.interpretingService.createFaq(body);
   }
 
   @Put('admin/interpreting/faqs/:id')
   @ApiBearerAuth()
-  async updateFaq(@Param('id', ParseUUIDPipe) id: string, @Body() body: any) {
+  async updateFaq(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateFaqDto) {
     return this.interpretingService.updateFaq(id, body);
   }
 

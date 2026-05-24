@@ -2,6 +2,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -58,6 +59,12 @@ import { HealthModule } from './modules/health/health.module';
       isGlobal: true,
     }),
 
+    // Rate limiting (global default: 60 requests per minute)
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 60,
+    }]),
+
     // Serve uploaded files
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
@@ -81,6 +88,10 @@ import { HealthModule } from './modules/health/health.module';
     HealthModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

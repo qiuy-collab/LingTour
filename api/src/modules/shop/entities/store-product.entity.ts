@@ -67,6 +67,7 @@ export class StoreProduct {
   @Column({ type: 'int', default: 0 })
   stock: number;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   published: boolean;
 

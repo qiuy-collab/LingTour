@@ -307,9 +307,37 @@ export default function CommunityPage() {
   };
 
   const handleGoogleLogin = async () => {
-    await signInWithGoogle();
-    syncAuth();
-    setToast(AUTH_PROMPTS.googleConnectedPublish);
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      setToast("Google login is not configured.");
+      return;
+    }
+    const { google } = window as any;
+    if (!google?.accounts?.id) {
+      setToast("Google Sign-In script not loaded.");
+      return;
+    }
+    try {
+      const credential = await new Promise<string>((resolve, reject) => {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: { credential?: string; error?: string }) => {
+            if (response.credential) resolve(response.credential);
+            else reject(new Error(response.error || "Google sign-in cancelled"));
+          },
+        });
+        google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            reject(new Error("Google sign-in popup was blocked or dismissed"));
+          }
+        });
+      });
+      await signInWithGoogle(credential);
+      syncAuth();
+      setToast(AUTH_PROMPTS.googleConnectedPublish);
+    } catch {
+      setToast("Google sign-in failed. Please try again.");
+    }
   };
 
   const openFieldKit = () => {

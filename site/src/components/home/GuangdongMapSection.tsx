@@ -221,7 +221,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                   <rect
                     width={mapData.width}
                     height={mapData.height}
-                    fill="#f2f0ea"
+                    fill="var(--background)"
                   />
 
                   <g opacity="0.6">

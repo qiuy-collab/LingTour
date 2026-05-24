@@ -99,7 +99,38 @@ export function LoginPanel() {
     setLoading(true);
     setError(null);
     try {
-      await signInWithGoogle();
+      // Use Google Identity Services to get a credential token
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        setError("Google login is not configured.");
+        return;
+      }
+
+      const { google } = window as any;
+      if (!google?.accounts?.id) {
+        setError("Google Sign-In script not loaded.");
+        return;
+      }
+
+      const credential = await new Promise<string>((resolve, reject) => {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: { credential?: string; error?: string }) => {
+            if (response.credential) {
+              resolve(response.credential);
+            } else {
+              reject(new Error(response.error || "Google sign-in cancelled"));
+            }
+          },
+        });
+        google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            reject(new Error("Google sign-in popup was blocked or dismissed"));
+          }
+        });
+      });
+
+      await signInWithGoogle(credential);
       router.push("/");
     } catch (err) {
       if (err instanceof ApiRequestError) {

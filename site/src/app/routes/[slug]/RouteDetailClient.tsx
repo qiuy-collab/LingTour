@@ -72,7 +72,7 @@ export function RouteDetailClient({ slug }: { slug: string }) {
 
   return (
     <>
-      <main className="min-h-screen bg-[var(--background)]">
+      <div className="route-detail-shell relative min-h-screen w-full bg-[var(--background)] bg-grain">
         {/* Section A - Route Brief: marquee title, live position, thumb stack */}
         <RouteBrief route={activeRoute} />
 
@@ -85,14 +85,12 @@ export function RouteDetailClient({ slug }: { slug: string }) {
             setComposeTarget({ index, time: stop.time, name: stop.stop })
           }
         />
-      </main>
+      </div>
 
-      {/* Section C - Sticky Compose Bar: real-time post box pinned to viewport.
-          Rendered outside <main> on purpose: globals.css has a `main > div`
-          rule that forces min-height: 100vh on every direct div child of
-          <main> (it's there for the page-transition wrapper). If the sticky
-          bar lived inside <main>, it would be force-stretched to the full
-          viewport and obscure the entire page. */}
+      {/* Section C - Sticky Compose Bar: pinned to viewport bottom. Kept as a
+          sibling of the shell (not inside) so its `position: fixed` container
+          isn't accidentally caught by any `main > div` style rules and forced
+          to full viewport height. */}
       <StickyComposeBar
         routeSlug={activeRoute.slug}
         routeTitle={activeRoute.title}

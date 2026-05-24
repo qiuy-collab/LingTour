@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { GlobalDrawer } from "@/components/layout/GlobalDrawer";
@@ -30,9 +31,15 @@ export default async function RootLayout({
       lang={initialLocale === "zh" ? "zh-CN" : "en"}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      style={{ backgroundColor: "#f2f0ea" }}
+      style={{ backgroundColor: "#ece9e2" }}
     >
       <body>
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <Script
+            src="https://accounts.google.com/gsi/client"
+            strategy="lazyOnload"
+          />
+        )}
         <LocaleProvider initialLocale={initialLocale}>
           <UIProvider>
             <div className="min-h-screen text-[var(--ink)]">

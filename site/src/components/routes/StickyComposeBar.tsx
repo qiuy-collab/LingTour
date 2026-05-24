@@ -186,7 +186,7 @@ export function StickyComposeBar({
 
   return (
     <>
-      <div aria-hidden className="h-16" />
+      <div aria-hidden className="h-16 bg-[var(--background)] bg-grain" />
 
       <FieldKit
         isOpen={open}

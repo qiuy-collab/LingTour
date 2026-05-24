@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtExpiration } from '../../common/auth/jwt-config';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class AuthService {
@@ -100,7 +101,38 @@ export class AuthService {
     return this.buildAuthResponse(user);
   }
 
-  async loginWithGoogle(email: string, name?: string) {
+  async loginWithGoogle(credential: string, nameOverride?: string) {
+    // Verify the Google id_token cryptographically
+    const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
+    if (!clientId) {
+      throw new UnauthorizedException(
+        'Google login is not configured (missing GOOGLE_CLIENT_ID)',
+      );
+    }
+
+    const client = new OAuth2Client(clientId);
+    let payload: { email?: string; name?: string; email_verified?: boolean };
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
+      });
+      payload = ticket.getPayload() as any;
+    } catch {
+      throw new UnauthorizedException('Invalid Google credential');
+    }
+
+    if (!payload?.email) {
+      throw new UnauthorizedException('Google token missing email claim');
+    }
+    if (!payload.email_verified) {
+      throw new UnauthorizedException('Google email not verified');
+    }
+
+    const email = payload.email;
+    const name = nameOverride ?? payload.name ?? 'Google Traveler';
+
     const existing = await this.usersService.findByEmail(email);
     if (existing) {
       if (!existing.provider || existing.provider !== 'Google') {
@@ -119,7 +151,7 @@ export class AuthService {
       email,
       generatedPassword,
       'editor',
-      name ?? 'Google Traveler',
+      name,
       {
         provider: 'Google',
         memberSince: new Date().toISOString().slice(0, 10),

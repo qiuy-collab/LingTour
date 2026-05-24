@@ -55,6 +55,7 @@ export class City {
   @Column({ type: 'int', nullable: true })
   adcode?: number;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   published: boolean;
 

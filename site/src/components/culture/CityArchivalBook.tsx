@@ -277,11 +277,9 @@ function NarrativePage({
   const compactLayout =
     bodyParagraphs.length === 0 &&
     (leadParagraph.length < 260 || sectionHeightWeight(section, section.image) < 900);
-  const pageBodyClass = compactLayout
-    ? "justify-center pb-10 xl:pb-12"
-    : section.breathQuote
-      ? "justify-between"
-      : "justify-start";
+  const pageBodyClass = section.breathQuote
+    ? "justify-between"
+    : "justify-start";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[var(--parchment-light)] bg-grain px-7 py-8 lg:px-9">
@@ -509,7 +507,7 @@ function BookSpread({
       className={`relative mx-auto ${widthClass} ${heightClass}`}
       style={{
         perspective: "1500px",
-        ...(minHeightPx ? { minHeight: `${Math.ceil(minHeightPx)}px` } : {}),
+        ...(minHeightPx ? { height: `${Math.ceil(minHeightPx)}px`, minHeight: "auto" } : {}),
       }}
     >
       <div className="absolute inset-x-8 -bottom-5 h-8 bg-black/10 blur-2xl" />
@@ -815,7 +813,9 @@ export function CityArchivalBook({
       if (nextHeight > 0) {
         setMeasuredBookHeight((current) => {
           const rounded = Math.ceil(nextHeight);
-          return current === rounded ? current : rounded;
+          // Only update if significantly different to avoid minor layout thrashing,
+          // but always ensure we take the largest possible height.
+          return Math.max(current ?? 0, rounded);
         });
       }
     };

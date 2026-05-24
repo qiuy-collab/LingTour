@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f2f0ea; /* Neutral cool stone-paper — no yellow cast */
+  --background: #ece9e2; /* More neutral stone-paper — reduced yellow */
   --foreground: #17202a;
-  --paper: #f7f5f0;       /* Neutral light paper */
-  --paper-deep: #f2f0ea;
+  --paper: #f4f2ee;       /* Neutral light paper */
+  --paper-deep: #ece9e2;
   --ink: #17202a;
   --muted: #66717d;
   --line: rgba(23, 32, 42, 0.13);
@@ -19,14 +19,14 @@
   --site-max-width: 82rem;
 
   /* Parchment scale — archival book & journal textures */
-  --parchment: #f1eadf;
-  --parchment-light: #f6f0e6;
-  --parchment-deep: #eee6da;
-  --parchment-warm: #f3ebdf;
-  --parchment-page: #f2eadf;
-  --parchment-stack-1: #ded3c3;
-  --parchment-stack-2: #e8dfd1;
-  --parchment-tab: #e6dfd1;
+  --parchment: #ede6d9;
+  --parchment-light: #f3ede2;
+  --parchment-deep: #e8e0d4;
+  --parchment-warm: #eee6d9;
+  --parchment-page: #ede6d9;
+  --parchment-stack-1: #d8cebc;
+  --parchment-stack-2: #e2d7c5;
+  --parchment-tab: #e0d5c3;
   --bookmark-tape: #efe3a6;
   --drawer-badge: #e9dfc9;
 }

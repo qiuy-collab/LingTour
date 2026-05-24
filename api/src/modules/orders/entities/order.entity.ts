@@ -5,7 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 /**
  * 订单履约状态。
@@ -55,6 +58,10 @@ export class Order {
   @Index()
   @Column({ type: 'uuid', name: 'user_id', nullable: true })
   userId: string | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ type: 'varchar', length: 255, name: 'guest_email', nullable: true })
   guestEmail: string | null;

@@ -43,11 +43,28 @@ export class DashboardService {
     return { stats, orderTrend, bookingModeDist, topCities };
   }
 
+  /** Allowlist of tables that may be counted via the dashboard. */
+  private static readonly ALLOWED_TABLES = new Set([
+    'users',
+    'cities',
+    'story_routes',
+    'store_products',
+    'interpreter_profiles',
+    'booking_submissions',
+    'orders',
+  ]);
+
   private async countTable(table: string, where?: string): Promise<number> {
+    if (!DashboardService.ALLOWED_TABLES.has(table)) {
+      this.logger.warn(`countTable called with disallowed table: ${table}`);
+      return 0;
+    }
     try {
+      // Use identifier quoting for the table name and inline only
+      // hardcoded WHERE clauses (never user input).
       const sql = where
-        ? `SELECT COUNT(*)::int AS count FROM ${table} WHERE ${where}`
-        : `SELECT COUNT(*)::int AS count FROM ${table}`;
+        ? `SELECT COUNT(*)::int AS count FROM "${table}" WHERE ${where}`
+        : `SELECT COUNT(*)::int AS count FROM "${table}"`;
       const rows = await this.dataSource.query(sql);
       return rows[0]?.count ?? 0;
     } catch (err: any) {

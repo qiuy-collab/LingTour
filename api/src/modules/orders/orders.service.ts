@@ -222,7 +222,7 @@ export class OrdersService {
    * 支付成功：把订单标记为已支付，并把履约状态从 pending 推进到 confirmed。
    * idempotent：重复调用同一个 orderNo 不会重复推进。
    */
-  async markPaid(orderNo: string, paymentId: string) {
+  async markPaid(orderNo: string, paymentId: string): Promise<Order> {
     // Retry mechanism for potential race conditions or lock acquisition failures
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -258,9 +258,11 @@ export class OrdersService {
         await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
       }
     }
+    // Unreachable — the loop always returns or throws on attempt 3
+    throw new Error('markPaid: exhausted retries');
   }
 
-  async markPaymentFailed(orderNo: string, reason?: string) {
+  async markPaymentFailed(orderNo: string, reason?: string): Promise<Order> {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         return await this.orderRepo.manager.transaction(async (manager) => {
@@ -287,6 +289,7 @@ export class OrdersService {
         await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
       }
     }
+    throw new Error('markPaymentFailed: exhausted retries');
   }
 
   /** @deprecated 旧接口，仅供向后兼容；推荐用 markPaid */
@@ -328,53 +331,71 @@ export class OrdersService {
    * 但 cancelled 是合法的兜底操作。
    */
   async updateStatusAdmin(id: string, next: OrderStatus) {
-    const order = await this.findByIdAdmin(id);
+    return this.orderRepo.manager.transaction(async (manager) => {
+      const order = await manager.findOne(Order, {
+        where: { id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!order) throw new NotFoundException(`Order ${id} not found`);
 
-    const allowed = ORDER_STATUS_TRANSITIONS[order.status] ?? [];
-    if (!allowed.includes(next)) {
-      throw new BadRequestException(
-        `Cannot transition from "${order.status}" to "${next}"`,
-      );
-    }
+      const allowed = ORDER_STATUS_TRANSITIONS[order.status] ?? [];
+      if (!allowed.includes(next)) {
+        throw new BadRequestException(
+          `Cannot transition from "${order.status}" to "${next}"`,
+        );
+      }
 
-    order.status = next;
-    return this.orderRepo.save(order);
+      order.status = next;
+      return manager.save(Order, order);
+    });
   }
 
   async shipOrder(id: string, trackingNo?: string) {
-    const order = await this.findByIdAdmin(id);
+    return this.orderRepo.manager.transaction(async (manager) => {
+      const order = await manager.findOne(Order, {
+        where: { id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!order) throw new NotFoundException(`Order ${id} not found`);
 
-    // 必须支付完成 + 已 confirmed 才允许发货
-    if (order.paymentStatus !== 'paid') {
-      throw new BadRequestException('Cannot ship: order is not paid');
-    }
-    if (order.status !== 'confirmed') {
-      throw new BadRequestException(
-        `Cannot ship: order status is "${order.status}", expected "confirmed"`,
-      );
-    }
+      // 必须支付完成 + 已 confirmed 才允许发货
+      if (order.paymentStatus !== 'paid') {
+        throw new BadRequestException('Cannot ship: order is not paid');
+      }
+      if (order.status !== 'confirmed') {
+        throw new BadRequestException(
+          `Cannot ship: order status is "${order.status}", expected "confirmed"`,
+        );
+      }
 
-    order.status = 'shipped';
-    order.trackingNo = trackingNo ?? null;
-    return this.orderRepo.save(order);
+      order.status = 'shipped';
+      order.trackingNo = trackingNo ?? null;
+      return manager.save(Order, order);
+    });
   }
 
   async refundOrder(id: string, reason?: string) {
-    const order = await this.findByIdAdmin(id);
+    return this.orderRepo.manager.transaction(async (manager) => {
+      const order = await manager.findOne(Order, {
+        where: { id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!order) throw new NotFoundException(`Order ${id} not found`);
 
-    if (order.paymentStatus !== 'paid') {
-      throw new BadRequestException(
-        'Only paid orders can be refunded',
-      );
-    }
+      if (order.paymentStatus !== 'paid') {
+        throw new BadRequestException(
+          'Only paid orders can be refunded',
+        );
+      }
 
-    order.paymentStatus = 'refunded';
-    order.refundReason = reason ?? null;
-    // 履约状态保留（用于历史追溯）；如果还没发货，把履约也置为 cancelled
-    if (order.status === 'confirmed') {
-      order.status = 'cancelled';
-    }
-    return this.orderRepo.save(order);
+      order.paymentStatus = 'refunded';
+      order.refundReason = reason ?? null;
+      // 履约状态保留（用于历史追溯）；如果还没发货，把履约也置为 cancelled
+      if (order.status === 'confirmed') {
+        order.status = 'cancelled';
+      }
+      return manager.save(Order, order);
+    });
   }
 
   private generateOrderNo(): string {

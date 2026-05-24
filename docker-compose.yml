@@ -34,7 +34,7 @@ services:
       DB_DATABASE: lingtour
       DB_USERNAME: lingtour
       DB_PASSWORD: ${DB_PASSWORD:-lingtour_dev}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     volumes:
