@@ -1,21 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import {
   CommunityPost,
   CommunityPostStatus,
 } from './entities/community-post.entity';
 import { CommunityBrief } from './entities/community-brief.entity';
+import { CommunityPostLike } from './entities/community-post-like.entity';
+import { CommunityPostSave } from './entities/community-post-save.entity';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
 import { UpsertCommunityBriefDto } from './dto/upsert-community-brief.dto';
 
 @Injectable()
 export class CommunityService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(CommunityPost)
     private readonly postRepo: Repository<CommunityPost>,
     @InjectRepository(CommunityBrief)
     private readonly briefRepo: Repository<CommunityBrief>,
+    @InjectRepository(CommunityPostLike)
+    private readonly likeRepo: Repository<CommunityPostLike>,
+    @InjectRepository(CommunityPostSave)
+    private readonly saveRepo: Repository<CommunityPostSave>,
   ) {}
 
   async getPublicPosts(query: {
@@ -189,20 +196,134 @@ export class CommunityService {
     return this.getAdminById(id);
   }
 
-  /**
-   * Increment engagement counter (likes/saves) atomically.
-   * Returns the updated count.
-   */
-  async incrementEngagement(id: string, field: 'likes' | 'saves') {
-    await this.postRepo
-      .createQueryBuilder()
-      .update(CommunityPost)
-      .set({ [field]: () => `"${field}" + 1` })
-      .where('id = :id', { id })
-      .execute();
+  async getReactionSummary(userId: string) {
+    const [likedRows, savedRows] = await Promise.all([
+      this.likeRepo
+        .createQueryBuilder('reaction')
+        .select('reaction.post_id', 'postId')
+        .where('reaction.user_id = :userId', { userId })
+        .getRawMany<{ postId: string }>(),
+      this.saveRepo
+        .createQueryBuilder('reaction')
+        .select('reaction.post_id', 'postId')
+        .where('reaction.user_id = :userId', { userId })
+        .getRawMany<{ postId: string }>(),
+    ]);
+
+    return {
+      likedPostIds: likedRows.map((row) => row.postId),
+      savedPostIds: savedRows.map((row) => row.postId),
+    };
+  }
+
+  async listSavedPosts(userId: string, limit = 12) {
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(Math.max(limit, 1), 50)
+      : 12;
+    const saves = await this.saveRepo
+      .createQueryBuilder('save')
+      .innerJoinAndSelect('save.post', 'post')
+      .where('save.user_id = :userId', { userId })
+      .andWhere('post.status = :status', {
+        status: 'published' as CommunityPostStatus,
+      })
+      .orderBy('save.created_at', 'DESC')
+      .take(safeLimit)
+      .getMany();
+
+    if (!saves.length) return [];
+
+    const likedIds = new Set(
+      (
+        await this.likeRepo
+          .createQueryBuilder('like')
+          .select('like.post_id', 'postId')
+          .where('like.user_id = :userId', { userId })
+          .andWhere('like.post_id IN (:...postIds)', {
+            postIds: saves.map((save) => save.post.id),
+          })
+          .getRawMany<{ postId: string }>()
+      ).map((row) => row.postId),
+    );
+
+    return saves.map((save) => ({
+      ...save.post,
+      liked: likedIds.has(save.post.id),
+      saved: true,
+    }));
+  }
+
+  async toggleLike(id: string, userId: string) {
+    return this.toggleReaction(id, userId, 'likes');
+  }
+
+  async toggleSave(id: string, userId: string) {
+    return this.toggleReaction(id, userId, 'saves');
+  }
+
+  private async toggleReaction(
+    id: string,
+    userId: string,
+    field: 'likes' | 'saves',
+  ) {
+    const result = await this.dataSource.transaction(async (manager) => {
+      const post = await manager.findOne(CommunityPost, {
+        where: { id, status: 'published' as CommunityPostStatus },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!post) throw new NotFoundException('Post not found');
+
+      const repo =
+        field === 'likes'
+          ? manager.getRepository(CommunityPostLike)
+          : manager.getRepository(CommunityPostSave);
+      const existing = await repo.findOne({
+        where: {
+          user: { id: userId },
+          post: { id },
+        },
+      });
+
+      if (existing) {
+        await repo.remove(existing);
+        await manager
+          .createQueryBuilder()
+          .update(CommunityPost)
+          .set(
+            field === 'likes'
+              ? { likes: () => 'GREATEST("likes" - 1, 0)' }
+              : { saves: () => 'GREATEST("saves" - 1, 0)' },
+          )
+          .where('id = :id', { id })
+          .execute();
+        return { active: false };
+      }
+
+      await repo.save(
+        repo.create({
+          user: { id: userId },
+          post: { id },
+        }),
+      );
+      await manager
+        .createQueryBuilder()
+        .update(CommunityPost)
+        .set(
+          field === 'likes'
+            ? { likes: () => '"likes" + 1' }
+            : { saves: () => '"saves" + 1' },
+        )
+        .where('id = :id', { id })
+        .execute();
+      return { active: true };
+    });
+
     const post = await this.postRepo.findOne({ where: { id } });
     if (!post) throw new NotFoundException('Post not found');
-    return { [field]: post[field] };
+
+    return field === 'likes'
+      ? { liked: result.active, likes: post.likes }
+      : { saved: result.active, saves: post.saves };
   }
 
   // ── Field Briefs ──

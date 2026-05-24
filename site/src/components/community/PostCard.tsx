@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
-import { apiPost } from "@/lib/api-client";
+import {
+  toggleCommunityPostLike,
+  toggleCommunityPostSave,
+} from "@/lib/api-data";
+import { Avatar } from "@/components/ui/Avatar";
 
 type PostCardProps = {
   post: CommunityFeedPost;
@@ -11,9 +15,8 @@ type PostCardProps = {
   onOpen?: (post: CommunityFeedPost) => void;
   isLoggedIn?: boolean;
   onRequireLogin?: () => void;
+  onEngagementChange?: (post: CommunityFeedPost) => void;
 };
-
-const FALLBACK_AVATAR = "/uploads/seed/zhanjiang-hero-1200.jpg";
 
 export function PostCard({
   post,
@@ -22,16 +25,22 @@ export function PostCard({
   onOpen,
   isLoggedIn = false,
   onRequireLogin,
+  onEngagementChange,
 }: PostCardProps) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [likesDelta, setLikesDelta] = useState(0);
-  const [savesDelta, setSavesDelta] = useState(0);
+  const [liked, setLiked] = useState(Boolean(post.liked));
+  const [saved, setSaved] = useState(Boolean(post.saved));
+  const [likeCount, setLikeCount] = useState(post.likes);
+  const [saveCount, setSaveCount] = useState(post.saves);
 
-  const likeCount = post.likes + likesDelta;
-  const saveCount = post.saves + savesDelta;
   const hasImage = Boolean(post.image);
   const hasText = Boolean(post.excerpt.trim());
+
+  useEffect(() => {
+    setLiked(Boolean(post.liked));
+    setSaved(Boolean(post.saved));
+    setLikeCount(post.likes);
+    setSaveCount(post.saves);
+  }, [post.id, post.liked, post.likes, post.saved, post.saves]);
 
   const variantClasses = useMemo(() => {
     if (variant === "text") {
@@ -45,6 +54,17 @@ export function PostCard({
 
   const openPost = () => onOpen?.(post);
   const requireLogin = () => onRequireLogin?.();
+
+  const publishEngagement = (changes: Partial<CommunityFeedPost>) => {
+    onEngagementChange?.({
+      ...post,
+      liked,
+      saved,
+      likes: likeCount,
+      saves: saveCount,
+      ...changes,
+    });
+  };
 
   return (
     <article
@@ -137,13 +157,16 @@ export function PostCard({
           }`}
         >
           <div className="flex items-center gap-2">
-            <div
-              className={`h-8 w-8 rounded-full bg-cover bg-center ${
+            <Avatar
+              src={post.user.avatar}
+              name={post.user.name}
+              seed={post.user.handle ?? post.user.name}
+              size={32}
+              ringClassName={
                 variant === "feature"
                   ? "border border-[var(--paper)]/70 ring-2 ring-white/50"
                   : "border border-white/40 ring-2 ring-[var(--paper-deep)]"
-              }`}
-              style={{ backgroundImage: `url(${post.user.avatar || FALLBACK_AVATAR})` }}
+              }
             />
             <span
               className={`text-sm ${
@@ -180,7 +203,7 @@ export function PostCard({
             </p>
           ) : (
             <p className="mt-4 text-sm italic text-[var(--muted)]">
-              Photo-only signal. Open to read context and replies.
+              Photo-only signal. Open to read the full field context.
             </p>
           )}
 
@@ -203,16 +226,30 @@ export function PostCard({
                     requireLogin();
                     return;
                   }
-                  if (!liked) {
-                    setLiked(true);
-                    setLikesDelta((d) => d + 1);
-                    try {
-                      await apiPost(`/public/community/posts/${post.id}/like`);
-                    } catch (error) {
-                      setLiked(false);
-                      setLikesDelta((d) => d - 1);
-                      console.error("Failed to like community post", error);
-                    }
+                  const nextLiked = !liked;
+                  const optimisticLikes = Math.max(
+                    0,
+                    likeCount + (nextLiked ? 1 : -1),
+                  );
+                  setLiked(nextLiked);
+                  setLikeCount(optimisticLikes);
+                  publishEngagement({
+                    liked: nextLiked,
+                    likes: optimisticLikes,
+                  });
+                  try {
+                    const result = await toggleCommunityPostLike(post.id);
+                    setLiked(result.liked);
+                    setLikeCount(result.likes);
+                    publishEngagement({
+                      liked: result.liked,
+                      likes: result.likes,
+                    });
+                  } catch (error) {
+                    setLiked(liked);
+                    setLikeCount(likeCount);
+                    publishEngagement({ liked, likes: likeCount });
+                    console.error("Failed to toggle community post like", error);
                   }
                 }}
                 className={`text-xs transition-colors ${
@@ -225,16 +262,6 @@ export function PostCard({
               >
                 Like {likeCount}
               </button>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  openPost();
-                }}
-                className="text-xs text-[var(--muted)] hover:text-[var(--river-deep)]"
-              >
-                Comments {post.comments}
-              </button>
             </div>
             <button
               type="button"
@@ -244,16 +271,30 @@ export function PostCard({
                   requireLogin();
                   return;
                 }
-                if (!saved) {
-                  setSaved(true);
-                  setSavesDelta((d) => d + 1);
-                  try {
-                    await apiPost(`/public/community/posts/${post.id}/save`);
-                  } catch (error) {
-                    setSaved(false);
-                    setSavesDelta((d) => d - 1);
-                    console.error("Failed to save community post", error);
-                  }
+                const nextSaved = !saved;
+                const optimisticSaves = Math.max(
+                  0,
+                  saveCount + (nextSaved ? 1 : -1),
+                );
+                setSaved(nextSaved);
+                setSaveCount(optimisticSaves);
+                publishEngagement({
+                  saved: nextSaved,
+                  saves: optimisticSaves,
+                });
+                try {
+                  const result = await toggleCommunityPostSave(post.id);
+                  setSaved(result.saved);
+                  setSaveCount(result.saves);
+                  publishEngagement({
+                    saved: result.saved,
+                    saves: result.saves,
+                  });
+                } catch (error) {
+                  setSaved(saved);
+                  setSaveCount(saveCount);
+                  publishEngagement({ saved, saves: saveCount });
+                  console.error("Failed to toggle community post save", error);
                 }
               }}
               className={`text-xs transition-colors ${

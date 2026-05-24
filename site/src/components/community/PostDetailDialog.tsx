@@ -1,27 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
+import { Avatar } from "@/components/ui/Avatar";
 
 type Identity = {
   name: string;
   handle?: string;
   avatar?: string;
-};
-
-type ReplyItem = {
-  id: string;
-  author: Identity;
-  body: string;
-};
-
-type CommentItem = {
-  id: string;
-  author: Identity;
-  body: string;
-  likes: number;
-  liked: boolean;
-  replies: ReplyItem[];
 };
 
 type Props = {
@@ -30,26 +16,7 @@ type Props = {
   currentUser?: Identity | null;
 };
 
-const FALLBACK_AVATAR = "/uploads/seed/zhanjiang-hero-1200.jpg";
-
-function avatarOf(value?: string) {
-  return value || FALLBACK_AVATAR;
-}
-
-export function PostDetailDialog({ post, onClose, currentUser }: Props) {
-  const [comments, setComments] = useState<CommentItem[]>([]);
-  const [commentDraft, setCommentDraft] = useState("");
-  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!post) return;
-    setComments([]);
-    setCommentDraft("");
-    setReplyDrafts({});
-    setReplyingTo(null);
-  }, [post]);
-
+export function PostDetailDialog({ post, onClose }: Props) {
   useEffect(() => {
     if (!post) return;
     const previous = document.body.style.overflow;
@@ -67,59 +34,6 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
   }, [post]);
 
   if (!post) return null;
-
-  const activeIdentity: Identity = currentUser
-    ? {
-        name: currentUser.name,
-        handle: currentUser.handle,
-        avatar: currentUser.avatar,
-      }
-    : {
-        name: "You",
-        handle: "@you",
-        avatar: FALLBACK_AVATAR,
-      };
-
-  const addComment = () => {
-    const clean = commentDraft.trim();
-    if (!clean) return;
-    setComments((items) => [
-      {
-        id: `${post.id}-new-${Date.now()}`,
-        author: activeIdentity,
-        body: clean,
-        likes: 0,
-        liked: false,
-        replies: [],
-      },
-      ...items,
-    ]);
-    setCommentDraft("");
-  };
-
-  const addReply = (commentId: string) => {
-    const clean = replyDrafts[commentId]?.trim();
-    if (!clean) return;
-    setComments((items) =>
-      items.map((item) =>
-        item.id === commentId
-          ? {
-              ...item,
-              replies: [
-                ...item.replies,
-                {
-                  id: `${commentId}-reply-${Date.now()}`,
-                  author: activeIdentity,
-                  body: clean,
-                },
-              ],
-            }
-          : item,
-      ),
-    );
-    setReplyDrafts((drafts) => ({ ...drafts, [commentId]: "" }));
-    setReplyingTo(null);
-  };
 
   const hasImage = Boolean(post.image);
   const hasText = Boolean(post.excerpt.trim());
@@ -145,8 +59,9 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
             type="button"
             onClick={onClose}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
+            aria-label="Close post detail"
           >
-            ×
+            x
           </button>
         </div>
 
@@ -157,7 +72,9 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
                 <img
                   src={post.image}
                   alt={post.title}
-                  className={`w-full object-cover ${hasText ? "max-h-[28rem]" : "max-h-[34rem]"}`}
+                  className={`w-full object-cover ${
+                    hasText ? "max-h-[28rem]" : "max-h-[34rem]"
+                  }`}
                 />
               </div>
             ) : null}
@@ -195,168 +112,15 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
               ))}
             </div>
 
-            <div className="mt-8 border-t border-[var(--line)] pt-6">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                    Comment desk
-                  </p>
-                  <p className="mt-1 text-sm text-[var(--muted)]">
-                    Add route context, ask follow-ups, or leave a field reply.
-                  </p>
-                </div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
-                  {comments.length} comments
-                </p>
-              </div>
-
-              <div className="mt-4 flex gap-3">
-                <textarea
-                  value={commentDraft}
-                  onChange={(event) => setCommentDraft(event.target.value)}
-                  placeholder="Leave a useful comment..."
-                  rows={2}
-                  className="min-h-[88px] flex-1 resize-none rounded-[1.25rem] border border-[var(--line)] bg-white/75 px-4 py-3 text-sm leading-6 outline-none transition focus:border-[var(--cinnabar)]"
-                />
-                <button
-                  type="button"
-                  onClick={addComment}
-                  className="self-end rounded-full bg-[var(--river-deep)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--cinnabar)]"
-                >
-                  Comment
-                </button>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {comments.length ? (
-                  comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="rounded-[1.25rem] border border-[var(--line)] bg-white/65 p-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className="h-10 w-10 shrink-0 rounded-full border border-white/60 bg-cover bg-center ring-2 ring-[var(--paper-deep)]"
-                          style={{ backgroundImage: `url(${avatarOf(comment.author.avatar)})` }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
-                              {comment.author.name}
-                            </p>
-                            {comment.author.handle ? (
-                              <span className="text-xs text-[var(--muted)]">
-                                {comment.author.handle}
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className="mt-2 text-sm leading-7 text-[var(--river-deep)]/84">
-                            {comment.body}
-                          </p>
-                        </div>
-                      </div>
-
-                      {comment.replies.length ? (
-                        <div className="mt-4 space-y-3 border-l-2 border-[var(--gold)]/45 pl-4">
-                          {comment.replies.map((reply) => (
-                            <div key={reply.id} className="flex items-start gap-3">
-                              <div
-                                className="h-8 w-8 shrink-0 rounded-full border border-white/60 bg-cover bg-center"
-                                style={{ backgroundImage: `url(${avatarOf(reply.author.avatar)})` }}
-                              />
-                              <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <p className="text-xs font-semibold text-[var(--river-deep)]">
-                                    {reply.author.name}
-                                  </p>
-                                  {reply.author.handle ? (
-                                    <span className="text-xs text-[var(--muted)]">
-                                      {reply.author.handle}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                                  {reply.body}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-
-                      <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setComments((items) =>
-                              items.map((item) =>
-                                item.id === comment.id
-                                  ? {
-                                      ...item,
-                                      liked: !item.liked,
-                                      likes: item.liked ? item.likes - 1 : item.likes + 1,
-                                    }
-                                  : item,
-                              ),
-                            )
-                          }
-                          className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                            comment.liked
-                              ? "bg-[var(--cinnabar)] text-white"
-                              : "border border-[var(--line)] text-[var(--river-deep)] hover:border-[var(--cinnabar)]"
-                          }`}
-                        >
-                          {comment.likes} likes
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setReplyingTo((current) =>
-                              current === comment.id ? null : comment.id,
-                            )
-                          }
-                          className="rounded-full border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--river-deep)] transition hover:border-[var(--gold)]"
-                        >
-                          Reply
-                        </button>
-                      </div>
-
-                      {replyingTo === comment.id ? (
-                        <div className="mt-4 flex gap-2">
-                          <input
-                            value={replyDrafts[comment.id] ?? ""}
-                            onChange={(event) =>
-                              setReplyDrafts((drafts) => ({
-                                ...drafts,
-                                [comment.id]: event.target.value,
-                              }))
-                            }
-                            placeholder="Write a reply..."
-                            className="min-w-0 flex-1 rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm outline-none transition focus:border-[var(--gold)]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => addReply(comment.id)}
-                            className="rounded-full bg-[var(--gold)] px-4 py-2 text-sm font-bold text-[var(--night)] transition hover:bg-white"
-                          >
-                            Send
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[1.25rem] border border-dashed border-[var(--line)] bg-white/45 px-5 py-6">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--gold)]">
-                      No comments yet
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                      Start the discussion with a useful local detail, a follow-up
-                      question, or a clarification for the next traveler.
-                    </p>
-                  </div>
-                )}
-              </div>
+            <div className="mt-8 rounded-[1.5rem] border border-dashed border-[var(--line)] bg-white/45 px-5 py-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--gold)]">
+                Community replies are being rebuilt
+              </p>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                We have disabled the old local-only comment box so notes are no
+                longer lost when the dialog closes. A persistent reply desk can
+                return once the backend comment model is ready.
+              </p>
             </div>
           </div>
 
@@ -367,16 +131,21 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
                   Filed by
                 </p>
                 <div className="mt-3 flex items-center gap-3">
-                  <div
-                    className="h-12 w-12 rounded-full border border-white/60 bg-cover bg-center ring-2 ring-[var(--paper-deep)]"
-                    style={{ backgroundImage: `url(${avatarOf(post.user.avatar)})` }}
+                  <Avatar
+                    src={post.user.avatar}
+                    name={post.user.name}
+                    seed={post.user.handle ?? post.user.name}
+                    size={48}
+                    ringClassName="border border-white/60 ring-2 ring-[var(--paper-deep)]"
                   />
                   <div>
                     <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">
                       {post.user.name}
                     </p>
                     {post.user.handle ? (
-                      <p className="text-sm text-[var(--muted)]">{post.user.handle}</p>
+                      <p className="text-sm text-[var(--muted)]">
+                        {post.user.handle}
+                      </p>
                     ) : null}
                   </div>
                 </div>
@@ -398,14 +167,6 @@ export function PostDetailDialog({ post, onClose, currentUser }: Props) {
                   </p>
                   <p className="mt-1 text-2xl font-[family:var(--font-display)] text-[var(--river-deep)]">
                     {post.likes}
-                  </p>
-                </div>
-                <div className="rounded-[1.25rem] border border-[var(--line)] bg-white/70 px-4 py-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
-                    Replies
-                  </p>
-                  <p className="mt-1 text-2xl font-[family:var(--font-display)] text-[var(--river-deep)]">
-                    {post.comments}
                   </p>
                 </div>
                 <div className="rounded-[1.25rem] border border-[var(--line)] bg-white/70 px-4 py-3">

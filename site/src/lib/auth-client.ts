@@ -126,3 +126,13 @@ export async function updateCurrentUserProfile(input: UpdateProfileInput) {
   const user = await apiPatch<AuthUser>("/auth/me", input);
   return persistAuthUser(user);
 }
+
+export async function uploadCurrentUserAvatar(file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const result = await apiPost<{ url: string }>("/auth/me/avatar", form);
+  // The endpoint already persisted avatarUrl server-side. Refresh local copy
+  // so the rest of the UI sees the new value immediately.
+  await refreshCurrentUserProfile();
+  return result.url;
+}

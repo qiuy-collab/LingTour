@@ -3,9 +3,15 @@ import {
   IsIn,
   IsOptional,
   IsString,
-  IsUrl,
+  Matches,
   MaxLength,
 } from 'class-validator';
+
+// Accept either a full http(s) URL or a server-relative upload path like
+// `/uploads/avatars/<uuid>.png`. Empty string is also allowed so the client
+// can clear an existing avatar.
+const AVATAR_URL_REGEX =
+  /^(?:|https?:\/\/[^\s]+|\/uploads\/[^\s]+)$/i;
 
 export class UpdateProfileDto {
   @ApiPropertyOptional()
@@ -14,16 +20,25 @@ export class UpdateProfileDto {
   @MaxLength(100)
   name?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description:
+      'Either an absolute http(s) URL or a server-relative path under /uploads/. Empty string clears the avatar.',
+  })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   @MaxLength(500)
+  @Matches(AVATAR_URL_REGEX, {
+    message: 'avatarUrl must be an http(s) URL or a path under /uploads/',
+  })
   avatarUrl?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @MaxLength(80)
+  @MaxLength(2)
+  @Matches(/^(?:|[A-Za-z]{2})$/, {
+    message: 'country must be an ISO 3166-1 alpha-2 country code',
+  })
   country?: string;
 
   @ApiPropertyOptional()

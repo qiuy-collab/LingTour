@@ -134,7 +134,10 @@ export class UsersService {
       id: user.id,
       name: user.name || user.email.split('@')[0],
       email: user.email,
+      // Both keys are returned for backwards compatibility with admin clients
+      // that already read `avatar`. Frontend reads `avatarUrl`.
       avatar: user.avatarUrl || '',
+      avatarUrl: user.avatarUrl || '',
       locale: 'zh',
       createdAt: user.createdAt,
       status: user.status || 'active',
@@ -350,7 +353,7 @@ export class UsersService {
     return {
       name: payload.name?.trim() ?? fallback?.name ?? undefined,
       avatarUrl: payload.avatarUrl?.trim() ?? fallback?.avatarUrl ?? '',
-      country: payload.country?.trim() ?? fallback?.country ?? '',
+      country: payload.country?.trim().toUpperCase() ?? fallback?.country ?? '',
       homeBase: payload.homeBase?.trim() ?? fallback?.homeBase ?? '',
       travelStyle: payload.travelStyle?.trim() ?? fallback?.travelStyle ?? '',
       bio: payload.bio?.trim() ?? fallback?.bio ?? '',

@@ -8,6 +8,7 @@ import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
 import { readCart } from "@/lib/cart";
+import { countryName } from "@/lib/country-list";
 import { StripePaymentForm } from "./StripePaymentForm";
 import type { StoreProduct } from "@/data/store";
 
@@ -71,17 +72,18 @@ export function CheckoutClient() {
     const storedUser = readStoredUser();
     setUser(storedUser);
     if (storedUser) {
+      const displayCountry = countryName(storedUser.country, locale);
       setForm((current) => ({
         ...current,
         email: storedUser.email || current.email,
         recipientName: storedUser.name || current.recipientName,
-        city: storedUser.homeBase || storedUser.country || current.city,
+        city: storedUser.homeBase || displayCountry || current.city,
         state: storedUser.homeBase || current.state,
-        country: storedUser.country || current.country,
+        country: displayCountry || current.country,
         phone: current.phone,
       }));
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     let cancelled = false;

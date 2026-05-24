@@ -44,13 +44,13 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   background-color: var(--background);
 }
 
 body {
   margin: 0;
-  overflow-x: hidden;
+  overflow-x: visible;
   background-color: var(--background);
   color: var(--foreground);
   font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;

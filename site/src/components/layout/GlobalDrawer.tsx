@@ -2,17 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUI } from "@/lib/ui-context";
+import { useLocale } from "@/lib/locale-context";
 import {
   LocalUser,
   readStoredUser,
   refreshCurrentUserProfile,
+  updateCurrentUserProfile,
+  uploadCurrentUserAvatar,
+  type ProfileVisibility,
 } from "@/lib/auth-client";
 import { type CartItem, readCart, writeCart } from "@/lib/cart";
+import { countryName, countryOptions, normalizeCountryCode } from "@/lib/country-list";
+import {
+  fetchSavedCommunityPosts,
+  type CommunityFeedPost,
+} from "@/lib/api-data";
 
 type FavoriteItem = { id: string; type: string; title: string };
+type ProfileForm = {
+  name: string;
+  country: string;
+  homeBase: string;
+  travelStyle: string;
+  bio: string;
+  profileVisibility: ProfileVisibility;
+};
+
 const bookingDrafts = [
   {
     city: "Foshan",
@@ -84,6 +102,17 @@ function activityLabel(stamps: number) {
   return "Field Starter";
 }
 
+function buildProfileForm(user: LocalUser): ProfileForm {
+  return {
+    name: user.name ?? "",
+    country: normalizeCountryCode(user.country),
+    homeBase: user.homeBase ?? "",
+    travelStyle: user.travelStyle ?? "",
+    bio: user.bio ?? "",
+    profileVisibility: user.profileVisibility ?? "public",
+  };
+}
+
 function logOut() {
   try {
     window.localStorage.removeItem("lingtour-user");
@@ -97,13 +126,23 @@ function logOut() {
 export function GlobalDrawer() {
   const { isDrawerOpen, closeDrawer } = useUI();
   const pathname = usePathname();
+  const { locale } = useLocale();
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<LocalUser | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState<ProfileForm | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [savedNotes, setSavedNotes] = useState<CommunityFeedPost[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [stamps, setStamps] = useState(0);
   const selectedCart = cart.filter((item) => item.selected !== false);
   const selectedCartCount = selectedCart.reduce((sum, item) => sum + item.quantity, 0);
   const selectedCartTotal = selectedCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const countries = useMemo(() => countryOptions(locale), [locale]);
+  const displayCountry = user ? countryName(user.country, locale) : "";
 
   // Don't render the marketing drawer inside the admin area.
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
@@ -142,6 +181,71 @@ export function GlobalDrawer() {
     updateCart(cart.map((item) => ({ ...item, selected: shouldSelectAll })));
   }
 
+  function startProfileEdit() {
+    if (!user) return;
+    setProfileForm(buildProfileForm(user));
+    setProfileError(null);
+    setIsEditingProfile(true);
+  }
+
+  function cancelProfileEdit() {
+    setProfileForm(user ? buildProfileForm(user) : null);
+    setProfileError(null);
+    setIsEditingProfile(false);
+  }
+
+  function updateProfileField<K extends keyof ProfileForm>(key: K, value: ProfileForm[K]) {
+    setProfileForm((current) => current ? { ...current, [key]: value } : current);
+  }
+
+  async function saveProfile() {
+    if (!profileForm) return;
+    const name = profileForm.name.trim();
+    if (!name) {
+      setProfileError("Name is required.");
+      return;
+    }
+
+    setSavingProfile(true);
+    setProfileError(null);
+    try {
+      const nextUser = await updateCurrentUserProfile({
+        name,
+        country: profileForm.country,
+        homeBase: profileForm.homeBase.trim(),
+        travelStyle: profileForm.travelStyle.trim(),
+        bio: profileForm.bio.trim(),
+        profileVisibility: profileForm.profileVisibility,
+      });
+      setUser(nextUser);
+      setProfileForm(buildProfileForm(nextUser));
+      setIsEditingProfile(false);
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : "Profile update failed.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function uploadAvatar(file?: File) {
+    if (!file) return;
+    setUploadingAvatar(true);
+    setProfileError(null);
+    try {
+      await uploadCurrentUserAvatar(file);
+      const nextUser = readStoredUser();
+      if (nextUser) {
+        setUser(nextUser);
+        setProfileForm(buildProfileForm(nextUser));
+      }
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : "Avatar upload failed.");
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
+
   useEffect(() => {
     loadData();
     window.addEventListener("lingtour-favorites", loadData);
@@ -156,21 +260,31 @@ export function GlobalDrawer() {
 
   useEffect(() => {
     if (!isDrawerOpen || typeof window === "undefined") return;
-    if (!window.localStorage.getItem("lingtour-token")) return;
+    if (!window.localStorage.getItem("lingtour-token")) {
+      setSavedNotes([]);
+      return;
+    }
 
     let cancelled = false;
-    refreshCurrentUserProfile()
-      .then((profile) => {
-        if (!cancelled) setUser(profile);
-      })
-      .catch(() => {
-        if (!cancelled) setUser(readStoredUser());
-      });
+    void Promise.allSettled([
+      refreshCurrentUserProfile(),
+      fetchSavedCommunityPosts(locale, 6),
+    ]).then(([profileResult, savedResult]) => {
+      if (cancelled) return;
+      if (profileResult.status === "fulfilled") {
+        setUser(profileResult.value);
+      } else {
+        setUser(readStoredUser());
+      }
+      setSavedNotes(
+        savedResult.status === "fulfilled" ? savedResult.value : [],
+      );
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [isDrawerOpen]);
+  }, [isDrawerOpen, locale]);
 
   // Reload when drawer opens
   useEffect(() => {
@@ -179,11 +293,18 @@ export function GlobalDrawer() {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
+      setIsEditingProfile(false);
+      setProfileError(null);
     }
     return () => {
       document.body.style.overflow = "";
     };
   }, [isDrawerOpen]);
+
+  useEffect(() => {
+    if (!user || isEditingProfile) return;
+    setProfileForm(buildProfileForm(user));
+  }, [isEditingProfile, user]);
 
   // Auto-close on route change
   useEffect(() => {
@@ -218,7 +339,9 @@ export function GlobalDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg flex-col border-l border-white/20 bg-[rgba(242,238,230,0.4)] backdrop-blur-3xl shadow-[0_0_100px_rgba(17,25,35,0.1)]"
+            className={`fixed right-0 top-0 z-[70] flex h-full w-full flex-col border-l border-white/20 bg-[rgba(242,238,230,0.4)] backdrop-blur-3xl shadow-[0_0_100px_rgba(17,25,35,0.1)] ${
+              isEditingProfile ? "max-w-2xl" : "max-w-lg"
+            }`}
           >
             {/* Background Light Leak Effects */}
             <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[radial-gradient(circle,rgba(185,138,70,0.08),transparent_70%)] blur-3xl pointer-events-none" />
@@ -269,9 +392,44 @@ export function GlobalDrawer() {
                     <div className="relative overflow-hidden border border-[var(--line)] bg-[linear-gradient(180deg,rgba(248,244,236,0.98),rgba(239,234,225,0.92))] px-6 py-6 shadow-[0_20px_40px_rgba(17,25,35,0.08)]">
                       <div className="absolute inset-0 bg-grain opacity-[0.06] pointer-events-none" />
 
+                      <div className="relative z-10 mb-5 flex items-center justify-between gap-4">
+                        <p className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                          Field file
+                        </p>
+                        {isEditingProfile ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={cancelProfileEdit}
+                              disabled={savingProfile || uploadingAvatar}
+                              className="border border-[var(--line)] bg-white/70 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] transition hover:bg-white disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={saveProfile}
+                              disabled={savingProfile || uploadingAvatar}
+                              className="bg-[var(--river-deep)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[var(--cinnabar)] disabled:opacity-50"
+                            >
+                              {savingProfile ? "Saving" : "Save"}
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+
                       <div className="relative z-10 flex items-start gap-5">
                         <div className="relative shrink-0">
-                          <div className="grid h-24 w-20 place-items-center border-[5px] border-white bg-[var(--paper)] shadow-[0_18px_32px_rgba(17,25,35,0.14)]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isEditingProfile) avatarInputRef.current?.click();
+                            }}
+                            className={`grid h-24 w-20 place-items-center border-[5px] border-white bg-[var(--paper)] shadow-[0_18px_32px_rgba(17,25,35,0.14)] ${
+                              isEditingProfile ? "cursor-pointer transition hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(17,25,35,0.16)]" : "cursor-default"
+                            }`}
+                            aria-label="Upload avatar"
+                          >
                             <div className="flex h-full w-full items-center justify-center overflow-hidden bg-[var(--river-deep)] text-white">
                               {user.avatarUrl ? (
                                 <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -279,7 +437,19 @@ export function GlobalDrawer() {
                                 <span className="font-[family:var(--font-display)] text-4xl italic">{getInitials(user.name)}</span>
                               )}
                             </div>
-                          </div>
+                          </button>
+                          <input
+                            ref={avatarInputRef}
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className="sr-only"
+                            onChange={(event) => uploadAvatar(event.target.files?.[0])}
+                          />
+                          {isEditingProfile ? (
+                            <p className="mt-2 max-w-20 text-center font-mono text-[8px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                              {uploadingAvatar ? "Uploading" : "Photo"}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -296,12 +466,24 @@ export function GlobalDrawer() {
                             </span>
                           </div>
 
-                          <p className="mt-2 font-[family:var(--font-display)] text-4xl italic leading-none text-[var(--river-deep)]">
-                            {user.name}
-                          </p>
+                          {isEditingProfile && profileForm ? (
+                            <label className="mt-2 block">
+                              <span className="sr-only">Name</span>
+                              <input
+                                value={profileForm.name}
+                                onChange={(event) => updateProfileField("name", event.target.value)}
+                                className="w-full border-b border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] text-4xl italic leading-none text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                                placeholder="Traveler name"
+                              />
+                            </label>
+                          ) : (
+                            <p className="mt-2 font-[family:var(--font-display)] text-4xl italic leading-none text-[var(--river-deep)]">
+                              {user.name}
+                            </p>
+                          )}
 
                           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
-                            <span>{user.country || user.homeBase || "Explorer"}</span>
+                            <span>{displayCountry || user.homeBase || "Explorer"}</span>
                             <span className="h-1 w-1 rounded-full bg-[var(--gold)]/60" />
                             <span>Joined {formatMemberSince(user.memberSince)}</span>
                             {user.accountId ? (
@@ -312,31 +494,105 @@ export function GlobalDrawer() {
                             ) : null}
                           </div>
 
-                          <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
-                            {user.bio?.trim()
-                              ? user.bio
-                              : "Your travel profile powers checkout, community activity, and saved routes from one place."}
-                          </p>
+                          {isEditingProfile && profileForm ? (
+                            <label className="mt-4 block">
+                              <span className="sr-only">Bio</span>
+                              <textarea
+                                value={profileForm.bio}
+                                onChange={(event) => updateProfileField("bio", event.target.value)}
+                                maxLength={600}
+                                rows={3}
+                                className="w-full resize-none border border-[var(--line)] bg-white/60 px-3 py-3 text-sm leading-relaxed text-[var(--river-deep)] outline-none transition placeholder:text-[var(--muted)]/50 focus:border-[var(--cinnabar)]"
+                                placeholder="A short note for your public field record"
+                              />
+                            </label>
+                          ) : (
+                            <p className="mt-4 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten">
+                              {user.bio?.trim()
+                                ? user.bio
+                                : "Your travel profile powers checkout, community activity, and saved routes from one place."}
+                            </p>
+                          )}
                         </div>
                       </div>
 
                       <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-2">
-                        <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
-                          <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                            Base
-                          </p>
-                          <p className="mt-2 text-sm text-[var(--river-deep)]">
-                            {user.homeBase || user.country || "Unlisted"}
-                          </p>
-                        </div>
-                        <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
-                          <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
-                            Travel style
-                          </p>
-                          <p className="mt-2 text-sm text-[var(--river-deep)]">
-                            {user.travelStyle || "Open itinerary"}
-                          </p>
-                        </div>
+                        {isEditingProfile && profileForm ? (
+                          <>
+                            <label className="grid gap-2 border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <span className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Country
+                              </span>
+                              <select
+                                value={profileForm.country}
+                                onChange={(event) => updateProfileField("country", event.target.value)}
+                                className="w-full bg-transparent text-sm text-[var(--river-deep)] outline-none"
+                              >
+                                <option value="">Select country</option>
+                                {countries.map((country) => (
+                                  <option key={country.code} value={country.code}>
+                                    {country.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label className="grid gap-2 border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <span className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Home base
+                              </span>
+                              <input
+                                value={profileForm.homeBase}
+                                onChange={(event) => updateProfileField("homeBase", event.target.value)}
+                                className="w-full bg-transparent text-sm text-[var(--river-deep)] outline-none"
+                                placeholder="Guangzhou, Singapore..."
+                              />
+                            </label>
+                            <label className="grid gap-2 border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <span className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Travel style
+                              </span>
+                              <input
+                                value={profileForm.travelStyle}
+                                onChange={(event) => updateProfileField("travelStyle", event.target.value)}
+                                className="w-full bg-transparent text-sm text-[var(--river-deep)] outline-none"
+                                placeholder="Food walks, craft routes..."
+                              />
+                            </label>
+                            <label className="grid gap-2 border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <span className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Visibility
+                              </span>
+                              <select
+                                value={profileForm.profileVisibility}
+                                onChange={(event) => updateProfileField("profileVisibility", event.target.value as ProfileVisibility)}
+                                className="w-full bg-transparent text-sm text-[var(--river-deep)] outline-none"
+                              >
+                                <option value="public">Public profile</option>
+                                <option value="community">Community only</option>
+                                <option value="private">Private vault</option>
+                              </select>
+                            </label>
+                          </>
+                        ) : (
+                          <>
+                            <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Base
+                              </p>
+                              <p className="mt-2 text-sm text-[var(--river-deep)]">
+                                {user.homeBase || displayCountry || "Unlisted"}
+                              </p>
+                            </div>
+                            <div className="border border-[var(--line)] bg-white/70 px-4 py-3">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                                Travel style
+                              </p>
+                              <p className="mt-2 text-sm text-[var(--river-deep)]">
+                                {user.travelStyle || "Open itinerary"}
+                              </p>
+                            </div>
+                          </>
+                        )}
                         <div className="border border-[var(--gold)]/18 bg-[var(--gold)]/8 px-4 py-3 sm:col-span-2">
                           <div className="flex items-center justify-between gap-4">
                             <div>
@@ -358,6 +614,11 @@ export function GlobalDrawer() {
                             Next step: {nextProfileStep(user)}
                           </p>
                         </div>
+                        {profileError ? (
+                          <p className="border border-[var(--cinnabar)]/20 bg-[var(--cinnabar)]/5 px-4 py-3 text-xs font-bold text-[var(--cinnabar)] sm:col-span-2">
+                            {profileError}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
 
@@ -407,17 +668,17 @@ export function GlobalDrawer() {
                       </Link>
 
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <Link
-                          href="/login"
-                          onClick={closeDrawer}
+                        <button
+                          type="button"
+                          onClick={startProfileEdit}
                           className="group flex min-w-0 items-center justify-between gap-4 border border-[var(--line)] bg-[rgba(255,255,255,0.55)] px-5 py-4 transition hover:-translate-y-1 hover:bg-white/80"
                         >
                           <div className="min-w-0">
                             <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">Edit profile</p>
-                            <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]">Update name, bio, and travel style</p>
+                            <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]">Update name, photo, and travel style</p>
                           </div>
-                          <span className="shrink-0 text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">↗</span>
-                        </Link>
+                          <span className="shrink-0 text-[var(--cinnabar)] transition-transform group-hover:translate-x-1">+</span>
+                        </button>
                         <Link
                           href={pathname?.startsWith("/checkout") ? "/checkout" : "/community"}
                           onClick={closeDrawer}
@@ -489,6 +750,53 @@ export function GlobalDrawer() {
                 </div>
 
                 <div className="space-y-16">
+                  {/* Saved community notes */}
+                  <div className="space-y-8">
+                    <div className="flex items-end justify-between">
+                      <h4 className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)]">Saved Field Notes</h4>
+                      <span className="border-b border-[var(--gold)]/30 pb-1 text-[9px] font-bold tracking-[0.2em] text-[var(--gold)]">{savedNotes.length} SAVED</span>
+                    </div>
+                    {savedNotes.length > 0 ? (
+                      <div className="grid gap-4">
+                        {savedNotes.map((note) => (
+                          <Link
+                            key={note.id}
+                            href="/community"
+                            onClick={closeDrawer}
+                            className="group overflow-hidden rounded-[1.5rem] border border-white/45 bg-white/25 transition-all hover:-translate-y-0.5 hover:bg-white/45"
+                          >
+                            <div className="flex gap-4 p-4">
+                              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white shadow-xl">
+                                {note.image ? (
+                                  <img src={note.image} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <div className="grid h-full w-full place-items-center bg-[var(--paper-deep)] font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
+                                    Note
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--gold)]">
+                                  {note.channel}
+                                </p>
+                                <p className="mt-2 line-clamp-2 text-base font-bold leading-tight text-[var(--river-deep)]">
+                                  {note.title}
+                                </p>
+                                <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
+                                  {note.excerpt || "Saved visual field signal."}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs italic text-[var(--muted)] opacity-40">
+                        Save a community note to pin it here.
+                      </p>
+                    )}
+                  </div>
+
                   {/* Favorites */}
                   <div className="space-y-8">
                     <div className="flex items-end justify-between">

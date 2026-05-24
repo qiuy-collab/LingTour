@@ -1,8 +1,0 @@
-fix: system-wide error handling, db transactions, and webhook idempotency
-
-- API: Wrap critical mutations (Order creation, Payment confirmation) in TypeORM transactions with pessimistic locking (`mode: 'pessimistic_write'`) and a 3-attempt exponential backoff retry mechanism.
-- API: Make Stripe webhook `markPaid` and `markPaymentFailed` fully idempotent, preventing state corruption from duplicate events.
-- API: Tighten `UploadController` image validation; immediately reject unknown MIME types rather than throwing an internal generic error.
-- Site: Introduce `useApiQuery` fetch retry mechanism (exponential backoff) for transient network failures during server-side API calls.
-
-Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>

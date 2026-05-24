@@ -11,10 +11,12 @@ import {
   Put,
   Query,
   Req,
+  UnauthorizedException,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,
   ApiConsumes,
@@ -45,6 +47,14 @@ export class CommunityController {
     private readonly communityService: CommunityService,
     private readonly uploadService: UploadService,
   ) {}
+
+  private requireUserId(req: AuthenticatedRequest) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Missing authenticated user');
+    }
+    return userId;
+  }
 
   @Public()
   @Get('public/community/posts')
@@ -84,9 +94,14 @@ export class CommunityController {
 
   @Post('public/community/posts')
   @ApiBearerAuth()
-  async createPublicPost(@Body() dto: UpsertCommunityPostDto) {
+  async createPublicPost(
+    @Body() dto: UpsertCommunityPostDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.communityService.create({
       ...dto,
+      userId: this.requireUserId(req),
+      userEmail: req.user?.email ?? dto.userEmail ?? '',
       status: 'pending_review',
     });
   }
@@ -108,18 +123,46 @@ export class CommunityController {
     return { url: result.url };
   }
 
+  @Get('public/community/me/reactions')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user community reactions' })
+  async getMyCommunityReactions(@Req() req: AuthenticatedRequest) {
+    return this.communityService.getReactionSummary(this.requireUserId(req));
+  }
+
+  @Get('public/community/me/saves')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get posts saved by the current user' })
+  async getMySavedCommunityPosts(
+    @Req() req: AuthenticatedRequest,
+    @Query('limit') limit = 12,
+  ) {
+    return this.communityService.listSavedPosts(
+      this.requireUserId(req),
+      +limit,
+    );
+  }
+
   @Post('public/community/posts/:id/like')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle like on a post' })
-  async likePost(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.communityService.incrementEngagement(id, 'likes');
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  async likePost(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.communityService.toggleLike(id, this.requireUserId(req));
   }
 
   @Post('public/community/posts/:id/save')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle save on a post' })
-  async savePost(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.communityService.incrementEngagement(id, 'saves');
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  async savePost(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.communityService.toggleSave(id, this.requireUserId(req));
   }
 
   @Get('admin/community/posts')

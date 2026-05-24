@@ -710,6 +710,8 @@ export type CommunityFeedPost = {
   likes: number;
   comments: number;
   saves: number;
+  liked?: boolean;
+  saved?: boolean;
   prompt: string;
   status: string;
 };
@@ -734,6 +736,8 @@ interface ApiCommunityPost {
   likes?: number;
   comments?: number;
   saves?: number;
+  liked?: boolean;
+  saved?: boolean;
   createdAt: string;
 }
 
@@ -794,6 +798,8 @@ function mapCommunityPost(
     likes: api.likes ?? 0,
     comments: api.comments ?? 0,
     saves: api.saves ?? 0,
+    liked: api.liked ?? false,
+    saved: api.saved ?? false,
     prompt:
       tags.length > 0
         ? `Track: ${tags.join(" · ")}`
@@ -950,6 +956,37 @@ export async function fetchCommunityFeed(
     },
   );
   return (res.items ?? []).map((item) => mapCommunityPost(item, locale));
+}
+
+export type CommunityReactionSummary = {
+  likedPostIds: string[];
+  savedPostIds: string[];
+};
+
+export async function fetchCommunityReactionSummary(): Promise<CommunityReactionSummary> {
+  return apiGet<CommunityReactionSummary>("/public/community/me/reactions");
+}
+
+export async function fetchSavedCommunityPosts(
+  locale: Locale,
+  limit = 12,
+): Promise<CommunityFeedPost[]> {
+  const posts = await apiGet<ApiCommunityPost[]>("/public/community/me/saves", {
+    limit,
+  });
+  return posts.map((post) => mapCommunityPost(post, locale));
+}
+
+export async function toggleCommunityPostLike(postId: string) {
+  return apiPost<{ liked: boolean; likes: number }>(
+    `/public/community/posts/${postId}/like`,
+  );
+}
+
+export async function toggleCommunityPostSave(postId: string) {
+  return apiPost<{ saved: boolean; saves: number }>(
+    `/public/community/posts/${postId}/save`,
+  );
 }
 
 export type CreateCommunityFeedInput = {

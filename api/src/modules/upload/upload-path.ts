@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { basename, posix, resolve, relative } from 'path';
 
 const ALLOWED_MODULES = new Set([
+  'avatars',
   'cities',
   'community',
   'events',

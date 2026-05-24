@@ -10,8 +10,11 @@ import {
   Param,
   Req,
   BadRequestException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -21,6 +24,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { UsersService } from '../users/users.service';
+import { UploadService } from '../upload/upload.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -28,6 +32,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly uploadService: UploadService,
   ) {}
 
   @Public()
@@ -84,6 +89,46 @@ export class AuthController {
   ) {
     const authUser = request['user'] as { sub?: string };
     return this.authService.updateMe(authUser.sub as string, dto);
+  }
+
+  @Post('me/avatar')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Upload an avatar image for the current user' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 4 * 1024 * 1024 }, // 4MB is plenty for an avatar
+    }),
+  )
+  async uploadAvatar(
+    @Req() request: Request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Unsupported file type. Allowed: jpg, png, webp',
+      );
+    }
+    const authUser = request['user'] as { sub?: string };
+    if (!authUser?.sub) {
+      throw new BadRequestException('Authentication required');
+    }
+    const result = await this.uploadService.storeUploadedFile(file, 'avatars');
+    // Persist immediately so the next /auth/me reflects the new avatar.
+    await this.authService.updateMe(authUser.sub, { avatarUrl: result.url });
+    return { url: result.url };
   }
 
   // ── Favorites (Personal Vault) ──

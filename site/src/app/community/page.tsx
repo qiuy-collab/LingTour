@@ -6,6 +6,7 @@ import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import {
   createCommunityFeedPost,
   fetchCommunityFeed,
+  fetchCommunityReactionSummary,
   fetchCommunityBriefs,
   type CommunityFeedPost,
   type FieldBrief,
@@ -35,7 +36,7 @@ const channels = [
 ] as const;
 type Channel = (typeof channels)[number];
 type PostChannel = Exclude<Channel, "All">;
-type SortMode = "Live" | "Loved" | "Discussed";
+type SortMode = "Live" | "Loved" | "Saved";
 
 type Draft = {
   title: string;
@@ -81,7 +82,7 @@ function readUser(): LocalUser | null {
 function sortPosts(posts: CommunityFeedPost[], sortMode: SortMode) {
   return [...posts].sort((a, b) => {
     if (sortMode === "Loved") return b.likes - a.likes;
-    if (sortMode === "Discussed") return b.comments - a.comments;
+    if (sortMode === "Saved") return b.saves - a.saves;
     return 0;
   });
 }
@@ -115,6 +116,9 @@ export default function CommunityPage() {
   const [optimisticPosts, setOptimisticPosts] = useState<CommunityFeedPost[]>(
     [],
   );
+  const [engagementOverrides, setEngagementOverrides] = useState<
+    Record<string, Partial<Pick<CommunityFeedPost, "liked" | "likes" | "saved" | "saves">>>
+  >({});
   const [activeChannel, setActiveChannel] = useState<Channel>("All");
   const [sortMode, setSortMode] = useState<SortMode>("Live");
   const [query, setQuery] = useState("");
@@ -214,9 +218,64 @@ export default function CommunityPage() {
     }
   }, []);
 
-  const allPosts = useMemo(() => {
+  const basePosts = useMemo(() => {
     return mergeCommunityPosts([...optimisticPosts, ...(remotePosts ?? [])]);
   }, [optimisticPosts, remotePosts]);
+
+  const allPosts = useMemo(() => {
+    return basePosts.map((post) => ({
+      ...post,
+      ...engagementOverrides[post.id],
+    }));
+  }, [basePosts, engagementOverrides]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setEngagementOverrides({});
+      return;
+    }
+
+    let cancelled = false;
+    fetchCommunityReactionSummary()
+      .then((summary) => {
+        if (cancelled) return;
+        const liked = new Set(summary.likedPostIds);
+        const saved = new Set(summary.savedPostIds);
+        setEngagementOverrides((current) => {
+          const next = { ...current };
+          basePosts.forEach((post) => {
+            next[post.id] = {
+              ...next[post.id],
+              liked: liked.has(post.id),
+              saved: saved.has(post.id),
+            };
+          });
+          return next;
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setEngagementOverrides({});
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [basePosts, isLoggedIn]);
+
+  const updatePostEngagement = (updatedPost: CommunityFeedPost) => {
+    setEngagementOverrides((current) => ({
+      ...current,
+      [updatedPost.id]: {
+        liked: updatedPost.liked,
+        likes: updatedPost.likes,
+        saved: updatedPost.saved,
+        saves: updatedPost.saves,
+      },
+    }));
+    setSelectedPost((current) =>
+      current?.id === updatedPost.id ? { ...current, ...updatedPost } : current,
+    );
+  };
 
   const filteredPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -443,7 +502,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section className="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/90 backdrop-blur-md py-4">
+      <section className="sticky top-[4.6rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain backdrop-blur-xl py-4">
         <div className="site-container flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {channels.map((channel) => (
@@ -454,7 +513,7 @@ export default function CommunityPage() {
                 className={`shrink-0 rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-widest transition-all ${
                   activeChannel === channel
                     ? "bg-[var(--river-deep)] text-white shadow-md"
-                    : "border border-[var(--line)] bg-white/40 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
+                    : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
                 }`}
               >
                 {channel}
@@ -545,6 +604,7 @@ export default function CommunityPage() {
                           onOpen={setSelectedPost}
                           isLoggedIn={isLoggedIn}
                           onRequireLogin={() => setToast(AUTH_PROMPTS.connectGoogleToInteract)}
+                          onEngagementChange={updatePostEngagement}
                         />
                       </Reveal>
                     </div>

@@ -26,11 +26,12 @@ import { sanitizeUploadModule } from './upload-path';
                 typeof req?.body?.module === 'string'
                   ? req.body.module
                   : undefined;
-              const moduleFromRoute = String(req?.originalUrl ?? '').includes(
-                '/public/community/upload',
-              )
-                ? 'community'
-                : undefined;
+              const moduleFromRoute = (() => {
+                const url = String(req?.originalUrl ?? '');
+                if (url.includes('/public/community/upload')) return 'community';
+                if (url.includes('/auth/me/avatar')) return 'avatars';
+                return undefined;
+              })();
               const module = sanitizeUploadModule(
                 moduleFromBody ?? moduleFromRoute,
               );
