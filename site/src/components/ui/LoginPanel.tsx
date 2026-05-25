@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost, ApiRequestError } from "@/lib/api-client";
 import { useLocale } from "@/lib/locale-context";
@@ -12,85 +12,156 @@ import {
   updateCurrentUserProfile,
 } from "@/lib/auth-client";
 
+type ActiveField = "idle" | "name" | "country" | "email" | "password" | "travelStyle";
+
 function FieldGuideCharacter({
   isTyping,
   showPassword,
   passwordLength,
+  activeField,
+  pointer,
 }: {
   isTyping: boolean;
   showPassword: boolean;
   passwordLength: number;
+  activeField: ActiveField;
+  pointer: { x: number; y: number };
 }) {
-  const isGuarding = passwordLength > 0 && !showPassword;
-  const eyeShift = isTyping ? "translate-x-1 translate-y-0.5" : "";
-  const brimTilt = showPassword ? "rotate-2" : isGuarding ? "-rotate-3" : "-rotate-1";
+  const isGuarding = passwordLength > 0 && showPassword;
+  const lookX = isGuarding ? -7 : activeField !== "idle" ? 7 : pointer.x * 18;
+  const lookY = isGuarding ? -3 : activeField !== "idle" ? 5 : pointer.y * 13;
+  const orangeLookX = isGuarding ? -14 : lookX;
+  const orangeLookY = isGuarding ? -3 : lookY;
+  const [blink, setBlink] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      timeout = setTimeout(
+        () => {
+          if (cancelled) return;
+          setBlink(true);
+          setTimeout(() => {
+            if (cancelled) return;
+            setBlink(false);
+            schedule();
+          }, 130);
+        },
+        2400 + Math.random() * 2800,
+      );
+    };
+    schedule();
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  const eye = (
+    key: string,
+    options: { size?: string; pupil?: string; x?: number; y?: number } = {},
+  ) => (
+    <div
+      key={key}
+      className={`relative grid place-items-center overflow-hidden rounded-full bg-white transition-all duration-150 ${
+        blink ? "h-1 w-8" : (options.size ?? "h-8 w-8")
+      }`}
+    >
+      {!blink ? (
+        <>
+          <span
+            className={`block rounded-full bg-[var(--night)] transition-transform duration-150 ${
+              options.pupil ?? "h-3.5 w-3.5"
+            }`}
+            style={{
+              transform: `translate(${options.x ?? lookX}px, ${options.y ?? lookY}px)`,
+            }}
+          />
+        </>
+      ) : null}
+    </div>
+  );
+
+  const dotEye = (
+    key: string,
+    options: { x?: number; y?: number; size?: string } = {},
+  ) => (
+    <span
+      key={key}
+      className={`relative rounded-full bg-[var(--night)] transition-transform duration-150 ${
+        options.size ?? "h-4 w-4"
+      }`}
+      style={{
+        transform: `translate(${options.x ?? lookX}px, ${options.y ?? lookY}px)`,
+      }}
+    />
+  );
 
   return (
-    <div className="relative mx-auto h-[25rem] w-full max-w-[25rem]" aria-hidden="true">
-      <div className="absolute inset-x-8 bottom-4 h-8 bg-black/10 blur-2xl" />
+    <div
+      className="relative mx-auto h-[31rem] w-full max-w-[34rem] transition-transform duration-500"
+      style={{
+        transform: `translate3d(${pointer.x * 8}px, ${pointer.y * 5}px, 0)`,
+      }}
+      aria-hidden="true"
+    >
+      <div className="absolute inset-x-10 bottom-3 h-10 rounded-full bg-black/10 blur-2xl" />
 
-      <div className="absolute left-4 top-8 w-36 -rotate-6 border border-white/35 bg-white/55 px-4 py-3 shadow-[0_18px_40px_rgba(17,25,35,0.14)] backdrop-blur">
-        <p className="font-mono text-[8px] font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
-          Field permit
-        </p>
-        <div className="mt-3 h-1.5 w-20 bg-[var(--river-deep)]/18" />
-        <div className="mt-2 h-1.5 w-14 bg-[var(--cinnabar)]/20" />
-      </div>
-
-      <div className="absolute right-5 top-12 h-24 w-20 rotate-6 border-[7px] border-white bg-[var(--paper)] shadow-[0_18px_40px_rgba(17,25,35,0.16)]">
-        <div className="h-full bg-[linear-gradient(140deg,var(--river-deep),#2b6470)] p-2">
-          <div className="h-full border border-white/35">
-            <p className="mt-3 text-center font-[family:var(--font-display)] text-3xl italic text-white">LT</p>
-          </div>
+      <div
+        className="absolute bottom-0 left-8 h-[24rem] w-36 rounded-t-[1.8rem] bg-[#17424b] shadow-[0_28px_50px_rgba(17,25,35,0.2)] transition-transform duration-500"
+        style={{ transform: `skewX(${pointer.x * -8}deg) translateY(${isTyping ? -18 : 0}px)` }}
+      >
+        <div className="absolute left-9 top-12 flex gap-7">
+          {eye("teal-left")}
+          {eye("teal-right")}
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 h-64 w-48 -translate-x-1/2">
-        <div
-          className={`absolute left-1/2 top-0 h-12 w-40 -translate-x-1/2 rounded-[100%] bg-[var(--gold)] shadow-[0_12px_28px_rgba(17,25,35,0.16)] transition-transform duration-500 ${brimTilt}`}
-        />
-        <div className="absolute left-1/2 top-5 h-16 w-28 -translate-x-1/2 rounded-t-[3rem] bg-[var(--parchment-deep)] shadow-[inset_0_-8px_0_rgba(17,25,35,0.07)]" />
-        <div className="absolute left-1/2 top-[4.2rem] h-28 w-36 -translate-x-1/2 rounded-[44%_44%_36%_36%] bg-[#d9a06f] shadow-[inset_-10px_-8px_0_rgba(107,52,31,0.08)]">
-          <div className="absolute left-7 top-10 h-8 w-8 rounded-full bg-white shadow-inner">
-            <span className={`block h-3 w-3 rounded-full bg-[var(--river-deep)] transition-transform duration-200 ${eyeShift} translate-x-2.5 translate-y-2.5`} />
-          </div>
-          <div className="absolute right-7 top-10 h-8 w-8 rounded-full bg-white shadow-inner">
-            <span className={`block h-3 w-3 rounded-full bg-[var(--river-deep)] transition-transform duration-200 ${eyeShift} translate-x-2.5 translate-y-2.5`} />
-          </div>
-          <div className={`absolute left-1/2 top-[4.7rem] h-2 w-8 -translate-x-1/2 rounded-full bg-[var(--cinnabar)]/75 transition-all duration-300 ${showPassword ? "w-10" : ""}`} />
+      <div
+        className="absolute bottom-0 left-[10.5rem] h-[17rem] w-32 rounded-t-[1.4rem] bg-[var(--night)] shadow-[0_28px_50px_rgba(17,25,35,0.18)] transition-transform duration-500"
+        style={{ transform: `skewX(${pointer.x * 7}deg) translateY(${isTyping ? -6 : 0}px)` }}
+      >
+        <div className="absolute left-7 top-10 flex gap-6">
+          {eye("navy-left", {
+            size: "h-7 w-7",
+            pupil: "h-3 w-3",
+            x: lookX * 0.8,
+            y: lookY * 0.8,
+          })}
+          {eye("navy-right", {
+            size: "h-7 w-7",
+            pupil: "h-3 w-3",
+            x: lookX * 0.8,
+            y: lookY * 0.8,
+          })}
         </div>
-
-        <div className="absolute bottom-0 left-1/2 h-28 w-44 -translate-x-1/2 rounded-t-[4rem] bg-[var(--river-deep)] shadow-[0_24px_40px_rgba(17,25,35,0.18)]">
-          <div className="absolute left-1/2 top-5 h-14 w-20 -translate-x-1/2 border border-white/20 bg-white/10">
-            <p className="mt-4 text-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white/75">
-              Guide
-            </p>
-          </div>
-        </div>
-
-        <div
-          className={`absolute bottom-16 left-0 h-10 w-24 origin-right rounded-full bg-[#d9a06f] transition-transform duration-500 ${
-            isGuarding ? "translate-x-14 -translate-y-8 rotate-12" : "-rotate-12"
-          }`}
-        />
-        <div
-          className={`absolute bottom-16 right-0 h-10 w-24 origin-left rounded-full bg-[#d9a06f] transition-transform duration-500 ${
-            isGuarding ? "-translate-x-14 -translate-y-8 -rotate-12" : "rotate-12"
-          }`}
-        />
       </div>
 
-      <div className="absolute bottom-0 left-8 right-8 border border-[var(--line)] bg-white/65 px-5 py-4 shadow-[0_20px_45px_rgba(17,25,35,0.11)] backdrop-blur">
-        <p className="font-mono text-[8px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-          Passport desk
-        </p>
-        <p className="mt-2 text-sm leading-6 text-[var(--river-deep)] handwritten">
-          {isGuarding
-            ? "Password noted. I am politely looking away."
-            : isTyping
-              ? "Checking the registry while you type."
-              : "Ready to reopen your Guangdong field notes."}
-        </p>
+      <div
+        className="absolute bottom-0 left-0 h-[13rem] w-52 rounded-t-[6.5rem] bg-[#d99d6b] shadow-[0_26px_46px_rgba(17,25,35,0.18)] transition-transform duration-500"
+        style={{
+          transform: `skewX(${isGuarding ? 3 : pointer.x * -5}deg) translateX(${
+            isGuarding ? -4 : 0
+          }px) translateY(${isGuarding ? -3 : 0}px)`,
+          transformOrigin: "bottom center",
+        }}
+      >
+        <div className="absolute left-20 top-20 flex gap-9">
+          {dotEye("orange-left", { x: orangeLookX, y: orangeLookY })}
+          {dotEye("orange-right", { x: orangeLookX, y: orangeLookY })}
+        </div>
+      </div>
+
+      <div
+        className="absolute bottom-0 right-24 h-[15rem] w-36 rounded-t-[5rem] bg-[#8fa59e] shadow-[0_26px_46px_rgba(17,25,35,0.16)] transition-transform duration-500"
+        style={{ transform: `skewX(${pointer.x * 6}deg) translateY(${activeField === "password" ? -16 : 0}px)` }}
+      >
+        <div className="absolute left-9 top-12 flex gap-6">
+          {dotEye("sage-left")}
+          {dotEye("sage-right")}
+        </div>
+        <div className="absolute left-9 top-28 h-1.5 w-16 rounded-full bg-[var(--night)]/70" />
       </div>
     </div>
   );
@@ -107,6 +178,8 @@ export function LoginPanel() {
   const [isTyping, setIsTyping] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordLength, setPasswordLength] = useState(0);
+  const [activeField, setActiveField] = useState<ActiveField>("idle");
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
 
   const labels = {
     login: {
@@ -126,6 +199,19 @@ export function LoginPanel() {
   };
 
   const t = labels[mode];
+
+  function trackPointer(event: MouseEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPointer({
+      x: (event.clientX - rect.left) / rect.width - 0.5,
+      y: (event.clientY - rect.top) / rect.height - 0.5,
+    });
+  }
+
+  function markField(field: ActiveField) {
+    setActiveField(field);
+    setIsTyping(field !== "idle");
+  }
 
   function storeUserAndRedirect(user: AuthResponse["user"]) {
     persistAuthUser(user);
@@ -237,41 +323,33 @@ export function LoginPanel() {
   }
 
   return (
-    <div className="grid overflow-hidden border border-[var(--line)] bg-[var(--paper)] bg-grain shadow-[0_34px_90px_rgba(17,25,35,0.16)] lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)]">
-      <aside className="relative hidden min-h-[42rem] overflow-hidden border-r border-black/10 bg-[linear-gradient(145deg,#214d58,#d8c48c_52%,#efe8dc)] px-10 py-10 text-white lg:flex lg:flex-col lg:justify-between">
+    <div
+      className="group/login grid overflow-hidden border border-[var(--line)] bg-[var(--paper)] bg-grain shadow-[0_34px_90px_rgba(17,25,35,0.16)] lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)]"
+      onMouseMove={trackPointer}
+      onMouseLeave={() => setPointer({ x: 0, y: 0 })}
+    >
+      <aside className="relative hidden min-h-[42rem] overflow-hidden border-r border-black/10 bg-[linear-gradient(145deg,#173f49,#d2bd7c_52%,#efe8dc)] px-10 py-10 text-white lg:flex lg:flex-col lg:justify-center">
         <div className="absolute inset-0 bg-grain opacity-[0.16]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.12),transparent_42%,rgba(17,25,35,0.18))]" />
-
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.36em] text-white/70">
-              LingTour Registry
-            </p>
-            <p className="mt-3 font-[family:var(--font-display)] text-5xl italic leading-none text-white">
-              Field Desk
-            </p>
-          </div>
-          <div className="grid h-14 w-14 place-items-center border border-white/35 bg-white/18 font-[family:var(--font-display)] text-2xl italic shadow-[0_16px_36px_rgba(17,25,35,0.15)]">
-            LT
-          </div>
-        </div>
+        <div
+          className="pointer-events-none absolute h-64 w-64 rounded-full bg-white/16 blur-3xl transition-transform duration-300"
+          style={{
+            transform: `translate3d(${pointer.x * 260 + 160}px, ${pointer.y * 220 + 180}px, 0)`,
+          }}
+        />
 
         <div className="relative z-10">
           <FieldGuideCharacter
             isTyping={isTyping}
             showPassword={showPassword}
             passwordLength={passwordLength}
+            activeField={activeField}
+            pointer={pointer}
           />
-        </div>
-
-        <div className="relative z-10 flex items-center justify-between gap-6 text-[10px] font-bold uppercase tracking-[0.26em] text-white/70">
-          <span>Routes</span>
-          <span>Culture</span>
-          <span>Community</span>
         </div>
       </aside>
 
-      <div className="relative bg-[rgba(244,242,238,0.94)] p-7 sm:p-10">
+      <div className="relative bg-[rgba(244,242,238,0.94)] px-7 py-8 sm:px-10 sm:py-9">
         <div className="absolute right-0 top-0 h-32 w-32 border-b border-l border-[var(--line)] opacity-40 pointer-events-none" />
 
         <div className="mb-8 lg:hidden">
@@ -283,7 +361,7 @@ export function LoginPanel() {
           </p>
         </div>
 
-        <div className="mb-8 grid grid-cols-2 border border-[var(--line)] bg-white/50">
+        <div className="mb-6 grid grid-cols-2 border border-[var(--line)] bg-white/50">
           {(["login", "signup"] as const).map((item) => (
             <button
               key={item}
@@ -306,10 +384,10 @@ export function LoginPanel() {
         <p className="font-mono text-[9px] font-bold uppercase tracking-[0.32em] text-[var(--gold)]">
           Passport access
         </p>
-        <h1 className="mb-3 mt-3 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)]">
+        <h1 className="mb-2 mt-3 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)]">
           {t.title}
         </h1>
-        <p className="mb-8 text-sm leading-6 text-[var(--muted)]">
+        <p className="mb-6 text-sm leading-6 text-[var(--muted)]">
           Open your traveler record, saved routes, and community notes.
         </p>
 
@@ -321,7 +399,7 @@ export function LoginPanel() {
 
         <form
           ref={formRef}
-          className="grid gap-6"
+          className="grid gap-5"
           onSubmit={(e) => e.preventDefault()}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -338,8 +416,8 @@ export function LoginPanel() {
                   name="name"
                   className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
                   placeholder="Maya Chen"
-                  onFocus={() => setIsTyping(true)}
-                  onBlur={() => setIsTyping(false)}
+                  onFocus={() => markField("name")}
+                  onBlur={() => markField("idle")}
                 />
               </label>
               <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
@@ -348,6 +426,8 @@ export function LoginPanel() {
                   name="country"
                   defaultValue="SG"
                   className="appearance-none border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                  onFocus={() => markField("country")}
+                  onBlur={() => markField("idle")}
                 >
                   {countries.map((country) => (
                     <option key={country.code} value={country.code}>
@@ -366,8 +446,8 @@ export function LoginPanel() {
               type="email"
               className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
               placeholder="you@example.com"
-              onFocus={() => setIsTyping(true)}
-              onBlur={() => setIsTyping(false)}
+              onFocus={() => markField("email")}
+              onBlur={() => markField("idle")}
             />
           </label>
 
@@ -379,8 +459,8 @@ export function LoginPanel() {
                 type={showPassword ? "text" : "password"}
                 className="w-full border-b border-[var(--line)] bg-transparent px-1 py-3 pr-12 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
                 placeholder="Enter password"
-                onFocus={() => setIsTyping(true)}
-                onBlur={() => setIsTyping(false)}
+                onFocus={() => markField("password")}
+                onBlur={() => markField("idle")}
                 onChange={(event) => setPasswordLength(event.target.value.length)}
               />
               <button
@@ -412,6 +492,8 @@ export function LoginPanel() {
               <select
                 name="travelStyle"
                 className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+                onFocus={() => markField("travelStyle")}
+                onBlur={() => markField("idle")}
               >
                 <option>Culture routes and food walks</option>
                 <option>Craft workshops and museums</option>
