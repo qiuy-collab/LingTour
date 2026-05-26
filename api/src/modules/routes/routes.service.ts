@@ -370,8 +370,29 @@ export class RoutesService {
   }
 
   async softDelete(id: string): Promise<void> {
-    const route = (await this.findByIdAdmin(id)) as StoryRoute;
-    await this.routeRepository.softRemove(route);
+    const route = await this.routeRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+    if (!route) {
+      throw new NotFoundException(`Route not found`);
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await queryRunner.manager.delete(RouteStop, { routeId: id });
+      await queryRunner.manager.delete(RouteCityLink, { routeId: id });
+      await queryRunner.manager.softDelete(StoryRoute, { id });
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async getStats(): Promise<{ routeCount: number }> {
