@@ -266,8 +266,26 @@ export class CitiesService {
   }
 
   async softDelete(id: string): Promise<void> {
-    const city = await this.findByIdAdmin(id);
-    await this.cityRepository.softRemove(city);
+    await this.findByIdAdmin(id);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await queryRunner.manager.delete(CityCultureSection, { cityId: id });
+      await queryRunner.manager.query(
+        'DELETE FROM route_city_links WHERE city_id = $1',
+        [id],
+      );
+      await queryRunner.manager.softDelete(City, { id });
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async replaceRouteLinks(
