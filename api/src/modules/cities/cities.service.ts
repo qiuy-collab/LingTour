@@ -136,15 +136,15 @@ export class CitiesService {
     try {
       const city = queryRunner.manager.create(City, {
         slug: dto.slug,
-        name: dto.name,
-        regionLabel: dto.regionLabel,
+        name: this.normalizeI18nObject(dto.name),
+        regionLabel: this.normalizeI18nObject(dto.regionLabel),
         heroImage: dto.heroImage,
-        heroNarrative: dto.heroNarrative,
-        tags: dto.tags ?? [],
-        editorIntro: dto.editorIntro,
+        heroNarrative: this.normalizeI18nObject(dto.heroNarrative),
+        tags: this.normalizeI18nArray(dto.tags),
+        editorIntro: this.normalizeI18nObject(dto.editorIntro),
         galleryImages: dto.galleryImages ?? [],
-        foodTitle: dto.foodTitle,
-        foodDescription: dto.foodDescription,
+        foodTitle: this.normalizeI18nObject(dto.foodTitle),
+        foodDescription: this.normalizeI18nObject(dto.foodDescription),
         foodImages: dto.foodImages ?? [],
         relatedCitySlugs: dto.relatedCitySlugs ?? [],
         adcode: dto.adcode,
@@ -157,13 +157,19 @@ export class CitiesService {
         const sections = dto.sections.map((s, i) =>
           queryRunner.manager.create(CityCultureSection, {
             cityId: saved.id,
-            title: s.title,
-            body: s.body,
+            title: this.normalizeI18nObject(s.title),
+            body: this.normalizeI18nObject(s.body),
             image: s.image,
-            statLabel: s.statLabel ?? null,
-            statValue: s.statValue ?? null,
+            statLabel: s.statLabel
+              ? this.normalizeI18nObject(s.statLabel)
+              : null,
+            statValue: s.statValue
+              ? this.normalizeI18nObject(s.statValue)
+              : null,
             breathImage: s.breathImage ?? null,
-            breathQuote: s.breathQuote ?? null,
+            breathQuote: s.breathQuote
+              ? this.normalizeI18nObject(s.breathQuote)
+              : null,
             sortOrder: s.sortOrder ?? i,
           }),
         );
@@ -211,7 +217,8 @@ export class CitiesService {
         routeSlugs: _routeSlugsFromDto,
         ...scalarUpdates
       } = dto;
-      await queryRunner.manager.update(City, id, scalarUpdates);
+      const normalizedScalarUpdates = this.normalizeCityScalarUpdates(scalarUpdates);
+      await queryRunner.manager.update(City, id, normalizedScalarUpdates);
       const saved = await queryRunner.manager.findOneOrFail(City, {
         where: { id },
       });
@@ -222,13 +229,19 @@ export class CitiesService {
           const sections = dto.sections.map((s, i) =>
             queryRunner.manager.create(CityCultureSection, {
               cityId: id,
-              title: s.title,
-              body: s.body,
+              title: this.normalizeI18nObject(s.title),
+              body: this.normalizeI18nObject(s.body),
               image: s.image,
-              statLabel: s.statLabel ?? null,
-              statValue: s.statValue ?? null,
+              statLabel: s.statLabel
+                ? this.normalizeI18nObject(s.statLabel)
+                : null,
+              statValue: s.statValue
+                ? this.normalizeI18nObject(s.statValue)
+                : null,
               breathImage: s.breathImage ?? null,
-              breathQuote: s.breathQuote ?? null,
+              breathQuote: s.breathQuote
+                ? this.normalizeI18nObject(s.breathQuote)
+                : null,
               sortOrder: s.sortOrder ?? i,
             }),
           );
@@ -310,5 +323,61 @@ export class CitiesService {
         [route.id, cityId, sortOrder],
       );
     }
+  }
+
+  private normalizeCityScalarUpdates(
+    scalarUpdates: Partial<CreateCityDto>,
+  ): Partial<CreateCityDto> {
+    return {
+      ...scalarUpdates,
+      name: scalarUpdates.name
+        ? this.normalizeI18nObject(scalarUpdates.name)
+        : undefined,
+      regionLabel: scalarUpdates.regionLabel
+        ? this.normalizeI18nObject(scalarUpdates.regionLabel)
+        : undefined,
+      heroNarrative: scalarUpdates.heroNarrative
+        ? this.normalizeI18nObject(scalarUpdates.heroNarrative)
+        : undefined,
+      tags:
+        scalarUpdates.tags !== undefined
+          ? this.normalizeI18nArray(scalarUpdates.tags)
+          : undefined,
+      editorIntro: scalarUpdates.editorIntro
+        ? this.normalizeI18nObject(scalarUpdates.editorIntro)
+        : undefined,
+      foodTitle: scalarUpdates.foodTitle
+        ? this.normalizeI18nObject(scalarUpdates.foodTitle)
+        : undefined,
+      foodDescription: scalarUpdates.foodDescription
+        ? this.normalizeI18nObject(scalarUpdates.foodDescription)
+        : undefined,
+    };
+  }
+
+  private normalizeI18nArray(
+    value: Array<{ en: string; zh: string }> | undefined,
+  ): Array<{ en: string; zh: string }> {
+    if (!Array.isArray(value)) return [];
+    return value.map((item) => this.normalizeI18nObject(item));
+  }
+
+  private normalizeI18nObject(value: any): { en: string; zh: string } {
+    const arrayLikeValue = value as Array<any> & {
+      en?: unknown;
+      zh?: unknown;
+    };
+    const source =
+      Array.isArray(value) && value !== null
+        ? {
+            en: arrayLikeValue.en,
+            zh: arrayLikeValue.zh,
+          }
+        : (value ?? {});
+
+    return {
+      en: typeof source.en === 'string' ? source.en : '',
+      zh: typeof source.zh === 'string' ? source.zh : '',
+    };
   }
 }
