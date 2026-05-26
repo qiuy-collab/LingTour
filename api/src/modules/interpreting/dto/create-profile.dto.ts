@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { IsI18nObject, IsI18nArray } from '../../../common/validators/i18n.validator';
 
 export class CreateProfileDto {
@@ -23,4 +23,27 @@ export class CreateProfileDto {
   @ApiProperty({ default: [] })
   @IsI18nArray()
   helps: { en: string; zh: string }[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  avatar?: string;
+
+  @ApiPropertyOptional({ example: { en: 'Bio', zh: '简介' } })
+  @IsOptional()
+  @IsI18nObject()
+  bio?: { en: string; zh: string };
+
+  @ApiPropertyOptional({ default: 'pending_review' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  status?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  city?: string;
 }

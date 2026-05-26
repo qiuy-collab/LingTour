@@ -259,7 +259,14 @@ export class RoutesService {
   }
 
   async update(id: string, dto: UpdateRouteDto): Promise<StoryRoute> {
-    const existing = await this.findByIdAdmin(id);
+    const existing = await this.routeRepository.findOne({
+      where: { id },
+      relations: ['stops'],
+      withDeleted: true,
+    });
+    if (!existing) {
+      throw new NotFoundException(`Route not found`);
+    }
 
     if (dto.slug && dto.slug !== existing.slug) {
       const dup = await this.routeRepository.findOne({
@@ -276,52 +283,68 @@ export class RoutesService {
     await queryRunner.startTransaction();
 
     try {
-      // Update route fields
-      Object.assign(existing, dto);
-      const saved = await queryRunner.manager.save(StoryRoute, existing);
+      const scalarUpdates: Partial<StoryRoute> = {
+        slug: dto.slug ?? existing.slug,
+        title: dto.title ?? existing.title,
+        cultureTag: dto.cultureTag ?? existing.cultureTag,
+        cityName: dto.cityName ?? existing.cityName,
+        duration: dto.duration ?? existing.duration,
+        audience: dto.audience ?? existing.audience,
+        summary: dto.summary ?? existing.summary,
+        story: dto.story ?? existing.story,
+        coverImage: dto.coverImage ?? existing.coverImage,
+        published: dto.published ?? existing.published,
+      };
+
+      await queryRunner.manager.update(StoryRoute, id, scalarUpdates);
+      const saved = await queryRunner.manager.findOneByOrFail(StoryRoute, { id });
 
       // Replace stops
-      await queryRunner.manager.delete(RouteStop, { routeId: id });
-      if (dto.stops?.length) {
-        const stops = dto.stops.map((s) =>
-          queryRunner.manager.create(RouteStop, {
-            routeId: id,
-            sortOrder: s.sortOrder,
-            time: s.time,
-            stopName: s.stopName,
-            story: s.story,
-            culturalStory: s.culturalStory,
-            details: s.details ?? [],
-            image: s.image,
-            lat: s.lat ?? null,
-            lng: s.lng ?? null,
-            meal: s.meal ?? null,
-            hotel: s.hotel ?? null,
-            transit: s.transit ?? null,
-          }),
-        );
-        await queryRunner.manager.save(stops);
+      if (dto.stops !== undefined) {
+        await queryRunner.manager.delete(RouteStop, { routeId: id });
+        if (dto.stops.length) {
+          const stops = dto.stops.map((s) =>
+            queryRunner.manager.create(RouteStop, {
+              routeId: id,
+              sortOrder: s.sortOrder,
+              time: s.time,
+              stopName: s.stopName,
+              story: s.story,
+              culturalStory: s.culturalStory,
+              details: s.details ?? [],
+              image: s.image,
+              lat: s.lat ?? null,
+              lng: s.lng ?? null,
+              meal: s.meal ?? null,
+              hotel: s.hotel ?? null,
+              transit: s.transit ?? null,
+            }),
+          );
+          await queryRunner.manager.save(stops);
+        }
       }
 
       // Replace city links
-      await queryRunner.manager.delete(RouteCityLink, { routeId: id });
-      if (dto.citySlugs?.length) {
-        const cities = await queryRunner.manager
-          .createQueryBuilder()
-          .select('c.id', 'id')
-          .addSelect('c.slug', 'slug')
-          .from('cities', 'c')
-          .where('c.slug IN (:...slugs)', { slugs: dto.citySlugs })
-          .getRawMany();
+      if (dto.citySlugs !== undefined) {
+        await queryRunner.manager.delete(RouteCityLink, { routeId: id });
+        if (dto.citySlugs.length) {
+          const cities = await queryRunner.manager
+            .createQueryBuilder()
+            .select('c.id', 'id')
+            .addSelect('c.slug', 'slug')
+            .from('cities', 'c')
+            .where('c.slug IN (:...slugs)', { slugs: dto.citySlugs })
+            .getRawMany();
 
-        const links = cities.map((c: any, i: number) =>
-          queryRunner.manager.create(RouteCityLink, {
-            routeId: id,
-            cityId: c.id,
-            sortOrder: i,
-          }),
-        );
-        await queryRunner.manager.save(links);
+          const links = cities.map((c: any, i: number) =>
+            queryRunner.manager.create(RouteCityLink, {
+              routeId: id,
+              cityId: c.id,
+              sortOrder: i,
+            }),
+          );
+          await queryRunner.manager.save(links);
+        }
       }
 
       await queryRunner.commitTransaction();
