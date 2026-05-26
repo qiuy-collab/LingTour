@@ -206,7 +206,11 @@ export class CitiesService {
     try {
       // Apply scalar fields only — sections are managed explicitly below to avoid
       // OneToMany cascade conflicting with the delete-and-recreate approach.
-      const { sections: _sectionsFromDto, ...scalarUpdates } = dto;
+      const {
+        sections: _sectionsFromDto,
+        routeSlugs: _routeSlugsFromDto,
+        ...scalarUpdates
+      } = dto;
       await queryRunner.manager.update(City, id, scalarUpdates);
       const saved = await queryRunner.manager.findOneOrFail(City, {
         where: { id },
