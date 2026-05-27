@@ -35,6 +35,9 @@ export class HomeConfig {
   @Column({ type: 'jsonb', name: 'featured_city_slugs', default: [] })
   featuredCitySlugs: string[];
 
+  @Column({ type: 'jsonb', name: 'route_regions', default: [] })
+  routeRegions: Array<Record<string, unknown>>;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 

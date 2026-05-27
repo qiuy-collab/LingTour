@@ -202,6 +202,7 @@ export class RoutesService {
         summary: dto.summary,
         story: dto.story,
         coverImage: dto.coverImage,
+        routeRegionKey: dto.routeRegionKey ?? null,
         published: dto.published ?? false,
       });
       const saved = await queryRunner.manager.save(route);
@@ -293,6 +294,7 @@ export class RoutesService {
         summary: dto.summary ?? existing.summary,
         story: dto.story ?? existing.story,
         coverImage: dto.coverImage ?? existing.coverImage,
+        routeRegionKey: dto.routeRegionKey ?? existing.routeRegionKey ?? null,
         published: dto.published ?? existing.published,
       };
 

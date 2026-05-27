@@ -134,6 +134,12 @@ export class CreateRouteDto {
   @IsString()
   coverImage: string;
 
+  @ApiPropertyOptional({ example: 'southern-sea' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  routeRegionKey?: string;
+
   @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()

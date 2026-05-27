@@ -1,5 +1,25 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsObject, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsI18nObject } from '../../../common/validators/i18n.validator';
+
+class RouteRegionConfigDto {
+  @ApiPropertyOptional()
+  @IsString()
+  key: string;
+
+  @ApiPropertyOptional({ type: Object })
+  @IsI18nObject()
+  title: { en: string; zh: string };
+
+  @ApiPropertyOptional({ type: Object })
+  @IsI18nObject()
+  note: { en: string; zh: string };
+
+  @ApiPropertyOptional({ type: [Number] })
+  @IsArray()
+  adcodes: number[];
+}
 
 export class UpdateHomeConfigDto {
   @ApiPropertyOptional({ type: Object })
@@ -41,4 +61,11 @@ export class UpdateHomeConfigDto {
   @IsOptional()
   @IsArray()
   featuredCitySlugs?: string[];
+
+  @ApiPropertyOptional({ type: [Object] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RouteRegionConfigDto)
+  routeRegions?: RouteRegionConfigDto[];
 }

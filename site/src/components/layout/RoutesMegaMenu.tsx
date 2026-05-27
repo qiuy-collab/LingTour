@@ -3,91 +3,37 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { getMapFeatures, buildProjection, featureToPath } from "@/lib/map-projection";
-import { fetchRoutes } from "@/lib/api-data";
+import {
+  getMapFeatures,
+  buildProjection,
+  featureToPath,
+} from "@/lib/map-projection";
+import { fetchRouteRegions, fetchRoutes } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
 import type { StoryRoute } from "@/data/routes";
+import {
+  DEFAULT_ROUTE_REGIONS,
+  pickRouteRegionText,
+  pickSecondaryRouteRegionText,
+  type RouteRegion,
+} from "@/lib/route-regions";
 
 const initialFeatures = getMapFeatures();
-
-const regionCityMap: Record<string, { en: string[]; zh: string[] }> = {
-  "Bay Area Core": {
-    en: ["Guangzhou", "Foshan", "Shenzhen"],
-    zh: ["广州", "佛山", "深圳"],
-  },
-  "Chaoshan Coast": {
-    en: ["Chaozhou", "Shantou"],
-    zh: ["潮州", "汕头"],
-  },
-  "Hakka Mountains": {
-    en: ["Meizhou"],
-    zh: ["梅州"],
-  },
-  "Southern Sea": {
-    en: ["Zhanjiang"],
-    zh: ["湛江"],
-  },
-  "Northern Gateway": {
-    en: ["Shaoguan"],
-    zh: ["韶关"],
-  },
-};
-
-const routeRegions = [
-  {
-    title: "Bay Area Core",
-    note: "Guangzhou / Foshan / Shenzhen",
-    adcodes: [440100, 440300, 440600],
-  },
-  {
-    title: "Chaoshan Coast",
-    note: "Chaozhou / Shantou",
-    adcodes: [445100, 440500],
-  },
-  {
-    title: "Hakka Mountains",
-    note: "Meizhou",
-    adcodes: [441400],
-  },
-  {
-    title: "Southern Sea",
-    note: "Zhanjiang",
-    adcodes: [440800],
-  },
-  {
-    title: "Northern Gateway",
-    note: "Shaoguan",
-    adcodes: [440200],
-  },
-];
-
-function routesForRegion(regionTitle: string, routes: StoryRoute[]) {
-  const cityMap = regionCityMap[regionTitle];
-  if (!cityMap) return [];
-
-  const searchNames = [
-    ...cityMap.en.map((c) => c.toLowerCase()),
-    ...cityMap.zh,
-  ];
-
-  return routes.filter((route) => {
-    const cityName = route.city;
-    return (
-      searchNames.includes(cityName) ||
-      searchNames.includes(cityName.toLowerCase()) ||
-      route.citySlugs.some((slug) => searchNames.includes(slug))
-    );
-  });
-}
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
   const { locale } = useLocale();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
+  const [routeRegions, setRouteRegions] =
+    useState<RouteRegion[]>(DEFAULT_ROUTE_REGIONS);
 
-  // Fetch routes on mount and locale change
   useEffect(() => {
     fetchRoutes(locale).then(setRoutes).catch(() => {});
+    fetchRouteRegions(locale)
+      .then((data) =>
+        setRouteRegions(data.length ? data : DEFAULT_ROUTE_REGIONS),
+      )
+      .catch(() => setRouteRegions(DEFAULT_ROUTE_REGIONS));
   }, [locale]);
 
   const mapPaths = useMemo(() => {
@@ -112,7 +58,9 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
       <Link
         href="/routes"
         className={`px-3 py-3 text-sm transition ${
-          active ? "text-[var(--cinnabar)]" : "text-[var(--muted)] hover:text-[var(--ink)]"
+          active
+            ? "text-[var(--cinnabar)]"
+            : "text-[var(--muted)] hover:text-[var(--ink)]"
         }`}
         aria-current={active ? "page" : undefined}
       >
@@ -121,60 +69,103 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
 
       <div className="invisible fixed left-0 top-[4.55rem] z-40 w-screen translate-y-3 border-y border-black/5 bg-[var(--paper-deep)] bg-grain opacity-0 shadow-[0_40px_100px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-400 group-hover/routes:visible group-hover/routes:translate-y-0 group-hover/routes:opacity-100 group-focus-within/routes:visible group-focus-within/routes:translate-y-0 group-focus-within/routes:opacity-100">
         <div className="mx-auto max-w-[82rem] px-10 py-12">
-          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-black/5 pb-10">
+          <div className="mb-12 flex flex-col justify-between gap-8 border-b border-black/5 pb-10 md:flex-row md:items-end">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">Routes / Field Discovery</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                Routes / Field Discovery
+              </p>
             </div>
-            <Link href="/routes" className="px-8 py-4 border border-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white">
+            <Link
+              href="/routes"
+              className="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+            >
               View all routes
             </Link>
           </div>
 
           <div className="grid gap-x-10 gap-y-12 md:grid-cols-3 xl:grid-cols-5">
             {routeRegions.map((region) => {
-              const regionRoutes = routesForRegion(region.title, routes);
+              const regionRoutes = routes.filter(
+                (route) => route.routeRegionKey === region.key,
+              );
+              const regionTitle = pickRouteRegionText(region.title, locale);
+              const regionTitleSecondary = pickSecondaryRouteRegionText(
+                region.title,
+                locale,
+              );
+              const regionNote = pickRouteRegionText(region.note, locale);
+              const regionNoteSecondary = pickSecondaryRouteRegionText(
+                region.note,
+                locale,
+              );
 
               return (
                 <motion.div
-                  key={region.title}
+                  key={region.key}
                   className="group/region"
                   animate={{
-                    scale: hoveredRegion === region.title ? 1.02 : 1,
-                    opacity: hoveredRegion && hoveredRegion !== region.title ? 0.45 : 1,
+                    scale: hoveredRegion === region.key ? 1.02 : 1,
+                    opacity:
+                      hoveredRegion && hoveredRegion !== region.key ? 0.45 : 1,
                   }}
                   transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <Link href={regionRoutes[0] ? `/routes/${regionRoutes[0].slug}` : "/routes"} className="block">
-                    <div className="relative h-32 overflow-hidden bg-white border border-black/10 scrapbook-shadow transition group-hover/region:-translate-y-1">
+                  <Link
+                    href={
+                      regionRoutes[0] ? `/routes/${regionRoutes[0].slug}` : "/routes"
+                    }
+                    className="block"
+                  >
+                    <div className="relative h-32 overflow-hidden border border-black/10 bg-white scrapbook-shadow transition group-hover/region:-translate-y-1">
                       {mapPaths ? (
                         <svg
                           viewBox={`0 0 ${mapPaths.width} ${mapPaths.height}`}
-                          className="h-full w-full scale-110 grayscale-[0.2] opacity-80 group-hover/region:grayscale-0 group-hover/region:opacity-100 transition-all duration-500"
+                          className="h-full w-full scale-110 grayscale-[0.2] opacity-80 transition-all duration-500 group-hover/region:grayscale-0 group-hover/region:opacity-100"
                           role="img"
-                          aria-label={`${region.title} highlighted on Guangdong map`}
+                          aria-label={`${regionTitle} highlighted on Guangdong map`}
                         >
-                          <title>{region.title}</title>
+                          <title>{regionTitle}</title>
                           {mapPaths.paths.map((city) => (
                             <path
                               key={city.adcode}
                               d={city.path}
-                              fill={region.adcodes.includes(city.adcode) ? "#b64235" : "#8a968d"}
+                              fill={
+                                region.adcodes.includes(city.adcode)
+                                  ? "#b64235"
+                                  : "#8a968d"
+                              }
                               stroke="#fff"
-                              strokeWidth={region.adcodes.includes(city.adcode) ? 2 : 1.2}
+                              strokeWidth={
+                                region.adcodes.includes(city.adcode) ? 2 : 1.2
+                              }
                               opacity={1}
-                              onMouseEnter={() => setHoveredRegion(region.title)}
+                              onMouseEnter={() => setHoveredRegion(region.key)}
                               onMouseLeave={() => setHoveredRegion(null)}
                             />
                           ))}
                         </svg>
                       ) : (
-                        <div className="grid h-full place-items-center text-xs text-[var(--muted)] handwritten">Loading Map...</div>
+                        <div className="grid h-full place-items-center text-xs text-[var(--muted)] handwritten">
+                          Loading Map...
+                        </div>
                       )}
                     </div>
                     <h3 className="mt-5 text-lg font-bold text-[var(--river-deep)] transition group-hover/region:text-[var(--cinnabar)]">
-                      {region.title}
+                      {regionTitle}
                     </h3>
-                    <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">{region.note}</p>
+                    {regionTitleSecondary ? (
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+                        {regionTitleSecondary}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                      {regionNote}
+                    </p>
+                    {regionNoteSecondary ? (
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]/80">
+                        {regionNoteSecondary}
+                      </p>
+                    ) : null}
                   </Link>
                   <div className="mt-6 space-y-3 border-t border-black/5 pt-4">
                     {regionRoutes.slice(0, 3).map((route) => (
@@ -183,8 +174,10 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                         href={`/routes/${route.slug}`}
                         className="group/link flex items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
                       >
-                        <span className="w-1 h-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
-                        <span className="handwritten whitespace-nowrap overflow-hidden text-ellipsis">{route.title}</span>
+                        <span className="h-1 w-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
+                        <span className="handwritten overflow-hidden text-ellipsis whitespace-nowrap">
+                          {route.title}
+                        </span>
                       </Link>
                     ))}
                   </div>

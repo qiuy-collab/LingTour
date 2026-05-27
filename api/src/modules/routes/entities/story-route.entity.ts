@@ -43,6 +43,9 @@ export class StoryRoute {
   @Column({ type: 'varchar', length: 500, name: 'cover_image' })
   coverImage: string;
 
+  @Column({ type: 'varchar', length: 80, name: 'route_region_key', nullable: true })
+  routeRegionKey: string | null;
+
   @Index()
   @Column({ type: 'boolean', default: false })
   published: boolean;

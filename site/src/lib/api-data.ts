@@ -26,6 +26,11 @@ import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
 import { SEED_IMAGES } from "@/lib/seed-images";
+import {
+  DEFAULT_ROUTE_REGIONS,
+  pickRouteRegionText,
+  type RouteRegion,
+} from "@/lib/route-regions";
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Internal API response types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -59,6 +64,7 @@ interface ApiStoryRoute {
   summary: string;
   story: string;
   coverImage: string;
+  routeRegionKey?: string | null;
   stops: ApiRouteStop[];
   routeCityLinks?: { citySlug: string }[];
 }
@@ -171,6 +177,12 @@ interface ApiHomeConfig {
   }>;
   testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
   featuredRouteSlugs?: string[];
+  routeRegions?: Array<{
+    key: string;
+    title: LocalizedText;
+    note: LocalizedText;
+    adcodes: number[];
+  }>;
 }
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Mappers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
@@ -200,6 +212,7 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     summary: apiRoute.summary,
     story: apiRoute.story,
     image: apiRoute.coverImage,
+    routeRegionKey: apiRoute.routeRegionKey ?? undefined,
     mapViewBox: "0 0 900 600",
     itinerary: (apiRoute.stops ?? []).map((s, index) => {
       const fallbackImages = southernSeaTableStopImages[index] ?? [];
@@ -561,6 +574,28 @@ export interface HomeData {
   testimonials: Testimonial[];
   trustMetrics: TrustMetric[];
   homeEntryCards: HomeEntryCard[];
+  routeRegions: RouteRegion[];
+}
+
+export async function fetchRouteRegions(locale: Locale): Promise<RouteRegion[]> {
+  try {
+    const homeConfig = await apiGet<ApiHomeConfig>("/public/home", { rawI18n: "true" });
+    if (!homeConfig.routeRegions?.length) return DEFAULT_ROUTE_REGIONS;
+    return homeConfig.routeRegions.map((region) => ({
+      key: region.key,
+      title: {
+        zh: pickRouteRegionText(region.title, "zh"),
+        en: pickRouteRegionText(region.title, "en"),
+      },
+      note: {
+        zh: pickRouteRegionText(region.note, "zh"),
+        en: pickRouteRegionText(region.note, "en"),
+      },
+      adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
+    }));
+  } catch {
+    return DEFAULT_ROUTE_REGIONS;
+  }
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
@@ -568,7 +603,7 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
     await Promise.allSettled([
       fetchRoutes(locale),
       fetchCities(locale),
-      apiGet<ApiHomeConfig>("/public/home"),
+      apiGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
     ]);
 
   const routes = routesResult.status === "fulfilled" ? routesResult.value : [];
@@ -652,6 +687,22 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       : undefined,
   };
 
+  const routeRegions =
+    homeConfig.routeRegions?.length
+      ? homeConfig.routeRegions.map((region) => ({
+          key: region.key,
+          title: {
+            zh: pickRouteRegionText(region.title, "zh"),
+            en: pickRouteRegionText(region.title, "en"),
+          },
+          note: {
+            zh: pickRouteRegionText(region.note, "zh"),
+            en: pickRouteRegionText(region.note, "en"),
+          },
+          adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
+        }))
+      : DEFAULT_ROUTE_REGIONS;
+
   return {
     hero,
     regionShowcase,
@@ -685,6 +736,7 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
         body: pickLocalized(item.body, locale),
         href: item.href,
       })) ?? [],
+    routeRegions,
   };
 }
 

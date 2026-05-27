@@ -25,6 +25,7 @@ export type StoryRoute = {
   summary: string;
   story: string;
   image: string;
+  routeRegionKey?: string;
   /** SVG viewBox for the route map (kept for component layout, not data). */
   mapViewBox: string;
   itinerary: {
