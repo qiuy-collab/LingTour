@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { collectionsApi } from '@/api/collections'
-import ImageUpload from '@/components/ImageUpload.vue'
-import I18nInput from '@/components/I18nInput.vue'
+import { routesApi } from '@/api/routes'
 import type { CollectionFormData } from '@/types/collection'
-import { toI18n } from '@/types/common'
+import { pickI18n, toI18n } from '@/types/common'
 import { extractErrorMessage } from '@/utils/i18n'
+import { useDirtyForm } from '@/composables/useDirtyForm'
+import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
+import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import I18nInput from '@/components/I18nInput.vue'
+import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ImageUpload from '@/components/ImageUpload.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +21,7 @@ const isEdit = ref(false)
 const saving = ref(false)
 const loading = ref(false)
 const formRef = ref<FormInstance>()
+const routeOptions = ref<Array<{ slug: string; title: string }>>([])
 
 const form = reactive<CollectionFormData>({
   slug: '',
@@ -31,40 +37,59 @@ const form = reactive<CollectionFormData>({
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.zh': [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
-  routeName: [{ required: true, message: '请输入关联路线名', trigger: 'blur' }],
+  'title.zh': [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
+}
+
+const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
+
+function applyRouteSelection(slug: string) {
+  const selected = routeOptions.value.find((item) => item.slug === slug)
+  if (!selected) return
+  form.routeSlug = selected.slug
+  form.routeName = selected.title
 }
 
 onMounted(async () => {
-  const id = route.params.id as string
-  if (!id) return
-  isEdit.value = true
   loading.value = true
   try {
-    const res = await collectionsApi.getCollection(id)
-    const data = res.data.data
-    // routeName 可能是 JSON 字符串（后端 seed 数据），需要解析
-    let routeName = data.routeName || ''
-    if (typeof routeName === 'string' && routeName.startsWith('{')) {
-      try {
-        const parsed = JSON.parse(routeName)
-        routeName = parsed.zh || parsed.en || routeName
-      } catch { /* keep as-is */ }
-    } else if (typeof routeName === 'object' && routeName !== null) {
-      routeName = routeName.zh || routeName.en || ''
+    const routesRes = await routesApi.getRoutes({ page: 1, pageSize: 200 })
+    routeOptions.value = (routesRes.data.data.items || []).map((item: any) => ({
+      slug: item.slug,
+      title: pickI18n(item.title) || item.slug,
+    }))
+
+    const id = route.params.id as string
+    if (id) {
+      isEdit.value = true
+      const res = await collectionsApi.getCollection(id)
+      const data = res.data.data
+      let routeName = data.routeName || ''
+      if (typeof routeName === 'string' && routeName.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(routeName)
+          routeName = parsed.zh || parsed.en || routeName
+        } catch {
+          routeName = data.routeName || ''
+        }
+      } else if (typeof routeName === 'object' && routeName !== null) {
+        routeName = routeName.zh || routeName.en || ''
+      }
+
+      Object.assign(form, {
+        slug: data.slug,
+        title: toI18n(data.title),
+        routeName,
+        routeSlug: data.routeSlug || '',
+        image: data.image || '',
+        body: toI18n(data.body),
+        sortOrder: data.sortOrder ?? 0,
+        published: data.published ?? false,
+      })
     }
-    Object.assign(form, {
-      slug: data.slug,
-      title: toI18n(data.title),
-      routeName,
-      routeSlug: data.routeSlug || '',
-      image: data.image || '',
-      body: toI18n(data.body),
-      sortOrder: data.sortOrder ?? 0,
-      published: data.published ?? false,
-    })
+
+    resetDirty()
   } catch (error: any) {
     ElMessage.error(extractErrorMessage(error, '加载系列数据失败'))
   } finally {
@@ -76,7 +101,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('请检查必填项')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
@@ -84,11 +109,12 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await collectionsApi.updateCollection(route.params.id as string, form)
-      ElMessage.success('系列更新成功')
+      ElMessage.success('系列已更新')
     } else {
       await collectionsApi.createCollection(form)
-      ElMessage.success('系列创建成功')
+      ElMessage.success('系列已创建')
     }
+    disableDirtyCheck()
     router.push('/admin/shop/collections')
   } catch (error: any) {
     ElMessage.error(extractErrorMessage(error, '保存失败'))
@@ -100,17 +126,16 @@ async function handleSave() {
 
 <template>
   <div class="edit-page" v-loading="loading">
-    <div class="page-header">
-      <h2>{{ isEdit ? '编辑系列' : '新增系列' }}</h2>
-      <div>
-        <el-button @click="router.push('/admin/shop/collections')">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-      </div>
-    </div>
+    <EditorPageHeader
+      :title="isEdit ? '编辑系列' : '新增系列'"
+      back-to="/admin/shop/collections"
+      :saving="saving"
+      :dirty="isDirty"
+      @save="handleSave"
+    />
 
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
-        <!-- 基础信息 -->
         <el-card shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-form-item label="Slug" prop="slug">
@@ -119,34 +144,32 @@ async function handleSave() {
           <el-form-item label="系列名称" prop="title.zh">
             <I18nInput v-model="form.title" />
           </el-form-item>
-          <el-form-item label="系列描述">
-            <I18nInput v-model="form.body" type="textarea" :rows="4" placeholder="系列简短描述" />
-          </el-form-item>
           <el-form-item label="封面图">
-            <ImageUpload v-model="form.image" :limit="1" />
+            <ImageUpload v-model="form.image" module="shop" />
           </el-form-item>
         </el-card>
 
-        <!-- 关联路线 -->
         <el-card shadow="never" class="section-card">
-          <template #header>关联路线</template>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="路线名称" prop="routeName">
-                <el-input v-model="form.routeName" placeholder="e.g. 广府文化行" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="路线 Slug">
-                <el-input v-model="form.routeSlug" placeholder="e.g. guangfu-culture-tour" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-card>
-
-        <!-- 发布设置 -->
-        <el-card shadow="never" class="section-card">
-          <template #header>发布设置</template>
+          <template #header>关联路线与发布</template>
+          <el-form-item label="关联路线">
+            <el-select
+              v-model="form.routeSlug"
+              filterable
+              clearable
+              style="width: 100%"
+              @change="applyRouteSelection"
+            >
+              <el-option
+                v-for="item in routeOptions"
+                :key="item.slug"
+                :label="`${item.title} (${item.slug})`"
+                :value="item.slug"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="前台显示路线名">
+            <el-input v-model="form.routeName" />
+          </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="排序权重">
@@ -160,6 +183,22 @@ async function handleSave() {
             </el-col>
           </el-row>
         </el-card>
+
+        <EditorWorkspace
+          model-value="body"
+          title="系列内容工作台"
+          eyebrow="Collection Content"
+          description="基础信息、路线关联和发布状态放固定区，前台展示文案在这里集中编辑。"
+          active-label="系列正文"
+          :tabs="[{ key: 'body', label: '系列正文' }]"
+        >
+          <div class="workspace-panel">
+            <div class="panel-title">系列正文</div>
+            <el-form-item label="描述内容">
+              <I18nMarkdownEditor v-model="form.body" :rows="8" />
+            </el-form-item>
+          </div>
+        </EditorWorkspace>
       </el-form>
     </div>
   </div>
@@ -170,27 +209,24 @@ async function handleSave() {
   padding-bottom: 40px;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-}
-
 .editor-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   max-width: 900px;
-  gap: 20px;
-  align-items: start;
 }
 
 .section-card {
   margin-bottom: 16px;
+}
+
+.workspace-panel {
+  min-height: 220px;
+}
+
+.panel-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
 }
 </style>

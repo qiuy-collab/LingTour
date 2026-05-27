@@ -28,6 +28,6 @@ export const modesApi = {
 
   /** 更新排序 — 后端 /sort 端点不可用，通过 PUT 更新 sortOrder */
   updateSort(id: string, sortOrder: number) {
-    return api.put<ApiResponse<ServiceMode>>(`/interpreting/modes/${id}`, { sortOrder })
+    return api.patch<ApiResponse<ServiceMode>>(`/interpreting/modes/${id}/sort`, { sortOrder })
   },
 }

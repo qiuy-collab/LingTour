@@ -5,6 +5,7 @@
 import type { Event } from '@/types/event'
 import type { CommunityPost } from '@/types/community'
 import type { HomeConfig } from '@/types/home'
+import { DEFAULT_ROUTE_REGIONS } from '@/constants/guangdongRegions'
 
 // ─── ID 生成器 ──────────────────────────────────
 let _eventId = 50
@@ -287,4 +288,5 @@ export const mockHomeConfig: HomeConfig = {
       avatar: 'https://picsum.photos/80/80?random=503',
     },
   ],
+  routeRegions: DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item })),
 }

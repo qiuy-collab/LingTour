@@ -57,17 +57,6 @@ function handleSearch() {
   fetchList()
 }
 
-function handlePageChange(p: number) {
-  page.value = p
-  fetchList()
-}
-
-function handleSizeChange(s: number) {
-  pageSize.value = s
-  page.value = 1
-  fetchList()
-}
-
 function handleCreate() {
   router.push('/admin/shop/products/create')
 }

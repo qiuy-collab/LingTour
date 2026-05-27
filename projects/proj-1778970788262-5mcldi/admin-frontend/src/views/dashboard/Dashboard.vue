@@ -30,8 +30,7 @@ let barChart: echarts.ECharts | null = null
 async function fetchData() {
   loading.value = true
   try {
-    const res = await getDashboardStats()
-    data.value = res.data.data
+    data.value = await getDashboardStats()
     await nextTick()
     renderCharts()
   } catch (err: any) {
@@ -271,7 +270,7 @@ onUnmounted(() => {
             <div class="stat-text">
               <div class="stat-label">{{ card.label }}</div>
               <div class="stat-value" :style="{ color: card.color }">
-                {{ data?.stats[card.key as keyof typeof data.stats] ?? '-' }}
+                {{ data?.stats?.[card.key as keyof NonNullable<typeof data>['stats']] ?? '-' }}
               </div>
             </div>
           </div>

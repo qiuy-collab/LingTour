@@ -57,15 +57,15 @@ export const communityApi = {
 
   /** 审核帖子状态（通过/隐藏），可附带拒绝原因 */
   reviewPost(id: string, status: PostStatus, rejectionReason?: string) {
-    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/status`, {
+    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/review`, {
       status,
-      rejectionReason,
+      reason: rejectionReason,
     })
   },
 
   /** 切换精选状态 */
   toggleFeatured(id: string, featured: boolean) {
-    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/status`, { featured })
+    return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/featured`, { featured })
   },
 
   /** 软删除帖子 */
@@ -75,6 +75,6 @@ export const communityApi = {
 
   /** 恢复软删除的帖子 */
   restorePost(id: string) {
-    return api.post<ApiResponse<CommunityPost>>(`/community/posts/restore/${id}`)
+    return api.post<ApiResponse<CommunityPost>>(`/community/posts/${id}/restore`)
   },
 }

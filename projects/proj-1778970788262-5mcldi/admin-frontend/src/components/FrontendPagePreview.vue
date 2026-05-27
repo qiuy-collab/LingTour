@@ -84,7 +84,7 @@ function buildCityPreview() {
 }
 
 function normalizeCulture(value: string) {
-  if (value === 'BayArea') return 'Bay Area'
+  if (value === 'BayArea' || value === 'Guangfu') return 'Bay Area'
   return value || 'Guangfu'
 }
 

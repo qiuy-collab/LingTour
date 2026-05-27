@@ -1,128 +1,187 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-import { Plus, Delete, ZoomIn, Loading } from '@element-plus/icons-vue'
+import { computed, ref, watch } from 'vue'
+import { ArrowLeft, ArrowRight, Delete, Loading, Plus, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { uploadMediaFile } from '@/api/media'
 import { resolveMediaUrl } from '@/utils/media'
+
+type UploadItem = {
+  uid: string
+  name: string
+  url: string
+  rawUrl: string
+}
 
 const props = withDefaults(
   defineProps<{
     modelValue: string | string[]
+    mode?: 'single' | 'multiple'
     multiple?: boolean
     limit?: number
     accept?: string
+    module?: string
+    sortable?: boolean
   }>(),
   {
+    mode: 'single',
     multiple: false,
     limit: 1,
     accept: 'image/*',
-  }
+    module: '',
+    sortable: true,
+  },
 )
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | string[]]
 }>()
 
-// 处理 modelValue
-const fileList = ref<any[]>([])
+const fileInputRef = ref<HTMLInputElement>()
+const fileList = ref<UploadItem[]>([])
 const uploading = ref(false)
+const isMultiple = computed(() => props.mode === 'multiple' || props.multiple)
+const uploadLimit = computed(() => (isMultiple.value ? props.limit : 1))
 
-/** 上传请求自动注入鉴权头 */
-const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-})
-
-// 同步初始值
 watch(
   () => props.modelValue,
-  (val) => {
-    if (!val) {
+  (value) => {
+    if (!value) {
       fileList.value = []
       return
     }
-    if (props.multiple && Array.isArray(val)) {
-      fileList.value = val.map((url, index) => ({
-        uid: index,
-        name: `image-${index}`,
-        url: resolveMediaUrl(url),
-        status: 'success',
-      }))
-    } else if (!props.multiple && typeof val === 'string') {
-      fileList.value = val
-        ? [{ uid: 0, name: 'image-0', url: resolveMediaUrl(val), status: 'success' }]
-        : []
-    }
+
+    const urls =
+      isMultiple.value && Array.isArray(value)
+        ? value
+        : typeof value === 'string' && value
+          ? [value]
+          : []
+
+    fileList.value = urls.map((url, index) => ({
+      uid: `${index}-${url}`,
+      name: `image-${index + 1}`,
+      url: resolveMediaUrl(url),
+      rawUrl: url,
+    }))
   },
-  { immediate: true }
+  { immediate: true },
 )
 
-function handleSuccess(response: any) {
-  uploading.value = false
-  // 后端响应如非 0/null 视作业务错误
-  if (response && typeof response === 'object' && 'code' in response && response.code !== 0 && response.code !== 200) {
-    ElMessage.error(response.message || '上传失败')
+function readUrls(): string[] {
+  if (isMultiple.value) {
+    return Array.isArray(props.modelValue) ? [...props.modelValue] : []
+  }
+
+  return typeof props.modelValue === 'string' && props.modelValue ? [props.modelValue] : []
+}
+
+function syncValue(urls: string[]) {
+  if (isMultiple.value) {
+    emit('update:modelValue', urls)
     return
   }
-  const url = response?.data?.url || response?.url || ''
-  if (!url) {
-    ElMessage.error('上传响应未返回 url')
-    return
-  }
-  if (props.multiple) {
-    const urls = [...(Array.isArray(props.modelValue) ? props.modelValue : [])]
-    urls.push(url)
-    emit('update:modelValue', urls)
-  } else {
-    emit('update:modelValue', url)
-  }
-  ElMessage.success('上传成功')
+
+  emit('update:modelValue', urls[0] || '')
 }
 
-function handleError(err: any) {
-  uploading.value = false
-  let msg = '上传失败'
-  try {
-    const parsed = typeof err === 'string' ? JSON.parse(err) : err
-    msg = parsed?.message || parsed?.statusText || msg
-  } catch {
-    /* ignore */
-  }
-  ElMessage.error(msg)
+function parseUploadUrl(payload: any): string {
+  return payload?.data?.url || payload?.url || ''
 }
 
-function handleRemove(index: number) {
-  if (props.multiple && Array.isArray(props.modelValue)) {
-    const urls = [...props.modelValue]
-    urls.splice(index, 1)
-    emit('update:modelValue', urls)
-  } else {
-    emit('update:modelValue', '')
-  }
-}
-
-function beforeUpload(file: File) {
-  const isImage = file.type.startsWith('image/')
-  if (!isImage) {
+function validateFile(file: File) {
+  if (!file.type.startsWith('image/')) {
     ElMessage.error('只能上传图片文件')
     return false
   }
-  const isLt5M = file.size / 1024 / 1024 < 5
-  if (!isLt5M) {
-    ElMessage.error('图片大小不能超过 5MB')
+
+  const isLt10M = file.size / 1024 / 1024 < 10
+  if (!isLt10M) {
+    ElMessage.error('图片大小不能超过 10MB')
     return false
   }
-  uploading.value = true
+
   return true
 }
 
-const uploadLimit = computed(() => {
-  if (props.multiple) return props.limit
-  return 1
-})
+function openFileDialog() {
+  if (uploading.value || fileList.value.length >= uploadLimit.value) return
+  fileInputRef.value?.click()
+}
+
+async function handleNativeChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const selectedFiles = Array.from(input.files || [])
+  if (!selectedFiles.length) return
+
+  const availableSlots = Math.max(uploadLimit.value - fileList.value.length, isMultiple.value ? 0 : 1)
+  const filesToUpload = selectedFiles.filter(validateFile).slice(0, isMultiple.value ? availableSlots : 1)
+
+  if (!filesToUpload.length) {
+    input.value = ''
+    return
+  }
+
+  if (isMultiple.value && selectedFiles.length > availableSlots) {
+    ElMessage.warning(`最多只能上传 ${uploadLimit.value} 张图片`)
+  }
+
+  uploading.value = true
+  try {
+    const nextUrls = isMultiple.value ? readUrls() : []
+
+    for (const file of filesToUpload) {
+      const response = await uploadMediaFile(file, props.module || undefined)
+      const url = parseUploadUrl(response.data)
+      if (!url) {
+        throw new Error('上传响应缺少图片地址')
+      }
+
+      if (isMultiple.value) {
+        nextUrls.push(url)
+      } else {
+        nextUrls.splice(0, nextUrls.length, url)
+      }
+    }
+
+    syncValue(nextUrls)
+    ElMessage.success(isMultiple.value ? '图片已上传' : '封面已更新')
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || error?.message || '上传失败')
+  } finally {
+    uploading.value = false
+    input.value = ''
+  }
+}
+
+function handleRemove(index: number) {
+  const urls = readUrls()
+  urls.splice(index, 1)
+  syncValue(urls)
+}
+
+function moveItem(index: number, delta: -1 | 1) {
+  if (!isMultiple.value) return
+
+  const target = index + delta
+  const urls = readUrls()
+  if (target < 0 || target >= urls.length) return
+
+  ;[urls[index], urls[target]] = [urls[target], urls[index]]
+  syncValue(urls)
+}
 </script>
 
 <template>
   <div class="image-upload">
+    <input
+      ref="fileInputRef"
+      class="native-file-input"
+      type="file"
+      :accept="accept"
+      :multiple="isMultiple"
+      @change="handleNativeChange"
+    />
+
     <div class="image-preview-list">
       <div
         v-for="(item, index) in fileList"
@@ -137,11 +196,24 @@ const uploadLimit = computed(() => {
           preview-teleported
         />
         <div class="image-overlay">
-          <el-icon
-            class="preview-icon"
-            @click.stop="() => {}"
-          >
+          <el-icon class="preview-icon">
             <ZoomIn />
+          </el-icon>
+          <el-icon
+            v-if="isMultiple && sortable"
+            class="sort-icon"
+            :class="{ disabled: index === 0 }"
+            @click.stop="moveItem(index, -1)"
+          >
+            <ArrowLeft />
+          </el-icon>
+          <el-icon
+            v-if="isMultiple && sortable"
+            class="sort-icon"
+            :class="{ disabled: index === fileList.length - 1 }"
+            @click.stop="moveItem(index, 1)"
+          >
+            <ArrowRight />
           </el-icon>
           <el-icon class="delete-icon" @click.stop="handleRemove(index)">
             <Delete />
@@ -149,21 +221,22 @@ const uploadLimit = computed(() => {
         </div>
       </div>
 
-      <!-- 上传按钮 -->
-      <el-upload
+      <button
         v-if="fileList.length < uploadLimit"
-        :action="'/api/admin/upload'"
-        :headers="uploadHeaders"
-        :show-file-list="false"
-        :before-upload="beforeUpload"
-        :on-success="handleSuccess"
-        :on-error="handleError"
-        :accept="accept"
+        type="button"
         class="upload-trigger"
+        :disabled="uploading"
+        @click="openFileDialog"
       >
         <el-icon v-if="uploading" class="upload-icon is-loading"><Loading /></el-icon>
         <el-icon v-else class="upload-icon"><Plus /></el-icon>
-      </el-upload>
+      </button>
+    </div>
+
+    <div class="upload-meta">
+      <span>{{ isMultiple ? `最多 ${uploadLimit} 张图` : '单图上传' }}</span>
+      <span>支持 JPG / PNG / WEBP / GIF，最大 10MB</span>
+      <span v-if="module">目录：{{ module }}</span>
     </div>
   </div>
 </template>
@@ -173,6 +246,14 @@ const uploadLimit = computed(() => {
   width: 100%;
 }
 
+.native-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .image-preview-list {
   display: flex;
   flex-wrap: wrap;
@@ -180,12 +261,12 @@ const uploadLimit = computed(() => {
 }
 
 .image-preview-item {
+  position: relative;
   width: 120px;
   height: 120px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
   overflow: hidden;
-  position: relative;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -197,13 +278,13 @@ const uploadLimit = computed(() => {
 .image-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.52);
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s ease;
 }
 
 .image-preview-item:hover .image-overlay {
@@ -211,10 +292,16 @@ const uploadLimit = computed(() => {
 }
 
 .preview-icon,
+.sort-icon,
 .delete-icon {
   color: #fff;
   font-size: 20px;
   cursor: pointer;
+}
+
+.sort-icon.disabled {
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 .delete-icon:hover {
@@ -222,15 +309,20 @@ const uploadLimit = computed(() => {
 }
 
 .upload-trigger {
-  width: 120px;
-  height: 120px;
-  border: 1px dashed #dcdfe6;
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
+  height: 120px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 8px;
+  background: #fff;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease;
+}
+
+.upload-trigger:disabled {
+  cursor: wait;
 }
 
 .upload-trigger:hover {
@@ -243,12 +335,26 @@ const uploadLimit = computed(() => {
 }
 
 .upload-icon.is-loading {
-  animation: rotate 1s linear infinite;
   color: #409eff;
+  animation: rotate 1s linear infinite;
+}
+
+.upload-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  color: #8b95a4;
+  font-size: 12px;
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

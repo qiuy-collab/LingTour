@@ -28,6 +28,6 @@ export const faqsApi = {
 
   /** 更新排序 — 后端 /sort 端点不可用，通过 PUT 更新 sortOrder */
   updateSort(id: string, sortOrder: number) {
-    return api.put<ApiResponse<FAQ>>(`/interpreting/faqs/${id}`, { sortOrder })
+    return api.patch<ApiResponse<FAQ>>(`/interpreting/faqs/${id}/sort`, { sortOrder })
   },
 }

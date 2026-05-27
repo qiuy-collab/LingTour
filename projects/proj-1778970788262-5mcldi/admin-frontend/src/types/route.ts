@@ -1,6 +1,6 @@
 import type { I18nObject } from './common'
 
-export type CultureTag = 'Guangfu' | 'Chaoshan' | 'Hakka' | 'Coastal' | 'BayArea' | 'Mountain'
+export type CultureTag = 'Bay Area' | 'Chaoshan' | 'Hakka' | 'Coastal' | 'Mountain' | 'Guangfu' | 'BayArea'
 
 export interface RouteStop {
   id?: string
@@ -35,6 +35,7 @@ export interface Route {
   story: any
   storyEn?: string
   coverImage: string
+  routeRegionKey?: string | null
   stops?: RouteStop[]
   stopCount?: number
   published: boolean
@@ -56,6 +57,7 @@ export interface RouteFormData {
   summary: I18nObject
   story: I18nObject
   coverImage: string
+  routeRegionKey?: string
   stops: RouteStop[]
   published?: boolean
   citySlugs?: string[]

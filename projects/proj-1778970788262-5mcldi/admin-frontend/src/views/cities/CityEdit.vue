@@ -13,6 +13,10 @@ import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
+import {
+  GUANGDONG_ADCODE_OPTIONS,
+  formatAdcodeLabel,
+} from '@/constants/guangdongRegions'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,22 +26,21 @@ const saving = ref(false)
 const formRef = ref<FormInstance>()
 const activeChapter = ref('overview')
 
-const cityOptions = ref<Array<{ id: string; slug: string; name: string }>>([])
 const routeOptions = ref<Array<{ id: string; slug: string; title: string; cityName: string }>>([])
 
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case 格式', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case 格式', trigger: 'blur' },
   ],
-  'name.zh': [{ required: true, message: '请输入城市名称', trigger: 'blur' }],
+  'name.zh': [{ required: true, message: '请输入城市名称（中文）', trigger: 'blur' }],
 }
 
 const form = reactive<any>({
   slug: '',
   name: { zh: '', en: '' },
   regionLabel: { zh: '', en: '' },
-  adcode: 0,
+  adcode: undefined,
   heroImage: '',
   heroNarrative: { zh: '', en: '' },
   tags: [],
@@ -137,8 +140,6 @@ const chapterTabs = computed(() => [
     badge: `#${index + 1}`,
   })),
   { key: 'food', label: 'Food' },
-  { key: 'related', label: 'Routes' },
-  { key: 'publish', label: 'Publish' },
 ])
 
 const activeSectionIndex = computed(() => {
@@ -162,15 +163,6 @@ function moveActiveSection(delta: -1 | 1) {
   }
 }
 
-async function loadCityOptions() {
-  const res = await citiesApi.getCities({ page: 1, pageSize: 200 })
-  cityOptions.value = (res.data.data.items || []).map((item: any) => ({
-    id: item.id,
-    slug: item.slug,
-    name: item.name?.zh || item.name?.en || item.slug,
-  }))
-}
-
 async function loadRouteOptions() {
   const res = await routesApi.getRoutes({ page: 1, pageSize: 200 })
   routeOptions.value = (res.data.data.items || []).map((item: any) => ({
@@ -186,7 +178,7 @@ function fillFromApi(data: any) {
     slug: data.slug || '',
     name: toI18n(data.name),
     regionLabel: toI18n(data.regionLabel),
-    adcode: data.adcode || 0,
+    adcode: data.adcode ?? undefined,
     heroImage: data.heroImage || '',
     heroNarrative: toI18n(data.heroNarrative),
     tags: normalizeTagList(data.tags),
@@ -235,7 +227,7 @@ function toPayload() {
 onMounted(async () => {
   loading.value = true
   try {
-    await Promise.all([loadCityOptions(), loadRouteOptions()])
+    await loadRouteOptions()
     if (isEdit.value) {
       const res = await citiesApi.getCity(route.params.id as string)
       fillFromApi(res.data.data)
@@ -297,12 +289,26 @@ const selectedRouteCards = computed(() =>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="Slug" prop="slug">
-                <el-input v-model="form.slug" placeholder="guangzhou" />
+                <el-input v-model="form.slug" placeholder="zhanjiang" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="行政区划代码">
-                <el-input-number v-model="form.adcode" :min="0" style="width: 100%" />
+              <el-form-item label="地图地区">
+                <el-select
+                  v-model="form.adcode"
+                  filterable
+                  clearable
+                  placeholder="选择广东地图对应地区"
+                  style="width: 100%"
+                >
+                  <el-option
+                    v-for="option in GUANGDONG_ADCODE_OPTIONS"
+                    :key="option.adcode"
+                    :label="formatAdcodeLabel(option.adcode)"
+                    :value="option.adcode"
+                  />
+                </el-select>
+                <div class="form-hint-text">首页地图和路线地区高亮都依赖这个地区编码。</div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -337,7 +343,7 @@ const selectedRouteCards = computed(() =>
                     {{ chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview' }}
                   </span>
                 </div>
-                <p>按章节切换城市内容，减少长表单滚动，Section 的新增、排序和删除也集中在这里处理。</p>
+                <p>按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。</p>
               </div>
               <div class="chapter-tabs">
                 <button
@@ -447,46 +453,46 @@ const selectedRouteCards = computed(() =>
               <ImageUpload v-model="form.foodImages" multiple :limit="10" />
             </el-form-item>
           </div>
+        </el-card>
 
-          <div v-else-if="activeChapter === 'related'" class="chapter-panel">
-            <div class="chapter-title">关联路线</div>
-            <el-form-item label="选择现有路线">
-              <el-select
-                v-model="form.routeSlugs"
-                multiple
-                filterable
-                collapse-tags
-                collapse-tags-tooltip
-                placeholder="直接选择已配置路线"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="routeItem in routeOptions"
-                  :key="routeItem.id"
-                  :label="`${routeItem.title} (${routeItem.slug})`"
-                  :value="routeItem.slug"
-                />
-              </el-select>
-              <p class="field-hint">选中的路线会在前台城市页中作为延伸阅读或联动入口出现，便于从城市继续进入具体路线。</p>
-            </el-form-item>
-            <div v-if="selectedRouteCards.length" class="selected-city-grid">
-              <div v-for="routeItem in selectedRouteCards" :key="routeItem.slug" class="selected-city-card">
-                <strong>{{ routeItem.title }}</strong>
-                <span>{{ routeItem.cityName || routeItem.slug }}</span>
-              </div>
+        <el-card shadow="never" class="section-card">
+          <template #header>关联路线</template>
+          <el-form-item label="选择现有路线">
+            <el-select
+              v-model="form.routeSlugs"
+              multiple
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="直接选择已配置路线"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="routeItem in routeOptions"
+                :key="routeItem.slug"
+                :label="`${routeItem.title} (${routeItem.slug})`"
+                :value="routeItem.slug"
+              />
+            </el-select>
+            <div class="form-hint-text">这里决定城市页下方关联路线，以及路线和城市之间的互相联动。</div>
+          </el-form-item>
+          <div v-if="selectedRouteCards.length" class="selected-grid">
+            <div v-for="routeItem in selectedRouteCards" :key="routeItem.slug" class="selected-card">
+              <strong>{{ routeItem.title }}</strong>
+              <span>{{ routeItem.cityName || routeItem.slug }}</span>
             </div>
-            <el-empty v-else description="还没有关联路线" :image-size="56" />
           </div>
+          <div v-else class="empty-hint">还没有关联路线</div>
+        </el-card>
 
-          <div v-else-if="activeChapter === 'publish'" class="chapter-panel">
-            <div class="chapter-title">发布状态</div>
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio value="draft">草稿</el-radio>
-                <el-radio value="published">已发布</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </div>
+        <el-card shadow="never" class="section-card">
+          <template #header>发布状态</template>
+          <el-form-item label="状态">
+            <el-radio-group v-model="form.status">
+              <el-radio label="draft">草稿</el-radio>
+              <el-radio label="published">已发布</el-radio>
+            </el-radio-group>
+          </el-form-item>
         </el-card>
       </el-form>
 
@@ -501,15 +507,6 @@ const selectedRouteCards = computed(() =>
 .page-header h2 { margin: 0; font-size: 20px; }
 .editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw); gap: 20px; align-items: start; }
 .section-card { margin-bottom: 16px; }
-.inline-row, .tag-list { display: flex; align-items: center; gap: 8px; }
-.inline-row { width: 100%; }
-.inline-row .el-input { max-width: 260px; }
-.tag-list { flex-wrap: wrap; min-height: 28px; margin-bottom: 8px; }
-.field-hint { margin: 8px 0 0; color: #909399; font-size: 12px; line-height: 1.5; }
-.selected-city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-.selected-city-card { border: 1px solid #dcdfe6; border-radius: 8px; padding: 12px; background: #f8fbff; }
-.selected-city-card strong { display: block; color: #303133; }
-.selected-city-card span { display: block; margin-top: 4px; color: #909399; font-size: 12px; }
 .chapter-workspace :deep(.el-card__header) { padding-bottom: 18px; }
 .chapter-workspace :deep(.el-card__body) { padding-top: 18px; }
 .chapter-toolbar {
@@ -600,15 +597,19 @@ const selectedRouteCards = computed(() =>
 }
 .chapter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
 .chapter-panel { min-height: 320px; }
-.chapter-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
+.chapter-title { margin-bottom: 16px; font-size: 18px; font-weight: 600; color: #303133; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.inline-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.selected-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.selected-card { border: 1px solid #dcdfe6; border-radius: 10px; padding: 12px; background: #f8fbff; }
+.selected-card strong { display: block; color: #303133; }
+.selected-card span { display: block; margin-top: 4px; color: #909399; font-size: 12px; }
+.form-hint-text { font-size: 12px; color: #909399; margin-top: 6px; line-height: 1.5; }
+.empty-hint { color: #c0c4cc; text-align: center; padding: 18px 0 4px; }
 @media (max-width: 1100px) {
   .editor-shell { grid-template-columns: 1fr; }
   .chapter-toolbar { grid-template-columns: 1fr; }
   .chapter-actions { justify-content: flex-start; }
+  .inline-row { grid-template-columns: 1fr; }
 }
 </style>

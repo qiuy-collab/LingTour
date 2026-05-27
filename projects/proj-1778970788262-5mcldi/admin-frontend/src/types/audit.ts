@@ -2,7 +2,17 @@ export interface AuditLog {
   id: string
   userId: string
   userName: string
-  action: 'create' | 'update' | 'delete' | 'publish' | 'unpublish' | 'login' | 'logout' | 'export' | 'batch_delete' | 'status_change'
+  action:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'publish'
+    | 'unpublish'
+    | 'login'
+    | 'logout'
+    | 'export'
+    | 'batch_delete'
+    | 'status_change'
   resource: string
   resourceId?: string
   resourceName?: string
@@ -23,6 +33,13 @@ export interface AuditLogFilter {
   keyword?: string
 }
 
+export interface AuditStats {
+  total: number
+  last7Days: number
+  actionBreakdown: Array<{ action: string; count: number }>
+  resourceBreakdown: Array<{ resource: string; count: number }>
+}
+
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
   create: '创建',
   update: '更新',
@@ -30,7 +47,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   publish: '发布',
   unpublish: '下架',
   login: '登录',
-  logout: '登出',
+  logout: '退出',
   export: '导出',
   batch_delete: '批量删除',
   status_change: '状态变更',

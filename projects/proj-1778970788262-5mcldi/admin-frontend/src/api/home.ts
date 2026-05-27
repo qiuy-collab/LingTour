@@ -2,6 +2,7 @@ import api from './index'
 import type { ApiResponse } from '@/types/common'
 import { toI18n } from '@/types/common'
 import type { HomeConfig } from '@/types/home'
+import { DEFAULT_ROUTE_REGIONS } from '@/constants/guangdongRegions'
 
 function fromApi(raw: any): HomeConfig {
   return {
@@ -25,6 +26,14 @@ function fromApi(raw: any): HomeConfig {
       description: toI18n(h.description ?? h.body),
       image: h.image || '',
       citySlug: h.citySlug || h.slug || '',
+    })),
+    routeRegions: (raw.routeRegions || []).map((region: any) => ({
+      key: region.key || '',
+      title: toI18n(region.title),
+      note: toI18n(region.note),
+      adcodes: Array.isArray(region.adcodes)
+        ? region.adcodes.map((item: any) => Number(item)).filter(Number.isFinite)
+        : [],
     })),
     testimonials: (raw.testimonials || []).map((t: any) => ({
       quote: toI18n(t.quote),
@@ -57,6 +66,12 @@ function toApi(data: HomeConfig) {
       body: h.description,
       image: h.image,
     })),
+    routeRegions: data.routeRegions.map((region) => ({
+      key: region.key,
+      title: region.title,
+      note: region.note,
+      adcodes: region.adcodes,
+    })),
     testimonials: data.testimonials.map((t) => ({
       quote: t.quote,
       name: t.author,
@@ -69,6 +84,9 @@ export const homeApi = {
   async getHomeConfig() {
     const res = await api.get<ApiResponse<any>>('/home', { params: { rawI18n: true } })
     ;(res as any).data.data = fromApi(res.data.data)
+    if (!(res as any).data.data.routeRegions?.length) {
+      ;(res as any).data.data.routeRegions = DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item }))
+    }
     return res as any
   },
 

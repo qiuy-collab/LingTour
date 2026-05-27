@@ -63,17 +63,6 @@ function handleReset() {
   fetchList()
 }
 
-function handlePageChange(p: number) {
-  page.value = p
-  fetchList()
-}
-
-function handleSizeChange(s: number) {
-  pageSize.value = s
-  page.value = 1
-  fetchList()
-}
-
 function handleViewDetail(id: string) {
   router.push(`/admin/orders/${id}`)
 }

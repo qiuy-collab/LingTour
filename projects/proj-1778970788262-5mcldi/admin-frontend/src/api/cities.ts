@@ -1,11 +1,33 @@
 import request from './index'
-import type { ApiResponse, PageParams, PaginatedResponse } from '@/types/common'
+import type { ApiResponse, PageParams } from '@/types/common'
 import type { City, CityFormData } from '@/types/city'
 
 export const citiesApi = {
   /** 获取城市列表（分页） */
-  getCities(params: PageParams) {
-    return request.get<ApiResponse<PaginatedResponse<City>>>('/cities', { params })
+  async getCities(params: PageParams & { keyword?: string; status?: string }) {
+    const res = await request.get<ApiResponse<any>>('/cities', {
+      params: {
+        page: params.page,
+        limit: params.pageSize,
+        q: params.keyword || undefined,
+        published:
+          params.status === 'published'
+            ? true
+            : params.status === 'draft'
+              ? false
+              : undefined,
+      },
+    })
+
+    const payload = res.data.data || {}
+    ;(res as any).data.data = {
+      items: payload.items || payload.data || [],
+      total: payload.total || 0,
+      page: payload.page || params.page || 1,
+      pageSize: payload.pageSize || payload.limit || params.pageSize || 10,
+    }
+
+    return res as any
   },
 
   /** 获取单个城市 */

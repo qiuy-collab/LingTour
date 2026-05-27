@@ -7,21 +7,22 @@ import { routesApi } from '@/api/routes'
 import type { Route } from '@/types/route'
 import type { PaginatedResponse } from '@/types/common'
 import { pickI18n } from '@/types/common'
+import { formatRouteTagLabel, normalizeRouteTag } from '@/constants/guangdongRegions'
 
 const router = useRouter()
 
 // ─── 文化标签映射 ──────────────────────────
 const cultureTagMap: Record<string, { label: string; color: string }> = {
-  Guangfu: { label: '广府', color: '#409EFF' },
-  Chaoshan: { label: '潮汕', color: '#E6A23C' },
-  Hakka: { label: '客家', color: '#67C23A' },
-  Coastal: { label: '滨海', color: '#00B5AD' },
-  BayArea: { label: '湾区', color: '#9C27B0' },
-  Mountain: { label: '山川', color: '#FF5722' },
+  'Bay Area': { label: formatRouteTagLabel('Bay Area'), color: '#409EFF' },
+  Chaoshan: { label: formatRouteTagLabel('Chaoshan'), color: '#E6A23C' },
+  Hakka: { label: formatRouteTagLabel('Hakka'), color: '#67C23A' },
+  Coastal: { label: formatRouteTagLabel('Coastal'), color: '#00B5AD' },
+  Mountain: { label: formatRouteTagLabel('Mountain'), color: '#FF5722' },
 }
 
 function getCultureTagInfo(tag: string) {
-  return cultureTagMap[tag] || { label: tag, color: '#909399' }
+  const normalizedTag = normalizeRouteTag(tag)
+  return cultureTagMap[normalizedTag] || { label: normalizedTag, color: '#909399' }
 }
 
 // ─── 列表数据 ──────────────────────────────

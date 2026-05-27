@@ -1,9 +1,5 @@
 import type { I18nObject } from './common'
 
-// ============================================
-// 首页内容管理 TypeScript 类型定义
-// ============================================
-
 export interface HeroStat {
   title: I18nObject
   description: I18nObject
@@ -34,6 +30,13 @@ export interface Testimonial {
   avatar: string
 }
 
+export interface RouteRegionConfig {
+  key: string
+  title: I18nObject
+  note: I18nObject
+  adcodes: number[]
+}
+
 export interface HomeConfig {
   heroStats: HeroStat[]
   trustMetrics: TrustMetric[]
@@ -41,9 +44,17 @@ export interface HomeConfig {
   featuredRoutes: string[]
   cultureHighlights: CultureHighlight[]
   testimonials: Testimonial[]
+  routeRegions: RouteRegionConfig[]
 }
 
-export type HomeConfigBlock = 'heroStats' | 'trustMetrics' | 'entryCards' | 'featuredRoutes' | 'cultureHighlights' | 'testimonials'
+export type HomeConfigBlock =
+  | 'heroStats'
+  | 'trustMetrics'
+  | 'entryCards'
+  | 'featuredRoutes'
+  | 'cultureHighlights'
+  | 'routeRegions'
+  | 'testimonials'
 
 export const HomeConfigBlockLabels: Record<HomeConfigBlock, string> = {
   heroStats: 'Hero 统计卡片',
@@ -51,5 +62,6 @@ export const HomeConfigBlockLabels: Record<HomeConfigBlock, string> = {
   entryCards: '入口卡片',
   featuredRoutes: '精选路线',
   cultureHighlights: '文化亮点',
+  routeRegions: '路线地区分组',
   testimonials: '评价展示',
 }

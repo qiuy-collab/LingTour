@@ -3,35 +3,36 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { ArrowLeft, Calendar, Location, Picture, Plus } from '@element-plus/icons-vue'
-import { eventsApi } from '@/api/events'
+import { Plus } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
+import { eventsApi } from '@/api/events'
 import { routesApi } from '@/api/routes'
 import type { EventFormData } from '@/types/event'
 import { EventStatusMap } from '@/types/event'
 import { pickI18n, toI18n } from '@/types/common'
 import { extractErrorMessage } from '@/utils/i18n'
+import { useDirtyForm } from '@/composables/useDirtyForm'
+import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
+import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 
 const router = useRouter()
 const route = useRoute()
-
 const isEdit = computed(() => !!route.params.id)
-const pageTitle = computed(() => (isEdit.value ? '编辑活动' : '新增活动'))
-
 const loading = ref(false)
 const saving = ref(false)
 const formRef = ref<FormInstance>()
 const cityOptions = ref<Array<{ slug: string; name: string; adcode: number }>>([])
 const routeOptions = ref<Array<{ slug: string; title: string }>>([])
 const newTag = ref('')
+const activeWorkspace = ref('summary')
 
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须为 kebab-case', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
   'title.zh': [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
   date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
@@ -52,6 +53,8 @@ const form = reactive<EventFormData>({
   image: '',
   status: 'draft',
 })
+
+const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 
 const statusOptions = computed(() =>
   Object.entries(EventStatusMap).map(([value, label]) => ({ value, label })),
@@ -74,6 +77,11 @@ const checklist = computed(() => [
   { label: '封面图片', done: Boolean(form.image) },
   { label: '摘要', done: Boolean(form.summary.zh.trim() || form.summary.en.trim()) },
   { label: '详情正文', done: Boolean(form.description.zh.trim() || form.description.en.trim()) },
+])
+
+const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
+  { key: 'summary', label: '摘要展示' },
+  { key: 'description', label: '正文内容' },
 ])
 
 function addTag() {
@@ -132,10 +140,12 @@ onMounted(async () => {
       title: pickI18n(item.title) || item.slug,
     }))
 
-    if (!isEdit.value) return
+    if (isEdit.value) {
+      const res = await eventsApi.getEvent(route.params.id as string)
+      fillFromApi(res.data.data)
+    }
 
-    const res = await eventsApi.getEvent(route.params.id as string)
-    fillFromApi(res.data.data)
+    resetDirty()
   } catch (err: any) {
     ElMessage.error(extractErrorMessage(err, '加载活动数据失败'))
     router.push('/admin/events')
@@ -148,15 +158,14 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('请检查必填项')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
-  // 结束日期不能早于开始日期
   if (form.endDate && form.date) {
-    const start = new Date(form.date as string)
-    const end = new Date(form.endDate as string)
-    if (!isNaN(end.getTime()) && end < start) {
+    const start = new Date(form.date)
+    const end = new Date(form.endDate)
+    if (!Number.isNaN(end.getTime()) && end < start) {
       ElMessage.error('结束日期不能早于开始日期')
       return
     }
@@ -166,11 +175,12 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await eventsApi.updateEvent(route.params.id as string, form)
-      ElMessage.success('活动更新成功')
+      ElMessage.success('活动已更新')
     } else {
       await eventsApi.createEvent(form)
-      ElMessage.success('活动创建成功')
+      ElMessage.success('活动已创建')
     }
+    disableDirtyCheck()
     router.push('/admin/events')
   } catch (error: any) {
     ElMessage.error(extractErrorMessage(error, '保存失败'))
@@ -178,31 +188,24 @@ async function handleSave() {
     saving.value = false
   }
 }
-
-function handleCancel() {
-  router.push('/admin/events')
-}
 </script>
 
 <template>
   <div class="edit-page" v-loading="loading">
-    <div class="page-header">
-      <div class="page-title">
-        <el-button :icon="ArrowLeft" @click="handleCancel">返回</el-button>
-        <h2>{{ pageTitle }}</h2>
-      </div>
-      <div class="page-actions">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-      </div>
-    </div>
+    <EditorPageHeader
+      :title="isEdit ? '编辑活动' : '新增活动'"
+      back-to="/admin/events"
+      :saving="saving"
+      :dirty="isDirty"
+      @save="handleSave"
+    />
 
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>1. 基本信息</template>
+          <template #header>基础信息</template>
           <el-form-item label="Slug" prop="slug">
-            <el-input v-model="form.slug" placeholder="如 dragon-boat-2026（kebab-case）" />
+            <el-input v-model="form.slug" placeholder="dragon-boat-2026" />
           </el-form-item>
           <el-form-item label="活动名称" prop="title.zh">
             <I18nInput v-model="form.title" />
@@ -229,7 +232,7 @@ function handleCancel() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>2. 城市与路线关联</template>
+          <template #header>关联城市与路线</template>
           <el-row :gutter="16">
             <el-col :span="8">
               <el-form-item label="关联城市">
@@ -237,7 +240,6 @@ function handleCancel() {
                   v-model="form.citySlug"
                   clearable
                   filterable
-                  placeholder="选择已配置城市"
                   style="width: 100%"
                   @change="handleCityChange"
                 >
@@ -251,17 +253,16 @@ function handleCancel() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="前台显示城市名">
-                <el-input v-model="form.city" placeholder="选择后自动带出，也可微调" />
+              <el-form-item label="前台显示城市">
+                <el-input v-model="form.city" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="地图行政区划代码">
+              <el-form-item label="地图区划代码">
                 <el-input-number v-model="form.adcode" :min="0" :max="999999" style="width: 100%" />
               </el-form-item>
             </el-col>
           </el-row>
-
           <el-form-item label="关联路线">
             <el-select
               v-model="form.relatedRouteSlugs"
@@ -269,7 +270,6 @@ function handleCancel() {
               filterable
               collapse-tags
               collapse-tags-tooltip
-              placeholder="从现有路线中直接选择"
               style="width: 100%"
             >
               <el-option
@@ -290,24 +290,10 @@ function handleCancel() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>3. 封面与摘要</template>
+          <template #header>封面与标签</template>
           <el-form-item label="活动封面">
-            <ImageUpload v-model="form.image" />
+            <ImageUpload v-model="form.image" module="events" />
           </el-form-item>
-          <el-form-item label="活动摘要">
-            <I18nInput v-model="form.summary" type="textarea" :rows="3" />
-          </el-form-item>
-        </el-card>
-
-        <el-card shadow="never" class="section-card">
-          <template #header>4. 活动详情</template>
-          <el-form-item label="正文说明">
-            <I18nMarkdownEditor v-model="form.description" :rows="10" />
-          </el-form-item>
-        </el-card>
-
-        <el-card shadow="never" class="section-card">
-          <template #header>5. 标签管理</template>
           <el-form-item label="活动标签">
             <div class="tag-list">
               <el-tag v-for="(tag, index) in form.tags" :key="tag" closable @close="removeTag(index)">
@@ -320,16 +306,34 @@ function handleCancel() {
             </div>
           </el-form-item>
         </el-card>
+
+        <EditorWorkspace
+          v-model="activeWorkspace"
+          eyebrow="Event Content Workspace"
+          title="活动内容工作台"
+          description="日期、关联城市、标签和封面放在固定区，前台真正展示的摘要与正文集中在这里编辑。"
+          :active-label="workspaceTabs.find((item) => item.key === activeWorkspace)?.label || '摘要展示'"
+          :tabs="workspaceTabs"
+        >
+          <div v-if="activeWorkspace === 'summary'" class="workspace-panel">
+            <div class="panel-title">活动摘要</div>
+            <el-form-item label="摘要文案">
+              <I18nMarkdownEditor v-model="form.summary" :rows="6" />
+            </el-form-item>
+          </div>
+
+          <div v-else class="workspace-panel">
+            <div class="panel-title">活动正文</div>
+            <el-form-item label="详情内容">
+              <I18nMarkdownEditor v-model="form.description" :rows="10" />
+            </el-form-item>
+          </div>
+        </EditorWorkspace>
       </el-form>
 
       <aside class="editor-aside">
         <el-card shadow="never" class="aside-card">
-          <template #header>
-            <div class="aside-title">
-              <el-icon><Calendar /></el-icon>
-              <span>发布摘要</span>
-            </div>
-          </template>
+          <template #header>发布摘要</template>
           <div class="info-list">
             <div class="info-row">
               <span>状态</span>
@@ -351,28 +355,18 @@ function handleCancel() {
         </el-card>
 
         <el-card shadow="never" class="aside-card">
-          <template #header>
-            <div class="aside-title">
-              <el-icon><Location /></el-icon>
-              <span>关联内容</span>
-            </div>
-          </template>
+          <template #header>关联内容</template>
           <div class="aside-stack">
-            <div class="city-card">
+            <div class="selected-card">
               <strong>{{ selectedCity?.name || form.city || '未选择城市' }}</strong>
-              <span>{{ form.citySlug || '未关联 slug' }}</span>
+              <span>{{ form.citySlug || '暂无 slug' }}</span>
             </div>
             <div class="route-count">已关联路线 {{ selectedRoutes.length }} 条</div>
           </div>
         </el-card>
 
         <el-card shadow="never" class="aside-card">
-          <template #header>
-            <div class="aside-title">
-              <el-icon><Picture /></el-icon>
-              <span>完整性检查</span>
-            </div>
-          </template>
+          <template #header>完整性检查</template>
           <div class="check-list">
             <div v-for="item in checklist" :key="item.label" class="check-row">
               <span>{{ item.label }}</span>
@@ -390,29 +384,9 @@ function handleCancel() {
   padding-bottom: 40px;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-  gap: 16px;
-}
-
-.page-title,
-.page-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.page-title h2 {
-  margin: 0;
-  font-size: 20px;
-}
-
 .editor-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 24vw);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 26vw);
   gap: 20px;
   align-items: start;
 }
@@ -434,23 +408,19 @@ function handleCancel() {
   gap: 10px;
 }
 
-.selected-card,
-.city-card {
-  border: 1px solid #dcdfe6;
-  border-radius: 10px;
+.selected-card {
   padding: 12px;
+  border: 1px solid #dbe5f1;
+  border-radius: 12px;
   background: #f8fbff;
 }
 
 .selected-card strong,
-.city-card strong {
+.selected-card span {
   display: block;
-  color: #303133;
 }
 
-.selected-card span,
-.city-card span {
-  display: block;
+.selected-card span {
   margin-top: 4px;
   color: #909399;
   font-size: 12px;
@@ -466,42 +436,38 @@ function handleCancel() {
 
 .tag-input-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
 }
 
-.aside-title,
-.info-row,
-.check-row {
-  display: flex;
-  align-items: center;
+.workspace-panel {
+  min-height: 260px;
 }
 
-.aside-title {
-  gap: 8px;
+.panel-title {
+  margin-bottom: 16px;
+  font-size: 18px;
   font-weight: 600;
+  color: #303133;
 }
 
 .aside-stack,
-.check-list {
+.check-list,
+.info-list {
   display: grid;
   gap: 12px;
 }
 
-.info-list {
-  display: grid;
-  gap: 10px;
-}
-
 .info-row,
 .check-row {
+  display: flex;
   justify-content: space-between;
   gap: 12px;
 }
 
 .route-count {
-  font-size: 13px;
   color: #606266;
+  font-size: 13px;
 }
 
 .done {
