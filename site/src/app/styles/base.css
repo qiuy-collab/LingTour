@@ -98,6 +98,41 @@ button {
   }
 }
 
+/* ── Mobile overflow & sizing guards ──────────────────────── */
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .site-container {
+    padding-inline: 1rem;
+  }
+
+  /* Prevent images from blowing out of their containers */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Prevent iOS auto-zoom on focused inputs (needs ≥ 16px) */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* ── Touch-friendly hover resets ──────────────────────────── */
+@media (hover: none) {
+  .lux-card:hover {
+    transform: none;
+  }
+
+  .scrapbook-shadow:hover {
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

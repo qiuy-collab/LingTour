@@ -84,7 +84,7 @@ export default function RoutesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-x-12 gap-y-24 sm:grid-cols-2 lg:gap-x-20">
+          <div className="grid gap-x-12 gap-y-12 lg:gap-y-24 sm:grid-cols-2 lg:gap-x-20">
             {storyRoutes.map((route, i) => {
               const cardImage = route.image || placeholderFor("hero");
               return (
@@ -103,7 +103,7 @@ export default function RoutesPage() {
                         <div className="absolute inset-0 bg-black/5" />
 
                         <div className="absolute top-4 right-4 z-10 flex flex-col items-center">
-                          <div className="bg-[var(--cinnabar)] px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-white shadow-lg -rotate-6">
+                          <div className="bg-[var(--cinnabar)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg -rotate-6">
                             {route.duration}
                           </div>
                           <div className="w-px h-6 bg-white/40 mt-1" />
@@ -141,7 +141,7 @@ export default function RoutesPage() {
                               {route.itinerary.slice(0, 3).map((_, idx) => (
                                 <div
                                   key={idx}
-                                  className="w-6 h-6 rounded-full border-2 border-white bg-[var(--paper-deep)] flex items-center justify-center text-[8px] font-bold text-[var(--river-deep)] shadow-sm"
+                                  className="w-6 h-6 rounded-full border-2 border-white bg-[var(--paper-deep)] flex items-center justify-center text-[10px] font-bold text-[var(--river-deep)] shadow-sm"
                                 >
                                   {idx + 1}
                                 </div>

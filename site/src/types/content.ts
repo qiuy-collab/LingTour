@@ -98,6 +98,7 @@ export type HomeEntryCard = {
   title: string;
   body: string;
   href: string;
+  image?: string;
 };
 
 export type TrustMetric = {

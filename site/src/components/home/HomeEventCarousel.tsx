@@ -27,7 +27,7 @@ export function HomeEventCarousel({ events = [] }: Props) {
   const currentEvent = events[currentIndex];
 
   return (
-    <div className="relative h-[500px] w-full overflow-hidden bg-[var(--night)] lg:h-[650px]">
+    <div className="relative h-[60svh] max-h-[500px] w-full overflow-hidden bg-[var(--night)] lg:h-[650px]">
       {/* Background Image with Ken Burns effect */}
       {events.map((event, idx) => (
         <div

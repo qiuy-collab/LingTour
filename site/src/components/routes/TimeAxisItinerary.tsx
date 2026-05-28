@@ -183,7 +183,7 @@ function PracticalStrip({ stop }: { stop: Stop }) {
           >
             <div className="absolute inset-x-0 top-0 h-2 bg-[radial-gradient(circle_at_6px_-2px,transparent_6px,rgba(214,198,171,0.9)_6.5px)] [background-size:14px_8px]" />
             <div className="absolute inset-x-0 bottom-0 h-2 rotate-180 bg-[radial-gradient(circle_at_6px_-2px,transparent_6px,rgba(214,198,171,0.9)_6.5px)] [background-size:14px_8px]" />
-            <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
               {item.label}
             </p>
             <p className="mt-1 border-t border-dashed border-[var(--line)]/60 pt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--river-deep)]">
@@ -421,7 +421,7 @@ function StopNode({
   const actionPane = (
     <div className="grid gap-7 lg:pr-12 lg:text-right">
       <div className="flex items-baseline gap-4 lg:flex-row-reverse">
-        <p className="font-mono text-5xl font-black tracking-tighter text-[var(--cinnabar)] xl:text-6xl">
+        <p className="font-mono text-3xl md:text-5xl font-black tracking-tighter text-[var(--cinnabar)] xl:text-6xl">
           {stop.time}
         </p>
         <span className="font-mono text-[10px] font-bold uppercase tracking-[0.34em] text-[var(--muted)]/65">
@@ -553,7 +553,7 @@ export function TimeAxisItinerary({ stops, routeStory, routeTitle, onAddStopNote
           {lastStop ? <RouteEpilogue stop={lastStop} routeTitle={routeTitle} /> : null}
 
           <motion.div
-            className="mt-20 flex flex-col items-center pb-8"
+            className="mt-20 flex flex-col items-center pb-24 lg:pb-16"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-10%" }}

@@ -21,6 +21,7 @@ import type {
   TrustMetric,
   HomeEntryCard,
   HomeHero,
+  HomeHeroStat,
 } from "@/types/content";
 import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
@@ -32,6 +33,27 @@ import {
   type RouteRegion,
 } from "@/lib/route-regions";
 
+
+// In-memory data cache
+
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL = 60_000; // 60 seconds
+
+function getCached<T>(key: string): T | null {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.timestamp < CACHE_TTL) return entry.data as T;
+  cache.delete(key);
+  return null;
+}
+
+function setCache<T>(key: string, data: T): void {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
+/** Clear all cached API data. Useful after mutations or for manual invalidation. */
+export function clearCache(): void {
+  cache.clear();
+}
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Internal API response types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 interface ApiRouteStop {
@@ -39,7 +61,7 @@ interface ApiRouteStop {
   sortOrder: number;
   time: string;
   stopName: string;
-  plan: string;
+  plan?: string;
   story: string;
   culturalStory: string;
   details: string[];
@@ -161,19 +183,23 @@ interface ApiHomeConfig {
     badge?: { value?: string; label?: LocalizedText };
     interpretingLabel?: LocalizedText;
     interpretingImage?: string;
+    stats?: Array<{ title: LocalizedText; description: LocalizedText }>;
   };
+  heroStats?: Array<{ title: LocalizedText; description: LocalizedText }>;
   trustMetrics?: Array<{ value: string; label: LocalizedText }>;
   entryCards?: Array<{
     id: string;
     title: LocalizedText;
     body: LocalizedText;
     href: string;
+    image?: string;
   }>;
   cultureHighlights?: Array<{
     slug: string;
     title: LocalizedText;
     body: LocalizedText;
     href?: string;
+    image?: string;
   }>;
   testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
   featuredRouteSlugs?: string[];
@@ -203,10 +229,7 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     title: apiRoute.title,
     culture: apiRoute.cultureTag as StoryRoute["culture"],
     city: apiRoute.cityName,
-    citySlugs: [
-      ...(apiRoute.routeCityLinks?.map((l) => l.citySlug) ?? []),
-      apiRoute.cityName.toLowerCase(),
-    ],
+    citySlugs: apiRoute.routeCityLinks?.map((l) => l.citySlug) ?? [],
     duration: apiRoute.duration,
     audience: apiRoute.audience,
     summary: apiRoute.summary,
@@ -445,12 +468,17 @@ export async function confirmInterpretingDeposit(
 }
 
 export async function fetchRoutes(locale: Locale): Promise<StoryRoute[]> {
+  const key = `routes:${locale}`;
+  const cached = getCached<StoryRoute[]>(key);
+  if (cached) return cached;
   const res = await apiGet<PaginatedResponse<ApiStoryRoute>>("/public/routes", {
     page: 1,
     limit: 50,
     lang: locale,
   });
-  return res.data.map(mapRoute);
+  const result = res.data.map(mapRoute);
+  setCache(key, result);
+  return result;
 }
 
 export async function fetchRouteBySlug(
@@ -493,30 +521,35 @@ export async function fetchCityBySlug(
 export async function fetchStoreCollections(
   locale: Locale,
 ): Promise<StoreCollection[]> {
-  const res = await apiGet<{ collections: ApiStoreCollection[] }>(
+  const res = await apiGet<{ data: ApiStoreCollection[] }>(
     "/public/shop/collections",
     {
       lang: locale,
     },
   );
-  return (res.collections ?? []).map(mapCollection);
+  return (res.data ?? []).map(mapCollection);
 }
 
 export async function fetchStoreProducts(
   locale: Locale,
   collectionSlug?: string,
 ): Promise<StoreProduct[]> {
+  const key = `products:${locale}:${collectionSlug ?? ""}`;
+  const cached = getCached<StoreProduct[]>(key);
+  if (cached) return cached;
   const params: Record<string, string | number | undefined> = {
     page: 1,
     limit: 50,
     lang: locale,
   };
   if (collectionSlug) params.collection = collectionSlug;
-  const res = await apiGet<{ products: ApiStoreProduct[] }>(
+  const res = await apiGet<{ data: ApiStoreProduct[] }>(
     "/public/shop/products",
     params,
   );
-  return (res.products ?? []).map(mapProduct);
+  const result = (res.data ?? []).map(mapProduct);
+  setCache(key, result);
+  return result;
 }
 
 export async function fetchStoreProductBySlug(
@@ -535,11 +568,16 @@ export async function fetchStoreProductBySlug(
 }
 
 export async function fetchEvents(locale: Locale): Promise<EventData[]> {
-  const res = await apiGet<{ items: ApiEvent[] }>("/public/events", {
+  const key = `events:${locale}`;
+  const cached = getCached<EventData[]>(key);
+  if (cached) return cached;
+  const res = await apiGet<{ data: ApiEvent[] }>("/public/events", {
     page: 1,
     limit: 50,
   });
-  return (res.items ?? []).map((item) => mapEvent(item, locale));
+  const result = (res.data ?? []).map((item) => mapEvent(item, locale));
+  setCache(key, result);
+  return result;
 }
 
 export async function fetchEventBySlug(
@@ -568,6 +606,7 @@ export async function fetchRelatedProducts(
 
 export interface HomeData {
   hero: HomeHero;
+  heroStats: HomeHeroStat[];
   regionShowcase: Region[];
   featuredRoutes: FeaturedRoute[];
   cultureHighlights: CultureFeature[];
@@ -599,6 +638,9 @@ export async function fetchRouteRegions(locale: Locale): Promise<RouteRegion[]> 
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
+  const key = `home:${locale}`;
+  const cached = getCached<HomeData>(key);
+  if (cached) return cached;
   const [routesResult, citiesResult, homeConfigResult] =
     await Promise.allSettled([
       fetchRoutes(locale),
@@ -653,6 +695,7 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       title: pickLocalized(item.title, locale),
       body: pickLocalized(item.body, locale),
       href: item.href ?? `/culture/${item.slug}`,
+      image: item.image || undefined,
     }),
   );
 
@@ -703,8 +746,16 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
         }))
       : DEFAULT_ROUTE_REGIONS;
 
-  return {
+  // heroStats: admin stores these as hero.stats (nested) or heroStats (top-level)
+  const rawHeroStats = homeConfig.hero?.stats ?? homeConfig.heroStats ?? [];
+  const heroStats: HomeHeroStat[] = rawHeroStats.map((s) => ({
+    title: pickLocalized(s.title, locale),
+    body: pickLocalized(s.description, locale),
+  }));
+
+  const homeData: HomeData = {
     hero,
+    heroStats,
     regionShowcase,
     featuredRoutes,
     cultureHighlights,
@@ -735,9 +786,12 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
         title: pickLocalized(item.title, locale),
         body: pickLocalized(item.body, locale),
         href: item.href,
+        image: item.image || undefined,
       })) ?? [],
     routeRegions,
   };
+  setCache(key, homeData);
+  return homeData;
 }
 
 // Re-export useApiQuery for convenience
@@ -875,7 +929,7 @@ export async function fetchRouteCommunityPosts(
 ): Promise<RouteCommunityPost[]> {
   const { routeSlug, routeTitle, stopName, locale } = options;
   try {
-    const res = await apiGet<{ items: ApiCommunityPost[] }>(
+    const res = await apiGet<{ data: ApiCommunityPost[] }>(
       "/public/community/posts",
       {
         route: routeSlug,
@@ -888,7 +942,7 @@ export async function fetchRouteCommunityPosts(
     );
     const stopTarget = stopName?.toLowerCase().trim();
 
-    return (res.items ?? [])
+    return (res.data ?? [])
       .map((p) => mapCommunityPost(p, locale))
       .filter((p) => {
         const route = p.route.toLowerCase().trim();
@@ -996,7 +1050,7 @@ export async function fetchCommunityFeed(
   locale: Locale,
   options?: { channel?: string; q?: string; limit?: number },
 ): Promise<CommunityFeedPost[]> {
-  const res = await apiGet<{ items: ApiCommunityPost[] }>(
+  const res = await apiGet<{ data: ApiCommunityPost[] }>(
     "/public/community/posts",
     {
       channel:
@@ -1007,7 +1061,7 @@ export async function fetchCommunityFeed(
       limit: options?.limit ?? 50,
     },
   );
-  return (res.items ?? []).map((item) => mapCommunityPost(item, locale));
+  return (res.data ?? []).map((item) => mapCommunityPost(item, locale));
 }
 
 export type CommunityReactionSummary = {

@@ -31,7 +31,7 @@ export type StoryRoute = {
   itinerary: {
     time: string;
     stop: string;
-    plan: string;
+    plan?: string;
     story: string;
     details: string[];
     culturalStory: string;

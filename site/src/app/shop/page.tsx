@@ -124,7 +124,7 @@ export default function ShopPage() {
                         <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight lg:text-4xl">
                           {collection.title}
                         </h3>
-                        <p className="mt-5 text-sm leading-7 text-white/70 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                        <p className="mt-5 text-sm leading-7 text-white/70 opacity-100 md:opacity-0 md:transition-opacity md:duration-500 md:group-hover:opacity-100">
                           {collection.body}
                         </p>
                       </div>

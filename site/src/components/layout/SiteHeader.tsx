@@ -8,6 +8,11 @@ import { AccountNavLink } from "@/components/layout/AccountNavLink";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
+import { useLocale } from "@/lib/locale-context";
+import {
+  DEFAULT_ROUTE_REGIONS,
+  pickRouteRegionText,
+} from "@/lib/route-regions";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
@@ -17,8 +22,18 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const NAV_LABEL_KEY: Record<string, string> = {
+  "/": "common.nav.home",
+  "/culture": "common.nav.culture",
+  "/routes": "common.nav.routes",
+  "/interpreting": "common.nav.interpreting",
+  "/shop": "common.nav.shop",
+  "/community": "common.nav.community",
+};
+
 export function SiteHeader() {
   const pathname = usePathname();
+  const { t, locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
 
   // The admin area renders its own chrome — don't double up the public header.
@@ -53,7 +68,7 @@ export function SiteHeader() {
                 }`}
                 aria-current={active ? "page" : undefined}
               >
-                {item.label}
+                {t(NAV_LABEL_KEY[item.href] ?? "common.nav.home")}
               </Link>
             );
           })}
@@ -64,7 +79,7 @@ export function SiteHeader() {
             LingTour
           </p>
           <p className="mt-1 text-center text-[0.62rem] uppercase tracking-[0.3em] text-[var(--muted)]">
-            Guangdong
+            {t("common.site.subtitle")}
           </p>
         </Link>
 
@@ -85,7 +100,7 @@ export function SiteHeader() {
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
-                  {item.label}
+                  {t(NAV_LABEL_KEY[item.href] ?? "common.nav.community")}
                 </Link>
               );
             })}
@@ -95,14 +110,14 @@ export function SiteHeader() {
             href="/interpreting#booking"
             className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
-            Reserve
+            {t("common.btn.reserve")}
           </Link>
         </div>
 
         <button
           type="button"
           className="grid h-10 w-10 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         >
@@ -115,7 +130,11 @@ export function SiteHeader() {
       </Container>
 
       {isOpen ? (
-        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden">
+        <div className="fixed inset-0 top-[4.6rem] z-40 bg-black/30 md:hidden" onClick={() => setIsOpen(false)} />
+      ) : null}
+
+      {isOpen ? (
+        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden relative z-50">
           <Container className="grid gap-2 py-4">
             {siteNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -132,10 +151,39 @@ export function SiteHeader() {
                   aria-current={active ? "page" : undefined}
                   onClick={() => setIsOpen(false)}
                 >
-                  {item.label}
+                  {t(NAV_LABEL_KEY[item.href] ?? "common.nav.home")}
                 </Link>
               );
             })}
+
+            {/* Routes by region — mobile only */}
+            <div className="mt-4 mb-2">
+              <p className="px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+                {t("common.nav.routes")} — {t("home.map.title", "By Region")}
+              </p>
+              <div className="grid gap-1.5">
+                {DEFAULT_ROUTE_REGIONS.map((region) => {
+                  const regionTitle = pickRouteRegionText(region.title, locale);
+                  const regionNote = pickRouteRegionText(region.note, locale);
+
+                  return (
+                    <Link
+                      key={region.key}
+                      href={`/routes?region=${region.key}`}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm transition border border-[var(--line)] bg-white/40 text-[var(--ink)] hover:bg-[var(--river-deep)] hover:text-white"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-[var(--cinnabar)]/60 flex-shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{regionTitle}</span>
+                        <span className="text-[10px] text-[var(--muted)]">{regionNote}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="mt-2 grid grid-cols-2 gap-2 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
               <AccountNavLink onNavigate={() => setIsOpen(false)} />
               <LanguageToggle />
@@ -146,7 +194,7 @@ export function SiteHeader() {
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >
-                Reserve
+                {t("common.btn.reserve")}
               </Link>
             </div>
           </Container>

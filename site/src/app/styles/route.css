@@ -95,7 +95,7 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .route-stop-layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
   }

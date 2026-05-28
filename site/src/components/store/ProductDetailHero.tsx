@@ -97,7 +97,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 </p>
                 {/* Stamp effect */}
                 <div className="absolute -right-4 -top-4 h-16 w-16 rotate-12 rounded-full border-2 border-dashed border-[var(--gold)]/30 flex items-center justify-center">
-                  <span className="text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]/40 text-center">Authentic<br/>Object</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]/40 text-center">Authentic<br/>Object</span>
                 </div>
               </div>
             </Reveal>
@@ -197,7 +197,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                       : "border-white rotate-[-2deg] opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img src={image} alt="" className="h-full w-full object-cover" />
+                  <img src={image} alt="" loading="lazy" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>

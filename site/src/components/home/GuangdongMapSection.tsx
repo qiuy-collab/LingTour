@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -41,6 +41,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   const [features] = useState<CityFeature[]>(initialFeatures);
   const [activeCode, setActiveCode] = useState<number>(defaultActiveCode);
   const [slideIndex, setSlideIndex] = useState(0);
+  const lastTouchedRef = useRef<number | null>(null);
 
   const eventsByCity = useMemo(() => {
     const map = new Map<number, (typeof events)[number]>();
@@ -73,6 +74,22 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     if (!city) return;
     activateCity(adcode);
     router.push(`/culture/${city.slug}`);
+  };
+
+  /** On touch devices: first tap activates (like hover), second tap navigates. */
+  const handleTouchTap = (adcode: number) => {
+    if (lastTouchedRef.current === adcode) {
+      lastTouchedRef.current = null;
+      openCity(adcode);
+    } else {
+      lastTouchedRef.current = adcode;
+      activateCity(adcode);
+    }
+  };
+
+  /** Prevent 300ms tap delay on touch devices. */
+  const handleTouchStart = () => {
+    // Intentionally empty — onTouchStart itself triggers the fast-tap path.
   };
 
   const resolvedActiveCode = focusCityByCode.has(activeCode)
@@ -143,8 +160,8 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           </Reveal>
         </div>
 
-        <div className="relative min-h-[40rem] lg:min-h-[50rem]">
-          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-[min(82vw,17rem)] rotate-1 border-8 border-white bg-white/95 p-4 backdrop-blur-sm md:w-56 lg:w-52">
+        <div className="relative min-h-[16rem] md:min-h-[28rem] lg:min-h-[40rem]">
+          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-[min(90vw,17rem)] rotate-1 border-8 border-white bg-white/95 p-4 backdrop-blur-sm md:w-56 lg:w-52">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
@@ -152,9 +169,12 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
               >
                 <div className="relative mb-4 aspect-[4/3] overflow-hidden">
                   {activeImage ? (
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${activeImage})` }}
+                    <img
+                      src={activeImage}
+                      alt={activeCity.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(20,52,61,0.14),rgba(182,66,53,0.08))]" />
@@ -269,8 +289,9 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         onMouseEnter={() => {
                           if (hasContent) activateCity(city.adcode);
                         }}
+                        onTouchStart={handleTouchStart}
                         onClick={() => {
-                          if (hasContent) openCity(city.adcode);
+                          if (hasContent) handleTouchTap(city.adcode);
                         }}
                       />
                     );
@@ -289,7 +310,8 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         className="transition-all duration-300"
                         style={{ cursor: "pointer" }}
                         onMouseEnter={() => activateCity(city.adcode)}
-                        onClick={() => openCity(city.adcode)}
+                        onTouchStart={handleTouchStart}
+                        onClick={() => handleTouchTap(city.adcode)}
                       >
                         {hasEvent ? (
                           <circle

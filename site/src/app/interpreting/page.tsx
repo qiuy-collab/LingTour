@@ -331,8 +331,9 @@ export default function InterpretingPage() {
               </h2>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
-              <div className="grid grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+            <div className="overflow-x-auto overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
+              <div className="min-w-[28rem] md:min-w-0">
+              <div className="hidden md:grid grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
                 <div className="p-4">{locale === "zh" ? "类型" : "Type"}</div>
                 <div className="p-4 text-center">
                   {t("interpreting.levels.junior")}
@@ -347,7 +348,7 @@ export default function InterpretingPage() {
               {matrix.map((row) => (
                 <div
                   key={row.service}
-                  className="grid grid-cols-[1.2fr_repeat(3,1fr)] border-t border-[var(--line)] text-sm text-[var(--muted)] transition hover:bg-white/60"
+                  className="grid grid-cols-1 md:grid-cols-[1.2fr_repeat(3,1fr)] border-t border-[var(--line)] text-sm text-[var(--muted)] transition hover:bg-white/60"
                 >
                   <div className="flex items-center gap-3 p-4">
                     <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--gold)]/15 text-xl text-[var(--gold)]">
@@ -362,16 +363,33 @@ export default function InterpretingPage() {
                       </p>
                     </div>
                   </div>
+                  <div className="flex items-center justify-around gap-2 px-4 pb-4 md:hidden">
+                    {[
+                      { label: t("interpreting.levels.junior"), value: row.junior },
+                      { label: t("interpreting.levels.mid"), value: row.mid },
+                      { label: t("interpreting.levels.senior"), value: row.senior },
+                    ].map((tier) => (
+                      <div key={tier.label} className="text-center">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                          {tier.label}
+                        </p>
+                        <p className="mt-1 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
+                          {tier.value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                   {[row.junior, row.mid, row.senior].map((price, i) => (
                     <div
                       key={`${row.service}-${i}`}
-                      className="grid place-items-center p-4 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]"
+                      className="hidden md:grid place-items-center p-4 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]"
                     >
                       {price}
                     </div>
                   ))}
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </Reveal>

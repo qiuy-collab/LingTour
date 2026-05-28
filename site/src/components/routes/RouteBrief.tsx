@@ -126,7 +126,7 @@ export function RouteBrief({ route }: Props) {
                 Read the day
               </Link>
               <Link
-                href={`/culture/${route.citySlugs[0] ?? route.city.toLowerCase()}`}
+                href={route.citySlugs[0] ? `/culture/${route.citySlugs[0]}` : "/culture"}
                 className="font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
               >
                 Open city file

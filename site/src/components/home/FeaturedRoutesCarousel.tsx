@@ -67,7 +67,7 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                 <Link
                   key={route.slug}
                   href={`/routes/${route.slug}`}
-                  className={`group relative h-[32rem] w-[20rem] shrink-0 transition-all duration-700 ${
+                  className={`group relative h-[32rem] w-[min(20rem,80vw)] shrink-0 transition-all duration-700 ${
                     activeIndex === routes.indexOf(route)
                       ? "scale-100 opacity-100"
                       : "scale-90 opacity-40 grayscale"

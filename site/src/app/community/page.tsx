@@ -38,6 +38,14 @@ type Channel = (typeof channels)[number];
 type PostChannel = Exclude<Channel, "All">;
 type SortMode = "Live" | "Loved" | "Saved";
 
+const CHANNEL_I18N: Record<Channel, string> = {
+  All: "community.channel.all",
+  "Field Notes": "community.channel.fieldNotes",
+  "Food Map": "community.channel.foodMap",
+  "Hidden Stop": "community.channel.hiddenStop",
+  "Culture Desk": "community.channel.cultureDesk",
+};
+
 type Draft = {
   title: string;
   note: string;
@@ -110,7 +118,7 @@ const draftFromBrief = (brief: FieldBrief | null): Draft => ({
 });
 
 export default function CommunityPage() {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<LocalUser | null>(null);
   const [optimisticPosts, setOptimisticPosts] = useState<CommunityFeedPost[]>(
@@ -368,12 +376,12 @@ export default function CommunityPage() {
   const handleGoogleLogin = async () => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) {
-      setToast("Google login is not configured.");
+      setToast(t("community.error.googleNotConfigured"));
       return;
     }
     const { google } = window as any;
     if (!google?.accounts?.id) {
-      setToast("Google Sign-In script not loaded.");
+      setToast(t("community.error.googleScriptNotLoaded"));
       return;
     }
     try {
@@ -395,7 +403,7 @@ export default function CommunityPage() {
       syncAuth();
       setToast(AUTH_PROMPTS.googleConnectedPublish);
     } catch {
-      setToast("Google sign-in failed. Please try again.");
+      setToast(t("community.error.googleSignInFailed"));
     }
   };
 
@@ -430,8 +438,8 @@ export default function CommunityPage() {
     }
 
     if (!title && !note && !kitDraft.image) {
-      setToast("Add a title, note, or photo before publishing.");
-      throw new Error("Add a title, note, or photo before publishing.");
+      setToast(t("community.error.addContent"));
+      throw new Error(t("community.error.addContent"));
     }
 
     try {
@@ -467,15 +475,15 @@ export default function CommunityPage() {
       setIsKitOpen(false);
       setToast(
         created.status === "pending_review"
-          ? "Posted to review queue. It is pinned here for you while awaiting approval."
-          : "Published. You earned 1 field stamp.",
+          ? t("community.success.pendingReview")
+          : t("community.success.published"),
       );
       refetch();
     } catch (publishError) {
       const message =
         publishError instanceof Error
           ? publishError.message
-          : "Could not submit your field note right now.";
+          : t("community.error.submitFailed");
       setToast(message);
       throw publishError instanceof Error ? publishError : new Error(message);
     }
@@ -488,15 +496,14 @@ export default function CommunityPage() {
         <div className="site-container relative text-center">
           <Reveal>
             <p className="text-label tracking-[0.3em] text-[var(--cinnabar)]">
-              The LingTour Field Room
+              {t("community.badge")}
             </p>
             <h1 className="mt-6 font-[family:var(--font-display)] text-5xl leading-[0.85] tracking-tight md:text-8xl lg:text-[8rem]">
-              Inspiration <br />
-              <span className="italic text-[var(--gold)]">Exchange.</span>
+              {t("community.hero.title")} <br />
+              <span className="italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span>
             </h1>
             <p className="handwritten mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
-              Read field notes, pick a brief, and trade useful intelligence. <br />
-              Turn quiet details into shared routes.
+              {t("community.hero.subtitle")}
             </p>
           </Reveal>
         </div>
@@ -516,7 +523,7 @@ export default function CommunityPage() {
                     : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
                 }`}
               >
-                {channel}
+                {t(CHANNEL_I18N[channel])}
               </button>
             ))}
           </div>
@@ -525,7 +532,7 @@ export default function CommunityPage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search signals..."
+                placeholder={t("community.search.placeholder")}
                 className="h-10 w-48 rounded-full border border-[var(--line)] bg-white/60 pl-9 pr-4 text-sm outline-none focus:border-[var(--cinnabar)] focus:bg-white transition-colors"
               />
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -540,13 +547,13 @@ export default function CommunityPage() {
         {loading && !masonryItems.length ? (
           <div className="py-20 text-center">
             <p className="handwritten text-lg text-[var(--muted)]">
-              Collecting live dispatches...
+              {t("community.loading")}
             </p>
           </div>
         ) : error && !masonryItems.length ? (
           <div className="py-20 text-center">
             <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
-              Feed offline.
+              {t("community.error.feedOffline")}
             </p>
             <p className="mt-4 text-sm text-[var(--muted)]">{error}</p>
             <button
@@ -554,7 +561,7 @@ export default function CommunityPage() {
               onClick={refetch}
               className="mt-6 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)] transition hover:bg-[var(--river-deep)] hover:text-white"
             >
-              Retry
+              {t("common.btn.retry")}
             </button>
           </div>
         ) : (
@@ -616,7 +623,7 @@ export default function CommunityPage() {
             ) : (
               <div className="col-span-full py-20 text-center break-inside-avoid">
                 <p className="font-[family:var(--font-display)] text-4xl text-[var(--muted)] opacity-30">
-                  No signals in this range.
+                  {t("community.empty")}
                 </p>
               </div>
             )}
@@ -672,7 +679,7 @@ export default function CommunityPage() {
             onClick={() => setToast(null)}
             className="text-white/55 hover:text-white"
           >
-            Close
+            {t("community.toast.close")}
           </button>
         </div>
       ) : null}

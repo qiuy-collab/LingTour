@@ -432,7 +432,7 @@ export function GlobalDrawer() {
                           >
                             <div className="flex h-full w-full items-center justify-center overflow-hidden bg-[var(--river-deep)] text-white">
                               {user.avatarUrl ? (
-                                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+                                <img src={user.avatarUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                               ) : (
                                 <span className="font-[family:var(--font-display)] text-4xl italic">{getInitials(user.name)}</span>
                               )}
@@ -768,7 +768,7 @@ export function GlobalDrawer() {
                             <div className="flex gap-4 p-4">
                               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-white shadow-xl">
                                 {note.image ? (
-                                  <img src={note.image} alt="" className="h-full w-full object-cover" />
+                                  <img src={note.image} alt="" loading="lazy" className="h-full w-full object-cover" />
                                 ) : (
                                   <div className="grid h-full w-full place-items-center bg-[var(--paper-deep)] font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
                                     Note
@@ -872,7 +872,7 @@ export function GlobalDrawer() {
                                 aria-label={`Select ${item.name}`}
                               />
                               <div className="h-16 w-16 shrink-0 rounded-2xl bg-white p-2 shadow-xl -rotate-2 transition-transform">
-                                {item.image && <img src={item.image} alt="" className="h-full w-full object-cover rounded-lg" />}
+                                {item.image && <img src={item.image} alt="" loading="lazy" className="h-full w-full object-cover rounded-lg" />}
                               </div>
                               <div className="min-w-0 flex-1 pr-2">
                                 <p className="truncate text-base font-bold leading-tight text-[var(--river-deep)] sm:text-lg">{item.name}</p>

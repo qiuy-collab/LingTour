@@ -114,7 +114,7 @@ export default function CulturePage() {
 
                         {/* Registry Tag */}
                         <div className="absolute top-3 right-3 z-10">
-                          <div className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[7px] font-mono uppercase tracking-tighter text-[var(--river-deep)] border border-black/5 shadow-sm">
+                          <div className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono uppercase tracking-tighter text-[var(--river-deep)] border border-black/5 shadow-sm">
                             REG-0{index + 20}
                           </div>
                         </div>
@@ -142,7 +142,7 @@ export default function CulturePage() {
                             {city.tags.slice(0, 2).map((tag) => (
                               <span
                                 key={tag}
-                                className="text-[8px] uppercase tracking-widest text-[var(--muted)]/40 font-bold"
+                                className="text-[10px] uppercase tracking-widest text-[var(--muted)]/40 font-bold"
                               >
                                 #{tag}
                               </span>

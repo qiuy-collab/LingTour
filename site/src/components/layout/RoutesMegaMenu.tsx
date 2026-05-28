@@ -14,7 +14,6 @@ import type { StoryRoute } from "@/data/routes";
 import {
   DEFAULT_ROUTE_REGIONS,
   pickRouteRegionText,
-  pickSecondaryRouteRegionText,
   type RouteRegion,
 } from "@/lib/route-regions";
 
@@ -89,15 +88,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                 (route) => route.routeRegionKey === region.key,
               );
               const regionTitle = pickRouteRegionText(region.title, locale);
-              const regionTitleSecondary = pickSecondaryRouteRegionText(
-                region.title,
-                locale,
-              );
               const regionNote = pickRouteRegionText(region.note, locale);
-              const regionNoteSecondary = pickSecondaryRouteRegionText(
-                region.note,
-                locale,
-              );
 
               return (
                 <motion.div
@@ -153,19 +144,9 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                     <h3 className="mt-5 text-lg font-bold text-[var(--river-deep)] transition group-hover/region:text-[var(--cinnabar)]">
                       {regionTitle}
                     </h3>
-                    {regionTitleSecondary ? (
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
-                        {regionTitleSecondary}
-                      </p>
-                    ) : null}
                     <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                       {regionNote}
                     </p>
-                    {regionNoteSecondary ? (
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]/80">
-                        {regionNoteSecondary}
-                      </p>
-                    ) : null}
                   </Link>
                   <div className="mt-6 space-y-3 border-t border-black/5 pt-4">
                     {regionRoutes.slice(0, 3).map((route) => (

@@ -33,13 +33,16 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function useDesktopLayout() {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
 
   useEffect(() => {
-    const update = () => setIsDesktop(window.innerWidth >= 1024);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
   }, []);
 
   return isDesktop;
@@ -151,7 +154,7 @@ function VisualPlate({
       : null;
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-[var(--parchment)] bg-grain px-7 py-8 lg:px-9">
+    <div className="relative flex h-full flex-col overflow-hidden bg-[var(--parchment)] bg-grain px-4 py-5 lg:px-7 lg:py-8">
       <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-black/[0.08] to-transparent" />
       <div className="absolute left-10 top-5 h-8 w-28 -rotate-2 border border-black/5 bg-white/30 backdrop-blur-[2px]" />
 
@@ -159,7 +162,7 @@ function VisualPlate({
         <p className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
           {cityName} / Plate
         </p>
-        <span className="rounded-full border border-[var(--line)] px-3 py-1 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--muted)]">
+        <span className="rounded-full border border-[var(--line)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
           Chapter {String(index + 1).padStart(2, "0")}
         </span>
       </div>
@@ -167,7 +170,7 @@ function VisualPlate({
       <div className="relative z-10 mt-6 flex flex-1 items-center">
         <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1fr)_6.25rem] lg:items-start">
           <div className="min-w-0">
-            <div className="relative w-full max-w-[31rem] rotate-[-1.2deg] border-[12px] border-white bg-white scrapbook-shadow transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.8deg]">
+            <div className="relative w-full max-w-[31rem] rotate-[-1.2deg] border-[6px] lg:border-[12px] border-white bg-white scrapbook-shadow transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.8deg]">
               <div className="aspect-[4/3] overflow-hidden">
                 <img
                   src={image}
@@ -190,14 +193,14 @@ function VisualPlate({
                     decoding="async"
                   />
                   <div className="border-t border-black/5 px-3 py-2">
-                    <p className="font-mono text-[7px] uppercase tracking-[0.24em] text-[var(--muted)]">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
                       detail frame
                     </p>
                   </div>
                 </div>
               ) : null}
               <div className="border-t border-black/5 px-4 py-3">
-                <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
                   {archivalMetadata(index, activeFrame, frameCount)}
                 </p>
               </div>
@@ -241,7 +244,7 @@ function VisualPlate({
                       />
                     </div>
                     <div className="border-t border-black/5 px-2.5 py-2">
-                      <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-[var(--river-deep)]/72">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--river-deep)]/72">
                         {String(frameIndex + 1).padStart(2, "0")}
                       </p>
                     </div>
@@ -336,7 +339,7 @@ function NarrativePage({
               <div className="flex items-start gap-4">
                 <div className="mt-1 h-12 w-px shrink-0 bg-[var(--cinnabar)]/45" />
                 <div className="min-w-0">
-                  <p className="font-mono text-[8px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--cinnabar)]">
                     Pull quote
                   </p>
                   <p className="mt-3 font-[family:var(--font-display)] text-[1.4rem] italic leading-[1.58] tracking-[-0.01em] text-[var(--river-deep)]/84 lg:text-[1.55rem]">
@@ -646,13 +649,13 @@ function MobileStack({
               key={`${index}-${section.title}-mobile-tab`}
               type="button"
               onClick={() => onSelectSection(index)}
-              className={`shrink-0 border px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] transition ${
+              className={`shrink-0 border px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.18em] transition ${
                 index === activeIdx
                   ? "border-[var(--cinnabar)] bg-[var(--cinnabar)] text-white"
                   : "border-[var(--line)] bg-[var(--parchment-tab)] text-[var(--river-deep)]"
               }`}
             >
-              {String(index + 1).padStart(2, "0")}
+              {String(index + 1).padStart(2, "0")} <span className="ml-1 hidden sm:inline">{section.title}</span>
             </button>
           ))}
         </div>

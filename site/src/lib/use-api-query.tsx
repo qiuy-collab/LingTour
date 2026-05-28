@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 
 export interface AsyncState<T> {
   data: T | null;
@@ -34,7 +35,7 @@ type Fetcher<T> = () => Promise<T>;
 export function useApiQuery<T>(
   fetcher: Fetcher<T>,
   deps: unknown[] = [],
-  options: UseApiQueryOptions = {},
+  options: UseApiQueryOptions & { initialData?: T | null } = {},
 ): AsyncState<T> {
   const {
     keepPreviousData = true,
@@ -42,9 +43,10 @@ export function useApiQuery<T>(
     retryDelay = 1000,
     enabled = true,
   } = options;
+  const initialData = (options as { initialData?: T | null }).initialData ?? null;
 
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(enabled);
+  const [data, setData] = useState<T | null>(initialData);
+  const [loading, setLoading] = useState(enabled && !initialData);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 
@@ -122,15 +124,18 @@ export function useApiQuery<T>(
  * wording.
  */
 export function LoadingSpinner({
-  text = "Opening the file…",
+  text,
 }: {
   text?: string;
 }) {
+  const { t } = useLocale();
+  const displayText = text ?? t("common.state.loadingFile");
+
   return (
     <div className="flex min-h-[40vh] items-center justify-center">
       <div className="text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--line)] border-t-[var(--cinnabar)]" />
-        <p className="mt-4 text-sm text-[var(--muted)] handwritten">{text}</p>
+        <p className="mt-4 text-sm text-[var(--muted)] handwritten">{displayText}</p>
       </div>
     </div>
   );
@@ -141,29 +146,33 @@ export function LoadingSpinner({
  * the archive". Callers can pass a more specific `message` when useful.
  */
 export function ErrorState({
-  message = "We couldn't reach the archive right now. Please try again in a moment.",
+  message,
   onRetry,
-  title = "Something went wrong",
+  title,
 }: {
   message?: string;
   onRetry?: () => void;
   title?: string;
 }) {
+  const { t } = useLocale();
+  const displayTitle = title ?? t("common.state.errorTitle");
+  const displayMessage = message ?? t("common.state.errorMessage");
+
   return (
     <div className="flex min-h-[40vh] items-center justify-center px-6">
       <div className="max-w-md text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-          ! {title}
+          ! {displayTitle}
         </p>
         <p className="mt-4 text-base leading-relaxed text-[var(--muted)] handwritten">
-          {message}
+          {displayMessage}
         </p>
         {onRetry && (
           <button
             onClick={onRetry}
             className="mt-8 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--ink)] transition hover:bg-[var(--night)] hover:text-white"
           >
-            Try again
+            {t("common.btn.tryAgain")}
           </button>
         )}
       </div>
