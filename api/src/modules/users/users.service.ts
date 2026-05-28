@@ -66,7 +66,7 @@ export class UsersService {
     const items = await Promise.all(
       users.map((user) => this.toManagedUser(user, statsMap.get(user.id))),
     );
-    return { items, total, page, pageSize };
+    return { data: items, total, page, pageSize };
   }
 
   async findManagedById(id: string) {
