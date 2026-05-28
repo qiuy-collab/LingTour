@@ -14,6 +14,7 @@ const router = useRouter()
 const {
   loading, list, total, page,
   filters,
+  fetchList,
   handleSearch: _handleSearch,
   handleReset,
 } = useListPage<FAQ>({

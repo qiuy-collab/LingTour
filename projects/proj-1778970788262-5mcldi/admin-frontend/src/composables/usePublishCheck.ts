@@ -13,7 +13,7 @@
  *   else { proceedWithPublish() }
  */
 
-import { computed, type Ref } from 'vue'
+// vue imports not needed — this composable is pure logic
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ function isNonEmpty(value: unknown): boolean {
   return true
 }
 
-function getI18nText(value: unknown): string {
+function _getI18nText(value: unknown): string {
   if (typeof value === 'string') return value
   if (value && typeof value === 'object') {
     const i18n = value as I18nField
