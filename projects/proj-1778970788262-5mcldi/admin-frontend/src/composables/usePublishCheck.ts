@@ -65,15 +65,6 @@ function isNonEmpty(value: unknown): boolean {
   return true
 }
 
-function _getI18nText(value: unknown): string {
-  if (typeof value === 'string') return value
-  if (value && typeof value === 'object') {
-    const i18n = value as I18nField
-    return i18n.zh || i18n.en || ''
-  }
-  return ''
-}
-
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 function isValidSlug(slug: string | undefined): boolean {
