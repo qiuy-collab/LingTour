@@ -159,7 +159,7 @@ export function SiteHeader() {
             {/* Routes by region — mobile only */}
             <div className="mt-4 mb-2">
               <p className="px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                {t("common.nav.routes")} — {t("home.map.title", "By Region")}
+                {t("common.nav.routes")} — {t("home.map.title")}
               </p>
               <div className="grid gap-1.5">
                 {DEFAULT_ROUTE_REGIONS.map((region) => {
