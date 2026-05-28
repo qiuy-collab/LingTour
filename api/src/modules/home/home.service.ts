@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { HomeConfig } from './entities/home-config.entity';
 import { UpdateHomeConfigDto } from './dto/update-home-config.dto';
 import { DEFAULT_ROUTE_REGIONS } from '../../common/constants/route-regions';
@@ -42,16 +42,18 @@ export class HomeService {
 
       let config: HomeConfig | undefined = existingConfig;
       if (!config) {
-        config = this.homeConfigRepo.create({
-          hero: {} as Record<string, unknown>,
+        const partial: DeepPartial<HomeConfig> = {
+          hero: {},
           trustMetrics: [],
           entryCards: [],
           cultureHighlights: [],
           testimonials: [],
           featuredRouteSlugs: [],
           routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<Record<string, unknown>>,
-        }) as HomeConfig;
-        config = await this.homeConfigRepo.save(config);
+        };
+        config = await this.homeConfigRepo.save(
+          this.homeConfigRepo.create(partial),
+        );
       }
       const normalizedRouteRegions = this.normalizeRouteRegions(config.routeRegions);
       if (
