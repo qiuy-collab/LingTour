@@ -8,7 +8,7 @@
 // copies for historical correctness and should NOT be changed.
 // ---------------------------------------------------------------------------
 
-import regionsData from '../../../../shared/route-regions.json';
+import regionsData from './route-regions.json';
 
 export interface RouteRegion {
   key: string;
