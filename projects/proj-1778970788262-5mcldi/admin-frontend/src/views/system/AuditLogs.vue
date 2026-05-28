@@ -13,7 +13,7 @@ import { useListPage } from '@/composables/useListPage'
 
 // ─── 列表数据 (useListPage) ─────────────
 const listPage = useListPage<AuditLog>({
-  fetchApi: async (params) => {
+  fetchApi: async (params: Record<string, any>) => {
     const [startDate, endDate] = (params.dateRange as string[]) || []
     const response = await auditApi.getList({
       page: params.page,
@@ -23,7 +23,7 @@ const listPage = useListPage<AuditLog>({
       keyword: params.keyword || undefined,
       startDate,
       endDate,
-    })
+    }) as any
     // Detect API unavailable flag
     const data = response.data?.data || {}
     if (data.unavailable) apiUnavailable.value = true
@@ -36,7 +36,6 @@ const listPage = useListPage<AuditLog>({
 const {
   loading, list, total, page, pageSize,
   filters,
-  fetchList,
   handleSearch,
   handleReset: baseHandleReset,
   handlePageChange, handleSizeChange,

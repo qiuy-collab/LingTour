@@ -18,7 +18,7 @@ const {
   handleSearch, handleReset,
   fetchList,
 } = useListPage<ManagedUser>({
-  fetchApi: (params) => getUsers(params as any),
+  fetchApi: (params) => getUsers(params as any) as any,
   defaultFilters: { keyword: '', status: '' as UserStatus | '' },
 })
 

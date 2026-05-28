@@ -13,7 +13,7 @@ import { ListToolbar } from '@/components/list'
 const router = useRouter()
 
 const listPage = useListPage<Order>({
-  fetchApi: (params) => ordersApi.getOrders(params),
+  fetchApi: (params) => ordersApi.getOrders(params as any),
   defaultFilters: {
     keyword: '',
     status: '',
@@ -26,7 +26,6 @@ const listPage = useListPage<Order>({
 const {
   loading, list, total, page, pageSize,
   filters,
-  fetchList,
   handleSearch,
   handlePageChange, handleSizeChange,
 } = listPage
