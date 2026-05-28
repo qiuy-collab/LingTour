@@ -18,7 +18,7 @@ export const getDatabaseConfig = (
     'lingtour',
   entities: [__dirname + '/../modules/**/entities/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-  migrationsRun: configService.get<string>('NODE_ENV') === 'production',
+  migrationsRun: false,
   synchronize: false,
   logging: configService.get<string>('NODE_ENV') === 'development',
 });
