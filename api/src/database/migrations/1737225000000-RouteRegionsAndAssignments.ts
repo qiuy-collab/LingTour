@@ -47,12 +47,13 @@ export class RouteRegionsAndAssignments1737225000000 implements MigrationInterfa
       ADD COLUMN IF NOT EXISTS route_regions JSONB NOT NULL DEFAULT '[]'::jsonb
     `);
 
-    await queryRunner.query(`
-      UPDATE home_configs
-      SET route_regions = '${DEFAULT_ROUTE_REGIONS}'::jsonb
-      WHERE route_regions IS NULL
-         OR route_regions = '[]'::jsonb
-    `);
+    await queryRunner.query(
+      `UPDATE home_configs
+       SET route_regions = $1::jsonb
+       WHERE route_regions IS NULL
+          OR route_regions = '[]'::jsonb`,
+      [DEFAULT_ROUTE_REGIONS],
+    );
 
     await queryRunner.query(`
       UPDATE story_routes AS route
