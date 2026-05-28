@@ -66,3 +66,14 @@
 - **前端修复**：CityEdit.vue 移除所有只读限制（alert、只读标签、禁用按钮、死代码）
 - **验证**：curl 测试 edit/add/delete/reorder 全部 200；浏览器保存成功并持久化
 - **产出**：`outputs/city-sections-fix-report.md`
+
+
+## 2026-05-25 自动提取
+- 后台仓库 LingTour-admin-frontend 应为 public（已完成）
+- 后台仓库地址：https://github.com/qiuy-collab/LingTour-admin-frontend
+
+
+## 2026-05-26 自动提取
+- 用户使用宝塔面板管理服务器
+- 用户习惯用 Docker 部署项目
+- 用户部署了 QuantumNous/new-api 项目（calciumion/new-api 镜像），端口 3000，数据目录 /opt/new-api/data

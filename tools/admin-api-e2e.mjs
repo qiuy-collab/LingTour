@@ -1,7 +1,33 @@
-const base = process.env.LINGTOUR_API_BASE ?? 'https://api.lingfengtranstour.cn/api/v1';
-const adminEmail = process.env.LINGTOUR_ADMIN_EMAIL ?? 'admin@lingtour.cn';
-const adminPassword = process.env.LINGTOUR_ADMIN_PASSWORD ?? 'LingTour2026!';
+// ── Environment validation ─────────────────────────────────────────────
+const base = process.env.LINGTOUR_API_BASE;
+const adminEmail = process.env.LINGTOUR_ADMIN_EMAIL;
+const adminPassword = process.env.LINGTOUR_ADMIN_PASSWORD;
 
+const missing = [];
+if (!base) missing.push('LINGTOUR_API_BASE');
+if (!adminEmail) missing.push('LINGTOUR_ADMIN_EMAIL');
+if (!adminPassword) missing.push('LINGTOUR_ADMIN_PASSWORD');
+if (missing.length) {
+  console.error(`[e2e] Missing required environment variables: ${missing.join(', ')}`);
+  console.error('      Copy tools/.env.example to tools/.env and fill in the values.');
+  process.exit(1);
+}
+
+// ── Production URL guard ───────────────────────────────────────────────
+const isProdUrl =
+  base.includes('lingfengtranstour.cn') ||
+  (!base.includes('localhost') && !base.includes('127.0.0.1'));
+
+if (isProdUrl && process.env.E2E_ALLOW_PROD !== '1') {
+  console.error('[e2e] Refusing to run against a production-like URL.');
+  console.error('      Set E2E_ALLOW_PROD=1 explicitly to override.');
+  process.exit(1);
+}
+
+// ── Dry-run flag ──────────────────────────────────────────────────────
+const dryRun = process.argv.includes('--dry-run');
+
+// ── Helpers ────────────────────────────────────────────────────────────
 const png1x1Base64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9nV4QAAAAASUVORK5CYII=';
 
@@ -27,6 +53,10 @@ function ensure(condition, message, detail) {
 }
 
 async function request(path, options = {}) {
+  if (dryRun) {
+    console.log(`[dry-run] ${options.method ?? 'GET'} ${path}`);
+    return {};
+  }
   const res = await fetch(`${base}${path}`, options);
   const text = await res.text();
   let body = null;
@@ -45,6 +75,10 @@ async function request(path, options = {}) {
 }
 
 async function login() {
+  if (dryRun) {
+    console.log('[dry-run] POST /auth/login');
+    return 'dry-run-token';
+  }
   const body = await request('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -90,6 +124,8 @@ async function sendAdmin(token, path, method, body) {
     body: JSON.stringify(body),
   });
 }
+
+// ── Test modules ───────────────────────────────────────────────────────
 
 async function testCities(token, results) {
   const slug = stamp('e2e-city');
@@ -193,7 +229,7 @@ async function testRoutes(token, results) {
 
 async function testCollections(token, results) {
   const routeList = await getAdmin(token, '/admin/routes?page=1&limit=1');
-  const route = routeList.items?.[0];
+  const route = routeList.data?.[0];
   ensure(route?.slug, 'No route available for collection test');
 
   const slug = stamp('e2e-collection');
@@ -269,7 +305,7 @@ async function testEvents(token, results) {
   const cityList = await getAdmin(token, '/admin/cities?page=1&limit=1');
   const city = cityList.data?.[0];
   const routeList = await getAdmin(token, '/admin/routes?page=1&limit=1');
-  const route = routeList.items?.[0];
+  const route = routeList.data?.[0];
   const slug = stamp('e2e-event');
   const payload = {
     slug,
@@ -415,7 +451,7 @@ async function testCommunityPosts(token, results) {
     body: JSON.stringify({ status: 'published' }),
   });
   const list = await getAdmin(token, '/admin/community/posts?page=1&limit=10&includeDeleted=true');
-  const updated = (list.items ?? []).find((item) => item.id === created.id);
+  const updated = (list.data ?? []).find((item) => item.id === created.id);
   record(
     results,
     'community-posts',
@@ -471,7 +507,7 @@ async function testCommunityBriefs(token, results) {
 
 async function testUsers(token, results) {
   const users = await getAdmin(token, '/admin/users?page=1&limit=5');
-  const user = users.items?.[0];
+  const user = users.data?.[0];
   ensure(user?.id, 'No user available for user test');
   const original = clone(user);
 
@@ -552,7 +588,7 @@ async function testMedia(token, results) {
   record(results, 'media', 'upload', true, uploaded.filename);
 
   const files = await getAdmin(token, '/admin/upload/files?page=1&limit=30&module=cities');
-  const found = (files.items ?? []).some((item) => item.filename === uploaded.filename);
+  const found = (files.data ?? []).some((item) => item.filename === uploaded.filename);
   record(results, 'media', 'list', found, uploaded.filename);
 
   await request(`/admin/upload/files/${encodeURIComponent(uploaded.filename)}`, {
@@ -589,7 +625,7 @@ async function testBookings(token, results) {
 
 async function testOrders(token, results) {
   const products = await getAdmin(token, '/admin/shop/products?page=1&limit=1');
-  const product = products.items?.[0];
+  const product = products.data?.[0];
   ensure(product?.id, 'No product available for order test');
 
   const order = await request('/orders/checkout', {
@@ -624,56 +660,66 @@ async function testOrders(token, results) {
   record(results, 'orders', 'update-status', updated.status === 'confirmed', updated.status);
 }
 
+// ── Main ───────────────────────────────────────────────────────────────
+
 async function main() {
+  const target = isProdUrl ? '<production>' : base;
+  console.log(`[e2e] Starting${dryRun ? ' (dry-run)' : ''} -> ${target}`);
+
   const results = [];
-  const token = await login();
 
-  const tests = [
-    () => testCities(token, results),
-    () => testRoutes(token, results),
-    () => testCollections(token, results),
-    () => testProducts(token, results),
-    () => testEvents(token, results),
-    () => testModes(token, results),
-    () => testProfiles(token, results),
-    () => testFaqs(token, results),
-    () => testCommunityPosts(token, results),
-    () => testCommunityBriefs(token, results),
-    () => testUsers(token, results),
-    () => testHome(token, results),
-    () => testSettings(token, results),
-    () => testMedia(token, results),
-    () => testBookings(token, results),
-    () => testOrders(token, results),
-  ];
+  // try/finally ensures cleanup reporting even on unexpected failures
+  try {
+    const token = await login();
 
-  for (const test of tests) {
-    try {
-      await test();
-    } catch (error) {
-      record(results, test.name || 'unknown', 'fatal', false, {
-        message: error.message,
-        status: error.status,
-        body: error.body ?? error.detail ?? null,
-      });
+    const tests = [
+      () => testCities(token, results),
+      () => testRoutes(token, results),
+      () => testCollections(token, results),
+      () => testProducts(token, results),
+      () => testEvents(token, results),
+      () => testModes(token, results),
+      () => testProfiles(token, results),
+      () => testFaqs(token, results),
+      () => testCommunityPosts(token, results),
+      () => testCommunityBriefs(token, results),
+      () => testUsers(token, results),
+      () => testHome(token, results),
+      () => testSettings(token, results),
+      () => testMedia(token, results),
+      () => testBookings(token, results),
+      () => testOrders(token, results),
+    ];
+
+    for (const test of tests) {
+      try {
+        await test();
+      } catch (error) {
+        record(results, test.name || 'unknown', 'fatal', false, {
+          message: error.message,
+          status: error.status,
+          body: error.body ?? error.detail ?? null,
+        });
+      }
     }
-  }
+  } finally {
+    const failed = results.filter((item) => !item.ok);
+    console.log(
+      JSON.stringify(
+        {
+          target,
+          dryRun,
+          failedCount: failed.length,
+          results,
+        },
+        null,
+        2,
+      ),
+    );
 
-  const failed = results.filter((item) => !item.ok);
-  console.log(
-    JSON.stringify(
-      {
-        base,
-        failedCount: failed.length,
-        results,
-      },
-      null,
-      2,
-    ),
-  );
-
-  if (failed.length) {
-    process.exitCode = 1;
+    if (failed.length) {
+      process.exitCode = 1;
+    }
   }
 }
 
