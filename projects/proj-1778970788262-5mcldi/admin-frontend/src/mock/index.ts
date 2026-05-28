@@ -85,7 +85,7 @@ function paginate<T>(items: T[], page: number, pageSize: number) {
   const total = items.length
   const start = (page - 1) * pageSize
   const paged = items.slice(start, start + pageSize)
-  return { items: paged, total, page, pageSize }
+  return { data: paged, total, page, pageSize }
 }
 
 // ─── Mock 注册函数 ─────────────────────────────────

@@ -17,7 +17,21 @@ export const useAuthStore = defineStore('auth', () => {
   })())
 
   // Getters
-  const isLoggedIn = computed(() => !!token.value)
+  /**
+   * Decode the JWT payload (without verifying the signature — that's the
+   * server's job) and check whether the token has expired.
+   */
+  const isTokenValid = computed(() => {
+    if (!token.value) return false
+    try {
+      const payload = JSON.parse(atob(token.value.split('.')[1]))
+      return typeof payload.exp === 'number' && payload.exp > Date.now() / 1000
+    } catch {
+      return false
+    }
+  })
+
+  const isLoggedIn = computed(() => !!token.value && isTokenValid.value)
   const currentUser = computed(() => user.value)
 
   // Actions
@@ -49,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     user,
     isLoggedIn,
+    isTokenValid,
     currentUser,
     login,
     logout,

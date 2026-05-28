@@ -81,12 +81,12 @@ onMounted(async () => {
       homeApi.getHomeConfig(),
     ])
 
-    routeOptions.value = (routeRes.data.data.items || []).map((item: any) => ({
+    routeOptions.value = (routeRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       title: pickI18n(item.title) || item.slug,
     }))
 
-    cityOptions.value = (cityRes.data.data.items || []).map((item: any) => ({
+    cityOptions.value = (cityRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       name: pickI18n(item.name) || item.slug,
     }))
@@ -373,12 +373,11 @@ async function handleSave() {
 </template>
 
 <style scoped>
+@import '@/assets/editor-common.css';
+
+/* HomeConfig uses .home-config-page instead of .edit-page */
 .home-config-page {
   padding-bottom: 40px;
-}
-
-.section-card {
-  margin-bottom: 16px;
 }
 
 .global-summary {
@@ -394,17 +393,6 @@ async function handleSave() {
   color: #2757a5;
   font-size: 12px;
   font-weight: 600;
-}
-
-.workspace-panel {
-  min-height: 320px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 
 .block-item {

@@ -202,18 +202,16 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page {
-  padding-bottom: 40px;
-}
+@import '@/assets/editor-common.css';
 
+/* Narrower single-column layout for interpreter editor */
 .editor-shell {
-  display: grid;
   grid-template-columns: minmax(0, 1fr);
   max-width: 900px;
 }
 
-.section-card {
-  margin-bottom: 16px;
+.workspace-panel {
+  min-height: 220px;
 }
 
 .tag-list {
@@ -228,16 +226,5 @@ async function handleSave() {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 10px;
-}
-
-.workspace-panel {
-  min-height: 220px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 </style>

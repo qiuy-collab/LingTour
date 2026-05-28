@@ -57,8 +57,8 @@ export const ordersApi = {
       params: { ...params, limit: params.pageSize },
     })
     // Normalize items
-    if (res.data?.data?.items) {
-      res.data.data.items = res.data.data.items.map(normalizeOrder)
+    if (res.data?.data?.data) {
+      res.data.data.data = res.data.data.data.map(normalizeOrder)
     }
     return res
   },

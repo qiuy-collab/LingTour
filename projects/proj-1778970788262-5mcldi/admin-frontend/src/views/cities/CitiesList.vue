@@ -1,26 +1,42 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
 import type { City } from '@/types/city'
-import type { PaginatedResponse } from '@/types/common'
 import { pickI18n } from '@/types/common'
 import { resolveMediaUrl } from '@/utils/media'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
 
-const loading = ref(false)
-const list = ref<City[]>([])
-const total = ref(0)
-const pageParams = reactive({ page: 1, pageSize: 10, keyword: '', status: '' })
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  handlePageChange, handleSizeChange,
+  handleSearch, handleReset,
+  handleDelete,
+} = useListPage<City>({
+  fetchApi: async (params) => {
+    const res = await citiesApi.getCities(params as any)
+    // Hydrate broken i18n names by fetching detail
+    const data = res.data?.data
+    if (data?.data) {
+      data.data = await hydrateBrokenNames(data.data)
+    }
+    return res
+  },
+  deleteApi: (id) => citiesApi.deleteCity(id),
+  defaultFilters: { keyword: '', status: '' },
+})
 
+// ─── 城市名修复 ──────────────────────────
 function isReadableName(value: string) {
   const text = value.trim()
   if (!text) return false
   if (text.includes('�')) return false
-  return /[\u4e00-\u9fffA-Za-z0-9]/.test(text)
+  return /[一-鿿A-Za-z0-9]/.test(text)
 }
 
 function displayCityName(city: City, locale: 'zh' | 'en' = 'zh') {
@@ -46,56 +62,13 @@ async function hydrateBrokenNames(items: City[]) {
   return items.map((item) => detailMap.get(item.id) || item)
 }
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await citiesApi.getCities(pageParams as any)
-    const data: PaginatedResponse<City> = res.data.data
-    list.value = await hydrateBrokenNames(data.items || [])
-    total.value = data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '获取城市列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(fetchList)
-
-watch(
-  () => [pageParams.page, pageParams.pageSize],
-  () => fetchList(),
-)
-
-function handleSearch() {
-  pageParams.page = 1
-  fetchList()
-}
-
+// ─── 操作 ──────────────────────────────
 function handleCreate() {
   router.push('/admin/cities/create')
 }
 
 function handleEdit(id: string) {
   router.push(`/admin/cities/${id}/edit`)
-}
-
-async function handleDelete(city: City) {
-  const cityName = displayCityName(city) || '该城市'
-  try {
-    await ElMessageBox.confirm(
-      `确定删除城市“${cityName}”吗？该操作不可恢复。`,
-      '删除确认',
-      { type: 'warning' },
-    )
-    await citiesApi.deleteCity(city.id)
-    ElMessage.success(`已删除城市“${cityName}”`)
-    fetchList()
-  } catch (err: any) {
-    if (err?.response) {
-      ElMessage.error(err.response.data?.message || '删除失败')
-    }
-  }
 }
 
 function regionColor(region: string) {
@@ -115,31 +88,24 @@ function regionColor(region: string) {
       <el-button type="primary" :icon="Plus" @click="handleCreate">新增城市</el-button>
     </div>
 
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <el-input
-          v-model="pageParams.keyword"
-          placeholder="搜索城市名/Slug..."
-          :prefix-icon="Search"
-          clearable
-          style="width: 280px"
-          @keyup.enter="handleSearch"
-          @clear="handleSearch"
-        />
-        <el-select
-          v-model="pageParams.status"
-          placeholder="状态"
-          clearable
-          style="width: 120px"
-          @change="handleSearch"
-        >
-          <el-option label="全部" value="" />
-          <el-option label="已发布" value="published" />
-          <el-option label="草稿" value="draft" />
-        </el-select>
-        <el-button type="primary" @click="handleSearch">搜索</el-button>
-      </div>
-    </div>
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索城市名/Slug..."
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <el-select
+        v-model="filters.status"
+        placeholder="状态"
+        clearable
+        style="width: 120px"
+        @change="handleSearch"
+      >
+        <el-option label="全部" value="" />
+        <el-option label="已发布" value="published" />
+        <el-option label="草稿" value="draft" />
+      </el-select>
+    </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table v-loading="loading" :data="list" stripe style="width: 100%" row-key="id">
@@ -210,7 +176,7 @@ function regionColor(region: string) {
             <el-button type="primary" link :icon="Edit" size="small" @click="handleEdit(row.id)">
               编辑
             </el-button>
-            <el-button type="danger" link :icon="Delete" size="small" @click="handleDelete(row)">
+            <el-button type="danger" link :icon="Delete" size="small" @click="handleDelete(row.id, displayCityName(row))">
               删除
             </el-button>
           </template>
@@ -219,12 +185,14 @@ function regionColor(region: string) {
 
       <div class="pagination-wrap">
         <el-pagination
-          v-model:current-page="pageParams.page"
-          v-model:page-size="pageParams.pageSize"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
           :total="total"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next"
           background
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </el-card>

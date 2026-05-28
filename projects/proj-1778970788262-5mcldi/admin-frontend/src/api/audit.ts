@@ -6,7 +6,7 @@ function emptyListResponse(page = 1, pageSize = 20) {
     data: {
       code: 200,
       data: {
-        items: [],
+        data: [],
         total: 0,
         page,
         pageSize,

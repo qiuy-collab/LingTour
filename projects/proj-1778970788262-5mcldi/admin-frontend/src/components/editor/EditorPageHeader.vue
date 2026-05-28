@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, View } from '@element-plus/icons-vue'
 
+// TODO(i18n): Default labels are hardcoded Chinese. Extract to i18n when multi-language admin support is added.
 const props = withDefaults(
   defineProps<{
     title: string
@@ -26,6 +27,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   save: []
   cancel: []
+  preview: []
 }>()
 
 const router = useRouter()
@@ -49,7 +51,9 @@ function handleBack() {
       </div>
     </div>
     <div class="header-actions">
+      <el-button class="mobile-preview-btn" :icon="View" @click="emit('preview')">预览</el-button>
       <slot name="actions" />
+      <!-- TODO(i18n): Hardcoded Chinese label '取消' — extract to i18n when multi-language admin is supported -->
       <el-button @click="handleBack">取消</el-button>
       <el-button type="primary" :loading="saving" @click="emit('save')">{{ saveLabel }}</el-button>
     </div>
@@ -106,6 +110,30 @@ function handleBack() {
   .header-actions {
     justify-content: space-between;
     flex-wrap: wrap;
+  }
+}
+
+/* Mobile-only: preview button hidden on desktop */
+.mobile-preview-btn {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .editor-page-header {
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--el-bg-color);
+  }
+
+  .header-actions .el-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .mobile-preview-btn {
+    display: inline-flex;
   }
 }
 </style>

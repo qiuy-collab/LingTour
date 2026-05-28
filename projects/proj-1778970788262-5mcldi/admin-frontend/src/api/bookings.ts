@@ -27,7 +27,7 @@ function normalizeBooking(raw: any): Booking {
 }
 
 function normalizeList(res: any) {
-  res.data.data.items = (res.data.data.items || []).map(normalizeBooking)
+  res.data.data.data = (res.data.data.data || []).map(normalizeBooking)
   return res
 }
 

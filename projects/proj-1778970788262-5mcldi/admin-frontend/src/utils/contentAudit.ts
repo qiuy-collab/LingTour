@@ -61,11 +61,11 @@ export async function runContentAudit(): Promise<AuditReport> {
     homeApi.getHomeConfig(),
   ])
 
-  const cities = citiesRes.data.data.items || []
-  const routes = routesRes.data.data.items || []
-  const collections = collectionsRes.data.data.items || []
-  const products = productsRes.data.data.items || []
-  const events = eventsRes.data.data.items || []
+  const cities = citiesRes.data.data.data || []
+  const routes = routesRes.data.data.data || []
+  const collections = collectionsRes.data.data.data || []
+  const products = productsRes.data.data.data || []
+  const events = eventsRes.data.data.data || []
   const home = homeRes.data.data
 
   const citySlugSet = new Set(cities.map((item: any) => item.slug).filter(Boolean))

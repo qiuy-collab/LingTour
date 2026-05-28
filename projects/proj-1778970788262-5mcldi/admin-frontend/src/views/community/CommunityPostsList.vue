@@ -1,49 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { communityApi } from '@/api/community'
 import type { CommunityPost, PostChannel, PostStatus } from '@/types/community'
 import { PostChannelMap, PostChannelColorMap, PostStatusMap, PostStatusColorMap } from '@/types/community'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
 
-// ─── 数据 ──────────────────────────────
-const loading = ref(false)
-const list = ref<CommunityPost[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const channelFilter = ref('')
-const statusFilter = ref('')
-const keyword = ref('')
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await communityApi.getPosts({
-      page: page.value,
-      pageSize: pageSize.value,
-      channel: channelFilter.value,
-      status: statusFilter.value,
-      keyword: keyword.value || undefined,
-    } as any)
-    list.value = res.data.data.items
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载帖子列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchList()
-}
-
-function handlePageChange(p: number) { page.value = p; fetchList() }
-function handleSizeChange(s: number) { pageSize.value = s; page.value = 1; fetchList() }
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  handlePageChange, handleSizeChange,
+  handleSearch, handleReset,
+} = useListPage<CommunityPost>({
+  fetchApi: (params) => communityApi.getPosts(params as any),
+  defaultFilters: { keyword: '', channel: '', status: '' },
+})
 
 // ─── 操作 ──────────────────────────────
 function handleViewDetail(post: CommunityPost) {
@@ -61,7 +36,7 @@ async function handleReview(post: CommunityPost, status: PostStatus, rejectionRe
     )
     await communityApi.reviewPost(post.id, status, rejectionReason)
     ElMessage.success(isPublish ? '审核通过' : '已隐藏')
-    fetchList()
+    handleSearch()
   } catch (err: any) {
     if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
   }
@@ -71,7 +46,7 @@ async function handleToggleFeatured(post: CommunityPost) {
   try {
     await communityApi.toggleFeatured(post.id, !post.featured)
     ElMessage.success(post.featured ? '已取消精选' : '已设为精选')
-    fetchList()
+    handleSearch()
   } catch (err: any) {
     ElMessage.error(err?.response?.data?.message || '操作失败')
   }
@@ -86,7 +61,7 @@ async function handleDelete(post: CommunityPost) {
     )
     await communityApi.deletePost(post.id)
     ElMessage.success('帖子已删除(软删除)')
-    fetchList()
+    handleSearch()
   } catch (err: any) {
     if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
@@ -108,8 +83,6 @@ function getStatusType(status: string): string {
 function formatInteractions(post: CommunityPost): string {
   return `👍${post.likes} 💬${post.comments} ⭐${post.saves}`
 }
-
-onMounted(() => { fetchList() })
 </script>
 
 <template>
@@ -118,18 +91,14 @@ onMounted(() => { fetchList() })
       <h2>社区帖子管理</h2>
     </div>
 
-    <!-- 筛选栏 -->
-    <div class="search-bar">
-      <el-input
-        v-model="keyword"
-        placeholder="搜索标题/作者"
-        clearable
-        style="width: 240px"
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      />
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索标题/作者"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
       <el-select
-        v-model="channelFilter"
+        v-model="filters.channel"
         placeholder="频道筛选"
         clearable
         style="width: 150px"
@@ -142,7 +111,7 @@ onMounted(() => { fetchList() })
         <el-option label="文化台" value="CultureDesk" />
       </el-select>
       <el-select
-        v-model="statusFilter"
+        v-model="filters.status"
         placeholder="状态筛选"
         clearable
         style="width: 140px"
@@ -153,8 +122,7 @@ onMounted(() => { fetchList() })
         <el-option label="待审核" value="pending_review" />
         <el-option label="已隐藏" value="hidden" />
       </el-select>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-    </div>
+    </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>

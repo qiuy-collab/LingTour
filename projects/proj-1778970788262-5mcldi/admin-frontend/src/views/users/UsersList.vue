@@ -1,62 +1,28 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUsers, banUser, unbanUser } from '@/api/users'
 import type { ManagedUser, UserStatus } from '@/types/user'
 import { UserStatusMap, UserStatusColorMap, LocaleMap } from '@/types/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/format'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
 
-const users = ref<ManagedUser[]>([])
-const loading = ref(false)
-const total = ref(0)
-
-const filters = reactive({
-  keyword: '',
-  status: '' as UserStatus | '',
-  page: 1,
-  pageSize: 10,
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list: users, total, page, pageSize,
+  filters,
+  handlePageChange, handleSizeChange,
+  handleSearch, handleReset,
+  fetchList,
+} = useListPage<ManagedUser>({
+  fetchApi: (params) => getUsers(params as any),
+  defaultFilters: { keyword: '', status: '' as UserStatus | '' },
 })
 
-async function fetchUsers() {
-  loading.value = true
-  try {
-    const params: Record<string, unknown> = {
-      page: filters.page,
-      pageSize: filters.pageSize,
-    }
-    if (filters.keyword) params.keyword = filters.keyword
-    if (filters.status) params.status = filters.status
-    const res = await getUsers(params as any)
-    const data = res.data.data
-    users.value = data.items
-    total.value = data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '获取用户列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  filters.page = 1
-  fetchUsers()
-}
-
-function handlePageChange(page: number) {
-  filters.page = page
-  fetchUsers()
-}
-
-function handleSizeChange(size: number) {
-  filters.pageSize = size
-  filters.page = 1
-  fetchUsers()
-}
-
+// ─── 自定义操作 ──────────────────────────
 function handleViewDetail(user: ManagedUser) {
   router.push(`/admin/users/${user.id}`)
 }
@@ -70,7 +36,7 @@ async function handleBan(user: ManagedUser) {
     )
     await banUser(user.id)
     ElMessage.success(`已封禁用户「${user.name}」`)
-    fetchUsers()
+    fetchList()
   } catch (err: any) {
     if (err?.response) ElMessage.error(err.response.data?.message || '封禁失败')
   }
@@ -81,15 +47,11 @@ async function handleUnban(user: ManagedUser) {
     await ElMessageBox.confirm(`确定解封用户「${user.name}」?`, '解封确认', { type: 'success' })
     await unbanUser(user.id)
     ElMessage.success(`已解封用户「${user.name}」`)
-    fetchUsers()
+    fetchList()
   } catch (err: any) {
     if (err?.response) ElMessage.error(err.response.data?.message || '解封失败')
   }
 }
-
-onMounted(() => {
-  fetchUsers()
-})
 </script>
 
 <template>
@@ -100,36 +62,24 @@ onMounted(() => {
     </div>
 
     <!-- 筛选栏 -->
-    <el-card shadow="never" class="filter-card">
-      <el-row :gutter="16" align="middle">
-        <el-col :xs="24" :sm="8" :md="6">
-          <el-input
-            v-model="filters.keyword"
-            placeholder="搜索用户名 / 邮箱"
-            clearable
-            :prefix-icon="Search"
-            @keyup.enter="handleSearch"
-            @clear="handleSearch"
-          />
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="4">
-          <el-select
-            v-model="filters.status"
-            placeholder="用户状态"
-            clearable
-            @change="handleSearch"
-            style="width: 100%"
-          >
-            <el-option label="全部" value="" />
-            <el-option label="正常" value="active" />
-            <el-option label="已封禁" value="banned" />
-          </el-select>
-        </el-col>
-        <el-col :xs="12" :sm="4" :md="3">
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-        </el-col>
-      </el-row>
-    </el-card>
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索用户名 / 邮箱"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <el-select
+        v-model="filters.status"
+        placeholder="用户状态"
+        clearable
+        style="width: 140px"
+        @change="handleSearch"
+      >
+        <el-option label="全部" value="" />
+        <el-option label="正常" value="active" />
+        <el-option label="已封禁" value="banned" />
+      </el-select>
+    </ListToolbar>
 
     <!-- 用户表格 -->
     <el-card shadow="never" class="table-card">
@@ -184,8 +134,8 @@ onMounted(() => {
       <!-- 分页 -->
       <div class="pagination-wrap">
         <el-pagination
-          v-model:current-page="filters.page"
-          v-model:page-size="filters.pageSize"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
           :total="total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next"
@@ -206,10 +156,6 @@ onMounted(() => {
 .page-desc {
   font-size: 13px;
   color: var(--lt-text-secondary, #909399);
-}
-
-.filter-card {
-  margin-bottom: 16px;
 }
 
 .user-cell {

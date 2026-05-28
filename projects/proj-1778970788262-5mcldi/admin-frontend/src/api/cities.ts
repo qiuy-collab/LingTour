@@ -21,10 +21,10 @@ export const citiesApi = {
 
     const payload = res.data.data || {}
     ;(res as any).data.data = {
-      items: payload.items || payload.data || [],
+      data: payload.data || [],
       total: payload.total || 0,
       page: payload.page || params.page || 1,
-      pageSize: payload.pageSize || payload.limit || params.pageSize || 10,
+      pageSize: payload.pageSize || params.pageSize || 10,
     }
 
     return res as any

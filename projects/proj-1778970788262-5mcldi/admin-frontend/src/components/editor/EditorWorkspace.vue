@@ -185,4 +185,24 @@ const emit = defineEmits<{
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 767px) {
+  .workspace-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .workspace-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workspace-tab {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+}
 </style>

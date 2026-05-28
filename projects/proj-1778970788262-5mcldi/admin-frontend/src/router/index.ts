@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { ElMessage } from 'element-plus'
 
 // Layout
 import AdminLayout from '@/layout/AdminLayout.vue'
@@ -309,6 +310,7 @@ router.beforeEach((to, _from, next) => {
     // 角色受限路由必须有合法用户对象,否则拒绝并强制重新登录
     const role = authStore.currentUser?.role
     if (!role || !requiredRoles.includes(role)) {
+      ElMessage.warning('权限不足')
       next('/login')
       return
     }

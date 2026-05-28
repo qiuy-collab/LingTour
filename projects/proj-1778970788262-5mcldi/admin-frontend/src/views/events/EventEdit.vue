@@ -129,13 +129,13 @@ onMounted(async () => {
       routesApi.getRoutes({ page: 1, pageSize: 200 }),
     ])
 
-    cityOptions.value = (citiesRes.data.data.items || []).map((item: any) => ({
+    cityOptions.value = (citiesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       name: pickI18n(item.name) || item.slug,
       adcode: Number(item.adcode || 0),
     }))
 
-    routeOptions.value = (routesRes.data.data.items || []).map((item: any) => ({
+    routeOptions.value = (routesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       title: pickI18n(item.title) || item.slug,
     }))
@@ -380,15 +380,11 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page {
-  padding-bottom: 40px;
-}
+@import '@/assets/editor-common.css';
 
+/* EventEdit uses a narrower aside (no FrontendPagePreview) */
 .editor-shell {
-  display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 26vw);
-  gap: 20px;
-  align-items: start;
 }
 
 .section-card,
@@ -400,30 +396,6 @@ async function handleSave() {
   position: sticky;
   top: 20px;
   align-self: start;
-}
-
-.selected-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-}
-
-.selected-card {
-  padding: 12px;
-  border: 1px solid #dbe5f1;
-  border-radius: 12px;
-  background: #f8fbff;
-}
-
-.selected-card strong,
-.selected-card span {
-  display: block;
-}
-
-.selected-card span {
-  margin-top: 4px;
-  color: #909399;
-  font-size: 12px;
 }
 
 .tag-list {
@@ -438,17 +410,6 @@ async function handleSave() {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
-}
-
-.workspace-panel {
-  min-height: 260px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 
 .aside-stack,

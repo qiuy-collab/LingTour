@@ -56,19 +56,45 @@ function proxyApiRequest(req, res) {
   const targetUrl = new URL(`${targetPath}${incomingUrl.search}`, apiOrigin);
   const client = targetUrl.protocol === "https:" ? https : http;
 
+  // Strip browser-only headers that can confuse the upstream API
+  const STRIP_HEADERS = new Set([
+    "cookie", "referer", "x-forwarded-for", "x-forwarded-proto",
+    "cf-connecting-ip", "cf-ray", "cf-visitor", "cf-ipcountry",
+  ]);
+  const safeHeaders = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (!STRIP_HEADERS.has(key.toLowerCase()) && value !== undefined) {
+      safeHeaders[key] = value;
+    }
+  }
+
   const proxyRequest = client.request(
     targetUrl,
     {
       method: req.method,
       headers: {
-        ...req.headers,
+        ...safeHeaders,
         host: targetUrl.host,
         origin: apiOrigin,
-        referer: apiOrigin,
       },
     },
     (proxyResponse) => {
-      res.writeHead(proxyResponse.statusCode || 502, proxyResponse.headers);
+      // Strip upstream CORS headers — we add our own below
+      const { 'access-control-allow-origin': _aco,
+              'access-control-allow-credentials': _acc,
+              'access-control-allow-methods': _acm,
+              'access-control-allow-headers': _ach,
+              'access-control-max-age': _ama,
+              ...responseHeaders } = proxyResponse.headers;
+
+      // Always add CORS headers for the admin frontend
+      const reqOrigin = req.headers.origin || "";
+      responseHeaders["access-control-allow-origin"] = reqOrigin || "*";
+      responseHeaders["access-control-allow-credentials"] = "true";
+      responseHeaders["access-control-allow-methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+      responseHeaders["access-control-allow-headers"] = "Content-Type, Authorization, Accept-Language";
+
+      res.writeHead(proxyResponse.statusCode || 502, responseHeaders);
       proxyResponse.pipe(res);
     },
   );
@@ -88,6 +114,19 @@ function proxyApiRequest(req, res) {
 }
 
 const server = http.createServer((req, res) => {
+  // Handle CORS preflight for API requests
+  if (req.method === "OPTIONS" && (req.url || "").startsWith("/api/admin")) {
+    res.writeHead(204, {
+      "access-control-allow-origin": req.headers.origin || "*",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, Accept-Language",
+      "access-control-max-age": "86400",
+    });
+    res.end();
+    return;
+  }
+
   if ((req.url || "").startsWith("/api/admin")) {
     proxyApiRequest(req, res);
     return;

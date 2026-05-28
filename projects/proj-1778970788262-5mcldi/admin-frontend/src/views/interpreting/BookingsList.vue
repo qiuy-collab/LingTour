@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { bookingsApi } from '@/api/bookings'
 import { interpretersApi } from '@/api/interpreters'
@@ -8,15 +8,20 @@ import type { Interpreter } from '@/types/interpreting'
 import { BookingStatusMap, BookingStatusColorMap } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
 import { formatDateTime } from '@/utils/format'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
-const loading = ref(false)
-const list = ref<Booking[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const statusFilter = ref('')
-const dateFilter = ref('')
-const keyword = ref('')
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  fetchList,
+  handlePageChange, handleSizeChange,
+  handleSearch, handleReset,
+} = useListPage<Booking>({
+  fetchApi: (params) => bookingsApi.getBookings(params as any),
+  defaultFilters: { keyword: '', status: '', date: '' },
+})
 
 // Drawer
 const drawerVisible = ref(false)
@@ -25,41 +30,6 @@ const selectedBooking = ref<Booking | null>(null)
 // Interpreter assignment
 const interpreters = ref<Interpreter[]>([])
 const selectedInterpreterId = ref('')
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await bookingsApi.getBookings({
-      page: page.value,
-      pageSize: pageSize.value,
-      status: statusFilter.value,
-      date: dateFilter.value,
-      keyword: keyword.value || undefined,
-    } as any)
-    list.value = res.data.data.items
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载预约列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchList()
-}
-
-function handlePageChange(p: number) {
-  page.value = p
-  fetchList()
-}
-
-function handleSizeChange(s: number) {
-  pageSize.value = s
-  page.value = 1
-  fetchList()
-}
 
 // ─── Drawer operations ──────────────────
 async function openDrawer(booking: Booking) {
@@ -74,7 +44,7 @@ async function openDrawer(booking: Booking) {
         pageSize: 100,
         status: 'active',
       } as any)
-      interpreters.value = res.data.data.items
+      interpreters.value = res.data.data.data
     } catch {
       interpreters.value = []
     }
@@ -158,9 +128,6 @@ function getBookingStatusLabel(status: string): string {
   return BookingStatusMap[status as BookingStatus] || status
 }
 
-onMounted(() => {
-  fetchList()
-})
 </script>
 
 <template>
@@ -169,17 +136,14 @@ onMounted(() => {
       <h2>口译预约管理</h2>
     </div>
 
-    <div class="search-bar">
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索预约人/联系方式"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
       <el-input
-        v-model="keyword"
-        placeholder="搜索预约人/联系方式"
-        clearable
-        style="width: 220px"
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      />
-      <el-input
-        v-model="dateFilter"
+        v-model="filters.date"
         placeholder="预约日期 (YYYY-MM-DD)"
         clearable
         style="width: 220px"
@@ -187,7 +151,7 @@ onMounted(() => {
         @clear="handleSearch"
       />
       <el-select
-        v-model="statusFilter"
+        v-model="filters.status"
         placeholder="状态筛选"
         clearable
         style="width: 140px"
@@ -203,8 +167,7 @@ onMounted(() => {
         <el-option label="待付定金" value="deposit_pending" />
         <el-option label="定金已付" value="deposit_paid" />
       </el-select>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-    </div>
+    </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>

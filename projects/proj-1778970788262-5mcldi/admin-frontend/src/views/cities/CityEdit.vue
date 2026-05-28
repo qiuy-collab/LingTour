@@ -8,11 +8,14 @@ import { citiesApi } from '@/api/cities'
 import { routesApi } from '@/api/routes'
 import { toI18n } from '@/types/common'
 import { extractErrorMessage } from '@/utils/i18n'
+import { useDirtyForm } from '@/composables/useDirtyForm'
 import type { CityFormData } from '@/types/city'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
+import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
+import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
 import {
   GUANGDONG_ADCODE_OPTIONS,
   formatAdcodeLabel,
@@ -55,6 +58,8 @@ const form = reactive<any>({
   relatedCitySlugs: [],
 })
 
+const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
+
 const newTag = reactive({ zh: '', en: '' })
 
 function normalizeI18nValue(value: unknown) {
@@ -74,6 +79,7 @@ function normalizeSection(section: any, index: number) {
     title: normalizeI18nValue(section.title),
     body: normalizeI18nValue(section.body),
     image: section.image || '',
+    images: Array.isArray(section.images) ? section.images : [],
     statLabel: normalizeI18nValue(section.statLabel),
     statValue: normalizeI18nValue(section.statValue),
     breathImage: section.breathImage || '',
@@ -99,6 +105,7 @@ function addSection() {
     title: { zh: '', en: '' },
     body: { zh: '', en: '' },
     image: '',
+    images: [],
     statLabel: { zh: '', en: '' },
     statValue: { zh: '', en: '' },
     breathImage: '',
@@ -165,7 +172,7 @@ function moveActiveSection(delta: -1 | 1) {
 
 async function loadRouteOptions() {
   const res = await routesApi.getRoutes({ page: 1, pageSize: 200 })
-  routeOptions.value = (res.data.data.items || []).map((item: any) => ({
+  routeOptions.value = (res.data.data.data || []).map((item: any) => ({
     id: item.id,
     slug: item.slug,
     title: item.title?.zh || item.title?.en || item.slug,
@@ -215,6 +222,7 @@ function toPayload() {
       title: normalizeI18nValue(section.title),
       body: normalizeI18nValue(section.body),
       image: section.image || '',
+      images: section.images || [],
       statLabel: normalizeI18nValue(section.statLabel),
       statValue: normalizeI18nValue(section.statValue),
       breathImage: section.breathImage || '',
@@ -232,6 +240,7 @@ onMounted(async () => {
       const res = await citiesApi.getCity(route.params.id as string)
       fillFromApi(res.data.data)
     }
+    resetDirty()
   } catch (err: any) {
     ElMessage.error(extractErrorMessage(err, '加载城市数据失败'))
     router.push('/admin/cities')
@@ -257,6 +266,7 @@ async function handleSave() {
       await citiesApi.createCity(toPayload() as CityFormData)
       ElMessage.success('城市创建成功')
     }
+    disableDirtyCheck()
     router.push('/admin/cities')
   } catch (error: any) {
     ElMessage.error(extractErrorMessage(error, '保存失败'))
@@ -274,13 +284,13 @@ const selectedRouteCards = computed(() =>
 
 <template>
   <div class="edit-page" v-loading="loading">
-    <div class="page-header">
-      <h2>{{ isEdit ? '编辑城市' : '新增城市' }}</h2>
-      <div>
-        <el-button @click="router.push('/admin/cities')">返回</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-      </div>
-    </div>
+    <EditorPageHeader
+      :title="isEdit ? '编辑城市' : '新增城市'"
+      back-to="/admin/cities"
+      :saving="saving"
+      :dirty="isDirty"
+      @save="handleSave"
+    />
 
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
@@ -332,64 +342,47 @@ const selectedRouteCards = computed(() =>
           </el-form-item>
         </el-card>
 
-        <el-card shadow="never" class="section-card chapter-workspace">
-          <template #header>
-            <div class="chapter-toolbar">
-              <div class="chapter-intro">
-                <div class="chapter-eyebrow">City Story Workspace</div>
-                <div class="chapter-headline">
-                  <h3>章节工作台</h3>
-                  <span class="chapter-active-pill">
-                    {{ chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview' }}
-                  </span>
-                </div>
-                <p>按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。</p>
-              </div>
-              <div class="chapter-tabs">
-                <button
-                  v-for="chapter in chapterTabs"
-                  :key="chapter.key"
-                  type="button"
-                  class="chapter-tab"
-                  :class="{ active: activeChapter === chapter.key }"
-                  @click="activeChapter = chapter.key"
-                >
-                  {{ chapter.label }}
-                </button>
-              </div>
-              <div class="chapter-actions">
-                <el-button size="small" type="primary" :icon="Plus" @click="addSection">新增 Section</el-button>
-                <el-button
-                  size="small"
-                  :icon="ArrowUp"
-                  :disabled="!isSectionChapter || activeSectionIndex === 0"
-                  @click="moveActiveSection(-1)"
-                >
-                  上移
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="ArrowDown"
-                  :disabled="!isSectionChapter || activeSectionIndex === form.sections.length - 1"
-                  @click="moveActiveSection(1)"
-                >
-                  下移
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  :icon="Delete"
-                  :disabled="!isSectionChapter"
-                  @click="removeSection(activeSectionIndex)"
-                >
-                  删除
-                </el-button>
-              </div>
+        <EditorWorkspace
+          v-model="activeChapter"
+          eyebrow="City Story Workspace"
+          title="章节工作台"
+          description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
+          :active-label="chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview'"
+          :tabs="chapterTabs"
+        >
+          <template #toolbar>
+            <div class="chapter-actions">
+              <el-button size="small" type="primary" :icon="Plus" @click="addSection">新增 Section</el-button>
+              <el-button
+                size="small"
+                :icon="ArrowUp"
+                :disabled="!isSectionChapter || activeSectionIndex === 0"
+                @click="moveActiveSection(-1)"
+              >
+                上移
+              </el-button>
+              <el-button
+                size="small"
+                :icon="ArrowDown"
+                :disabled="!isSectionChapter || activeSectionIndex === form.sections.length - 1"
+                @click="moveActiveSection(1)"
+              >
+                下移
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                :icon="Delete"
+                :disabled="!isSectionChapter"
+                @click="removeSection(activeSectionIndex)"
+              >
+                删除
+              </el-button>
             </div>
           </template>
 
-          <div v-if="activeChapter === 'overview'" class="chapter-panel">
-            <div class="chapter-title">Overview（图文）</div>
+          <div v-if="activeChapter === 'overview'" class="workspace-panel">
+            <div class="panel-title">Overview（图文）</div>
             <el-form-item label="Overview 主图">
               <ImageUpload v-model="form.heroImage" />
             </el-form-item>
@@ -398,8 +391,8 @@ const selectedRouteCards = computed(() =>
             </el-form-item>
           </div>
 
-          <div v-else-if="activeChapter === 'intro'" class="chapter-panel">
-            <div class="chapter-title">Intro（图文）</div>
+          <div v-else-if="activeChapter === 'intro'" class="workspace-panel">
+            <div class="panel-title">Intro（图文）</div>
             <el-form-item label="Intro 正文">
               <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
             </el-form-item>
@@ -408,12 +401,15 @@ const selectedRouteCards = computed(() =>
             </el-form-item>
           </div>
 
-          <div v-else-if="isSectionChapter && activeSection" class="chapter-panel">
-            <div class="chapter-title">
+          <div v-else-if="isSectionChapter && activeSection" class="workspace-panel">
+            <div class="panel-title">
               {{ activeSection.title?.zh?.trim() || activeSection.title?.en?.trim() || `Section ${activeSectionIndex + 1}` }}
             </div>
             <el-form-item label="Section 图片">
               <ImageUpload v-model="activeSection.image" />
+            </el-form-item>
+            <el-form-item label="Section 图片集">
+              <ImageUpload v-model="activeSection.images" multiple :limit="10" />
             </el-form-item>
             <el-form-item label="Section 标题">
               <I18nInput v-model="activeSection.title" />
@@ -441,8 +437,8 @@ const selectedRouteCards = computed(() =>
             </el-form-item>
           </div>
 
-          <div v-else-if="activeChapter === 'food'" class="chapter-panel">
-            <div class="chapter-title">Food（图文）</div>
+          <div v-else-if="activeChapter === 'food'" class="workspace-panel">
+            <div class="panel-title">Food（图文）</div>
             <el-form-item label="Food 标题">
               <I18nInput v-model="form.foodTitle" />
             </el-form-item>
@@ -453,7 +449,7 @@ const selectedRouteCards = computed(() =>
               <ImageUpload v-model="form.foodImages" multiple :limit="10" />
             </el-form-item>
           </div>
-        </el-card>
+        </EditorWorkspace>
 
         <el-card shadow="never" class="section-card">
           <template #header>关联路线</template>
@@ -502,113 +498,44 @@ const selectedRouteCards = computed(() =>
 </template>
 
 <style scoped>
-.edit-page { padding-bottom: 40px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.page-header h2 { margin: 0; font-size: 20px; }
-.editor-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw); gap: 20px; align-items: start; }
-.section-card { margin-bottom: 16px; }
-.chapter-workspace :deep(.el-card__header) { padding-bottom: 18px; }
-.chapter-workspace :deep(.el-card__body) { padding-top: 18px; }
-.chapter-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px 18px;
-  align-items: start;
+@import '@/assets/editor-common.css';
+
+.chapter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
 }
-.chapter-intro {
-  grid-column: 1 / -1;
-  padding: 18px 20px;
-  border: 1px solid #d9ecff;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at top left, rgba(64, 158, 255, 0.16), transparent 34%),
-    linear-gradient(135deg, #f7fbff 0%, #ffffff 65%);
-}
-.chapter-eyebrow {
-  margin-bottom: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #409eff;
-}
-.chapter-headline {
+
+.tag-list {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
-.chapter-headline h3 {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.2;
-  color: #1f2a37;
+
+.inline-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
 }
-.chapter-active-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(64, 158, 255, 0.12);
-  color: #1767c6;
+
+.form-hint-text {
   font-size: 12px;
-  font-weight: 600;
+  color: #909399;
+  margin-top: 6px;
+  line-height: 1.5;
 }
-.chapter-intro p {
-  margin: 10px 0 0;
-  max-width: 720px;
-  color: #5b6472;
-  font-size: 13px;
-  line-height: 1.6;
+
+.empty-hint {
+  color: #c0c4cc;
+  text-align: center;
+  padding: 18px 0 4px;
 }
-.chapter-tabs { display: flex; flex-wrap: wrap; gap: 10px; }
-.chapter-tab {
-  display: inline-flex;
-  align-items: center;
-  min-height: 42px;
-  border: 1px solid #d7deea;
-  background: #fff;
-  color: #526071;
-  border-radius: 14px;
-  padding: 0 16px;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease;
-}
-.chapter-tab:hover {
-  border-color: #b9d9ff;
-  box-shadow: 0 8px 20px rgba(31, 42, 55, 0.06);
-  transform: translateY(-1px);
-}
-.chapter-tab.active {
-  border-color: #409eff;
-  background: linear-gradient(135deg, #eff7ff 0%, #f7fbff 100%);
-  color: #1767c6;
-  box-shadow: 0 10px 24px rgba(64, 158, 255, 0.14);
-}
-.chapter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
-.chapter-panel { min-height: 320px; }
-.chapter-title { margin-bottom: 16px; font-size: 18px; font-weight: 600; color: #303133; }
-.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-.inline-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
-.selected-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.selected-card { border: 1px solid #dcdfe6; border-radius: 10px; padding: 12px; background: #f8fbff; }
-.selected-card strong { display: block; color: #303133; }
-.selected-card span { display: block; margin-top: 4px; color: #909399; font-size: 12px; }
-.form-hint-text { font-size: 12px; color: #909399; margin-top: 6px; line-height: 1.5; }
-.empty-hint { color: #c0c4cc; text-align: center; padding: 18px 0 4px; }
+
 @media (max-width: 1100px) {
-  .editor-shell { grid-template-columns: 1fr; }
-  .chapter-toolbar { grid-template-columns: 1fr; }
   .chapter-actions { justify-content: flex-start; }
   .inline-row { grid-template-columns: 1fr; }
 }

@@ -26,7 +26,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       const res = await notificationApi.getList(params || { page: 1, pageSize: 20 })
       const data = res.data?.data ?? res.data
-      notifications.value = data?.items ?? data ?? []
+      notifications.value = data?.data ?? data ?? []
       return data
     } catch {
       notifications.value = []

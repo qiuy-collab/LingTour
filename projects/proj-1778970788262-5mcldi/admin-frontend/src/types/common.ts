@@ -1,8 +1,8 @@
 // 通用 API 响应类型
 
-/** 分页响应 */
+/** 分页响应（统一格式：data + total + page + pageSize） */
 export interface PaginatedResponse<T> {
-  items: T[]
+  data: T[]
   total: number
   page: number
   pageSize: number

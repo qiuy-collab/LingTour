@@ -58,7 +58,7 @@ instance.interceptors.response.use(
     if (Array.isArray(body)) {
       response.data = {
         code: 200,
-        data: { items: body, total: body.length, page: 1, pageSize: body.length },
+        data: { data: body, total: body.length, page: 1, pageSize: body.length },
         message: 'success',
       }
       return response
@@ -72,10 +72,10 @@ instance.interceptors.response.use(
         response.data = {
           code: 200,
           data: {
-            items,
+            data: items,
             total: readNumber(body.total, items.length),
             page: readNumber(body.page, 1),
-            pageSize: readNumber(body.pageSize ?? body.size ?? body.limit, items.length),
+            pageSize: readNumber(body.pageSize, items.length),
           },
           message: 'success',
         }
@@ -83,10 +83,10 @@ instance.interceptors.response.use(
         response.data = {
           code: 200,
           data: {
-            items: data,
+            data,
             total: readNumber(body.total, data.length),
             page: readNumber(body.page, 1),
-            pageSize: readNumber(body.pageSize ?? body.size ?? body.limit, data.length),
+            pageSize: readNumber(body.pageSize, data.length),
           },
           message: 'success',
         }
@@ -132,8 +132,8 @@ instance.interceptors.response.use(
 
       try {
         const authStore = useAuthStore()
-        const refreshRes = await axios.post('/api/admin/auth/refresh', null, {
-          headers: { Authorization: `Bearer ${authStore.token}` },
+        const refreshRes = await instance.post('/auth/refresh', null, {
+          timeout: 10000,
         })
         const newToken = refreshRes.data?.access_token || refreshRes.data?.data?.access_token
         if (newToken) {

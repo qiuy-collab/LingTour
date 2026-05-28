@@ -1,46 +1,42 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { faqsApi } from '@/api/faqs'
 import { FAQCategoryMap } from '@/types/interpreting'
 import type { FAQ } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
-const loading = ref(false)
-const list = ref<FAQ[]>([])
-const total = ref(0)
-const categoryFilter = ref('')
-const keyword = ref('')
 
-async function fetchList() {
-  loading.value = true
-  try {
-    // FAQ 列表数量较少且有"上移/下移"操作,需要全量加载用于排序交换
-    const res = await faqsApi.getFAQs({
-      page: 1,
-      pageSize: 200,
-      category: categoryFilter.value,
-    } as any)
-    let items = res.data.data.items.sort((a: any, b: any) => a.sortOrder - b.sortOrder)
-    if (keyword.value) {
-      const k = keyword.value.toLowerCase()
-      items = items.filter((it: any) =>
-        (pickI18n(it.question) || '').toLowerCase().includes(k) ||
-        (pickI18n(it.answer) || '').toLowerCase().includes(k)
-      )
-    }
-    list.value = items
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载FAQ失败')
-  } finally {
-    loading.value = false
-  }
-}
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  fetchList,
+  handleSearch: _handleSearch,
+  handleReset,
+} = useListPage<FAQ>({
+  fetchApi: (params) => faqsApi.getFAQs(params as any),
+  deleteApi: (id) => faqsApi.deleteFAQ(id),
+  defaultFilters: { keyword: '', category: '' },
+  defaultPageSize: 200,
+  transform: (items: FAQ[]) => {
+    const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder)
+    const k = (filters.keyword as string)?.trim().toLowerCase()
+    if (!k) return sorted
+    return sorted.filter(
+      (it) =>
+        (pickI18n(it.question as any) || '').toLowerCase().includes(k) ||
+        (pickI18n(it.answer as any) || '').toLowerCase().includes(k),
+    )
+  },
+})
 
+// Client-side keyword filter: re-filter without API call
 function handleSearch() {
+  page.value = 1
   fetchList()
 }
 
@@ -58,7 +54,7 @@ async function handleDelete(row: FAQ) {
     await ElMessageBox.confirm(
       `确定删除FAQ「${question}」?`,
       '删除确认',
-      { type: 'warning' }
+      { type: 'warning' },
     )
     await faqsApi.deleteFAQ(row.id)
     ElMessage.success(`FAQ「${question}」已删除`)
@@ -97,10 +93,6 @@ async function handleMoveDown(index: number) {
     ElMessage.error(err?.response?.data?.message || '排序更新失败')
   }
 }
-
-onMounted(() => {
-  fetchList()
-})
 </script>
 
 <template>
@@ -110,23 +102,25 @@ onMounted(() => {
       <el-button type="primary" @click="handleCreate">新增FAQ</el-button>
     </div>
 
-    <div class="search-bar">
-      <el-input
-        v-model="keyword"
-        placeholder="搜索问题/答案"
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索问题/答案"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <el-select
+        v-model="filters.category"
+        placeholder="分类筛选"
         clearable
-        style="width: 240px"
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      />
-      <el-select v-model="categoryFilter" placeholder="分类筛选" clearable style="width: 160px" @change="handleSearch">
+        style="width: 160px"
+        @change="handleSearch"
+      >
         <el-option label="全部" value="" />
         <el-option label="口译服务" value="interpreting" />
         <el-option label="通用问题" value="general" />
         <el-option label="路线相关" value="routes" />
       </el-select>
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-    </div>
+    </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>

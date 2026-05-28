@@ -10,6 +10,8 @@ import { homeApi } from '@/api/home'
 import { pickI18n, toI18n, toI18nArray } from '@/types/common'
 import { extractErrorMessage, optionalI18n } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
+import { usePublishCheck } from '@/composables/usePublishCheck'
+import { ElMessageBox } from 'element-plus'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -61,6 +63,7 @@ const cityOptions = ref<Array<{ slug: string; name: string; nameZh: string; name
 const routeRegionOptions = ref<RouteRegionConfig[]>(DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item })))
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
+const { check: runPublishCheck } = usePublishCheck()
 
 function createStop() {
   return {
@@ -72,11 +75,13 @@ function createStop() {
     culturalStory: { zh: '', en: '' },
     details: [],
     image: '',
+    images: [],
     lat: 0,
     lng: 0,
     meal: { zh: '', en: '' },
     hotel: { zh: '', en: '' },
     transit: { zh: '', en: '' },
+    plan: '',
   }
 }
 
@@ -179,11 +184,13 @@ function fillFromApi(data: any) {
       culturalStory: toI18n(stop.culturalStory),
       details: toI18nArray(stop.details),
       image: stop.image || '',
+      images: Array.isArray(stop.images) ? stop.images : [],
       lat: stop.lat ?? 0,
       lng: stop.lng ?? 0,
       meal: toI18n(stop.meal),
       hotel: toI18n(stop.hotel),
       transit: toI18n(stop.transit),
+      plan: stop.plan || '',
     })),
   })
 }
@@ -210,11 +217,13 @@ function toPayload() {
       culturalStory: optionalI18n(stop.culturalStory),
       details: stop.details.filter((detail: any) => detail.zh || detail.en),
       image: stop.image,
+      images: stop.images || [],
       lat: Number(stop.lat || 0),
       lng: Number(stop.lng || 0),
       meal: optionalI18n(stop.meal),
       hotel: optionalI18n(stop.hotel),
       transit: optionalI18n(stop.transit),
+      plan: stop.plan || '',
     })),
   }
 }
@@ -227,7 +236,7 @@ onMounted(async () => {
       homeApi.getHomeConfig(),
     ])
 
-    cityOptions.value = (cityRes.data.data.items || []).map((item: any) => ({
+    cityOptions.value = (cityRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       name: pickI18n(item.name),
       nameZh: item.name?.zh || '',
@@ -264,6 +273,32 @@ async function handleSave() {
   } catch {
     ElMessage.warning('请先补全必填项')
     return
+  }
+
+  // ── Publish pre-check: only when switching to published ──
+  if (form.published) {
+    const result = runPublishCheck('route', form)
+
+    if (!result.canPublish) {
+      ElMessage.error(result.errors[0])
+      return
+    }
+
+    if (result.warnings.length) {
+      try {
+        await ElMessageBox.confirm(
+          result.warnings.join('\n'),
+          '发布前提示',
+          {
+            confirmButtonText: '继续发布',
+            cancelButtonText: '返回修改',
+            type: 'warning',
+          },
+        )
+      } catch {
+        return // user cancelled
+      }
+    }
   }
 
   saving.value = true
@@ -447,6 +482,9 @@ async function handleSave() {
             <el-form-item label="站点图片">
               <ImageUpload v-model="activeStop.image" module="routes" />
             </el-form-item>
+            <el-form-item label="站点图片集">
+              <ImageUpload v-model="activeStop.images" multiple :limit="10" module="routes" />
+            </el-form-item>
             <el-row :gutter="16">
               <el-col :span="12">
                 <el-form-item label="纬度">
@@ -473,6 +511,14 @@ async function handleSave() {
                 </div>
                 <el-button :icon="Plus" @click="addDetail(activeStop)">新增细节</el-button>
               </div>
+            </el-form-item>
+            <el-form-item label="行程规划">
+              <el-input
+                v-model="activeStop.plan"
+                type="textarea"
+                :rows="2"
+                placeholder="简要描述该站点的行程安排或体验建议"
+              />
             </el-form-item>
             <el-row :gutter="16">
               <el-col :span="8">
@@ -501,46 +547,7 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page {
-  padding-bottom: 40px;
-}
-
-.editor-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw);
-  gap: 20px;
-  align-items: start;
-}
-
-.section-card {
-  margin-bottom: 16px;
-}
-
-.selected-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.selected-card {
-  padding: 12px;
-  border: 1px solid #dbe5f1;
-  border-radius: 12px;
-  background: #f8fbff;
-}
-
-.selected-card strong {
-  display: block;
-  color: #303133;
-}
-
-.selected-card span {
-  display: block;
-  margin-top: 4px;
-  color: #909399;
-  font-size: 12px;
-}
+@import '@/assets/editor-common.css';
 
 .link-row {
   display: flex;
@@ -554,17 +561,6 @@ async function handleSave() {
   gap: 8px;
 }
 
-.workspace-panel {
-  min-height: 320px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
-
 .detail-list {
   display: grid;
   gap: 10px;
@@ -575,11 +571,5 @@ async function handleSave() {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: start;
-}
-
-@media (max-width: 1100px) {
-  .editor-shell {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

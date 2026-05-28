@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh, Search } from '@element-plus/icons-vue'
 import { auditApi } from '@/api/audit'
@@ -9,28 +9,49 @@ import ExportButton from '@/components/ExportButton.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PageSkeleton from '@/components/PageSkeleton.vue'
 import type { ExportColumn } from '@/composables/useExport'
+import { useListPage } from '@/composables/useListPage'
 
-const loading = ref(false)
-const isFirstLoad = ref(true)
+// ─── 列表数据 (useListPage) ─────────────
+const listPage = useListPage<AuditLog>({
+  fetchApi: async (params) => {
+    const [startDate, endDate] = (params.dateRange as string[]) || []
+    const response = await auditApi.getList({
+      page: params.page,
+      pageSize: params.pageSize,
+      action: params.action || undefined,
+      resource: params.resource || undefined,
+      keyword: params.keyword || undefined,
+      startDate,
+      endDate,
+    })
+    // Detect API unavailable flag
+    const data = response.data?.data || {}
+    if (data.unavailable) apiUnavailable.value = true
+    return response
+  },
+  defaultFilters: { action: '', resource: '', keyword: '' },
+  defaultPageSize: 20,
+})
+
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  fetchList,
+  handleSearch,
+  handleReset: baseHandleReset,
+  handlePageChange, handleSizeChange,
+  isFirstLoad,
+} = listPage
+
 const apiUnavailable = ref(false)
 const detailVisible = ref(false)
 const activeLog = ref<AuditLog | null>(null)
-const list = ref<AuditLog[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(20)
+const dateRange = ref<string[]>([])
 const stats = ref<AuditStats>({
   total: 0,
   last7Days: 0,
   actionBreakdown: [],
   resourceBreakdown: [],
-})
-
-const filters = reactive({
-  action: '',
-  resource: '',
-  keyword: '',
-  dateRange: [] as string[],
 })
 
 const topActions = computed(() => stats.value.actionBreakdown.slice(0, 4))
@@ -47,16 +68,9 @@ const exportColumns: ExportColumn[] = [
 
 function getActionTagType(action: string) {
   const map: Record<string, string> = {
-    create: 'success',
-    update: 'primary',
-    delete: 'danger',
-    publish: 'success',
-    unpublish: 'warning',
-    login: 'info',
-    logout: 'info',
-    batch_delete: 'danger',
-    status_change: 'warning',
-    export: '',
+    create: 'success', update: 'primary', delete: 'danger',
+    publish: 'success', unpublish: 'warning', login: 'info',
+    logout: 'info', batch_delete: 'danger', status_change: 'warning', export: '',
   }
   return map[action] || 'info'
 }
@@ -64,7 +78,7 @@ function getActionTagType(action: string) {
 async function fetchStats() {
   const response = await auditApi.getStats()
   const data = response.data?.data || {}
-  apiUnavailable.value = Boolean(data.unavailable)
+  apiUnavailable.value = apiUnavailable.value || Boolean(data.unavailable)
   stats.value = {
     total: Number(data.total || 0),
     last7Days: Number(data.last7Days || 0),
@@ -73,98 +87,44 @@ async function fetchStats() {
   }
 }
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const [startDate, endDate] = filters.dateRange || []
-    const response = await auditApi.getList({
-      page: page.value,
-      pageSize: pageSize.value,
-      action: filters.action || undefined,
-      resource: filters.resource || undefined,
-      keyword: filters.keyword || undefined,
-      startDate,
-      endDate,
-    })
-    const data = response.data?.data || {}
-    apiUnavailable.value = apiUnavailable.value || Boolean(data.unavailable)
-    list.value = Array.isArray(data.items) ? data.items : []
-    total.value = Number(data.total || 0)
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || '加载操作日志失败')
-    list.value = []
-    total.value = 0
-  } finally {
-    loading.value = false
-    isFirstLoad.value = false
-  }
-}
-
-async function loadPage() {
-  await Promise.all([fetchStats(), fetchList()])
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchList()
+function onDateRangeChange(val: string[] | null) {
+  filters.dateRange = val ?? []
+  handleSearch()
 }
 
 function handleReset() {
-  filters.action = ''
-  filters.resource = ''
-  filters.keyword = ''
+  dateRange.value = []
   filters.dateRange = []
-  page.value = 1
-  fetchList()
-}
-
-function handlePageChange(value: number) {
-  page.value = value
-  fetchList()
-}
-
-function handleSizeChange(value: number) {
-  pageSize.value = value
-  page.value = 1
-  fetchList()
+  baseHandleReset()
 }
 
 async function openDetail(row: AuditLog) {
   activeLog.value = row
   detailVisible.value = true
-
   if (row.details) return
-
   try {
     const response = await auditApi.getDetail(row.id)
     const data = response.data?.data
-    if (data) {
-      activeLog.value = {
-        ...row,
-        ...data,
-      }
-    }
+    if (data) activeLog.value = { ...row, ...data }
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || '加载日志详情失败')
   }
 }
 
 async function getAllData() {
-  const [startDate, endDate] = filters.dateRange || []
+  const [startDate, endDate] = (filters.dateRange as string[]) || []
   const response = await auditApi.getList({
-    page: 1,
-    pageSize: 9999,
+    page: 1, pageSize: 9999,
     action: filters.action || undefined,
     resource: filters.resource || undefined,
     keyword: filters.keyword || undefined,
-    startDate,
-    endDate,
+    startDate, endDate,
   })
-  return response.data?.data?.items || []
+  return response.data?.data?.data || []
 }
 
 onMounted(() => {
-  loadPage()
+  fetchStats()
 })
 </script>
 
@@ -228,13 +188,14 @@ onMounted(() => {
         <el-option v-for="(label, key) in AUDIT_RESOURCE_LABELS" :key="key" :label="label" :value="key" />
       </el-select>
       <el-date-picker
-        v-model="filters.dateRange"
+        v-model="dateRange"
         type="daterange"
         range-separator="至"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
         value-format="YYYY-MM-DD"
         style="width: 260px"
+        @change="onDateRangeChange"
       />
       <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
       <el-button :icon="Refresh" @click="handleReset">重置</el-button>

@@ -1,0 +1,96 @@
+/*
+ * editor-common.css
+ * Shared styles for all admin editor pages (CityEdit, RouteEdit, ProductEdit, EventEdit).
+ * Import this file in each editor component's <style> block:
+ *   @import '@/assets/editor-common.css';
+ *
+ * Page-specific overrides (different grid widths, extra cards) stay in each component's <style scoped>.
+ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.edit-page {
+  padding-bottom: 40px;
+}
+
+/* ── Two-column shell (form left, preview/aside right) ────── */
+.editor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .editor-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .edit-page {
+    padding-bottom: 80px; /* space for sticky save bar */
+  }
+
+  .editor-shell {
+    gap: 12px;
+  }
+
+  .section-card {
+    padding: 12px;
+  }
+
+  .section-card .el-form-item {
+    margin-bottom: 12px;
+  }
+
+  .section-card .el-input {
+    font-size: 16px; /* prevent iOS zoom */
+  }
+}
+
+/* ── Section cards inside the left column ─────────────────── */
+.section-card {
+  margin-bottom: 16px;
+}
+
+/* ── Workspace panel content area (inside EditorWorkspace) ── */
+.workspace-panel {
+  min-height: 320px;
+}
+
+/* ── Panel title (section heading inside workspace panels) ── */
+.panel-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+/* ── Selected-item card grid (cities, routes, etc.) ───────── */
+.selected-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.selected-card {
+  padding: 12px;
+  border: 1px solid #dbe5f1;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.selected-card strong,
+.selected-card span {
+  display: block;
+}
+
+.selected-card strong {
+  color: #303133;
+}
+
+.selected-card span {
+  margin-top: 4px;
+  color: #909399;
+  font-size: 12px;
+}

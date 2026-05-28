@@ -18,7 +18,7 @@ import ImageUpload from '@/components/ImageUpload.vue'
 
 const route = useRoute()
 const router = useRouter()
-const isEdit = ref(false)
+const isEdit = computed(() => Boolean(route.params.id))
 const saving = ref(false)
 const loading = ref(false)
 const formRef = ref<FormInstance>()
@@ -81,7 +81,7 @@ const activeWorkspaceLabel = computed(() => {
 
 async function fetchCollections() {
   const res = await collectionsApi.getCollections({ page: 1, pageSize: 100 })
-  collectionOptions.value = (res.data.data.items || []).map((item: any) => ({
+  collectionOptions.value = (res.data.data.data || []).map((item: any) => ({
     id: item.id,
     title: pickI18n(item.title),
   }))
@@ -89,7 +89,7 @@ async function fetchCollections() {
 
 async function fetchCities() {
   const res = await citiesApi.getCities({ page: 1, pageSize: 200 })
-  cityOptions.value = (res.data.data.items || []).map((item: any) => ({
+  cityOptions.value = (res.data.data.data || []).map((item: any) => ({
     slug: item.slug,
     name: pickI18n(item.name) || item.slug,
     adcode: Number(item.adcode || 0),
@@ -152,7 +152,6 @@ onMounted(async () => {
     await Promise.all([fetchCollections(), fetchCities()])
     const id = route.params.id as string
     if (id) {
-      isEdit.value = true
       const res = await productsApi.getProduct(id)
       fillFromApi(res.data.data)
     }
@@ -353,35 +352,5 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page {
-  padding-bottom: 40px;
-}
-
-.editor-shell {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw);
-  gap: 20px;
-  align-items: start;
-}
-
-.section-card {
-  margin-bottom: 16px;
-}
-
-.workspace-panel {
-  min-height: 280px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
-
-@media (max-width: 1100px) {
-  .editor-shell {
-    grid-template-columns: 1fr;
-  }
-}
+@import '@/assets/editor-common.css';
 </style>

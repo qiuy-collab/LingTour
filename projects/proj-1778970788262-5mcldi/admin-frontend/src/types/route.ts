@@ -40,7 +40,6 @@ export interface Route {
   stopCount?: number
   published: boolean
   citySlugs?: string[]
-  price?: number
   createdAt?: string
   updatedAt?: string
   deletedAt?: string | null
@@ -61,5 +60,4 @@ export interface RouteFormData {
   stops: RouteStop[]
   published?: boolean
   citySlugs?: string[]
-  price?: number
 }

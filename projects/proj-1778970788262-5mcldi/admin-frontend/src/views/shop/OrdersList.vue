@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ordersApi } from '@/api/orders'
@@ -7,16 +7,30 @@ import { OrderStatusMap, OrderStatusColorMap, PaymentStatusMap, PaymentStatusCol
 import type { Order } from '@/types/order'
 import { formatDateTime } from '@/utils/format'
 import { pickI18n } from '@/types/common'
+import { useListPage } from '@/composables/useListPage'
+import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
-const loading = ref(false)
-const list = ref<Order[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const keyword = ref('')
-const statusFilter = ref('')
-const paymentStatusFilter = ref('')
+
+const listPage = useListPage<Order>({
+  fetchApi: (params) => ordersApi.getOrders(params),
+  defaultFilters: {
+    keyword: '',
+    status: '',
+    paymentStatus: '',
+    startDate: '',
+    endDate: '',
+  },
+})
+
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  fetchList,
+  handleSearch,
+  handlePageChange, handleSizeChange,
+} = listPage
+
 const dateRange = ref<[string, string]>(['', ''])
 
 const statusOptions: { label: string; value: string }[] = Object.entries(OrderStatusMap).map(
@@ -27,40 +41,15 @@ const paymentStatusOptions: { label: string; value: string }[] = Object.entries(
   ([value, label]) => ({ label, value })
 )
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const params: any = {
-      page: page.value,
-      pageSize: pageSize.value,
-    }
-    if (keyword.value) params.keyword = keyword.value
-    if (statusFilter.value) params.status = statusFilter.value
-    if (paymentStatusFilter.value) params.paymentStatus = paymentStatusFilter.value
-    if (dateRange.value && dateRange.value[0]) params.startDate = dateRange.value[0]
-    if (dateRange.value && dateRange.value[1]) params.endDate = dateRange.value[1]
-    const res = await ordersApi.getOrders(params)
-    list.value = res.data.data.items
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载订单列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchList()
+function onDateRangeChange(val: [string, string] | null) {
+  filters.startDate = val?.[0] ?? ''
+  filters.endDate = val?.[1] ?? ''
+  handleSearch()
 }
 
 function handleReset() {
-  keyword.value = ''
-  statusFilter.value = ''
-  paymentStatusFilter.value = ''
   dateRange.value = ['', '']
-  page.value = 1
-  fetchList()
+  listPage.handleReset()
 }
 
 function handleViewDetail(id: string) {
@@ -106,12 +95,6 @@ function itemsSummary(items: Order['items']) {
   if (!items || !items.length) return '-'
   return items.map((i: any) => `${pickI18n(i.productName) || i.productName} ×${i.quantity}`).join('、')
 }
-
-onMounted(() => {
-  fetchList()
-})
-
-watch([page, pageSize], () => fetchList())
 </script>
 
 <template>
@@ -121,17 +104,14 @@ watch([page, pageSize], () => fetchList())
     </div>
 
     <!-- 筛选栏 -->
-    <div class="search-bar">
-      <el-input
-        v-model="keyword"
-        placeholder="搜索订单号/用户邮箱"
-        clearable
-        style="width: 240px"
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      />
+    <ListToolbar
+      v-model="filters.keyword"
+      search-placeholder="搜索订单号/用户邮箱"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
       <el-select
-        v-model="statusFilter"
+        v-model="filters.status"
         placeholder="履约状态"
         clearable
         style="width: 140px"
@@ -146,7 +126,7 @@ watch([page, pageSize], () => fetchList())
       </el-select>
 
       <el-select
-        v-model="paymentStatusFilter"
+        v-model="filters.paymentStatus"
         placeholder="支付状态"
         clearable
         style="width: 140px"
@@ -169,12 +149,9 @@ watch([page, pageSize], () => fetchList())
         format="YYYY-MM-DD"
         value-format="YYYY-MM-DD"
         style="width: 260px"
-        @change="handleSearch"
+        @change="onDateRangeChange"
       />
-
-      <el-button type="primary" @click="handleSearch">搜索</el-button>
-      <el-button @click="handleReset">重置</el-button>
-    </div>
+    </ListToolbar>
 
     <el-card shadow="never" class="table-card">
     <el-table :data="list" v-loading="loading" stripe>
@@ -255,6 +232,8 @@ watch([page, pageSize], () => fetchList())
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next"
         background
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
       />
     </div>
     </el-card>

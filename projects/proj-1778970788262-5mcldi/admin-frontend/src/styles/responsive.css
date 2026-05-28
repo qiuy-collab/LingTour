@@ -1,109 +1,133 @@
-/* ===== Responsive Breakpoints ===== */
-/* sm: 640px, md: 768px, lg: 1024px, xl: 1280px */
+/* ═══ LingTour Admin Responsive System ═══ */
+/* Breakpoints:
+   sm: 640px  (large phone)
+   md: 768px  (tablet portrait)
+   lg: 1024px (tablet landscape)
+   xl: 1280px (desktop)
+*/
 
-/* Mobile: sidebar overlay */
-@media (max-width: 768px) {
-  .admin-aside {
-    position: fixed !important;
-    z-index: 2000;
-    height: 100vh;
+/* ── Mobile-first base ── */
+@media (max-width: 767px) {
+  /* Sidebar drawer */
+  .admin-sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    position: fixed;
+    z-index: 2000;
+    width: 260px;
   }
-
-  .admin-aside.mobile-open {
+  .admin-sidebar.mobile-open {
     transform: translateX(0);
   }
-
-  .admin-header .header-title {
-    font-size: 14px;
+  .mobile-sidebar-mask {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1999;
   }
 
+  /* Header */
+  .header-right {
+    gap: 8px !important;
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  /* Main content */
   .admin-main {
     padding: 12px !important;
   }
 
-  /* Stack search bar items vertically */
-  .search-bar {
-    flex-direction: column;
-    gap: 8px;
+  /* List toolbar → stack vertically */
+  .list-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
   }
-
-  .search-bar .el-input,
-  .search-bar .el-select {
+  .list-toolbar .el-input {
+    width: 100% !important;
+  }
+  .list-toolbar .el-select {
     width: 100% !important;
   }
 
-  /* Table responsive */
+  /* Tables → horizontal scroll on mobile */
   .el-table {
     font-size: 12px;
+    overflow-x: auto;
+    display: block;
+  }
+  .el-table__body-wrapper {
+    overflow-x: auto;
   }
 
-  /* Form card full width */
-  .form-card {
-    max-width: 100% !important;
+  /* Pagination */
+  .el-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .el-pagination .el-pagination__sizes {
+    display: none;
+  }
+  .el-pagination .el-pagination__jump {
+    display: none;
   }
 
-  /* Dialog full screen on mobile */
+  /* Dialogs */
   .el-dialog {
     width: 95% !important;
-    margin: 5vh auto !important;
+    margin: 20px auto !important;
   }
-
   .el-drawer {
     width: 100% !important;
   }
+
+  /* Forms */
+  .el-form-item__label {
+    float: none;
+    display: block;
+    text-align: left;
+    padding-bottom: 4px;
+  }
+
+  /* Editor shell → single column */
+  .editor-shell {
+    grid-template-columns: 1fr !important;
+  }
+  .editor-shell .FrontendPagePreview {
+    display: none;
+  }
+
+  /* Batch action bar */
+  .batch-action-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 
-/* Tablet */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* ── Tablet ── */
+@media (min-width: 768px) and (max-width: 1023px) {
   .admin-main {
     padding: 16px !important;
   }
-
-  .form-card {
-    max-width: 100% !important;
+  .editor-shell {
+    grid-template-columns: 1fr !important;
   }
-
-  .el-dialog {
-    width: 80% !important;
+  .hide-on-tablet {
+    display: none !important;
   }
 }
 
-/* Desktop large */
+/* ── Desktop large ── */
 @media (min-width: 1280px) {
   .admin-main {
     padding: 24px;
   }
 }
 
-/* Mobile overlay backdrop */
-.mobile-sidebar-mask {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--lt-bg-mask, rgba(0, 0, 0, 0.5));
-  z-index: 1999;
-}
-
-@media (max-width: 768px) {
-  .mobile-sidebar-mask.visible {
-    display: block;
-  }
-}
-
-/* Utility: hide on mobile */
-@media (max-width: 768px) {
-  .hide-on-mobile {
-    display: none !important;
-  }
-}
-
-/* Utility: hide on desktop */
-@media (min-width: 769px) {
+/* ── Utility: hide on desktop ── */
+@media (min-width: 768px) {
   .hide-on-desktop {
     display: none !important;
   }

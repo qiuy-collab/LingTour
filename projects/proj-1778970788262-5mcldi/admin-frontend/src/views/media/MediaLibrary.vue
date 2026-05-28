@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CopyDocument, Delete } from '@element-plus/icons-vue'
-import { getMediaFiles, deleteMediaFile, uploadMediaFile } from '@/api/media'
+import { CopyDocument, Delete, Search, Warning } from '@element-plus/icons-vue'
+import { queryMediaFiles, getOrphanFiles, deleteMediaFile, uploadMediaFile } from '@/api/media'
 import type { MediaFile } from '@/api/media'
 import { resolveMediaUrl } from '@/utils/media'
 
@@ -12,26 +12,49 @@ const total = ref(0)
 const page = ref(1)
 const limit = ref(30)
 const moduleFilter = ref('')
+const searchQuery = ref('')
 const uploading = ref(false)
+const uploadProgress = ref(0)
+const uploadStatusText = ref('')
 const selectedFiles = ref<Set<string>>(new Set())
+const showOrphans = ref(false)
+const orphanCount = ref(0)
 
-const modules = ['', 'cities', 'routes', 'shop', 'community', 'events']
+const modules = ['', 'cities', 'routes', 'shop', 'community', 'events', 'home', 'avatars']
 
 async function fetchFiles() {
   loading.value = true
   try {
-    const res = await getMediaFiles({
-      page: page.value,
-      limit: limit.value,
-      module: moduleFilter.value || undefined,
-    })
-    const d = res.data?.data ?? res.data
-    files.value = d.items ?? []
-    total.value = d.total ?? 0
+    if (showOrphans.value) {
+      const res = await getOrphanFiles()
+      const d = res.data?.data ?? res.data
+      files.value = d.data ?? []
+      total.value = d.total ?? 0
+    } else {
+      const res = await queryMediaFiles({
+        page: page.value,
+        limit: limit.value,
+        module: moduleFilter.value || undefined,
+        search: searchQuery.value || undefined,
+      })
+      const d = res.data?.data ?? res.data
+      files.value = d.data ?? []
+      total.value = d.total ?? 0
+    }
   } catch {
     ElMessage.error('获取媒体文件失败')
   } finally {
     loading.value = false
+  }
+}
+
+async function checkOrphanCount() {
+  try {
+    const res = await getOrphanFiles()
+    const d = res.data?.data ?? res.data
+    orphanCount.value = d.total ?? 0
+  } catch {
+    // ignore
   }
 }
 
@@ -96,17 +119,38 @@ async function handleUpload(event: Event) {
   const fileList = input.files
   if (!fileList || fileList.length === 0) return
 
+  const filesArr = Array.from(fileList)
   uploading.value = true
+  uploadProgress.value = 0
+  const totalCount = filesArr.length
+  let completedCount = 0
+
   try {
-    for (const file of Array.from(fileList)) {
-      await uploadMediaFile(file, moduleFilter.value || undefined)
+    const results = await Promise.allSettled(
+      filesArr.map(async (file) => {
+        const res = await uploadMediaFile(file, moduleFilter.value || undefined)
+        completedCount++
+        uploadProgress.value = Math.round((completedCount / totalCount) * 100)
+        uploadStatusText.value = `${completedCount} / ${totalCount}`
+        return res
+      }),
+    )
+
+    const failedCount = results.filter((r) => r.status === 'rejected').length
+    if (failedCount === 0) {
+      ElMessage.success(`${totalCount} 个文件上传成功`)
+    } else if (completedCount - failedCount > 0) {
+      ElMessage.warning(`${totalCount - failedCount} 个成功，${failedCount} 个失败`)
+    } else {
+      ElMessage.error('全部上传失败')
     }
-    ElMessage.success(`${fileList.length} 个文件上传成功`)
     fetchFiles()
   } catch {
     ElMessage.error('上传失败')
   } finally {
     uploading.value = false
+    uploadProgress.value = 0
+    uploadStatusText.value = ''
     input.value = ''
   }
 }
@@ -118,6 +162,7 @@ function handlePageChange(newPage: number) {
 
 onMounted(() => {
   fetchFiles()
+  checkOrphanCount()
 })
 </script>
 
@@ -130,6 +175,29 @@ onMounted(() => {
           <el-option label="全部" value="" />
           <el-option v-for="m in modules.filter(Boolean)" :key="m" :label="m" :value="m" />
         </el-select>
+
+        <el-input
+          v-model="searchQuery"
+          placeholder="搜索文件名..."
+          clearable
+          style="width: 200px"
+          @keyup.enter="fetchFiles"
+          @clear="fetchFiles"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+
+        <el-button
+          v-if="orphanCount > 0"
+          :type="showOrphans ? 'warning' : 'default'"
+          size="small"
+          @click="showOrphans = !showOrphans; page = 1; fetchFiles()"
+        >
+          <el-icon style="margin-right: 4px"><Warning /></el-icon>
+          {{ showOrphans ? '返回全部' : `孤立文件 (${orphanCount})` }}
+        </el-button>
 
         <el-button
           v-if="selectedFiles.size > 0"
@@ -149,7 +217,7 @@ onMounted(() => {
           </el-button>
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             multiple
             hidden
             @change="handleUpload"
@@ -158,13 +226,23 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- Upload progress -->
+    <div v-if="uploading" class="upload-progress-bar">
+      <el-progress
+        :percentage="uploadProgress"
+        :stroke-width="6"
+        :format="() => uploadStatusText"
+        status="success"
+      />
+    </div>
+
     <!-- Grid -->
     <div class="media-grid" v-if="files.length > 0">
       <div
         v-for="file in files"
         :key="file.filename"
         class="media-card"
-        :class="{ selected: selectedFiles.has(file.filename) }"
+        :class="{ selected: selectedFiles.has(file.filename), orphan: showOrphans }"
         @click="toggleSelect(file.filename)"
       >
         <div class="media-thumb">
@@ -180,15 +258,19 @@ onMounted(() => {
         </div>
         <div class="media-info">
           <p class="media-name" :title="file.filename">{{ file.filename.split('/').pop() }}</p>
-          <p class="media-meta">{{ formatSize(file.size) }}</p>
+          <p class="media-meta">{{ formatSize(file.size_bytes ?? file.size) }}</p>
+          <p class="media-detail" v-if="file.module || file.entity_type">
+            <span v-if="file.module" class="tag">{{ file.module }}</span>
+            <span v-if="file.entity_type" class="tag entity">{{ file.entity_type }}{{ file.entity_id ? ':' + file.entity_id.slice(0, 8) : '' }}</span>
+          </p>
         </div>
       </div>
     </div>
 
-    <el-empty v-else description="暂无媒体文件" />
+    <el-empty v-else :description="showOrphans ? '没有孤立文件' : '暂无媒体文件'" />
 
     <!-- Pagination -->
-    <div class="pagination" v-if="total > limit">
+    <div class="pagination" v-if="total > limit && !showOrphans">
       <el-pagination
         :current-page="page"
         :page-size="limit"
@@ -230,6 +312,11 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.upload-progress-bar {
+  margin-bottom: 16px;
+  max-width: 400px;
+}
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -253,6 +340,14 @@ onMounted(() => {
 .media-card.selected {
   border-color: #409eff;
   box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
+
+.media-card.orphan {
+  border-color: #e6a23c;
+}
+
+.media-card.orphan.selected {
+  border-color: #409eff;
 }
 
 .media-thumb {
@@ -303,6 +398,28 @@ onMounted(() => {
   font-size: 11px;
   color: #909399;
   margin: 4px 0 0;
+}
+
+.media-detail {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 4px 0 0;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #ecf5ff;
+  color: #409eff;
+  line-height: 1.4;
+}
+
+.tag.entity {
+  background: #fdf6ec;
+  color: #e6a23c;
 }
 
 .pagination {

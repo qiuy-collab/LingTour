@@ -404,4 +404,11 @@ onBeforeUnmount(() => {
     position: static;
   }
 }
+
+@media (max-width: 767px) {
+  /* Preview panel hidden on mobile, accessible via drawer */
+  .frontend-preview {
+    display: none;
+  }
+}
 </style>

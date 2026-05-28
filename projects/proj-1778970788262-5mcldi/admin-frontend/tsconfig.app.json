@@ -7,6 +7,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "resolveJsonModule": true,
 
     /* Linting */
     "ignoreDeprecations": "6.0",
@@ -15,5 +16,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "../../shared/**/*.json"]
 }

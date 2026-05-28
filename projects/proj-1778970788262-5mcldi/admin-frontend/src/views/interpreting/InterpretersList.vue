@@ -1,47 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useListPage } from '@/composables/useListPage'
 import { interpretersApi } from '@/api/interpreters'
 import { InterpreterStatusMap, InterpreterStatusColorMap } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
 import type { Interpreter } from '@/types/interpreting'
 
 const router = useRouter()
-const loading = ref(false)
-const list = ref<Interpreter[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = ref(10)
-const statusFilter = ref('')
-const keyword = ref('')
+
+const {
+  loading, list, total, page, pageSize,
+  filters,
+  fetchList,
+  handlePageChange, handleSizeChange,
+  handleSearch,
+} = useListPage<Interpreter>({
+  fetchApi: (params) => interpretersApi.getInterpreters(params),
+  defaultFilters: { keyword: '', status: '' },
+})
 
 /** 安全提取 I18nObject 中文，用于消息提示和头像首字符 */
 function nameZh(row: Interpreter): string {
   return pickI18n(row.name) || '该口译员'
-}
-
-async function fetchList() {
-  loading.value = true
-  try {
-    const res = await interpretersApi.getInterpreters({
-      page: page.value,
-      pageSize: pageSize.value,
-      status: statusFilter.value,
-      keyword: keyword.value || undefined,
-    } as any)
-    list.value = res.data.data.items
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载口译员列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleSearch() {
-  page.value = 1
-  fetchList()
 }
 
 function handleCreate() {
@@ -118,10 +99,6 @@ async function handleEnable(row: Interpreter) {
     fetchList()
   } catch { /* cancelled */ }
 }
-
-onMounted(() => {
-  fetchList()
-})
 </script>
 
 <template>
@@ -133,14 +110,14 @@ onMounted(() => {
 
     <div class="search-bar">
       <el-input
-        v-model="keyword"
+        v-model="filters.keyword"
         placeholder="搜索姓名/语种"
         clearable
         style="width: 240px"
         @keyup.enter="handleSearch"
         @clear="handleSearch"
       />
-      <el-select v-model="statusFilter" placeholder="状态筛选" clearable style="width: 160px" @change="handleSearch">
+      <el-select v-model="filters.status" placeholder="状态筛选" clearable style="width: 160px" @change="handleSearch">
         <el-option label="全部" value="" />
         <el-option label="待审核" value="pending_review" />
         <el-option label="已激活" value="active" />
@@ -213,6 +190,8 @@ onMounted(() => {
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
         background
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
       />
     </div>
     </el-card>

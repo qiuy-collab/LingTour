@@ -60,7 +60,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
 
       const res = await fetchApi(params)
       const data = res.data?.data || res.data
-      const items = data?.items || data || []
+      const items = data?.data || data || []
       list.value = transform ? transform(items) : items
       total.value = data?.total ?? items.length
     } catch (err: any) {
@@ -182,7 +182,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
       })
       const res = await fetchApi(params)
       const data = res.data?.data || res.data
-      const items = data?.items || data || []
+      const items = data?.data || data || []
       return transform ? transform(items) : items
     } catch {
       ElMessage.error('获取全部数据失败')

@@ -33,7 +33,7 @@ function normalizePost(raw: any): CommunityPost {
 }
 
 function normalizeListResponse(res: any) {
-  res.data.data.items = (res.data.data.items || []).map(normalizePost)
+  res.data.data.data = (res.data.data.data || []).map(normalizePost)
   return res
 }
 

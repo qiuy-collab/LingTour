@@ -1,29 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { modesApi } from '@/api/modes'
 import type { ServiceMode } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
+import { useListPage } from '@/composables/useListPage'
 
 const router = useRouter()
-const loading = ref(false)
-const list = ref<ServiceMode[]>([])
-const total = ref(0)
 
-async function fetchList() {
-  loading.value = true
-  try {
-    // 服务模式数量较少且有"上移/下移"操作,需要全量加载用于排序交换
-    const res = await modesApi.getModes({ page: 1, pageSize: 200 })
-    list.value = res.data.data.items.sort((a, b) => a.sortOrder - b.sortOrder)
-    total.value = res.data.data.total
-  } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '加载服务模式失败')
-  } finally {
-    loading.value = false
-  }
-}
+// ─── 列表数据 (useListPage) ─────────────
+const {
+  loading, list, total, page, pageSize,
+  fetchList,
+} = useListPage<ServiceMode>({
+  fetchApi: (params) => modesApi.getModes(params as any),
+  deleteApi: (id) => modesApi.deleteMode(id),
+  defaultFilters: {},
+  defaultPageSize: 200,
+  transform: (items: ServiceMode[]) => [...items].sort((a, b) => a.sortOrder - b.sortOrder),
+})
 
 function handleCreate() {
   router.push('/admin/interpreting/modes/create')
@@ -39,7 +34,7 @@ async function handleDelete(row: ServiceMode) {
     await ElMessageBox.confirm(
       `确定删除模式「${title}」?该操作不可恢复。`,
       '删除确认',
-      { type: 'warning' }
+      { type: 'warning' },
     )
     await modesApi.deleteMode(row.id)
     ElMessage.success(`模式「${title}」已删除`)
@@ -82,10 +77,6 @@ async function handleMoveDown(index: number) {
 function getAccentLabel(accent: string) {
   return accent === 'light' ? '浅色' : '深色'
 }
-
-onMounted(() => {
-  fetchList()
-})
 </script>
 
 <template>

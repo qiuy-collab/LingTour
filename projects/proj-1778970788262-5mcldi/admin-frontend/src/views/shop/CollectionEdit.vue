@@ -55,7 +55,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const routesRes = await routesApi.getRoutes({ page: 1, pageSize: 200 })
-    routeOptions.value = (routesRes.data.data.items || []).map((item: any) => ({
+    routeOptions.value = (routesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       title: pickI18n(item.title) || item.slug,
     }))
@@ -205,28 +205,15 @@ async function handleSave() {
 </template>
 
 <style scoped>
-.edit-page {
-  padding-bottom: 40px;
-}
+@import '@/assets/editor-common.css';
 
+/* Narrower single-column layout for collection editor */
 .editor-shell {
-  display: grid;
   grid-template-columns: minmax(0, 1fr);
   max-width: 900px;
 }
 
-.section-card {
-  margin-bottom: 16px;
-}
-
 .workspace-panel {
   min-height: 220px;
-}
-
-.panel-title {
-  margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 </style>
