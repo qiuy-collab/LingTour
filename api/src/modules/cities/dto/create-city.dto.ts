@@ -31,6 +31,12 @@ export class CreateSectionDto {
   @IsString()
   image: string;
 
+  @ApiPropertyOptional({ type: [String], default: [] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
+
   @ApiPropertyOptional({ example: { en: 'Coastline', zh: '海岸线长度' } })
   @IsOptional()
   @IsI18nObject()

@@ -32,6 +32,9 @@ export class CityCultureSection {
   @Column({ type: 'varchar', length: 500 })
   image: string;
 
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  images: string[];
+
   @Column({ type: 'jsonb', name: 'stat_label', nullable: true })
   statLabel: { en: string; zh: string } | null;
 

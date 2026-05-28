@@ -68,7 +68,7 @@ export class RoutesService {
       stopCount: countMap.get(route.id) ?? 0,
     }));
 
-    return { data: enriched, total, page: +page, limit: +limit };
+    return { data: enriched, total, page: +page, pageSize: +limit };
   }
 
   async findBySlugPublished(slug: string): Promise<any> {
@@ -92,12 +92,8 @@ export class RoutesService {
 
     return {
       ...route,
-      cities: links.map((l) => ({
-        slug: l.city_slug,
-        name: l.city_name,
-        label: l.city_region_label,
-        tags: l.city_tags,
-        gallery: l.city_gallery_images?.[0] ? [l.city_gallery_images[0]] : [],
+      routeCityLinks: links.map((l) => ({
+        citySlug: l.city_slug,
       })),
     };
   }
@@ -148,7 +144,7 @@ export class RoutesService {
       stopCount: countMap.get(route.id) ?? 0,
     }));
 
-    return { items: enriched, total, page: +page, size: +limit };
+    return { data: enriched, total, page: +page, pageSize: +limit };
   }
 
   async findByIdAdmin(id: string): Promise<any> {
@@ -219,11 +215,13 @@ export class RoutesService {
             culturalStory: s.culturalStory,
             details: s.details ?? [],
             image: s.image,
+            images: s.images ?? [],
             lat: s.lat ?? null,
             lng: s.lng ?? null,
             meal: s.meal ?? null,
             hotel: s.hotel ?? null,
             transit: s.transit ?? null,
+            plan: s.plan ?? null,
           }),
         );
         await queryRunner.manager.save(stops);
@@ -315,11 +313,13 @@ export class RoutesService {
               culturalStory: s.culturalStory,
               details: s.details ?? [],
               image: s.image,
+              images: s.images ?? [],
               lat: s.lat ?? null,
               lng: s.lng ?? null,
               meal: s.meal ?? null,
               hotel: s.hotel ?? null,
               transit: s.transit ?? null,
+              plan: s.plan ?? null,
             }),
           );
           await queryRunner.manager.save(stops);

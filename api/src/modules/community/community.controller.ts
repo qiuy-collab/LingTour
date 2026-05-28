@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CommunityService } from './community.service';
 import { UploadService } from '../upload/upload.service';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
@@ -35,6 +36,7 @@ import {
   COMMUNITY_POST_STATUSES,
   type CommunityPostStatus,
 } from './entities/community-post.entity';
+import { AuditInterceptor as AuditLogInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 interface AuthenticatedRequest extends Request {
   user?: { sub?: string; email?: string; role?: string };
@@ -165,6 +167,7 @@ export class CommunityController {
     return this.communityService.toggleSave(id, this.requireUserId(req));
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/community/posts')
   @ApiBearerAuth()
   @ApiQuery({ name: 'status', required: false, enum: COMMUNITY_POST_STATUSES })
@@ -189,20 +192,27 @@ export class CommunityController {
     });
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/community/posts/:id')
   @ApiBearerAuth()
   async getAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.getAdminById(id, true);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/community/posts')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('create', 'community_post')
   async createAdminPost(@Body() dto: UpsertCommunityPostDto) {
     return this.communityService.create(dto);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/community/posts/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'community_post')
   async updateAdminPost(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpsertCommunityPostDto,
@@ -210,8 +220,11 @@ export class CommunityController {
     return this.communityService.update(id, dto);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/community/posts/:id/status')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'community_post')
   async updateAdminPostStatus(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCommunityStatusDto,
@@ -223,8 +236,11 @@ export class CommunityController {
     });
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/community/posts/:id/review')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('review', 'community_post')
   async reviewAdminPost(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCommunityStatusDto,
@@ -236,8 +252,11 @@ export class CommunityController {
     });
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/community/posts/:id/featured')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'community_post')
   async toggleFeatured(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body('featured') featured: boolean,
@@ -247,6 +266,8 @@ export class CommunityController {
 
   @Delete('admin/community/posts/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('delete', 'community_post')
   @ApiOperation({ summary: 'Soft-delete a post' })
   async deleteAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.remove(id);
@@ -254,6 +275,8 @@ export class CommunityController {
 
   @Post('admin/community/posts/:id/restore')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('restore', 'community_post')
   @ApiOperation({ summary: 'Restore a soft-deleted post' })
   async restoreAdminPost(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.restore(id);
@@ -266,26 +289,34 @@ export class CommunityController {
     return this.communityService.listPublicBriefs();
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/community/briefs')
   @ApiBearerAuth()
   async getAdminBriefs() {
     return this.communityService.listAdminBriefs();
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/community/briefs/:id')
   @ApiBearerAuth()
   async getAdminBrief(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.getAdminBriefById(id);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/community/briefs')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('create', 'community_brief')
   async createAdminBrief(@Body() dto: UpsertCommunityBriefDto) {
     return this.communityService.createBrief(dto);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/community/briefs/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'community_brief')
   async updateAdminBrief(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpsertCommunityBriefDto,
@@ -295,6 +326,8 @@ export class CommunityController {
 
   @Delete('admin/community/briefs/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('delete', 'community_brief')
   async deleteAdminBrief(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.communityService.removeBrief(id);
   }

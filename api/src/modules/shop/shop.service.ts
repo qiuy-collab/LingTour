@@ -70,7 +70,7 @@ export class ShopService {
 
     const countMap = new Map(counts.map((c) => [c.collectionId, +c.count]));
     return {
-      collections: collections.map((c) => ({
+      data: collections.map((c) => ({
         ...c,
         productCount: countMap.get(c.id) ?? 0,
       })),
@@ -122,8 +122,10 @@ export class ShopService {
       .getRawMany();
 
     return {
-      products: products.map((product) => this.toPublicProduct(product)),
-      pagination: { page: +page, limit: +limit, total },
+      data: products.map((product) => this.toPublicProduct(product)),
+      total,
+      page: +page,
+      pageSize: +limit,
       filters: {
         collections: allCollections.map((c) => c.slug),
         tags: allTags.map((t) => [t.tag_en, t.tag_zh]).flat(),
@@ -235,7 +237,7 @@ export class ShopService {
       .orderBy('p.updatedAt', 'DESC')
       .getManyAndCount();
 
-    return { items: data, total, page: +page, size: +limit };
+    return { data, total: total, page: +page, pageSize: +limit };
   }
 
   async findProductByIdAdmin(id: string) {

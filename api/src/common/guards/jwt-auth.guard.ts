@@ -37,10 +37,13 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      // Only verify the token is valid; do NOT set request.user here.
+      // The Passport JwtStrategy is responsible for decoding the payload,
+      // looking up the user in the DB, and attaching the canonical shape
+      // ({ id, email, role }) to request.user.
+      await this.jwtService.verifyAsync(token, {
         secret: resolveJwtSecret(this.configService),
       });
-      request['user'] = payload;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');

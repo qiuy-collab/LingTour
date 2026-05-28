@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +25,8 @@ import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { SetFeaturedDto } from './dto/set-featured.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Shop')
 @Controller('api/v1')
@@ -74,6 +77,7 @@ export class ShopController {
 
   // ── Admin: Collections ──
 
+  @Roles('admin', 'editor')
   @Get('admin/shop/collections')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all collections (admin)' })
@@ -81,13 +85,17 @@ export class ShopController {
     return this.shopService.findAllCollectionsAdmin();
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/shop/collections')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('create', 'collection')
   @ApiOperation({ summary: 'Create collection' })
   async createCollection(@Body() dto: CreateCollectionDto) {
     return this.shopService.createCollection(dto);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/shop/collections/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get collection by ID (admin)' })
@@ -95,8 +103,11 @@ export class ShopController {
     return this.shopService.findCollectionByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/shop/collections/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'collection')
   @ApiOperation({ summary: 'Update collection' })
   async updateCollection(
     @Param('id', ParseUUIDPipe) id: string,
@@ -107,6 +118,8 @@ export class ShopController {
 
   @Delete('admin/shop/collections/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('delete', 'collection')
   @ApiOperation({ summary: 'Delete collection' })
   async deleteCollection(@Param('id', ParseUUIDPipe) id: string) {
     return this.shopService.deleteCollection(id);
@@ -114,6 +127,7 @@ export class ShopController {
 
   // ── Admin: Products ──
 
+  @Roles('admin', 'editor')
   @Get('admin/shop/products')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List products (admin, paginated)' })
@@ -135,13 +149,17 @@ export class ShopController {
     );
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/shop/products')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('create', 'product')
   @ApiOperation({ summary: 'Create product' })
   async createProduct(@Body() dto: CreateProductDto) {
     return this.shopService.createProduct(dto);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/shop/products/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get product by ID (admin)' })
@@ -149,8 +167,11 @@ export class ShopController {
     return this.shopService.findProductByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/shop/products/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'product')
   @ApiOperation({ summary: 'Update product' })
   async updateProduct(
     @Param('id', ParseUUIDPipe) id: string,
@@ -161,6 +182,8 @@ export class ShopController {
 
   @Delete('admin/shop/products/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('delete', 'product')
   @ApiOperation({ summary: 'Soft delete product' })
   async deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.shopService.softDeleteProduct(id);
@@ -168,6 +191,7 @@ export class ShopController {
 
   // ── Admin: Featured ──
 
+  @Roles('admin', 'editor')
   @Get('admin/shop/featured')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get featured entries (admin)' })
@@ -176,8 +200,11 @@ export class ShopController {
     return this.shopService.getFeaturedAdmin(section);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/shop/featured')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'featured')
   @ApiOperation({ summary: 'Set featured product order' })
   async setFeatured(@Body() dto: SetFeaturedDto) {
     return this.shopService.setFeatured('shop', dto.productIds);

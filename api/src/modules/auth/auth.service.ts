@@ -168,4 +168,40 @@ export class AuthService {
     await this.usersService.updateProfile(userId, dto);
     return this.usersService.getProfileById(userId);
   }
+
+  /**
+   * Refresh an expired (or soon-to-expire) JWT.
+   * Allows tokens up to 1 hour past their expiration as a grace period.
+   */
+  async refreshToken(rawToken: string) {
+    // 1. Decode / verify the token, ignoring expiration so we can do our own check
+    let decoded: { sub: string; email: string; role: string; exp?: number; iat?: number };
+    try {
+      decoded = this.jwtService.verify(rawToken, { ignoreExpiration: true });
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    if (!decoded?.sub) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    // 2. Enforce a 1-hour grace window after expiry
+    const GRACE_PERIOD_SECONDS = 60 * 60; // 1 hour
+    if (decoded.exp) {
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      if (nowSeconds - decoded.exp > GRACE_PERIOD_SECONDS) {
+        throw new UnauthorizedException('Token has expired beyond the refresh window');
+      }
+    }
+
+    // 3. Confirm the user still exists
+    const user = await this.usersService.findById(decoded.sub);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
+    // 4. Build a fresh auth response (new 24h token)
+    return this.buildAuthResponse(user);
+  }
 }

@@ -56,7 +56,7 @@ export class CitiesService {
       routes: routesByCityId.get(city.id) ?? [],
     }));
 
-    return { data: enriched, total };
+    return { data: enriched, total, page, pageSize: limit };
   }
 
   async findBySlugPublished(slug: string): Promise<any> {
@@ -96,7 +96,7 @@ export class CitiesService {
       order: { createdAt: 'DESC' },
       withDeleted: true,
     });
-    return { data, total };
+    return { data, total, page: +page, pageSize: +limit };
   }
 
   async findByIdAdmin(id: string): Promise<City> {
@@ -160,6 +160,7 @@ export class CitiesService {
             title: this.normalizeI18nObject(s.title),
             body: this.normalizeI18nObject(s.body),
             image: s.image,
+            images: s.images ?? [],
             statLabel: s.statLabel
               ? this.normalizeI18nObject(s.statLabel)
               : null,
@@ -232,6 +233,7 @@ export class CitiesService {
               title: this.normalizeI18nObject(s.title),
               body: this.normalizeI18nObject(s.body),
               image: s.image,
+              images: s.images ?? [],
               statLabel: s.statLabel
                 ? this.normalizeI18nObject(s.statLabel)
                 : null,

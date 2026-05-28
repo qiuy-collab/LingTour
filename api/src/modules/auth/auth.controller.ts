@@ -10,6 +10,7 @@ import {
   Param,
   Req,
   BadRequestException,
+  UnauthorizedException,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -43,6 +44,22 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh an expired JWT (1h grace period)' })
+  async refresh(@Req() request: Request) {
+    const authHeader = request.headers['authorization'] || '';
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : '';
+    if (!token) {
+      throw new UnauthorizedException('Missing Authorization token');
+    }
+    return this.authService.refreshToken(token);
   }
 
   @Public()

@@ -38,7 +38,7 @@ export class EventsService {
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
-    return { items, total, page, limit };
+    return { data: items, total, page, pageSize: limit };
   }
 
   async getPublicBySlug(slug: string) {
@@ -65,7 +65,7 @@ export class EventsService {
       skip: (page - 1) * limit,
       take: limit,
     });
-    return { items, total, page, limit };
+    return { data: items, total, page, pageSize: limit };
   }
 
   async getAdminById(id: string) {

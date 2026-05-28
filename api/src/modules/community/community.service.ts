@@ -67,7 +67,7 @@ export class CommunityService {
       .take(limit)
       .getManyAndCount();
 
-    return { items, total, page, limit };
+    return { data: items, total, page, pageSize: limit };
   }
 
   async getPublicPostById(id: string) {
@@ -105,7 +105,7 @@ export class CommunityService {
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
-    return { items, total, page, limit };
+    return { data: items, total, page, pageSize: limit };
   }
 
   async getAdminById(id: string, includeDeleted = false) {

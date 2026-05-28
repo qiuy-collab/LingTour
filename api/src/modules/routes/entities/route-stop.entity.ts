@@ -44,6 +44,9 @@ export class RouteStop {
   @Column({ type: 'varchar', length: 500 })
   image: string;
 
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  images: string[];
+
   @Column({ type: 'double precision', nullable: true })
   lat: number | null;
 
@@ -58,6 +61,9 @@ export class RouteStop {
 
   @Column({ type: 'jsonb', nullable: true })
   transit: { en: string; zh: string } | null;
+
+  @Column({ type: 'text', nullable: true })
+  plan: string | null;
 
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;

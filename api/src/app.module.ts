@@ -31,6 +31,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { CommunityModule } from './modules/community/community.module';
 import { EventsModule } from './modules/events/events.module';
 import { HealthModule } from './modules/health/health.module';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { HealthModule } from './modules/health/health.module';
     CommunityModule,
     EventsModule,
     HealthModule,
+    AuditModule,
   ],
   providers: [
     {

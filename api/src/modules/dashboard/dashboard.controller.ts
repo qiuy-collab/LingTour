@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('Admin - Dashboard')
@@ -8,14 +9,10 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  @Roles('admin', 'editor')
   @Get()
   @ApiOperation({ summary: '获取管理后台仪表盘数据（实时数据库统计）' })
   async getDashboardStats() {
-    const data = await this.dashboardService.getDashboardStats();
-    return {
-      code: 200,
-      message: 'success',
-      data,
-    };
+    return this.dashboardService.getDashboardStats();
   }
 }

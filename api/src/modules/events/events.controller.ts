@@ -8,12 +8,15 @@ import {
   Post,
   Put,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
+import { AuditInterceptor as AuditLogInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Events')
 @Controller('api/v1')
@@ -47,6 +50,7 @@ export class EventsController {
     return this.service.getPublicBySlug(slug);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/events')
   @ApiBearerAuth()
   async listAdmin(
@@ -58,32 +62,44 @@ export class EventsController {
     return this.service.listAdmin({ status, city, page: +page, limit: +limit });
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/events')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('create', 'event')
   async create(@Body() dto: CreateEventDto) {
     return this.service.create(dto);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/events/:id')
   @ApiBearerAuth()
   async getAdmin(@Param('id') id: string) {
     return this.service.getAdminById(id);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/events/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'event')
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
     return this.service.update(id, dto);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/events/:id/status')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'event')
   async updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.service.updateStatus(id, status);
   }
 
   @Delete('admin/events/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('delete', 'event')
   async remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

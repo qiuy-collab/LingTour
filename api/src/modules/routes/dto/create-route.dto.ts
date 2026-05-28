@@ -59,6 +59,12 @@ export class CreateStopDto {
   @IsString()
   image: string;
 
+  @ApiPropertyOptional({ type: [String], default: [] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
@@ -83,6 +89,11 @@ export class CreateStopDto {
   @IsOptional()
   @IsI18nObject()
   transit?: { en: string; zh: string };
+
+  @ApiPropertyOptional({ example: 'A full day exploring the coast...' })
+  @IsOptional()
+  @IsString()
+  plan?: string;
 }
 
 export class CreateRouteDto {

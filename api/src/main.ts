@@ -18,6 +18,7 @@ async function bootstrap() {
     process.exit(1);
   });
   const configuredFrontendUrl = configService.get<string>('frontendUrl');
+  const adminFrontendUrl = configService.get<string>('ADMIN_FRONTEND_URL');
   const allowedOrigins = new Set<string>();
 
   if (configuredFrontendUrl) {
@@ -25,6 +26,14 @@ async function bootstrap() {
       allowedOrigins.add(new URL(configuredFrontendUrl).origin);
     } catch {
       logger.warn(`Invalid FRONTEND_URL ignored: ${configuredFrontendUrl}`);
+    }
+  }
+
+  if (adminFrontendUrl) {
+    try {
+      allowedOrigins.add(new URL(adminFrontendUrl).origin);
+    } catch {
+      logger.warn(`Invalid ADMIN_FRONTEND_URL ignored: ${adminFrontendUrl}`);
     }
   }
 
