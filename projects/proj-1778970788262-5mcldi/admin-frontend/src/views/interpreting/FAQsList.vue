@@ -12,9 +12,8 @@ const router = useRouter()
 
 // ─── 列表数据 (useListPage) ─────────────
 const {
-  loading, list, total, page, pageSize,
+  loading, list, total, page,
   filters,
-  fetchList,
   handleSearch: _handleSearch,
   handleReset,
 } = useListPage<FAQ>({
@@ -22,9 +21,9 @@ const {
   deleteApi: (id) => faqsApi.deleteFAQ(id),
   defaultFilters: { keyword: '', category: '' },
   defaultPageSize: 200,
-  transform: (items: FAQ[]) => {
+  transform: (items: FAQ[]): FAQ[] => {
     const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder)
-    const k = (filters.keyword as string)?.trim().toLowerCase()
+    const k = ((filters as any).keyword as string)?.trim().toLowerCase()
     if (!k) return sorted
     return sorted.filter(
       (it) =>

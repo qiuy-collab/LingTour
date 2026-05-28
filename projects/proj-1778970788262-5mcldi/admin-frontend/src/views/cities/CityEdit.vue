@@ -15,7 +15,7 @@ import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
-import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
+import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import {
   GUANGDONG_ADCODE_OPTIONS,
   formatAdcodeLabel,

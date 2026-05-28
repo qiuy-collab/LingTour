@@ -16,7 +16,7 @@ const {
   handlePageChange, handleSizeChange,
   handleSearch,
 } = useListPage<Interpreter>({
-  fetchApi: (params) => interpretersApi.getInterpreters(params),
+  fetchApi: (params) => interpretersApi.getInterpreters(params as any),
   defaultFilters: { keyword: '', status: '' },
 })
 

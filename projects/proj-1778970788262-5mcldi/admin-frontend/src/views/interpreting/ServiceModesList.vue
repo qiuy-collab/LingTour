@@ -10,7 +10,7 @@ const router = useRouter()
 
 // ─── 列表数据 (useListPage) ─────────────
 const {
-  loading, list, total, page, pageSize,
+  loading, list, total,
   fetchList,
 } = useListPage<ServiceMode>({
   fetchApi: (params) => modesApi.getModes(params as any),
