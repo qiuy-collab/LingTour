@@ -50,7 +50,7 @@ export class ShopService {
 
   // ── Collections (Public) ──
 
-  async findAllCollections(): Promise<{ collections: any[] }> {
+  async findAllCollections(): Promise<{ data: any[] }> {
     const collections = await this.collectionRepo.find({
       where: { published: true },
       order: { sortOrder: 'ASC' },

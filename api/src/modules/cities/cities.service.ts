@@ -23,7 +23,7 @@ export class CitiesService {
   async findAllPublished(
     page = 1,
     limit = 20,
-  ): Promise<{ data: any[]; total: number }> {
+  ): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
     const [data, total] = await this.cityRepository.findAndCount({
       where: { published: true },
       skip: (page - 1) * limit,
@@ -89,7 +89,7 @@ export class CitiesService {
   async findAllAdmin(
     page = 1,
     limit = 20,
-  ): Promise<{ data: City[]; total: number }> {
+  ): Promise<{ data: City[]; total: number; page: number; pageSize: number }> {
     const [data, total] = await this.cityRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,

@@ -43,13 +43,13 @@ export class HomeService {
       let config = existingConfig;
       if (!config) {
         config = this.homeConfigRepo.create({
-          hero: {},
+          hero: {} as Record<string, unknown>,
           trustMetrics: [],
           entryCards: [],
           cultureHighlights: [],
           testimonials: [],
           featuredRouteSlugs: [],
-          routeRegions: DEFAULT_ROUTE_REGIONS,
+          routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<Record<string, unknown>>,
         });
         config = await this.homeConfigRepo.save(config);
       }

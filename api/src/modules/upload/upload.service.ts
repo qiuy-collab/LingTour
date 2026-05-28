@@ -325,11 +325,11 @@ export class UploadService {
         [...values, limit, offset],
       );
 
-      return { data: items, total, page, pageSize: limit };
+      return { items, total, page, limit };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn(`Failed to query media_files: ${message}`);
-      return { data: [], total: 0, page, pageSize: limit };
+      return { items: [], total: 0, page, limit };
     }
   }
 
