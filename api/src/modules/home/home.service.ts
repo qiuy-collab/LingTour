@@ -30,7 +30,7 @@ export class HomeService {
           ? this.normalizeRouteRegions(dto.routeRegions)
           : config.routeRegions,
     });
-    return this.homeConfigRepo.save(config);
+    return this.homeConfigRepo.save(config as HomeConfig);
   }
 
   private async getOrCreateConfig() {
