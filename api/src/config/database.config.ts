@@ -16,7 +16,7 @@ export const getDatabaseConfig = (
     configService.get<string>('DB_DATABASE') ??
     configService.get<string>('DB_NAME') ??
     'lingtour',
-  entities: [__dirname + '/../modules/**/entities/*.entity{.ts,.js}'],
+  autoLoadEntities: true,
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   migrationsRun: false,
   synchronize: false,
