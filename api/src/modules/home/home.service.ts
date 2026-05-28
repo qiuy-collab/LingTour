@@ -40,7 +40,7 @@ export class HomeService {
         take: 1,
       });
 
-      let config = existingConfig;
+      let config: HomeConfig | undefined = existingConfig;
       if (!config) {
         config = this.homeConfigRepo.create({
           hero: {} as Record<string, unknown>,
@@ -50,7 +50,7 @@ export class HomeService {
           testimonials: [],
           featuredRouteSlugs: [],
           routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<Record<string, unknown>>,
-        });
+        }) as HomeConfig;
         config = await this.homeConfigRepo.save(config);
       }
       const normalizedRouteRegions = this.normalizeRouteRegions(config.routeRegions);
