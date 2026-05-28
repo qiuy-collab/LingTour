@@ -9,6 +9,7 @@ import {
   Body,
   Query,
   ParseUUIDPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,6 +31,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Interpreting')
 @Controller('api/v1')
@@ -77,6 +80,7 @@ export class InterpretingController {
 
   // ── Admin: Config ──
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get interpreting config (admin)' })
@@ -84,51 +88,69 @@ export class InterpretingController {
     return this.interpretingService.getAdminConfig();
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/service-modes')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'service_modes')
   @ApiOperation({ summary: 'Full replace service modes' })
   async setServiceModes(@Body() dto: SetServiceModesDto) {
     return this.interpretingService.replaceServiceModes(dto.service_modes);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/profiles')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'interpreter_profiles')
   @ApiOperation({ summary: 'Full replace interpreter profiles' })
   async setProfiles(@Body() dto: SetProfilesDto) {
     return this.interpretingService.replaceProfiles(dto.profiles);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/faqs')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'faqs')
   @ApiOperation({ summary: 'Full replace FAQs' })
   async setFaqs(@Body() dto: SetFaqsDto) {
     return this.interpretingService.replaceFaqs(dto.faqs);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/modes')
   @ApiBearerAuth()
   async listModes(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
     return this.interpretingService.findModesAdmin(+page, +pageSize);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/modes/:id')
   @ApiBearerAuth()
   async getMode(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.findModeByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/interpreting/modes')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('create', 'service_mode')
   async createMode(@Body() body: CreateModeDto) {
     return this.interpretingService.createMode(body);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/modes/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'service_mode')
   async updateMode(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateModeDto) {
     return this.interpretingService.updateMode(id, body);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/interpreting/modes/:id/sort')
   @ApiBearerAuth()
   async updateModeSort(
@@ -140,10 +162,13 @@ export class InterpretingController {
 
   @Delete('admin/interpreting/modes/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('delete', 'service_mode')
   async deleteMode(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.deleteMode(id);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/profiles')
   @ApiBearerAuth()
   async listProfiles(
@@ -154,20 +179,27 @@ export class InterpretingController {
     return this.interpretingService.findProfilesAdmin(+page, +pageSize, status);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/profiles/:id')
   @ApiBearerAuth()
   async getProfile(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.findProfileByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/interpreting/profiles')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('create', 'interpreter_profile')
   async createProfile(@Body() body: CreateProfileDto) {
     return this.interpretingService.createProfile(body);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/profiles/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'interpreter_profile')
   async updateProfile(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: UpdateProfileDto,
@@ -175,8 +207,11 @@ export class InterpretingController {
     return this.interpretingService.updateProfile(id, body);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/interpreting/profiles/:id/status')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'interpreter_profile')
   async updateProfileStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('status') status: string,
@@ -186,10 +221,13 @@ export class InterpretingController {
 
   @Delete('admin/interpreting/profiles/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('delete', 'interpreter_profile')
   async deleteProfile(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.deleteProfile(id);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/faqs')
   @ApiBearerAuth()
   async listFaqs(
@@ -200,24 +238,32 @@ export class InterpretingController {
     return this.interpretingService.findFaqsAdmin(+page, +pageSize, category);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/interpreting/faqs/:id')
   @ApiBearerAuth()
   async getFaq(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.findFaqByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/interpreting/faqs')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('create', 'faq')
   async createFaq(@Body() body: CreateFaqDto) {
     return this.interpretingService.createFaq(body);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/interpreting/faqs/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'faq')
   async updateFaq(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateFaqDto) {
     return this.interpretingService.updateFaq(id, body);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/interpreting/faqs/:id/sort')
   @ApiBearerAuth()
   async updateFaqSort(
@@ -229,12 +275,15 @@ export class InterpretingController {
 
   @Delete('admin/interpreting/faqs/:id')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('delete', 'faq')
   async deleteFaq(@Param('id', ParseUUIDPipe) id: string) {
     return this.interpretingService.deleteFaq(id);
   }
 
   // ── Admin: Bookings ──
 
+  @Roles('admin', 'editor')
   @Get('admin/bookings')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List bookings (admin)' })
@@ -251,6 +300,7 @@ export class InterpretingController {
     return this.interpretingService.findBookingsAdmin(+page, +size, status, q);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/bookings/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get booking detail (admin)' })
@@ -258,8 +308,11 @@ export class InterpretingController {
     return this.interpretingService.findBookingByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/bookings/:id/status')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'booking')
   @ApiOperation({ summary: 'Update booking status' })
   async updateBookingStatus(
     @Param('id', ParseUUIDPipe) id: string,
@@ -268,8 +321,11 @@ export class InterpretingController {
     return this.interpretingService.updateBookingStatus(id, dto.status);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/bookings/:id/assign')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'booking')
   async assignInterpreter(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('interpreterId') interpreterId: string,

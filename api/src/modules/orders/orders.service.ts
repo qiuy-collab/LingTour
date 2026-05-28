@@ -316,7 +316,7 @@ export class OrdersService {
       .orderBy('o.createdAt', 'DESC')
       .getManyAndCount();
 
-    return { items, total, page: +page, size: +limit };
+    return { data: items, total, page: +page, pageSize: +limit };
   }
 
   async findByIdAdmin(id: string) {

@@ -47,7 +47,7 @@ export class InterpretingService {
       skip: (page - 1) * pageSize,
       take: pageSize,
     });
-    return { items, total, page, pageSize };
+    return { data: items, total, page, pageSize };
   }
 
   async findModeByIdAdmin(id: string) {
@@ -98,7 +98,7 @@ export class InterpretingService {
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
-    return { items, total, page, pageSize };
+    return { data: items, total, page, pageSize };
   }
 
   async findProfileByIdAdmin(id: string) {
@@ -151,7 +151,7 @@ export class InterpretingService {
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
-    return { items, total, page, pageSize };
+    return { data: items, total, page, pageSize };
   }
 
   async findFaqByIdAdmin(id: string) {
@@ -374,7 +374,7 @@ export class InterpretingService {
       .take(size)
       .getManyAndCount();
 
-    return { items, total, page: +page, size: +size };
+    return { data: items, total, page: +page, pageSize: +size };
   }
 
   async findBookingByIdAdmin(id: string) {

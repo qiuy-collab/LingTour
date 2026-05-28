@@ -13,8 +13,8 @@ async function seed() {
     type: 'postgres',
     host: process.env.DB_HOST ?? 'localhost',
     port: parseInt(process.env.DB_PORT ?? '5432', 10),
-    username: process.env.DB_USERNAME ?? 'lingtour',
-    password: process.env.DB_PASSWORD ?? 'lingtour_dev',
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE ?? 'lingtour',
     synchronize: false,
   });
@@ -51,7 +51,14 @@ async function seed() {
   // ═══════════════════════════════════════════════
   // USERS
   // ═══════════════════════════════════════════════
-  const passwordHash = await bcrypt.hash('LingTour2026!', 12);
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error(
+      'SEED_ADMIN_PASSWORD environment variable is required. ' +
+      'Example: SEED_ADMIN_PASSWORD=<your-secure-password> npm run seed',
+    );
+  }
+  const passwordHash = await bcrypt.hash(adminPassword, 12);
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
      VALUES ('admin@lingtour.cn', $1, 'admin', 'LingTour Admin', 'active')
@@ -60,7 +67,14 @@ async function seed() {
     [passwordHash],
   );
 
-  const editorHash = await bcrypt.hash('Editor2026!', 12);
+  const editorPassword = process.env.SEED_EDITOR_PASSWORD;
+  if (!editorPassword) {
+    throw new Error(
+      'SEED_EDITOR_PASSWORD environment variable is required. ' +
+      'Example: SEED_EDITOR_PASSWORD=<your-secure-password> npm run seed',
+    );
+  }
+  const editorHash = await bcrypt.hash(editorPassword, 12);
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
      VALUES ('editor@lingtour.cn', $1, 'editor', 'LingTour Editor', 'active')

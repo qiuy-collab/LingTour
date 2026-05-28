@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { Body, Controller, Get, Put, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { SettingsService } from './settings.service';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
+import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Settings')
 @Controller('api/v1')
@@ -16,6 +18,7 @@ export class SettingsController {
     return this.settingsService.getPublicSettings();
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/settings')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get settings (admin)' })
@@ -23,8 +26,11 @@ export class SettingsController {
     return this.settingsService.getAdminSettings();
   }
 
+  @Roles('admin', 'editor')
   @Put('admin/settings')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'settings')
   @ApiOperation({ summary: 'Update settings payload (admin)' })
   async updateAdminSettings(@Body() dto: UpdateSettingsDto) {
     return this.settingsService.updateAdminSettings(dto.payload ?? {});

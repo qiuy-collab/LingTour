@@ -9,6 +9,7 @@ import {
   Headers,
   Req,
   ParseUUIDPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,12 +24,14 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ShipOrderDto } from './dto/ship-order.dto';
 import { RefundOrderDto } from './dto/refund-order.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import {
   ORDER_STATUSES,
   PAYMENT_STATUSES,
   type OrderStatus,
   type PaymentStatus,
 } from './entities/order.entity';
+import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Orders')
 @Controller('api/v1')
@@ -62,6 +65,7 @@ export class OrdersController {
 
   // ── Admin ──
 
+  @Roles('admin', 'editor')
   @Get('admin/orders')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List orders (admin)' })
@@ -82,6 +86,7 @@ export class OrdersController {
     return this.ordersService.findAllAdmin(+page, +limit, status, paymentStatus);
   }
 
+  @Roles('admin', 'editor')
   @Get('admin/orders/:id')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get order detail (admin)' })
@@ -89,8 +94,11 @@ export class OrdersController {
     return this.ordersService.findByIdAdmin(id);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/orders/:id/status')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'order')
   @ApiOperation({ summary: 'Update order status (admin)' })
   async updateOrderStatus(
     @Param('id', ParseUUIDPipe) id: string,
@@ -99,8 +107,11 @@ export class OrdersController {
     return this.ordersService.updateStatusAdmin(id, dto.status);
   }
 
+  @Roles('admin', 'editor')
   @Patch('admin/orders/:id/ship')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'order')
   @ApiOperation({ summary: 'Mark order as shipped (admin)' })
   async shipOrder(
     @Param('id', ParseUUIDPipe) id: string,
@@ -111,6 +122,8 @@ export class OrdersController {
 
   @Patch('admin/orders/:id/refund')
   @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('refund', 'order')
   @ApiOperation({ summary: 'Refund order (admin)' })
   async refundOrder(
     @Param('id', ParseUUIDPipe) id: string,

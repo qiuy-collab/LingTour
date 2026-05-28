@@ -29,12 +29,6 @@ export class HomeConfig {
   @Column({ type: 'jsonb', name: 'featured_route_slugs', default: [] })
   featuredRouteSlugs: string[];
 
-  @Column({ type: 'jsonb', name: 'featured_product_slugs', default: [] })
-  featuredProductSlugs: string[];
-
-  @Column({ type: 'jsonb', name: 'featured_city_slugs', default: [] })
-  featuredCitySlugs: string[];
-
   @Column({ type: 'jsonb', name: 'route_regions', default: [] })
   routeRegions: Array<Record<string, unknown>>;
 

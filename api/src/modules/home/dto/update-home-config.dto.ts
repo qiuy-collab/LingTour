@@ -52,16 +52,6 @@ export class UpdateHomeConfigDto {
   @IsArray()
   featuredRouteSlugs?: string[];
 
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  featuredProductSlugs?: string[];
-
-  @ApiPropertyOptional({ type: [String] })
-  @IsOptional()
-  @IsArray()
-  featuredCitySlugs?: string[];
-
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
