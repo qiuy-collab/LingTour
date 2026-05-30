@@ -16,6 +16,7 @@ import {
 } from "@/lib/auth-client";
 import { type CartItem, readCart, writeCart } from "@/lib/cart";
 import { countryName, countryOptions, normalizeCountryCode } from "@/lib/country-list";
+import { formatCurrency } from "@/lib/region-currency";
 import {
   fetchSavedCommunityPosts,
   type CommunityFeedPost,
@@ -852,7 +853,7 @@ export function GlobalDrawer() {
                             />
                             Select all for dispatch
                           </label>
-                          <span className="text-[11px] font-bold text-[var(--river-deep)]">${selectedCartTotal.toFixed(0)}</span>
+                          <span className="text-[11px] font-bold text-[var(--river-deep)]">{formatCurrency(selectedCartTotal, cart.find((item) => item.selected !== false)?.currency ?? "CNY")}</span>
                         </div>
                         <div className="grid gap-6">
                           {cart.map((item) => (
@@ -902,7 +903,7 @@ export function GlobalDrawer() {
                                 </div>
                               </div>
                               <p className="shrink-0 self-start pl-1 text-right font-[family:var(--font-display)] text-lg leading-none text-[var(--cinnabar)] sm:text-xl">
-                                ${(item.price * item.quantity).toFixed(0)}
+                                {formatCurrency(item.price * item.quantity, item.currency ?? "CNY")}
                               </p>
                             </div>
                           ))}

@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { translate } from "@/translations";
-import type { Locale } from "@/lib/locale";
 
 /**
  * App-level 404 page (App Router convention: app/not-found.tsx).
@@ -13,11 +11,8 @@ import type { Locale } from "@/lib/locale";
  * Visual style follows the rest of the site: archive paper, handwritten
  * notes, no demo language.
  */
-export default async function NotFound() {
-  const cookieStore = await cookies();
-  const localeCookie = cookieStore.get("lingtour-locale")?.value;
-  const locale: Locale = localeCookie === "zh" ? "zh" : "en";
-  const t = (key: string) => translate(key, locale);
+export default function NotFound() {
+  const t = (key: string) => translate(key, "en");
 
   return (
     <main className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">

@@ -59,10 +59,6 @@ export async function serverGet<T = unknown>(
     Accept: "application/json",
   };
 
-  if (locale === "zh") {
-    headersInit["Accept-Language"] = "zh-CN";
-  }
-
   const response = await fetch(url.toString(), {
     headers: headersInit,
     next: { revalidate: 60 }, // ISR: revalidate every 60 seconds

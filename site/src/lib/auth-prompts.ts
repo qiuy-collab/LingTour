@@ -1,11 +1,11 @@
 export const AUTH_PROMPTS = {
-  connectGoogleToPublish: "Connect Google first to publish your field note.",
+  connectGoogleToPublish: "Sign in first to publish your field note.",
   connectGoogleToRoutePublish:
-    "Connect Google first to publish a route note.",
-  connectGoogleToInteract: "Connect Google first to like or save posts.",
+    "Sign in first to publish a route note.",
+  connectGoogleToInteract: "Sign in first to like or save posts.",
   connectGoogleToUpload:
-    "Connect Google first to upload or publish a field note.",
-  connectGoogleToContinue: "Connect Google first to continue.",
-  googleConnectedPublish: "Google connected. You can publish now.",
+    "Sign in first to upload or publish a field note.",
+  connectGoogleToContinue: "Sign in first to continue.",
+  googleConnectedPublish: "Signed in. You can publish now.",
 } as const;
 

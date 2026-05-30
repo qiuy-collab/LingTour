@@ -104,7 +104,7 @@
     "community.error.feedOffline": "Feed offline.",
     "community.empty": "No signals in this range.",
     "community.toast.close": "Close",
-    "community.error.googleNotConfigured": "Google login is not configured.",
+    "community.error.googleNotConfigured": "Google sign-in is currently unavailable. Please use email sign-in.",
     "community.error.googleScriptNotLoaded": "Google Sign-In script not loaded.",
     "community.error.googleSignInFailed": "Google sign-in failed. Please try again.",
     "community.error.addContent": "Add a title, note, or photo before publishing.",

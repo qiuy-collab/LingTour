@@ -2,12 +2,9 @@
 
 import Link from "next/link";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
+import { Price } from "@/components/ui/Price";
 import type { StoreProduct } from "@/data/store";
 import { Reveal } from "@/components/ui/Reveal";
-
-function formatStorePrice(product: Pick<StoreProduct, "currency" | "price">) {
-  return `${product.currency} $${product.price.toFixed(2)}`;
-}
 
 type StoreProductCardProps = {
   product: StoreProduct;
@@ -60,7 +57,9 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
             <div className="flex justify-between items-end">
               <div className="space-y-1">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">{product.tag}</p>
-                <p className="text-[10px] font-bold text-[var(--river-deep)]">{formatStorePrice(product)}</p>
+                <p className="text-[10px] font-bold text-[var(--river-deep)]">
+                  <Price amount={product.price} currency={product.currency} />
+                </p>
               </div>
 
               <Link href={`/shop/products/${product.slug}`} className="w-11 h-11 rounded-full bg-[var(--river-deep)] flex items-center justify-center text-white group-hover:scale-110 transition-transform">

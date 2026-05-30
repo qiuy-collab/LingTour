@@ -5,10 +5,7 @@ import { useMemo, useState } from "react";
 import type { StoreProduct } from "@/data/store";
 import { ProductActions } from "@/components/store/ProductActions";
 import { Reveal } from "@/components/ui/Reveal";
-
-function formatStorePrice(product: Pick<StoreProduct, "currency" | "price">) {
-  return `${product.currency} $${product.price.toFixed(2)}`;
-}
+import { Price } from "@/components/ui/Price";
 
 function buildNoteWords(product: StoreProduct) {
   const source = [
@@ -208,16 +205,8 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
             <Reveal delay={250}>
               <div className="bg-white p-8 scrapbook-shadow rotate-[-1deg] space-y-8">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1 text-[var(--gold)]">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <svg key={i} viewBox="0 0 24 24" className="h-4 w-4 fill-current">
-                        <path d="M12 2.8l2.87 5.82 6.43.93-4.65 4.53 1.1 6.41L12 17.45l-5.75 3.04 1.1-6.41-4.65-4.53 6.43-.93L12 2.8z" />
-                      </svg>
-                    ))}
-                    <span className="ml-2 text-xs font-bold text-[var(--river-deep)]/40">4.9 (20)</span>
-                  </div>
                   <p className="font-[family:var(--font-display)] text-6xl tracking-tight text-[var(--river-deep)]">
-                    {formatStorePrice(product)}
+                    <Price amount={product.price} currency={product.currency} />
                   </p>
                 </div>
 

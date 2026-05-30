@@ -32,12 +32,18 @@ import {
   pickRouteRegionText,
   type RouteRegion,
 } from "@/lib/route-regions";
+import {
+  hasVisibleCityContent,
+  hasVisibleRegionContent,
+  sanitizeCityCulture,
+  sanitizeRegion,
+} from "@/lib/content-cleaners";
 
 
 // In-memory data cache
 
 const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL = 60_000; // 60 seconds
+const CACHE_TTL = 15_000; // 15 seconds
 
 function getCached<T>(key: string): T | null {
   const entry = cache.get(key);
@@ -267,7 +273,7 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
 }
 
 function mapCity(apiCity: ApiCity): CityCulture {
-  return {
+  return sanitizeCityCulture({
     slug: apiCity.slug,
     name: apiCity.name,
     adcode: apiCity.adcode ?? 0,
@@ -292,7 +298,7 @@ function mapCity(apiCity: ApiCity): CityCulture {
         breathImage: s.breathImage ?? undefined,
         breathQuote: s.breathQuote ?? undefined,
       })) ?? [],
-  };
+  });
 }
 
 function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
@@ -302,7 +308,7 @@ function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
     name: apiProduct.product.name,
     collection: apiProduct.collection?.title ?? "",
     price: Number(apiProduct.price),
-    currency: (apiProduct.currency as StoreProduct["currency"]) ?? "SGD",
+    currency: (apiProduct.currency as StoreProduct["currency"]) ?? "CNY",
     tag: apiProduct.product.tag,
     image: apiProduct.image,
     materialNotes: apiProduct.materialNotes ?? undefined,
@@ -353,13 +359,11 @@ function mapEvent(apiEvent: ApiEvent, locale: Locale): EventData {
 
 function pickLocalized(
   value: LocalizedText | undefined,
-  locale: Locale,
+  _locale: Locale,
 ): string {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return locale === "zh"
-    ? (value.zh ?? value.en ?? "")
-    : (value.en ?? value.zh ?? "");
+  return value.en ?? value.zh ?? "";
 }
 
 interface ApiInterpretingMode {
@@ -501,7 +505,7 @@ export async function fetchCities(locale: Locale): Promise<CityCulture[]> {
     limit: 50,
     lang: locale,
   });
-  return res.data.map(mapCity);
+  return res.data.map(mapCity).filter(hasVisibleCityContent);
 }
 
 export async function fetchCityBySlug(
@@ -623,12 +627,12 @@ export async function fetchRouteRegions(locale: Locale): Promise<RouteRegion[]> 
     return homeConfig.routeRegions.map((region) => ({
       key: region.key,
       title: {
-        zh: pickRouteRegionText(region.title, "zh"),
-        en: pickRouteRegionText(region.title, "en"),
+        zh: pickRouteRegionText(region.title),
+        en: pickRouteRegionText(region.title),
       },
       note: {
-        zh: pickRouteRegionText(region.note, "zh"),
-        en: pickRouteRegionText(region.note, "en"),
+        zh: pickRouteRegionText(region.note),
+        en: pickRouteRegionText(region.note),
       },
       adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
     }));
@@ -638,9 +642,6 @@ export async function fetchRouteRegions(locale: Locale): Promise<RouteRegion[]> 
 }
 
 export async function fetchHomeData(locale: Locale): Promise<HomeData> {
-  const key = `home:${locale}`;
-  const cached = getCached<HomeData>(key);
-  if (cached) return cached;
   const [routesResult, citiesResult, homeConfigResult] =
     await Promise.allSettled([
       fetchRoutes(locale),
@@ -659,22 +660,25 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
     routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ??
     routes[0];
 
-  const regionShowcase: Region[] = cities.map((c) => ({
-    slug: c.slug as RegionSlug,
-    adcode: c.adcode,
-    name: c.name,
-    label: c.label,
-    summary: c.summary,
-    narrative: c.narrative,
-    tags: c.tags,
-    food: c.food,
-    routeSlugs: c.routeSlugs,
-    serviceLabel:
-      locale === "zh" ? `预约${c.name}口译` : `Book ${c.name} Support`,
-    serviceHref: "/interpreting",
-    image: c.image,
-    gallery: c.gallery,
-  }));
+  const regionShowcase: Region[] = cities
+    .map((c) =>
+      sanitizeRegion({
+        slug: c.slug as RegionSlug,
+        adcode: c.adcode,
+        name: c.name,
+        label: c.label,
+        summary: c.summary,
+        narrative: c.narrative,
+        tags: c.tags,
+        food: c.food,
+        routeSlugs: c.routeSlugs,
+        serviceLabel: `Book ${c.name} Support`,
+        serviceHref: "/interpreting",
+        image: c.image,
+        gallery: c.gallery,
+      }),
+    )
+    .filter(hasVisibleRegionContent);
 
   const featuredRoutes: FeaturedRoute[] = featured
     ? [
@@ -702,7 +706,7 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
   const cultureHighlights: CultureFeature[] =
     cultureHighlightsFromApi.length > 0
       ? cultureHighlightsFromApi
-      : cities.map((city) => ({
+      : regionShowcase.map((city) => ({
           slug: city.slug,
           title: city.label,
           body: city.summary,
@@ -735,12 +739,12 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       ? homeConfig.routeRegions.map((region) => ({
           key: region.key,
           title: {
-            zh: pickRouteRegionText(region.title, "zh"),
-            en: pickRouteRegionText(region.title, "en"),
+            zh: pickRouteRegionText(region.title),
+            en: pickRouteRegionText(region.title),
           },
           note: {
-            zh: pickRouteRegionText(region.note, "zh"),
-            en: pickRouteRegionText(region.note, "en"),
+            zh: pickRouteRegionText(region.note),
+            en: pickRouteRegionText(region.note),
           },
           adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
         }))
@@ -769,15 +773,15 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
     })) ?? [
       {
         value: String(cities.length || 1),
-        label: locale === "zh" ? "精选城市" : "Featured city",
+        label: "Featured city",
       },
       {
         value: String(routes.length || 1),
-        label: locale === "zh" ? "故事路线" : "Story route",
+        label: "Story route",
       },
       {
         value: "1",
-        label: locale === "zh" ? "文化商品系列" : "Cultural collection",
+        label: "Cultural collection",
       },
     ],
     homeEntryCards:
@@ -790,7 +794,6 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       })) ?? [],
     routeRegions,
   };
-  setCache(key, homeData);
   return homeData;
 }
 
@@ -849,18 +852,16 @@ interface ApiCommunityPost {
 
 function pickLocaleString(
   value: { en: string; zh: string } | string,
-  locale: Locale,
+  _locale: Locale,
 ): string {
   if (typeof value === "string") return value;
-  return locale === "zh"
-    ? (value.zh ?? value.en ?? "")
-    : (value.en ?? value.zh ?? "");
+  return value.en ?? value.zh ?? "";
 }
 
-function formatPostDate(createdAt: string, locale: Locale): string {
+function formatPostDate(createdAt: string, _locale: Locale): string {
   const date = new Date(createdAt);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });

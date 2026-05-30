@@ -3,7 +3,6 @@
  *
  * - Reads NEXT_PUBLIC_API_URL from environment
  * - Injects JWT Bearer token from localStorage (lingtour-token)
- * - Injects Accept-Language header from locale preference (lingtour-locale)
  * - Uniform error handling
  */
 
@@ -102,13 +101,6 @@ export async function apiClient<T = unknown>(
     const token = localStorage.getItem("lingtour-token");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
-    }
-  }
-
-  if (typeof window !== "undefined") {
-    const locale = localStorage.getItem("lingtour-locale");
-    if (locale === "zh") {
-      headers["Accept-Language"] = "zh-CN";
     }
   }
 

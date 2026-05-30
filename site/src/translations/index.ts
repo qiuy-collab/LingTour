@@ -1,4 +1,4 @@
-﻿import { common } from "./common";
+import { common } from "./common";
 import { home } from "./home";
 import { culture } from "./culture";
 import { routes } from "./routes";
@@ -21,16 +21,13 @@ export const dictionaries: Record<Locale, Record<string, DictValue>> = {
 
 for (const mod of allModules) {
   Object.assign(dictionaries.en, mod.en);
-  Object.assign(dictionaries.zh, mod.zh);
+  Object.assign(dictionaries.zh, mod.en);
 }
 
 /** Translate a key into the given locale. Falls back to English, then a readable missing-key label. */
-export function translate(key: string, locale: Locale): string {
-  const val = dictionaries[locale]?.[key];
+export function translate(key: string, _locale: Locale): string {
+  const val = dictionaries.en[key];
   if (val !== undefined && val !== null) return String(val);
-  // Fall back to English.
-  const fallback = dictionaries.en[key];
-  if (fallback !== undefined && fallback !== null) return String(fallback);
   return `Missing translation: ${key}`;
 }
 

@@ -8,6 +8,7 @@ import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
 import { readCart } from "@/lib/cart";
+import { formatCurrency } from "@/lib/region-currency";
 import { countryName } from "@/lib/country-list";
 import { StripePaymentForm } from "./StripePaymentForm";
 import type { StoreProduct } from "@/data/store";
@@ -50,8 +51,8 @@ const INITIAL_FORM: CheckoutForm = {
   paymentMethod: "card",
 };
 
-function formatStorePrice(price: number, currency: string) {
-  return `${currency} $${price.toFixed(2)}`;
+function formatStorePrice(price: number, currency = "CNY") {
+  return formatCurrency(price, currency);
 }
 
 export function CheckoutClient() {
@@ -112,7 +113,7 @@ export function CheckoutClient() {
               name: cartItem.name,
               collection: "",
               price: cartItem.price,
-              currency: (cartItem.currency as StoreProduct["currency"]) ?? "SGD",
+              currency: (cartItem.currency as StoreProduct["currency"]) ?? "CNY",
               image: cartItem.image ?? "",
               story: "",
               tag: "",
@@ -281,7 +282,7 @@ export function CheckoutClient() {
           <div className="mt-6 mb-2 flex items-end justify-between border-b border-[var(--line)] pb-4">
             <span className="text-sm text-[var(--muted)]">Total</span>
             <span className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-              SGD ${orderResult.totalAmount.toFixed(2)}
+              {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
             </span>
           </div>
 
@@ -342,7 +343,7 @@ export function CheckoutClient() {
                 Total
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
-                SGD ${orderResult.totalAmount.toFixed(2)}
+                {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
               </p>
             </div>
           </div>
@@ -553,13 +554,13 @@ export function CheckoutClient() {
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
                   <span>Items subtotal</span>
                   <span className="font-semibold text-[var(--river-deep)]">
-                    SGD ${totals.subtotal.toFixed(2)}
+                    {formatStorePrice(totals.subtotal, items[0]?.currency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
                   <span>Handling estimate</span>
                   <span className="font-semibold text-[var(--river-deep)]">
-                    SGD ${totals.handling.toFixed(2)}
+                    {formatStorePrice(totals.handling, items[0]?.currency)}
                   </span>
                 </div>
                 <div className="flex items-end justify-between border-t border-[var(--line)] pt-5">
@@ -572,7 +573,7 @@ export function CheckoutClient() {
                     </p>
                   </div>
                   <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
-                    ${totals.total.toFixed(2)}
+                    {formatStorePrice(totals.total, items[0]?.currency)}
                   </p>
                 </div>
               </div>

@@ -43,7 +43,7 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
             onClick={onLogin}
             className="w-full rounded-full bg-[var(--cinnabar)] py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
           >
-            Connect to Publish
+            Sign in to Publish
           </button>
         )}
       </div>

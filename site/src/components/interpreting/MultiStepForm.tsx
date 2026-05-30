@@ -8,6 +8,7 @@ import {
   fetchCities,
   type InterpretingDepositCheckout,
 } from "@/lib/api-data";
+import { formatCurrency } from "@/lib/region-currency";
 
 type FormData = {
   name: string;
@@ -43,10 +44,6 @@ const MONTHS = [
 
 const inputClass =
   "rounded-2xl border border-[var(--line)] bg-white px-4 py-3.5 text-[15px] leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)]/60 focus:bg-[var(--paper)]";
-
-function formatCurrency(amount: number, currency: string) {
-  return `${currency} $${amount.toFixed(2)}`;
-}
 
 function MultiStepFormInner({
   locale = "en",

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Server-side data fetching for the home page.
  *
  * This module is imported ONLY by Server Components.
@@ -10,7 +10,8 @@
 
 import { serverGet } from "./server-api";
 import type { Locale } from "./locale";
-import type { EventData } from "./api-data";
+import type { EventData, InterpretingData } from "./api-data";
+import type { CityCulture } from "@/data/culture";
 import type {
   Region,
   RegionSlug,
@@ -22,29 +23,35 @@ import type {
   HomeEntryCard,
 } from "@/types/content";
 import type { StoryRoute } from "@/data/routes";
-import type { StoreProduct } from "@/data/store";
+import type { StoreCollection, StoreProduct } from "@/data/store";
 import { SEED_IMAGES } from "./seed-images";
 import {
   DEFAULT_ROUTE_REGIONS,
   pickRouteRegionText,
   type RouteRegion,
 } from "./route-regions";
+import {
+  hasVisibleCityContent,
+  hasVisibleRegionContent,
+  sanitizeCityCulture,
+  sanitizeRegion,
+} from "./content-cleaners";
 
-// ── Shared helpers (duplicated from api-data.ts to avoid importing client code) ──
+// 鈹€鈹€ Shared helpers (duplicated from api-data.ts to avoid importing client code) 鈹€鈹€
 
 function pickLocalized(
   val: string | { en?: string; zh?: string } | undefined,
-  locale: Locale,
+  _locale: Locale,
   fallback = "",
 ): string {
   if (typeof val === "string") return val;
   if (val && typeof val === "object") {
-    return (locale === "zh" ? val.zh : val.en) ?? fallback;
+    return val.en ?? val.zh ?? fallback;
   }
   return fallback;
 }
 
-// ── API response types (subset needed for home page) ──
+// 鈹€鈹€ API response types (subset needed for home page) 鈹€鈹€
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -168,6 +175,16 @@ interface ApiStoreProduct {
   story: string;
 }
 
+interface ApiStoreCollection {
+  id: string;
+  slug: string;
+  title: string;
+  routeName: string;
+  routeSlug: string;
+  image: string;
+  body: string;
+}
+
 interface ApiEvent {
   id: string;
   slug: string;
@@ -184,7 +201,7 @@ interface ApiEvent {
   relatedRouteSlugs: string[];
 }
 
-// ── Mappers (subset needed for home page) ──
+// 鈹€鈹€ Mappers (subset needed for home page) 鈹€鈹€
 
 function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
   return {
@@ -227,12 +244,22 @@ function mapProduct(p: ApiStoreProduct): StoreProduct {
     name: p.product.name,
     tag: p.product.tag,
     price: p.price,
-    currency: p.currency as "SGD",
+    currency: (p.currency as StoreProduct["currency"]) ?? "CNY",
     image: p.image,
     gallery: p.gallery ?? [],
     collection: p.collection?.title ?? "",
     materialNotes: p.materialNotes ?? undefined,
     story: p.story,
+  };
+}
+
+function mapCollection(c: ApiStoreCollection): StoreCollection {
+  return {
+    title: c.title,
+    route: c.routeName,
+    href: `/routes/${c.routeSlug}`,
+    image: c.image,
+    body: c.body,
   };
 }
 
@@ -259,7 +286,7 @@ function mapEvent(raw: ApiEvent, locale: Locale): EventData {
 // Re-export EventData for consumers (type-only import, no runtime dependency)
 export type { EventData } from "./api-data";
 
-// ── Public data types (same as HomeData from api-data.ts) ──
+// 鈹€鈹€ Public data types (same as HomeData from api-data.ts) 鈹€鈹€
 
 export interface HomeData {
   hero: HomeHero;
@@ -271,9 +298,9 @@ export interface HomeData {
   homeEntryCards: HomeEntryCard[];
 }
 
-// ── Server-side fetch functions ──
+// 鈹€鈹€ Server-side fetch functions 鈹€鈹€
 
-async function fetchRoutesServer(locale: Locale): Promise<StoryRoute[]> {
+export async function fetchRoutesServer(locale: Locale): Promise<StoryRoute[]> {
   const res = await serverGet<PaginatedResponse<ApiStoryRoute>>(
     "/public/routes",
     { page: 1, limit: 50, lang: locale },
@@ -282,31 +309,77 @@ async function fetchRoutesServer(locale: Locale): Promise<StoryRoute[]> {
   return res.data.map(mapRoute);
 }
 
-async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
+export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
   const res = await serverGet<PaginatedResponse<ApiCity>>(
     "/public/cities",
     { page: 1, limit: 50, lang: locale },
     locale,
   );
-  return res.data.map((c) => ({
-    slug: c.slug as RegionSlug,
-    adcode: c.adcode ?? 0,
-    name: c.name,
-    label: c.regionLabel,
-    summary: c.heroNarrative,
-    narrative: c.editorIntro,
-    tags: c.tags,
-    food: c.foodDescription ?? "",
-    routeSlugs: c.routes?.map((r) => r.slug) ?? [],
-    image: c.heroImage,
-    gallery: c.galleryImages,
-    serviceLabel: "",
-    serviceHref: "/interpreting",
-  }));
+  return res.data
+    .map((c) =>
+      sanitizeRegion({
+        slug: c.slug as RegionSlug,
+        adcode: c.adcode ?? 0,
+        name: c.name,
+        label: c.regionLabel,
+        summary: c.heroNarrative,
+        narrative: c.editorIntro,
+        tags: c.tags,
+        food: c.foodDescription ?? "",
+        routeSlugs: c.routes?.map((r) => r.slug) ?? [],
+        image: c.heroImage,
+        gallery: c.galleryImages,
+        serviceLabel: "",
+        serviceHref: "/interpreting",
+      }),
+    )
+    .filter(hasVisibleRegionContent);
+}
+
+export async function fetchCityCulturesServer(
+  locale: Locale,
+): Promise<CityCulture[]> {
+  const res = await serverGet<PaginatedResponse<ApiCity>>(
+    "/public/cities",
+    { page: 1, limit: 50, lang: locale },
+    locale,
+  );
+
+  return res.data
+    .map((c) =>
+      sanitizeCityCulture({
+        slug: c.slug,
+        name: c.name,
+        adcode: c.adcode ?? 0,
+        label: c.regionLabel,
+        summary: c.editorIntro ?? "",
+        narrative: c.heroNarrative,
+        image: c.heroImage,
+        gallery: c.galleryImages ?? [],
+        tags: c.tags ?? [],
+        food: c.foodTitle,
+        foodDescription: c.foodDescription ?? "",
+        routeSlugs: c.routes?.map((r) => r.slug) ?? [],
+        relatedCitySlugs: c.relatedCitySlugs ?? [],
+        foodImages: c.foodImages ?? [],
+        sections:
+          c.sections?.map((s) => ({
+            title: s.title,
+            body: s.body,
+            image: s.image,
+            stat:
+              [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
+              undefined,
+            breathImage: s.breathImage ?? undefined,
+            breathQuote: s.breathQuote ?? undefined,
+          })) ?? [],
+      }),
+    )
+    .filter(hasVisibleCityContent);
 }
 
 /**
- * Server-side home data fetch — mirrors fetchHomeData from api-data.ts
+ * Server-side home data fetch 鈥?mirrors fetchHomeData from api-data.ts
  * but uses serverGet instead of the window-dependent apiGet.
  */
 export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
@@ -344,22 +417,14 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
     routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ??
     routes[0];
 
-  const regionShowcase: Region[] = cities.map((c) => ({
-    slug: c.slug as RegionSlug,
-    adcode: c.adcode,
-    name: c.name,
-    label: c.label,
-    summary: c.summary,
-    narrative: c.narrative,
-    tags: c.tags,
-    food: c.food,
-    routeSlugs: c.routeSlugs,
-    serviceLabel:
-      locale === "zh" ? `预约${c.name}口译` : `Book ${c.name} Support`,
-    serviceHref: "/interpreting",
-    image: c.image,
-    gallery: c.gallery,
-  }));
+  const regionShowcase: Region[] = cities
+    .map((c) =>
+      sanitizeRegion({
+        ...c,
+        serviceLabel: `Book ${c.name} Support`,
+      }),
+    )
+    .filter(hasVisibleRegionContent);
 
   const cultureHighlightsFromApi = (homeConfig.cultureHighlights ?? []).map(
     (item) => ({
@@ -374,7 +439,7 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
   const cultureHighlights: CultureFeature[] =
     cultureHighlightsFromApi.length > 0
       ? cultureHighlightsFromApi
-      : cities.slice(0, 3).map((c) => ({
+      : regionShowcase.slice(0, 3).map((c) => ({
           slug: c.slug,
           title: c.name,
           body: c.summary ?? "",
@@ -385,9 +450,7 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
     homeConfig.testimonials ?? [
       {
         quote:
-          locale === "zh"
-            ? "到达时一无所知，离开时理解了每道菜的来历。"
-            : "I arrived knowing nothing. I left understanding why every dish on the table mattered.",
+          "I arrived knowing nothing. I left understanding why every dish on the table mattered.",
         name: "A Coastal Guest",
       },
     ]
@@ -447,6 +510,21 @@ export async function fetchStoreProductsServer(
   }
 }
 
+
+export async function fetchStoreCollectionsServer(
+  locale: Locale,
+): Promise<StoreCollection[]> {
+  try {
+    const res = await serverGet<{ data: ApiStoreCollection[] }>(
+      "/public/shop/collections",
+      { lang: locale },
+      locale,
+    );
+    return (res.data ?? []).map(mapCollection);
+  } catch {
+    return [];
+  }
+}
 /**
  * Server-side routes fetch.
  */
@@ -473,5 +551,29 @@ export async function fetchEventsServer(locale: Locale): Promise<EventData[]> {
     return (res.data ?? []).map((item) => mapEvent(item, locale));
   } catch {
     return [];
+  }
+}
+
+export async function fetchInterpretingServer(
+  locale: Locale,
+): Promise<InterpretingData> {
+  try {
+    const res = await serverGet<{
+      service_modes: InterpretingData["serviceModes"];
+      profiles: InterpretingData["profiles"];
+      faqs: InterpretingData["faqs"];
+    }>("/public/interpreting", { lang: locale }, locale);
+
+    return {
+      serviceModes: res.service_modes ?? [],
+      profiles: res.profiles ?? [],
+      faqs: res.faqs ?? [],
+    };
+  } catch {
+    return {
+      serviceModes: [],
+      profiles: [],
+      faqs: [],
+    };
   }
 }

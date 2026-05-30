@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { siteNavigation } from "@/data/navigation";
 import { AccountNavLink } from "@/components/layout/AccountNavLink";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
-import { useLocale } from "@/lib/locale-context";
 import {
   DEFAULT_ROUTE_REGIONS,
   pickRouteRegionText,
@@ -22,19 +20,27 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const NAV_LABEL_KEY: Record<string, string> = {
-  "/": "common.nav.home",
-  "/culture": "common.nav.culture",
-  "/routes": "common.nav.routes",
-  "/interpreting": "common.nav.interpreting",
-  "/shop": "common.nav.shop",
-  "/community": "common.nav.community",
+const NAV_LABEL: Record<string, string> = {
+  "/": "Home",
+  "/culture": "Culture",
+  "/routes": "Routes",
+  "/interpreting": "Interpreting",
+  "/shop": "Shop",
+  "/community": "Community",
 };
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { t, locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   // The admin area renders its own chrome — don't double up the public header.
   if (pathname?.startsWith("/admin")) {
@@ -68,7 +74,7 @@ export function SiteHeader() {
                 }`}
                 aria-current={active ? "page" : undefined}
               >
-                {t(NAV_LABEL_KEY[item.href] ?? "common.nav.home")}
+                {NAV_LABEL[item.href] ?? item.label}
               </Link>
             );
           })}
@@ -79,12 +85,11 @@ export function SiteHeader() {
             LingTour
           </p>
           <p className="mt-1 text-center text-[0.62rem] uppercase tracking-[0.3em] text-[var(--muted)]">
-            {t("common.site.subtitle")}
+            Guangdong
           </p>
         </Link>
 
         <div className="hidden items-center justify-end gap-1 md:flex">
-          <LanguageToggle />
           <nav className="flex items-center gap-1" aria-label="Secondary navigation">
             {rightNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -100,7 +105,7 @@ export function SiteHeader() {
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
-                  {t(NAV_LABEL_KEY[item.href] ?? "common.nav.community")}
+                  {NAV_LABEL[item.href] ?? item.label}
                 </Link>
               );
             })}
@@ -110,14 +115,14 @@ export function SiteHeader() {
             href="/interpreting#booking"
             className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
-            {t("common.btn.reserve")}
+            Book interpreting
           </Link>
         </div>
 
         <button
           type="button"
           className="grid h-10 w-10 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
-          aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         >
@@ -134,46 +139,50 @@ export function SiteHeader() {
       ) : null}
 
       {isOpen ? (
-        <div className="max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden relative z-50">
-          <Container className="grid gap-2 py-4">
-            {siteNavigation.map((item) => {
-              const active = isActivePath(pathname, item.href);
+        <div className="relative z-50 max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden">
+          <Container className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+                Explore
+              </p>
+              {siteNavigation.map((item) => {
+                const active = isActivePath(pathname, item.href);
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`px-4 py-3 text-sm transition ${
-                    active
-                      ? "bg-[var(--river-deep)] text-white shadow-lg"
-                      : "border border-[var(--line)] bg-white/40 text-[var(--ink)]"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {t(NAV_LABEL_KEY[item.href] ?? "common.nav.home")}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-4 py-3 text-sm transition ${
+                      active
+                        ? "bg-[var(--river-deep)] text-white shadow-lg"
+                        : "border border-[var(--line)] bg-white/40 text-[var(--ink)]"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {NAV_LABEL[item.href] ?? item.label}
+                  </Link>
+                );
+              })}
+            </div>
 
-            {/* Routes by region — mobile only */}
-            <div className="mt-4 mb-2">
-              <p className="px-4 mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                {t("common.nav.routes")} — {t("home.map.title")}
+            <div className="border-t border-[var(--line)] pt-4">
+              <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+                Routes — Choose a region
               </p>
               <div className="grid gap-1.5">
                 {DEFAULT_ROUTE_REGIONS.map((region) => {
-                  const regionTitle = pickRouteRegionText(region.title, locale);
-                  const regionNote = pickRouteRegionText(region.note, locale);
+                  const regionTitle = pickRouteRegionText(region.title);
+                  const regionNote = pickRouteRegionText(region.note);
 
                   return (
                     <Link
                       key={region.key}
                       href={`/routes?region=${region.key}`}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm transition border border-[var(--line)] bg-white/40 text-[var(--ink)] hover:bg-[var(--river-deep)] hover:text-white"
+                      className="flex items-center gap-3 border border-[var(--line)] bg-white/40 px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--river-deep)] hover:text-white"
                       onClick={() => setIsOpen(false)}
                     >
-                      <span className="h-2 w-2 rounded-full bg-[var(--cinnabar)]/60 flex-shrink-0" />
+                      <span className="h-2 w-2 flex-shrink-0 rounded-full bg-[var(--cinnabar)]/60" />
                       <div className="flex flex-col">
                         <span className="font-medium">{regionTitle}</span>
                         <span className="text-[10px] text-[var(--muted)]">{regionNote}</span>
@@ -184,17 +193,14 @@ export function SiteHeader() {
               </div>
             </div>
 
-            <div className="mt-2 grid grid-cols-2 gap-2 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
+            <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
               <AccountNavLink onNavigate={() => setIsOpen(false)} />
-              <LanguageToggle />
-            </div>
-            <div className="grid grid-cols-1 gap-2">
               <Link
                 href="/interpreting#booking"
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >
-                {t("common.btn.reserve")}
+                Book interpreting
               </Link>
             </div>
           </Container>

@@ -1,5 +1,3 @@
-import type { Locale } from "@/lib/locale";
-
 // ---------------------------------------------------------------------------
 // Canonical default route regions for Guangdong.
 //
@@ -23,21 +21,15 @@ export const DEFAULT_ROUTE_REGIONS: RouteRegion[] = regionsData as RouteRegion[]
 
 export function pickRouteRegionText(
   value: { zh?: string; en?: string } | string | undefined,
-  locale: Locale,
 ) {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return locale === "zh"
-    ? (value.zh ?? value.en ?? "")
-    : (value.en ?? value.zh ?? "");
+  return value.en ?? value.zh ?? "";
 }
 
 export function pickSecondaryRouteRegionText(
   value: { zh?: string; en?: string } | string | undefined,
-  locale: Locale,
 ) {
   if (!value || typeof value === "string") return "";
-  return locale === "zh"
-    ? (value.en ?? "")
-    : (value.zh ?? "");
+  return value.zh ?? "";
 }

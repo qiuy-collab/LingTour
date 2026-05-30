@@ -17,6 +17,7 @@ import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar
 import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
+import { formatCurrency } from "@/lib/region-currency";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreProduct } from "@/data/store";
 
@@ -28,7 +29,7 @@ interface HomeClientProps {
 }
 
 function formatStorePrice(price: number, currency: string) {
-  return `${currency} $${price.toFixed(2)}`;
+  return formatCurrency(price, currency);
 }
 
 export default function HomeClient({

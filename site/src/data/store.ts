@@ -20,7 +20,7 @@ export type StoreProduct = {
   name: string;
   collection: string;
   price: number;
-  currency: "SGD";
+  currency: "CNY";
   tag: string;
   image: string;
   materialNotes?: string;

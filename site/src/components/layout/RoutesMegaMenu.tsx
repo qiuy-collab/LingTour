@@ -9,7 +9,6 @@ import {
   featureToPath,
 } from "@/lib/map-projection";
 import { fetchRouteRegions, fetchRoutes } from "@/lib/api-data";
-import { useLocale } from "@/lib/locale-context";
 import type { StoryRoute } from "@/data/routes";
 import {
   DEFAULT_ROUTE_REGIONS,
@@ -20,20 +19,19 @@ import {
 const initialFeatures = getMapFeatures();
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
-  const { locale } = useLocale();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
   const [routeRegions, setRouteRegions] =
     useState<RouteRegion[]>(DEFAULT_ROUTE_REGIONS);
 
   useEffect(() => {
-    fetchRoutes(locale).then(setRoutes).catch(() => {});
-    fetchRouteRegions(locale)
+    fetchRoutes("en").then(setRoutes).catch(() => {});
+    fetchRouteRegions("en")
       .then((data) =>
         setRouteRegions(data.length ? data : DEFAULT_ROUTE_REGIONS),
       )
       .catch(() => setRouteRegions(DEFAULT_ROUTE_REGIONS));
-  }, [locale]);
+  }, []);
 
   const mapPaths = useMemo(() => {
     if (!initialFeatures.length) {
@@ -87,8 +85,8 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
               const regionRoutes = routes.filter(
                 (route) => route.routeRegionKey === region.key,
               );
-              const regionTitle = pickRouteRegionText(region.title, locale);
-              const regionNote = pickRouteRegionText(region.note, locale);
+              const regionTitle = pickRouteRegionText(region.title);
+              const regionNote = pickRouteRegionText(region.note);
 
               return (
                 <motion.div
@@ -102,9 +100,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                   transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <Link
-                    href={
-                      regionRoutes[0] ? `/routes/${regionRoutes[0].slug}` : "/routes"
-                    }
+                    href={`/routes?region=${region.key}`}
                     className="block"
                   >
                     <div className="relative h-32 overflow-hidden border border-black/10 bg-white scrapbook-shadow transition group-hover/region:-translate-y-1">
@@ -149,18 +145,24 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                     </p>
                   </Link>
                   <div className="mt-6 space-y-3 border-t border-black/5 pt-4">
-                    {regionRoutes.slice(0, 3).map((route) => (
-                      <Link
-                        key={route.slug}
-                        href={`/routes/${route.slug}`}
-                        className="group/link flex items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
-                      >
-                        <span className="h-1 w-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
-                        <span className="handwritten overflow-hidden text-ellipsis whitespace-nowrap">
-                          {route.title}
-                        </span>
-                      </Link>
-                    ))}
+                    {regionRoutes.length ? (
+                      regionRoutes.slice(0, 3).map((route) => (
+                        <Link
+                          key={route.slug}
+                          href={`/routes/${route.slug}`}
+                          className="group/link flex items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
+                        >
+                          <span className="h-1 w-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
+                          <span className="handwritten overflow-hidden text-ellipsis whitespace-nowrap">
+                            {route.title}
+                          </span>
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[var(--muted)] handwritten">
+                        Coming soon
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               );
