@@ -1,10 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY projects/proj-1778970788262-5mcldi/admin-frontend/package.json projects/proj-1778970788262-5mcldi/admin-frontend/package-lock.json ./
 RUN npm ci
 
-COPY . .
+COPY shared /shared
+COPY projects/proj-1778970788262-5mcldi/admin-frontend .
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -16,7 +17,7 @@ ENV HOST=0.0.0.0
 ENV VITE_API_ORIGIN=http://api:8000
 
 COPY --from=builder /app/dist ./dist
-COPY server.cjs ./server.cjs
+COPY --from=builder /app/server.cjs ./server.cjs
 
 EXPOSE 4173
 

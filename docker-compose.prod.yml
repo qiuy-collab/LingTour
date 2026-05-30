@@ -72,8 +72,8 @@ services:
 
   admin:
     build:
-      context: ./projects/proj-1778970788262-5mcldi/admin-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: projects/proj-1778970788262-5mcldi/admin-frontend/Dockerfile
     restart: unless-stopped
     depends_on:
       api:
