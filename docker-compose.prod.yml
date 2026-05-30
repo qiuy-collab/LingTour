@@ -51,8 +51,8 @@ services:
 
   site:
     build:
-      context: ./site
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: site/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}

@@ -1,10 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY site/package.json site/package-lock.json ./
 RUN npm ci
 
-COPY . .
+COPY shared /shared
+COPY site .
 
 ARG NEXT_PUBLIC_API_URL=/api/v1
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
