@@ -1,0 +1,55 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main  # 当代码推送到 main 分支时触发部署
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            # 进入项目目录 (根据实际服务器路径修改，一般是 /var/www/lingtour)
+            cd /var/www/lingtour || cd /home/${{ secrets.SERVER_USER }}/lingtour
+
+            # 拉取最新代码
+            git fetch --all
+            git reset --hard origin/main
+
+            # 1. 更新 API (如果有变动则重启)
+            cd api
+            npm ci
+            npm run build
+            # npx typeorm migration:run -d dist/database/data-source.js # 若有数据库变动打开此项
+            cd ..
+
+            # 2. 更新 Site 前台
+            cd site
+            npm ci
+            NEXT_OUTPUT=standalone npm run build
+            cd ..
+
+            # 3. 更新 Admin 后台
+            cd admin-frontend
+            npm ci
+            npm run build
+            cd ../../..
+
+            # 重启 PM2 服务
+            pm2 restart lingtour-api || echo "API PM2 restart failed, you may need to start it first"
+            pm2 restart lingtour-site || echo "Site PM2 restart failed, you may need to start it first"
+            # Admin 是纯前端静态文件，由 Nginx 直接代理，不需要重启 PM2
+
+            echo "Deployment finished successfully!"
