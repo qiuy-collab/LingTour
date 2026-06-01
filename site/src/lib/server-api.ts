@@ -19,13 +19,19 @@ import type { Locale } from "./locale";
  *  1. NEXT_PUBLIC_API_URL env var (e.g. "https://api.lingfengtranstour.cn/api/v1")
  *  2. Same-origin fallback using the incoming request's Host header
  */
-function getServerBaseUrl(): string {
+async function getServerBaseUrl(): Promise<string> {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl) return envUrl;
+  if (envUrl?.startsWith("http")) return envUrl;
 
-  // Fallback: construct from incoming request (works in SSR behind proxy)
-  // In production this will typically not be reached because NEXT_PUBLIC_API_URL is set.
-  return "/api/v1";
+  const requestHeaders = await headers();
+  const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
+  const host =
+    requestHeaders.get("x-forwarded-host") ??
+    requestHeaders.get("host") ??
+    "localhost:3001";
+  const sameOriginBase = new URL(envUrl || "/api/v1", `${proto}://${host}`);
+
+  return sameOriginBase.toString().replace(/\/$/, "");
 }
 
 /**
@@ -39,7 +45,7 @@ export async function serverGet<T = unknown>(
   params?: Record<string, string | number | undefined>,
   locale?: Locale,
 ): Promise<T> {
-  const baseUrl = getServerBaseUrl();
+  const baseUrl = await getServerBaseUrl();
   const fullPath = `${baseUrl}${endpoint}`;
 
   // Build URL — use absolute URL when base starts with http

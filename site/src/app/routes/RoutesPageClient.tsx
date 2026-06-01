@@ -71,7 +71,13 @@ export default function RoutesPageClient({
                   />
                   <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
 
-                  <div className="absolute -bottom-8 -right-4 w-40 h-40 bg-[url('/assets/images/stamp-circle.svg')] bg-contain bg-no-repeat opacity-20 animate-spin-slow" />
+                  <div className="absolute -bottom-8 -right-4 grid h-40 w-40 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[10px] font-bold uppercase tracking-[0.35em] text-[var(--cinnabar)]/45 animate-spin-slow">
+                    <span className="leading-relaxed">
+                      Field
+                      <br />
+                      Dispatch
+                    </span>
+                  </div>
                   <div className="absolute top-1/2 -right-12 handwritten text-2xl text-[var(--gold)] -rotate-90 origin-bottom-right whitespace-nowrap">
                     {t("routes.atlas.archiveBadge")}
                   </div>
