@@ -9,7 +9,7 @@
  * are admin-specific UI utilities.
  */
 
-import regionsData from '../../../../../shared/route-regions.json'
+import regionsData from '../../../shared/route-regions.json'
 
 export interface GuangdongAdcodeOption {
   adcode: number

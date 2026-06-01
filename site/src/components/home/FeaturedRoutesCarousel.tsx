@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { StoryRoute } from "@/data/routes";
+import { placeholderFor } from "@/lib/placeholders";
 
 interface Props {
   routes?: StoryRoute[];
@@ -63,7 +64,9 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                   }
                 }
               `}</style>
-              {routes.map((route) => (
+              {routes.map((route) => {
+                const routeImage = route.image || placeholderFor("hero");
+                return (
                 <Link
                   key={route.slug}
                   href={`/routes/${route.slug}`}
@@ -76,7 +79,7 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                   <div className="relative h-full w-full scrapbook-shadow border-[0.85rem] border-white overflow-hidden bg-white">
                     <div
                       className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${route.image})` }}
+                      style={{ backgroundImage: `url(${routeImage})` }}
                     />
                     <div className="absolute inset-0 bg-black/5" />
 
@@ -100,7 +103,8 @@ export function FeaturedRoutesCarousel({ routes = [] }: Props) {
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-20 h-10 bg-white/20 backdrop-blur-sm -rotate-2 z-20" />
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
 

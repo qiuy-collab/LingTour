@@ -16,5 +16,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "../../shared/**/*.json"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "../shared/**/*.json"]
 }

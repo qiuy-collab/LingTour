@@ -66,3 +66,15 @@
 ## 2026-06-01 自动提取
 - 旧项目 `E:\workspace\LingTour\projects\proj-1778970788262-5mcldi` 的内容已清理干净，仅剩 Windows 目录句柄占用导致的空目录残留。
 - 已更新清理相关记录：`outputs/cleanup-result.md`、`project.md`、`memory/long-term.md`、`memory/2026-06-01.md`。
+
+
+## 2026-06-01 自动提取
+- 用户希望为前台当前未配置图片的页面补充合适的网络图片。
+- 用户希望移除/精简 login 页面中多余内容。
+- 用户已配置好 Google 登录，希望将 Google 快捷登录方式重新加回登录页下方，并仅显示图标。
+- 处理类似图片采集任务时，优先采用“浏览器选图 + curl 携带 UA 下载”的方式，不要先用无 UA 的 Python 直连下载。
+
+## 2026-06-01
+- 已将 `site/public/editorial/` 下 5 张实拍图作为当前前台缺图场景的本地素材池，并接入 `site/src/lib/seed-images.ts` 作为多页面 fallback 图源。
+- login 页面已精简多余文案与“Stay signed in”等弱价值元素；Google 快捷登录已恢复在表单下方，仅显示圆形 Google 图标按钮。
+- 本轮前台构建验证已通过：`npm --prefix E:/workspace/LingTour/site run build` 成功。

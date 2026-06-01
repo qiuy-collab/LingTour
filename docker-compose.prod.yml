@@ -21,13 +21,12 @@ services:
       context: ./api
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       NODE_ENV: production
       PORT: 8000
-      DB_HOST: postgres
+      DB_HOST: host.docker.internal
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-lingtour}
       DB_USERNAME: ${DB_USERNAME:-lingtour}
@@ -73,7 +72,7 @@ services:
   admin:
     build:
       context: .
-      dockerfile: projects/proj-1778970788262-5mcldi/admin-frontend/Dockerfile
+      dockerfile: admin-frontend/Dockerfile
     restart: unless-stopped
     depends_on:
       api:

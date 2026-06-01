@@ -148,6 +148,7 @@ function VisualPlate({
 
   const image = frames[activeFrame] || section.image || fallbackImage;
   const frameCount = frames.length;
+  const usesContactSheet = frameCount >= 4;
   const detailImage =
     section.breathImage && section.breathImage !== image
       ? section.breathImage
@@ -168,7 +169,13 @@ function VisualPlate({
       </div>
 
       <div className="relative z-10 mt-6 flex flex-1 items-center">
-        <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1fr)_6.25rem] lg:items-start">
+        <div
+          className={`grid w-full gap-5 lg:items-start ${
+            usesContactSheet
+              ? "lg:grid-cols-[minmax(0,1fr)_11rem]"
+              : "lg:grid-cols-[minmax(0,1fr)_6.25rem]"
+          }`}
+        >
           <div className="min-w-0">
             <div className="relative w-full max-w-[31rem] rotate-[-1.2deg] border-[6px] lg:border-[12px] border-white bg-white scrapbook-shadow transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.8deg]">
               <div className="aspect-[4/3] overflow-hidden">
@@ -216,7 +223,13 @@ function VisualPlate({
           </div>
 
           {frameCount > 1 ? (
-            <div className="grid grid-cols-3 gap-3 lg:grid-cols-1 lg:gap-4">
+            <div
+              className={`grid gap-3 ${
+                usesContactSheet
+                  ? "grid-cols-2 content-start lg:grid-cols-2 lg:gap-3"
+                  : "grid-cols-3 lg:grid-cols-1 lg:gap-4"
+              }`}
+            >
               {frames.map((frame, frameIndex) => {
                 const isActive = frameIndex === activeFrame;
                 return (
@@ -228,7 +241,19 @@ function VisualPlate({
                       isActive
                         ? "border-[var(--gold)] scale-[1.02]"
                         : "border-white hover:-translate-y-1 hover:border-[var(--line)]"
-                    } ${frameIndex % 2 === 0 ? "rotate-[1.6deg]" : "-rotate-[1.4deg]"}`}
+                    } ${
+                      usesContactSheet
+                        ? frameIndex % 4 === 0
+                          ? "rotate-[1.2deg]"
+                          : frameIndex % 4 === 1
+                            ? "-rotate-[1.5deg]"
+                            : frameIndex % 4 === 2
+                              ? "-rotate-[0.8deg]"
+                              : "rotate-[1deg]"
+                        : frameIndex % 2 === 0
+                          ? "rotate-[1.6deg]"
+                          : "-rotate-[1.4deg]"
+                    }`}
                   >
                     <div className="aspect-[4/5] overflow-hidden">
                       <img
@@ -243,9 +268,15 @@ function VisualPlate({
                         decoding="async"
                       />
                     </div>
-                    <div className="border-t border-black/5 px-2.5 py-2">
+                    <div
+                      className={`border-t border-black/5 ${
+                        usesContactSheet ? "px-2 py-1.5" : "px-2.5 py-2"
+                      }`}
+                    >
                       <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--river-deep)]/72">
-                        {String(frameIndex + 1).padStart(2, "0")}
+                        {usesContactSheet
+                          ? `frame ${String(frameIndex + 1).padStart(2, "0")}`
+                          : String(frameIndex + 1).padStart(2, "0")}
                       </p>
                     </div>
                   </button>

@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "node -e \"const fs=require('fs'); fs.rmSync('dist',{recursive:true,force:true}); fs.rmSync('tsconfig.build.tsbuildinfo',{force:true});\" && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -19,7 +19,13 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:assets": "ts-node src/database/seeds/download-seed-assets.ts",
-    "seed:reset": "ts-node src/database/seeds/seed.ts"
+    "seed:reset": "ts-node src/database/seeds/seed.ts",
+    "demo:judge": "ts-node src/database/seeds/prepare-judge-demo.ts --apply",
+    "demo:judge:dry-run": "ts-node src/database/seeds/prepare-judge-demo.ts",
+    "products:prepare-images": "ts-node src/database/seeds/prepare-product-images.ts --apply",
+    "products:prepare-images:dry-run": "ts-node src/database/seeds/prepare-product-images.ts",
+    "media:ingest-external": "ts-node src/database/seeds/import-external-media.ts --apply",
+    "media:ingest-external:dry-run": "ts-node src/database/seeds/import-external-media.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.1.2",

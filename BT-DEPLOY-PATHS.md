@@ -14,9 +14,9 @@
 
 ## Admin frontend
 
-- Project path: `/root/LingTour/projects/proj-1778970788262-5mcldi/admin-frontend`
+- Project path: `/root/LingTour/admin-frontend`
 - Build command: `npm install && npm run build`
-- Startup file: `/root/LingTour/projects/proj-1778970788262-5mcldi/admin-frontend/server.cjs`
+- Startup file: `/root/LingTour/admin-frontend/server.cjs`
 - Suggested port: `4173`
 - Required env:
   - `PORT=4173`

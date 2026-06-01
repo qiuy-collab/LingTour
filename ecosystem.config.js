@@ -21,7 +21,7 @@ module.exports = {
     },
     {
       name: 'lingtour-admin',
-      cwd: './projects/proj-1778970788262-5mcldi/admin-frontend',
+      cwd: './admin-frontend',
       script: 'server.cjs',
       env: { PORT: 4173, VITE_API_ORIGIN: 'https://api.lingfengtranstour.cn' },
       instances: 1,

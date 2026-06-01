@@ -32,15 +32,15 @@ function uploaded(path: string): string {
  */
 export const SEED_IMAGES = {
   // Wide / hero (16:9 or close)
-  homeHero: uploaded("/uploads/seed/zhanjiang-hero-1400.jpg"),
+  homeHero: "/editorial/guangdong-coast-hero.jpg",
   homeCta: uploaded("/uploads/seed/southern-coast-1400.jpg"),
-  homeInterpreting: uploaded("/uploads/seed/pottery-workshop-1200.jpg"),
+  homeInterpreting: "/editorial/pottery-workshop.jpg",
 
-  cultureHero: uploaded("/uploads/seed/zhanjiang-hero-1200.jpg"),
+  cultureHero: "/editorial/guangdong-coast-boat.jpg",
   cultureCta: uploaded("/uploads/seed/volcanic-landscape-1400.jpg"),
   cultureFood: uploaded("/uploads/seed/seafood-dishes-800.jpg"),
 
-  routesHero: uploaded("/uploads/seed/southern-coast-1400.jpg"),
+  routesHero: "/editorial/guangdong-coast-rocky.jpg",
   routesCta: uploaded("/uploads/seed/southern-sea-table-cover.jpg"),
   routeHuguangyan: uploaded("/uploads/seed/route-huguangyan.jpg"),
   routeDongfeng: uploaded("/uploads/seed/route-dongfeng.jpg"),
@@ -52,15 +52,15 @@ export const SEED_IMAGES = {
   routeVolcanicLandscape800: uploaded("/uploads/seed/volcanic-landscape-800.jpg"),
   routeSeafoodDishes800: uploaded("/uploads/seed/seafood-dishes-800.jpg"),
 
-  shopHero: uploaded("/uploads/seed/zhanjiang-hero-1400-shop.jpg"),
+  shopHero: "/editorial/pottery-painting.jpg",
   shopProduct: uploaded("/uploads/seed/volcanic-soil-bowl-1200.jpg"),
   shopProductSquare: uploaded("/uploads/seed/volcanic-soil-bowl-900.jpg"),
 
-  interpretingHero: uploaded("/uploads/seed/pottery-workshop-1200.jpg"),
-  interpretingShowcase: uploaded("/uploads/seed/southern-coast-1200.jpg"),
+  interpretingHero: "/editorial/pottery-workshop.jpg",
+  interpretingShowcase: "/editorial/guangdong-coast-boat.jpg",
 
   // Generic ambient (volcanic landscape works as a neutral atmosphere shot)
-  ambientLandscape: uploaded("/uploads/seed/volcanic-landscape-1200.jpg"),
+  ambientLandscape: "/editorial/guangdong-coast-rocky.jpg",
 } as const;
 
 export type SeedImageKey = keyof typeof SEED_IMAGES;

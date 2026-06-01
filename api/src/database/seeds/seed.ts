@@ -2,6 +2,10 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import {
+  collectReferencedMediaFilenames,
+  syncMediaLibraryRecords,
+} from './media-library';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
@@ -83,7 +87,7 @@ async function seed() {
   );
 
   // ═══════════════════════════════════════════════
-  // CITIES (3: Zhanjiang, Chaozhou, Guangzhou)
+  // CITIES (2: Zhanjiang, Chaozhou)
   // ═══════════════════════════════════════════════
 
   // City 1: Zhanjiang
@@ -101,7 +105,7 @@ async function seed() {
       j({ en: 'Flavours of Zhanjiang', zh: '湛江风味' }),
       j({ en: "Zhanjiang's food is the most immediate way to understand how coastline, weather, labour, and geology are translated into daily life.", zh: '湛江的饮食是理解海岸线、天气、劳动方式和地质条件如何转译为日常生活的最直接入口。' }),
       j(['/uploads/seed/volcanic-landscape-800.jpg', '/uploads/seed/seafood-dishes-800.jpg']),
-      j(['chaozhou', 'guangzhou']),
+      j(['chaozhou']),
     ],
   );
   const zhanjiangId = zhanjiangRes[0].id;
@@ -121,30 +125,10 @@ async function seed() {
       j({ en: 'Chaozhou Cuisine', zh: '潮州菜' }),
       j({ en: 'Chaozhou cuisine is precise, seasonal, and deeply tied to ritual. From morning congee to evening hotpot, every meal carries centuries of refinement.', zh: '潮州菜精确、应季，与仪式深度绑定。从早粥到晚间打边炉，每一餐都承载着数百年的精炼。' }),
       j(['/uploads/seed/chaozhou-food-800.jpg', '/uploads/seed/chaozhou-tea-800.jpg']),
-      j(['zhanjiang', 'guangzhou']),
+      j(['zhanjiang']),
     ],
   );
   const chaozhouId = chaozhouRes[0].id;
-
-  // City 3: Guangzhou
-  const guangzhouRes = await dataSource.query(
-    `INSERT INTO cities (slug, name, region_label, hero_image, hero_narrative, tags, editor_intro,
-      gallery_images, food_title, food_description, food_images, adcode, published, related_city_slugs)
-     VALUES ('guangzhou', $1, $2, '/uploads/seed/guangzhou-hero-1200.jpg', $3, $4, $5, $6, $7, $8, $9, 440100, true, $10) RETURNING id;`,
-    [
-      j({ en: 'Guangzhou', zh: '广州' }),
-      j({ en: 'Pearl River Delta', zh: '珠三角' }),
-      j({ en: 'Guangzhou is a city that has traded with the world for two thousand years. Its culture is layered, pragmatic, and expressed most clearly through food, architecture, and the rhythm of its neighbourhoods.', zh: '广州是一座与世界贸易了两千年的城市。它的文化是层叠的、务实的，最清晰地通过饮食、建筑和街区节奏来表达。' }),
-      j(['Dim sum', 'Qilou', 'Cantonese opera']),
-      j({ en: 'Guangzhou does not announce itself — it reveals itself through morning tea, evening walks, and the slow accumulation of neighbourhood knowledge.', zh: '广州不会自我宣告——它通过早茶、傍晚散步和街区知识的缓慢积累来展现自己。' }),
-      j(['/uploads/seed/guangzhou-hero-1200.jpg', '/uploads/seed/guangzhou-qilou-1200.jpg']),
-      j({ en: 'Cantonese Cuisine', zh: '粤菜' }),
-      j({ en: 'Cantonese cuisine is the art of restraint: fresh ingredients, minimal seasoning, and technique that lets the material speak. Dim sum is its most famous expression, but the real depth lies in home cooking and market meals.', zh: '粤菜是克制的艺术：新鲜食材、极简调味、让材料自己说话的技法。点心是最著名的表达，但真正的深度在家常菜和市场餐食中。' }),
-      j(['/uploads/seed/guangzhou-dimsum-800.jpg', '/uploads/seed/guangzhou-market-800.jpg']),
-      j(['chaozhou', 'zhanjiang']),
-    ],
-  );
-  const guangzhouId = guangzhouRes[0].id;
 
   // ═══════════════════════════════════════════════
   // CITY CULTURE SECTIONS
@@ -204,41 +188,14 @@ async function seed() {
     ],
   );
 
-  // Guangzhou sections (3)
-  await dataSource.query(
-    `INSERT INTO city_culture_sections (city_id, title, body, image, stat_label, stat_value, breath_image, breath_quote, sort_order)
-     VALUES
-      ($1, $2, $3, '/uploads/seed/guangzhou-qilou-1200.jpg', $4, $5, '/uploads/seed/guangzhou-qilou-1200.jpg', $6, 0),
-      ($1, $7, $8, '/uploads/seed/guangzhou-hero-1200.jpg', $9, $10, '/uploads/seed/guangzhou-hero-1200.jpg', $11, 1),
-      ($1, $12, $13, '/uploads/seed/guangzhou-dimsum-800.jpg', $14, $15, '/uploads/seed/guangzhou-dimsum-800.jpg', $16, 2);`,
-    [
-      guangzhouId,
-      j({ en: 'Qilou architecture', zh: '骑楼建筑' }),
-      j({ en: 'The arcaded shophouses of Guangzhou are not just architectural heritage — they are a spatial logic born from subtropical rain, street commerce, and the pragmatism of a trading city.', zh: '广州的骑楼不只是建筑遗产——它们是亚热带雨水、街头商业和贸易城市务实精神共同催生的空间逻辑。' }),
-      j({ en: 'Qilou streets', zh: '骑楼街' }),
-      j({ en: '26 km preserved', zh: '26 公里保护' }),
-      j({ en: 'Under the arcade, rain and commerce coexist — this is Guangzhou in one image.', zh: '骑楼之下，雨水与商业共存——这就是广州的一幅缩影。' }),
-      j({ en: 'Morning tea culture', zh: '早茶文化' }),
-      j({ en: 'Yum cha is not breakfast — it is a social institution. Families, business partners, and neighbours gather over dim sum to exchange news, negotiate, and simply be together.', zh: '饮茶不是早餐——它是一种社会制度。家人、生意伙伴和邻居围坐点心桌前交换消息、谈判，或只是在一起。' }),
-      j({ en: 'Dim sum varieties', zh: '点心品种' }),
-      j({ en: '1,000+', zh: '1000+' }),
-      j({ en: 'The teahouse is where Guangzhou does its real business — over siu mai and har gow.', zh: '茶楼才是广州真正做生意的地方——在烧卖和虾饺之间。' }),
-      j({ en: 'Pearl River life', zh: '珠江生活' }),
-      j({ en: 'The Pearl River is not just geography — it is the organizing principle of the city. Trade, leisure, food, and memory all flow along its banks.', zh: '珠江不只是地理——它是城市的组织原则。贸易、休闲、饮食和记忆都沿着它的河岸流动。' }),
-      j({ en: 'River length (city)', zh: '城区河段' }),
-      j({ en: '70+ km', zh: '70+ 公里' }),
-      j({ en: 'Follow the river and you follow the story of Guangzhou itself.', zh: '沿着珠江走，就是沿着广州的故事走。' }),
-    ],
-  );
-
   // ═══════════════════════════════════════════════
-  // STORY ROUTES (3)
+  // STORY ROUTES (2)
   // ═══════════════════════════════════════════════
 
   // Route 1: Southern Sea Table (Zhanjiang)
   const route1Res = await dataSource.query(
-    `INSERT INTO story_routes (slug, title, culture_tag, city_name, duration, audience, summary, story, cover_image, published)
-     VALUES ('southern-sea-table', $1, 'Coastal', $2, $3, $4, $5, $6, '/uploads/seed/southern-sea-table-cover.jpg', true) RETURNING id;`,
+    `INSERT INTO story_routes (slug, title, culture_tag, city_name, duration, audience, summary, story, cover_image, route_region_key, published)
+     VALUES ('southern-sea-table', $1, 'Coastal', $2, $3, $4, $5, $6, '/uploads/seed/southern-sea-table-cover.jpg', 'southern-sea', true) RETURNING id;`,
     [
       j({ en: 'A Southern Sea Table', zh: '一张朝南的餐桌' }),
       j({ en: 'Zhanjiang', zh: '湛江' }),
@@ -282,8 +239,8 @@ async function seed() {
 
   // Route 2: Chaoshan Tea Culture
   const route2Res = await dataSource.query(
-    `INSERT INTO story_routes (slug, title, culture_tag, city_name, duration, audience, summary, story, cover_image, published)
-     VALUES ('chaoshan-tea-culture', $1, 'Tea', $2, $3, $4, $5, $6, '/uploads/seed/chaozhou-tea-1200.jpg', true) RETURNING id;`,
+    `INSERT INTO story_routes (slug, title, culture_tag, city_name, duration, audience, summary, story, cover_image, route_region_key, published)
+     VALUES ('chaoshan-tea-culture', $1, 'Tea', $2, $3, $4, $5, $6, '/uploads/seed/chaozhou-tea-1200.jpg', 'chaoshan-coast', true) RETURNING id;`,
     [
       j({ en: 'Chaoshan Tea Culture Route', zh: '潮汕功夫茶文化路线' }),
       j({ en: 'Chaozhou', zh: '潮州' }),
@@ -326,61 +283,12 @@ async function seed() {
     ],
   );
 
-  // Route 3: Guangzhou Culture Walk
-  const route3Res = await dataSource.query(
-    `INSERT INTO story_routes (slug, title, culture_tag, city_name, duration, audience, summary, story, cover_image, published)
-     VALUES ('guangzhou-culture-walk', $1, 'Urban', $2, $3, $4, $5, $6, '/uploads/seed/guangzhou-hero-1200.jpg', true) RETURNING id;`,
-    [
-      j({ en: 'Guangzhou Culture Walk', zh: '广州文化漫步' }),
-      j({ en: 'Guangzhou', zh: '广州' }),
-      j({ en: '1 day', zh: '1 天' }),
-      j({ en: 'Architecture & food lovers', zh: '建筑与美食爱好者' }),
-      j({ en: 'A day walking through Guangzhou\'s layered history — from morning dim sum to evening river promenade.', zh: '一天走过广州的层叠历史——从早茶到傍晚珠江漫步。' }),
-      j({ en: 'Guangzhou reveals itself through its neighbourhoods: each district carries a different era, a different trade, a different rhythm.', zh: '广州通过街区展现自己：每个区域承载着不同的时代、不同的贸易、不同的节奏。' }),
-    ],
-  );
-  const route3Id = route3Res[0].id;
-
-  // Route 3 stops (4)
-  await dataSource.query(
-    `INSERT INTO route_stops (route_id, sort_order, time, stop_name, story, cultural_story, details, image, lat, lng, meal, hotel, transit)
-     VALUES
-      ($1, 0, '07:30', $2, $3, $4, $5, '/uploads/seed/guangzhou-dimsum-800.jpg', 23.129, 113.264, $6, NULL, NULL),
-      ($1, 1, '10:00', $7, $8, $9, $10, '/uploads/seed/guangzhou-qilou-1200.jpg', 23.120, 113.250, NULL, NULL, NULL),
-      ($1, 2, '14:00', $11, $12, $13, $14, '/uploads/seed/guangzhou-hero-1200.jpg', 23.130, 113.260, NULL, NULL, NULL),
-      ($1, 3, '17:00', $15, $16, $17, $18, '/uploads/seed/guangzhou-market-800.jpg', 23.112, 113.252, $19, NULL, NULL);`,
-    [
-      route3Id,
-      j({ en: 'Morning Dim Sum', zh: '早茶' }),
-      j({ en: 'Start the day as Guangzhou does — at a teahouse. Yum cha is not just breakfast but a social institution.', zh: '像广州人一样开始这一天——在茶楼。饮茶不只是早餐，而是一种社会制度。' }),
-      j({ en: 'The teahouse hierarchy, ordering etiquette, and pace of service all encode Cantonese social values.', zh: '茶楼的等级、点单礼仪和上菜节奏都编码着粤式社交价值观。' }),
-      j(['Traditional teahouse', 'Dim sum ordering ritual', 'Tea selection guide']),
-      j({ en: 'Dim sum breakfast', zh: '点心早餐' }),
-      j({ en: 'Enning Road Qilou District', zh: '恩宁路骑楼区' }),
-      j({ en: 'Walk through Enning Road, where Guangzhou\'s longest stretch of preserved qilou (arcaded shophouses) tells the story of early 20th century commerce.', zh: '穿过恩宁路，广州最长的骑楼保护街区讲述着20世纪初的商业故事。' }),
-      j({ en: 'Qilou architecture emerged from the intersection of Cantonese pragmatism, Southeast Asian influence, and subtropical climate adaptation.', zh: '骑楼建筑诞生于粤式务实精神、东南亚影响和亚热带气候适应的交汇处。' }),
-      j(['Yongqing Fang creative quarter', 'Cantonese opera museum', 'Bruce Lee ancestral home']),
-      j({ en: 'Chen Clan Academy', zh: '陈家祠' }),
-      j({ en: 'The Chen Clan Academy is Lingnan decorative arts at their most concentrated — stone carving, wood carving, brick carving, pottery, and iron casting in one complex.', zh: '陈家祠是岭南装饰艺术最集中的展现——石雕、木雕、砖雕、陶塑和铁铸汇于一处。' }),
-      j({ en: 'Built in 1894 as a combined ancestral temple and school, it represents the peak of Guangdong clan architecture.', zh: '建于1894年，兼具宗祠和书院功能，代表广东宗族建筑的巅峰。' }),
-      j(['Roof ridge sculptures', 'Grey brick carving (灰塑)', 'Guangdong folk art museum']),
-      j({ en: 'Shamian Island & River Walk', zh: '沙面岛与珠江漫步' }),
-      j({ en: 'End the day on Shamian Island, where colonial-era buildings now house cafés and galleries, then walk along the Pearl River as the city lights up.', zh: '在沙面岛结束这一天，殖民时期建筑如今是咖啡馆和画廊，然后沿珠江散步看城市亮灯。' }),
-      j({ en: 'Shamian was a foreign concession from 1861-1943. Today it offers a quiet counterpoint to the city\'s energy.', zh: '沙面1861-1943年间是外国租界。如今它提供了城市能量的安静对照。' }),
-      j(['Colonial architecture walk', 'Banyan tree courtyards', 'Pearl River night view']),
-      j({ en: 'Riverside dinner', zh: '珠江边晚餐' }),
-    ],
-  );
 
   // Route-City Links
   await dataSource.query(
-    `INSERT INTO route_city_links (route_id, city_id, sort_order) VALUES ($1, $2, 0), ($3, $4, 0), ($5, $6, 0);`,
-    [route1Id, zhanjiangId, route2Id, chaozhouId, route3Id, guangzhouId],
+    `INSERT INTO route_city_links (route_id, city_id, sort_order) VALUES ($1, $2, 0), ($3, $4, 0);`,
+    [route1Id, zhanjiangId, route2Id, chaozhouId],
   );
-
-  // ═══════════════════════════════════════════════
-  // SHOP (3 collections, 6 products)
-  // ═══════════════════════════════════════════════
 
   // Collection 1: Coastal Life Kit (Zhanjiang)
   const coll1Res = await dataSource.query(
@@ -406,24 +314,12 @@ async function seed() {
   );
   const coll2Id = coll2Res[0].id;
 
-  // Collection 3: Lingnan Heritage (Guangzhou)
-  const coll3Res = await dataSource.query(
-    `INSERT INTO store_collections (slug, title, route_name, route_slug, image, body, sort_order, published)
-     VALUES ('lingnan-heritage', $1, $2, 'guangzhou-culture-walk', '/uploads/seed/guangzhou-qilou-1200.jpg', $3, 2, true) RETURNING id;`,
-    [
-      j({ en: 'Lingnan Heritage', zh: '岭南遗产' }),
-      j({ en: 'Guangzhou Culture Walk', zh: '广州文化漫步' }),
-      j({ en: 'Design objects inspired by Guangzhou\'s architectural heritage and Cantonese craft traditions.', zh: '灵感来自广州建筑遗产和粤式工艺传统的设计器物。' }),
-    ],
-  );
-  const coll3Id = coll3Res[0].id;
-
-  // Products (6 total, 2 per collection)
+  // Products (2 total, 1 per collection)
   await dataSource.query(
     `INSERT INTO store_products (slug, name, collection_id, price, currency, tag, image, story, material, dimensions, origin, care, gallery, stock, published)
      VALUES
       ('volcanic-soil-bowl', $1, $2, 32.00, 'SGD', $3, '/uploads/seed/volcanic-soil-bowl-900.jpg', $4, $5, $6, $7, $8, $9, 10, true),
-      ('shell-inlay-box', $10, $2, 45.00, 'SGD', $11, '/uploads/seed/volcanic-landscape-800.jpg', $12, $13, $14, $15, $16, $17, 8, true);`,
+      ('zhuni-teapot', $10, $11, 88.00, 'SGD', $12, '/uploads/seed/chaozhou-tea-800.jpg', $13, $14, $15, $16, $17, $18, 5, true);`,
     [
       j({ en: 'Volcanic Soil Tea Bowl', zh: '火山土茶碗' }),
       coll1Id,
@@ -434,23 +330,6 @@ async function seed() {
       j({ en: 'Leizhou Peninsula, Zhanjiang', zh: '湛江·雷州半岛' }),
       j({ en: 'Hand wash only; not for microwave.', zh: '建议手洗，不建议微波。' }),
       j(['/uploads/seed/volcanic-soil-bowl-1200.jpg', '/uploads/seed/pottery-workshop-1200.jpg']),
-      j({ en: 'Shell Inlay Jewellery Box', zh: '贝壳镶嵌首饰盒' }),
-      j({ en: 'Maritime craft', zh: '海洋手作' }),
-      j({ en: 'A jewellery box inlaid with shells collected from Zhanjiang\'s volcanic coastline.', zh: '镶嵌湛江火山海岸贝壳的首饰盒。' }),
-      j({ en: 'Camphor wood, natural shells, brass hinges', zh: '樟木、天然贝壳、黄铜铰链' }),
-      j({ en: '15cm × 10cm × 6cm', zh: '15cm × 10cm × 6cm' }),
-      j({ en: 'Zhanjiang coastal villages', zh: '湛江沿海渔村' }),
-      j({ en: 'Wipe with dry cloth. Avoid prolonged moisture.', zh: '干布擦拭，避免长时间潮湿。' }),
-      j(['/uploads/seed/volcanic-landscape-1200.jpg']),
-    ],
-  );
-
-  await dataSource.query(
-    `INSERT INTO store_products (slug, name, collection_id, price, currency, tag, image, story, material, dimensions, origin, care, gallery, stock, published)
-     VALUES
-      ('zhuni-teapot', $1, $2, 88.00, 'SGD', $3, '/uploads/seed/chaozhou-tea-800.jpg', $4, $5, $6, $7, $8, $9, 5, true),
-      ('dancong-honey-orchid', $10, $2, 45.00, 'SGD', $11, '/uploads/seed/chaozhou-food-800.jpg', $12, $13, $14, $15, $16, $17, 20, true);`,
-    [
       j({ en: 'Chaozhou Zhuni Teapot', zh: '潮州朱泥手拉壶' }),
       coll2Id,
       j({ en: 'Master crafted', zh: '大师手作' }),
@@ -460,53 +339,18 @@ async function seed() {
       j({ en: 'Fengxi, Chaozhou', zh: '潮州·枫溪' }),
       j({ en: 'Season with tea before first use. Never use soap.', zh: '首次使用前用茶水养壶。切勿使用洗涤剂。' }),
       j(['/uploads/seed/chaozhou-tea-1200.jpg']),
-      j({ en: 'Phoenix Dancong Honey Orchid', zh: '凤凰单丛蜜兰香' }),
-      j({ en: 'Single origin', zh: '单一产地' }),
-      j({ en: 'Honey Orchid (蜜兰香) Dancong from Phoenix Mountain, harvested at 800m elevation.', zh: '凤凰山800米海拔采摘的蜜兰香单丛。' }),
-      j({ en: 'Oolong tea leaves, spring harvest 2026', zh: '乌龙茶叶，2026年春采' }),
-      j({ en: '50g sealed tin', zh: '50g密封罐装' }),
-      j({ en: 'Phoenix Mountain, Chaozhou', zh: '潮州·凤凰山' }),
-      j({ en: 'Store in cool, dry place. Consume within 12 months.', zh: '阴凉干燥处保存，12个月内饮用。' }),
-      j(['/uploads/seed/chaozhou-hero-1200.jpg']),
-    ],
-  );
-
-  await dataSource.query(
-    `INSERT INTO store_products (slug, name, collection_id, price, currency, tag, image, story, material, dimensions, origin, care, gallery, stock, published)
-     VALUES
-      ('qilou-bookmark-set', $1, $2, 12.00, 'SGD', $3, '/uploads/seed/guangzhou-qilou-1200.jpg', $4, $5, $6, $7, $8, $9, 30, true),
-      ('indigo-scarf', $10, $2, 28.00, 'SGD', $11, '/uploads/seed/guangzhou-hero-1200.jpg', $12, $13, $14, $15, $16, $17, 15, true);`,
-    [
-      j({ en: 'Qilou Bookmark Set', zh: '骑楼书签套装' }),
-      coll3Id,
-      j({ en: 'Design object', zh: '设计物件' }),
-      j({ en: 'A set of 5 brass bookmarks laser-cut in the silhouette of Guangzhou\'s most iconic qilou facades.', zh: '5枚黄铜书签套装，激光切割广州最具标志性的骑楼立面轮廓。' }),
-      j({ en: 'Brass, matte finish', zh: '黄铜，哑光处理' }),
-      j({ en: '12cm × 3cm each', zh: '每枚12cm × 3cm' }),
-      j({ en: 'Guangzhou', zh: '广州' }),
-      j({ en: 'Wipe with soft cloth to maintain finish.', zh: '软布擦拭保持光泽。' }),
-      j(['/uploads/seed/guangzhou-qilou-1200.jpg']),
-      j({ en: 'Lingnan Indigo Scarf', zh: '岭南蓝染围巾' }),
-      j({ en: 'Natural dye', zh: '天然染色' }),
-      j({ en: 'A hand-dyed indigo scarf using traditional Lingnan plant-based dyeing techniques.', zh: '使用传统岭南植物染色技法手工蓝染的围巾。' }),
-      j({ en: 'Organic cotton, natural indigo dye', zh: '有机棉，天然靛蓝染料' }),
-      j({ en: '180cm × 60cm', zh: '180cm × 60cm' }),
-      j({ en: 'Foshan, Guangdong', zh: '广东·佛山' }),
-      j({ en: 'Hand wash cold, dry in shade. Colour may deepen with age.', zh: '冷水手洗，阴干。颜色会随时间加深。' }),
-      j(['/uploads/seed/guangzhou-hero-1200.jpg']),
     ],
   );
 
   // ═══════════════════════════════════════════════
-  // INTERPRETING (3 modes, 3 profiles, 4 FAQs)
+  // INTERPRETING (2 modes, 2 profiles, 3 FAQs)
   // ═══════════════════════════════════════════════
 
   await dataSource.query(
     `INSERT INTO interpreting_service_modes (sort_order, title, price, best_for, body, includes, accent, featured)
      VALUES
       (0, $1, $2, $3, $4, $5, 'light', false),
-      (1, $6, $7, $8, $9, $10, 'dark', true),
-      (2, $11, $12, $13, $14, $15, 'light', false);`,
+      (1, $6, $7, $8, $9, $10, 'dark', true);`,
     [
       j({ en: 'City companion interpreting', zh: '城市同行口译' }),
       j({ en: 'From RMB 680 / half day', zh: 'RMB 680 / 半天起' }),
@@ -518,26 +362,15 @@ async function seed() {
       j({ en: 'Route followers', zh: '路线探索者' }),
       j({ en: 'Keep route pacing and cultural thread clear across all stops.', zh: '保障全程节奏与文化线索清晰连贯。' }),
       j(['Route pacing', 'Stop-by-stop storytelling', 'Menu help']),
-      j({ en: 'Group and study visit', zh: '团体学访' }),
-      j({ en: 'Custom pricing', zh: '定制报价' }),
-      j({ en: 'Academic and corporate groups', zh: '学术及企业团体' }),
-      j({ en: 'Bilingual coordination for multi-stop visits and workshops.', zh: '为多站点学访/活动提供双语协调。' }),
-      j(['Pre-trip planning', 'Group coordination', 'Workshop support']),
     ],
   );
 
   await dataSource.query(
     `INSERT INTO interpreter_profiles (sort_order, name, language, focus, helps, avatar, bio, status, city)
      VALUES
-      (0, $1, $2, $3, $4, '', $5, 'active', 'Guangzhou'),
-      (1, $6, $7, $8, $9, '', $10, 'active', 'Chaozhou'),
-      (2, $11, $12, $13, $14, '', $15, 'active', 'Zhanjiang');`,
+      (0, $1, $2, $3, $4, '', $5, 'active', 'Chaozhou'),
+      (1, $6, $7, $8, $9, '', $10, 'active', 'Zhanjiang');`,
     [
-      j({ en: 'Culture Route Lead', zh: '文化路线领队' }),
-      j({ en: 'English / Mandarin / Cantonese', zh: '英语 / 普通话 / 粤语' }),
-      j({ en: 'History, neighbourhood reading, food context, route coherence.', zh: '城市史、街区解读、饮食背景与路线连贯性。' }),
-      j(['Museum visits', 'Historic streets', 'Route pacing']),
-      j({ en: '8 years experience in cultural interpretation across the Pearl River Delta.', zh: '8年珠三角文化口译经验。' }),
       j({ en: 'Food and Local Life Host', zh: '美食与本地生活向导' }),
       j({ en: 'English / Mandarin / Teochew', zh: '英语 / 普通话 / 潮汕话' }),
       j({ en: 'Markets, menus, tea culture, everyday interaction support.', zh: '市场、菜单、茶文化与日常互动支持。' }),
@@ -556,8 +389,7 @@ async function seed() {
      VALUES
       (0, $1, $2, 'interpreting'),
       (1, $3, $4, 'interpreting'),
-      (2, $5, $6, 'interpreting'),
-      (3, $7, $8, 'interpreting');`,
+      (2, $5, $6, 'interpreting');`,
     [
       j({ en: 'Is this guide service or interpreting?', zh: '这是导游还是口译服务？' }),
       j({ en: 'It combines cultural interpreting with practical travel support.', zh: '这是文化口译与行程支持的组合服务。' }),
@@ -565,21 +397,18 @@ async function seed() {
       j({ en: 'Yes, short support is available for key moments.', zh: '可以，支持短时段关键场景服务。' }),
       j({ en: 'Must I follow a route exactly?', zh: '必须严格按路线执行吗？' }),
       j({ en: 'No, routes are starting points and can be customized.', zh: '不用，路线可按你的安排灵活调整。' }),
-      j({ en: 'How is this different from a generic translator?', zh: '与普通翻译有何不同？' }),
-      j({ en: 'You also get local pacing, etiquette and route logic.', zh: '除了语言，还提供本地节奏、礼仪与路线逻辑。' }),
     ],
   );
 
   // ═══════════════════════════════════════════════
-  // EVENTS (3)
+  // EVENTS (2)
   // ═══════════════════════════════════════════════
 
   await dataSource.query(
     `INSERT INTO events (slug, title, summary, description, city, city_slug, date, end_date, tags, image, status, related_route_slugs)
      VALUES
       ('zhanjiang-coast-night', $1, $2, $3, 'Zhanjiang', 'zhanjiang', '2026-06-20', '2026-06-20', $4, '/uploads/seed/zhanjiang-hero-1200.jpg', 'published', $5),
-      ('chaoshan-tea-festival', $6, $7, $8, 'Chaozhou', 'chaozhou', '2026-07-15', '2026-07-18', $9, '/uploads/seed/chaozhou-tea-1200.jpg', 'published', $10),
-      ('guangfu-dragon-boat', $11, $12, $13, 'Guangzhou', 'guangzhou', '2026-06-01', '2026-06-03', $14, '/uploads/seed/guangzhou-hero-1200.jpg', 'published', $15);`,
+      ('chaoshan-tea-festival', $6, $7, $8, 'Chaozhou', 'chaozhou', '2026-07-15', '2026-07-18', $9, '/uploads/seed/chaozhou-tea-1200.jpg', 'published', $10);`,
     [
       j({ en: 'Zhanjiang Coast Story Night', zh: '湛江海岸故事夜' }),
       j({ en: 'An evening gathering on maritime food and route stories.', zh: '一场围绕海洋饮食与路线故事的夜间活动。' }),
@@ -591,25 +420,18 @@ async function seed() {
       j({ en: 'The annual tea festival brings together tea masters, ceramic artists, and cultural interpreters for workshops, tastings, and ceremonies.', zh: '年度茶文化节汇聚茶艺大师、陶瓷艺术家和文化口译员，举办工作坊、品鉴会和茶道仪式。' }),
       j(['tea', 'culture', 'workshop']),
       j(['chaoshan-tea-culture']),
-      j({ en: 'Guangfu Dragon Boat Invitational', zh: '广府龙舟邀请赛' }),
-      j({ en: 'Twelve dragon boat teams from the Greater Bay Area compete on the Pearl River.', zh: '粤港澳大湾区12支龙舟队齐聚珠江竞渡。' }),
-      j({ en: 'The annual dragon boat race is not just sport — it is a cultural symbol passed down for millennia in the Guangfu region, with traditional ceremonies and food markets.', zh: '一年一度的龙舟赛不仅是体育竞技，更是广府地区传承千年的文化符号，伴有传统仪式和美食市集。' }),
-      j(['dragon boat', 'sport', 'tradition']),
-      j(['guangzhou-culture-walk']),
     ],
   );
 
   // ═══════════════════════════════════════════════
-  // COMMUNITY POSTS (5) + BRIEFS (3)
+  // COMMUNITY POSTS (2) + BRIEFS (2)
   // ═══════════════════════════════════════════════
 
   await dataSource.query(
     `INSERT INTO community_posts (channel, status, "user", title, excerpt, tags, image, location, route, mood, likes, comments, saves)
      VALUES
       ('FieldNotes', 'published', $1, $2, $3, $4, '/uploads/seed/volcanic-landscape-1200.jpg', 'Zhanjiang', 'southern-sea-table', 'curious', 12, 4, 6),
-      ('FoodMap', 'published', $5, $6, $7, $8, '/uploads/seed/chaozhou-food-800.jpg', 'Chaozhou', 'chaoshan-tea-culture', 'warm', 89, 15, 32),
-      ('HiddenStop', 'published', $9, $10, $11, $12, '/uploads/seed/guangzhou-qilou-1200.jpg', 'Guangzhou', 'guangzhou-culture-walk', 'amazed', 156, 28, 67),
-      ('CultureDesk', 'published', $13, $14, $15, $16, '/uploads/seed/chaozhou-hero-1200.jpg', 'Chaozhou', 'chaoshan-tea-culture', 'reflective', 234, 41, 98);`,
+      ('FoodMap', 'published', $5, $6, $7, $8, '/uploads/seed/chaozhou-food-800.jpg', 'Chaozhou', 'chaoshan-tea-culture', 'warm', 89, 15, 32);`,
     [
       j({ name: 'LingTour Team', handle: 'lingtour', avatar: 'https://ui-avatars.com/api/?name=LingTour&background=random' }),
       j({ en: 'Morning auction notes', zh: '清晨拍卖现场笔记' }),
@@ -619,14 +441,6 @@ async function seed() {
       j({ en: 'Century-old tea shop on Paifang Street', zh: '牌坊街百年茶铺' }),
       j({ en: 'Found a four-generation tea shop at the corner of Paifang Street — their Dancong is all from their own garden.', zh: '在牌坊街拐角处发现一家传承四代的老茶铺，凤凰单丛都是自家茶园采摘的。' }),
       j(['tea', 'Chaozhou', 'heritage']),
-      j({ name: 'Emma Wilson', handle: 'emma_explores', avatar: 'https://ui-avatars.com/api/?name=Emma+Wilson&background=random' }),
-      j({ en: 'Hidden alleys of Shamian Island', zh: '沙面岛的隐秘小巷' }),
-      j({ en: 'Beyond the main boulevard, I found quiet lanes with stunning colonial architecture and stories in the breeze.', zh: '在主干道之外，我发现了安静的小巷，殖民建筑和微风中的故事。' }),
-      j(['Guangzhou', 'architecture', 'hidden gems']),
-      j({ name: 'Sarah Thompson', handle: 'sarah_lingnan', avatar: 'https://ui-avatars.com/api/?name=Sarah+Thompson&background=random' }),
-      j({ en: 'The Lingnan architecture language', zh: '岭南建筑语言' }),
-      j({ en: 'A deep dive into architectural elements that define Guangdong — from wok-handle roofs to oyster-shell walls.', zh: '深入探索定义广东的建筑元素——从镬耳山墙到蚝壳墙。' }),
-      j(['architecture', 'heritage', 'Lingnan'])
     ],
   );
 
@@ -635,15 +449,12 @@ async function seed() {
     `INSERT INTO community_briefs (slug, title, prompt, channel, location, route, mood, sort_order, active)
      VALUES
       ('coast-morning', $1, $2, 'FieldNotes', 'Zhanjiang', 'southern-sea-table', 'curious', 0, true),
-      ('tea-ritual', $3, $4, 'CultureDesk', 'Chaozhou', 'chaoshan-tea-culture', 'reflective', 1, true),
-      ('hidden-lane', $5, $6, 'HiddenStop', 'Guangzhou', 'guangzhou-culture-walk', 'amazed', 2, true);`,
+      ('tea-ritual', $3, $4, 'CultureDesk', 'Chaozhou', 'chaoshan-tea-culture', 'reflective', 1, true);`,
     [
       j({ en: 'A morning on the coast', zh: '海岸的一个清晨' }),
       j({ en: 'Describe what you saw, heard, and smelled during a morning at Zhanjiang\'s coast. Focus on the working rhythm rather than scenery.', zh: '描述你在湛江海岸的一个清晨所见、所闻、所嗅。关注劳动节奏而非风景。' }),
       j({ en: 'The tea ritual', zh: '茶的仪式' }),
       j({ en: 'Write about a moment during Kungfu Tea that changed how you think about time or attention.', zh: '写一个功夫茶过程中改变你对时间或注意力看法的瞬间。' }),
-      j({ en: 'A lane you almost missed', zh: '你差点错过的巷子' }),
-      j({ en: 'Tell us about a hidden lane or alley that revealed something unexpected about the city.', zh: '告诉我们一条隐秘的巷子如何揭示了城市意想不到的一面。' }),
     ],
   );
 
@@ -661,10 +472,10 @@ async function seed() {
         title: { en: 'LingTour', zh: 'LingTour 岭途' },
         subtitle: { en: 'Story-shaped routes across Guangdong', zh: '在广东，用故事串起城市与旅行' },
         stats: [
-          { title: { en: '3+', zh: '3+' }, description: { en: 'Cities Explored', zh: '深度探索城市' } },
-          { title: { en: '3+', zh: '3+' }, description: { en: 'Curated Routes', zh: '精心设计路线' } },
-          { title: { en: '6+', zh: '6+' }, description: { en: 'Cultural Products', zh: '文化商品' } },
-          { title: { en: '3', zh: '3' }, description: { en: 'Local Interpreters', zh: '本地口译员' } },
+          { title: { en: '2', zh: '2' }, description: { en: 'Cities Explored', zh: '深度探索城市' } },
+          { title: { en: '2', zh: '2' }, description: { en: 'Curated Routes', zh: '精选路线' } },
+          { title: { en: '2', zh: '2' }, description: { en: 'Cultural Products', zh: '文创商品' } },
+          { title: { en: '2', zh: '2' }, description: { en: 'Local Interpreters', zh: '本地口译员' } },
         ],
       }),
       j([
@@ -681,16 +492,14 @@ async function seed() {
       j([
         { slug: 'zhanjiang', title: { en: 'Southern Coast', zh: '南方海岸' }, body: { en: 'Volcanic shoreline and maritime life.', zh: '火山海岸与海洋生活。' } },
         { slug: 'chaozhou', title: { en: 'Kungfu Tea', zh: '功夫茶' }, body: { en: 'A thousand years of mastery in one cup.', zh: '一杯茶里的千年功夫。' } },
-        { slug: 'guangzhou', title: { en: 'Cantonese Heritage', zh: '广府遗产' }, body: { en: 'Two thousand years of trade and taste.', zh: '两千年的贸易与味道。' } },
       ]),
       j([
         { quote: { en: 'I left understanding why every dish mattered.', zh: '我终于明白每一道菜为何重要。' }, name: { en: 'Lina, Singapore', zh: 'Lina，新加坡' } },
-        { quote: { en: 'The interpreter explained the market like a living classroom.', zh: '口译员把市场讲成了一堂活课。' }, name: { en: 'Marcus, UK', zh: 'Marcus，英国' } },
         { quote: { en: 'The tea ceremony changed how I think about time.', zh: '茶道改变了我对时间的理解。' }, name: { en: 'James K., Australia', zh: 'James K.，澳大利亚' } },
       ]),
-      j(['southern-sea-table', 'chaoshan-tea-culture', 'guangzhou-culture-walk']),
-      j(['volcanic-soil-bowl', 'zhuni-teapot', 'qilou-bookmark-set']),
-      j(['zhanjiang', 'chaozhou', 'guangzhou']),
+      j(['southern-sea-table', 'chaoshan-tea-culture']),
+      j(['volcanic-soil-bowl', 'zhuni-teapot']),
+      j(['zhanjiang', 'chaozhou']),
     ],
   );
 
@@ -715,7 +524,11 @@ async function seed() {
     ],
   );
 
-  console.log('Seed complete. Inserted: 3 cities, 3 routes (12 stops), 3 collections (6 products), 3 events, 5 community posts, 3 briefs, 3 interpreting modes, 3 profiles, 4 FAQs, home config, app settings.');
+  const uploadRoot = path.join(process.cwd(), process.env.UPLOAD_DIR ?? './uploads');
+  const referencedMedia = await collectReferencedMediaFilenames(dataSource);
+  await syncMediaLibraryRecords(dataSource, referencedMedia, uploadRoot);
+
+  console.log('Seed complete. Inserted: 2 cities, 2 routes (8 stops), 2 collections (2 products), 2 events, 2 community posts, 2 briefs, 2 interpreting modes, 2 profiles, 3 FAQs, home config, app settings.');
   await dataSource.destroy();
 }
 
@@ -723,4 +536,3 @@ seed().catch((err) => {
   console.error('Seed failed:', err);
   process.exit(1);
 });
-

@@ -5,7 +5,7 @@ export class AddHomeSettingsCommunity1737100000000 implements MigrationInterface
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE home_configs (
+      CREATE TABLE IF NOT EXISTS home_configs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         hero JSONB NOT NULL DEFAULT '{}'::jsonb,
         trust_metrics JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -21,18 +21,18 @@ export class AddHomeSettingsCommunity1737100000000 implements MigrationInterface
     `);
 
     await queryRunner.query(`
-      CREATE TABLE app_settings (
+      CREATE TABLE IF NOT EXISTS app_settings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         scope VARCHAR(40) NOT NULL UNIQUE DEFAULT 'default',
         payload JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
-      CREATE UNIQUE INDEX idx_app_settings_scope ON app_settings(scope);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_app_settings_scope ON app_settings(scope);
     `);
 
     await queryRunner.query(`
-      CREATE TABLE community_posts (
+      CREATE TABLE IF NOT EXISTS community_posts (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         channel VARCHAR(120) NOT NULL,
         status VARCHAR(30) NOT NULL DEFAULT 'published',
@@ -50,9 +50,9 @@ export class AddHomeSettingsCommunity1737100000000 implements MigrationInterface
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       );
-      CREATE INDEX idx_community_posts_status ON community_posts(status);
-      CREATE INDEX idx_community_posts_channel ON community_posts(channel);
-      CREATE INDEX idx_community_posts_created_at ON community_posts(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_community_posts_status ON community_posts(status);
+      CREATE INDEX IF NOT EXISTS idx_community_posts_channel ON community_posts(channel);
+      CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON community_posts(created_at DESC);
     `);
   }
 

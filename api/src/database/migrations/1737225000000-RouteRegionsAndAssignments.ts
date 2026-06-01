@@ -54,22 +54,6 @@ export class RouteRegionsAndAssignments1737225000000 implements MigrationInterfa
           OR route_regions = '[]'::jsonb`,
       [DEFAULT_ROUTE_REGIONS],
     );
-
-    await queryRunner.query(`
-      UPDATE story_routes AS route
-      SET route_region_key = CASE
-        WHEN city.adcode IN (440100, 440300, 440400, 440600, 440700, 441200, 441300, 441900, 442000) THEN 'bay-area-core'
-        WHEN city.adcode IN (440500, 441500, 445100, 445200) THEN 'chaoshan-coast'
-        WHEN city.adcode IN (441400, 441600) THEN 'hakka-mountains'
-        WHEN city.adcode IN (440800, 440900, 441700, 445300) THEN 'southern-sea'
-        WHEN city.adcode IN (440200, 441800) THEN 'northern-gateway'
-        ELSE route.route_region_key
-      END
-      FROM route_city_links AS link
-      INNER JOIN cities AS city ON city.id = link.city_id
-      WHERE route.id = link.route_id
-        AND (route.route_region_key IS NULL OR route.route_region_key = '')
-    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

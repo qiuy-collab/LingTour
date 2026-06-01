@@ -384,7 +384,7 @@ const selectedRouteCards = computed(() =>
           <div v-if="activeChapter === 'overview'" class="workspace-panel">
             <div class="panel-title">Overview（图文）</div>
             <el-form-item label="Overview 主图">
-              <ImageUpload v-model="form.heroImage" />
+              <ImageUpload v-model="form.heroImage" module="cities" />
             </el-form-item>
             <el-form-item label="Overview 文案">
               <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
@@ -397,7 +397,7 @@ const selectedRouteCards = computed(() =>
               <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
             </el-form-item>
             <el-form-item label="Intro 图片组">
-              <ImageUpload v-model="form.galleryImages" multiple :limit="12" />
+              <ImageUpload v-model="form.galleryImages" multiple :limit="12" module="cities" />
             </el-form-item>
           </div>
 
@@ -406,10 +406,10 @@ const selectedRouteCards = computed(() =>
               {{ activeSection.title?.zh?.trim() || activeSection.title?.en?.trim() || `Section ${activeSectionIndex + 1}` }}
             </div>
             <el-form-item label="Section 图片">
-              <ImageUpload v-model="activeSection.image" />
+              <ImageUpload v-model="activeSection.image" module="cities" />
             </el-form-item>
             <el-form-item label="Section 图片集">
-              <ImageUpload v-model="activeSection.images" multiple :limit="10" />
+              <ImageUpload v-model="activeSection.images" multiple :limit="10" module="cities" />
             </el-form-item>
             <el-form-item label="Section 标题">
               <I18nInput v-model="activeSection.title" />
@@ -430,7 +430,7 @@ const selectedRouteCards = computed(() =>
               </el-col>
             </el-row>
             <el-form-item label="呼吸图">
-              <ImageUpload v-model="activeSection.breathImage" />
+              <ImageUpload v-model="activeSection.breathImage" module="cities" />
             </el-form-item>
             <el-form-item label="引语">
               <I18nInput v-model="activeSection.breathQuote" type="textarea" :rows="3" />
@@ -446,7 +446,7 @@ const selectedRouteCards = computed(() =>
               <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
             </el-form-item>
             <el-form-item label="Food 图片组">
-              <ImageUpload v-model="form.foodImages" multiple :limit="10" />
+              <ImageUpload v-model="form.foodImages" multiple :limit="10" module="cities" />
             </el-form-item>
           </div>
         </EditorWorkspace>

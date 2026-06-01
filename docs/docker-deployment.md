@@ -6,7 +6,7 @@ LingTour currently runs in production via PM2. The Docker deployment files are p
 
 - `docker-compose.prod.yml` — production Docker Compose stack for Postgres, API, site, admin, and nginx.
 - `nginx.docker.conf` — container nginx config for public, admin, and API hostnames.
-- `projects/proj-1778970788262-5mcldi/admin-frontend/Dockerfile` — admin frontend container image.
+- `admin-frontend/Dockerfile` — admin frontend container image.
 - `.env.production.example` — template for server-side `.env`; never commit real secrets.
 - `tools/deploy-docker.sh` — safe Docker deploy script.
 - `tools/deploy-pm2.sh` — current production PM2 deploy script until Docker is fully cut over.

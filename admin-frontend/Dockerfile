@@ -1,11 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY projects/proj-1778970788262-5mcldi/admin-frontend/package.json projects/proj-1778970788262-5mcldi/admin-frontend/package-lock.json ./
+COPY admin-frontend/package.json admin-frontend/package-lock.json ./
 RUN npm ci
 
 COPY shared /shared
-COPY projects/proj-1778970788262-5mcldi/admin-frontend .
+COPY admin-frontend .
 RUN npm run build
 
 FROM node:20-alpine AS runner

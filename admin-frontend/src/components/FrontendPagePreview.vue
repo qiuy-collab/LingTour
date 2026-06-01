@@ -16,7 +16,19 @@ const { editorLocale } = useEditorLocale()
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 const frameShellRef = ref<HTMLDivElement | null>(null)
 
-const previewOrigin = (import.meta.env.VITE_SITE_PREVIEW_ORIGIN as string | undefined) || 'http://127.0.0.1:3000'
+function getDefaultPreviewOrigin() {
+  if (typeof window === 'undefined') return 'http://127.0.0.1:3000'
+
+  const current = new URL(window.location.origin)
+  if (current.hostname.startsWith('admin.')) {
+    return `${current.protocol}//${current.hostname.replace(/^admin\./, '')}${current.port ? `:${current.port}` : ''}`
+  }
+
+  return current.origin
+}
+
+const previewOrigin =
+  (import.meta.env.VITE_SITE_PREVIEW_ORIGIN as string | undefined) || getDefaultPreviewOrigin()
 const previewSource = window.location.origin
 const previewSessionId =
   typeof crypto !== 'undefined' && 'randomUUID' in crypto

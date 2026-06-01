@@ -25,6 +25,7 @@ import type {
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
 import { SEED_IMAGES } from "./seed-images";
+import { placeholderFor } from "./placeholders";
 import {
   DEFAULT_ROUTE_REGIONS,
   pickRouteRegionText,
@@ -98,6 +99,7 @@ interface ApiCitySection {
   title: string;
   body: string;
   image: string;
+  images?: string[];
   statLabel: string | null;
   statValue: string | null;
   breathImage: string | null;
@@ -204,6 +206,13 @@ interface ApiEvent {
 // 鈹€鈹€ Mappers (subset needed for home page) 鈹€鈹€
 
 function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
+  const routeFallbackImage =
+    apiRoute.slug === "southern-sea-table"
+      ? "/editorial/guangdong-coast-hero.jpg"
+      : apiRoute.slug === "chaoshan-tea-culture"
+        ? "/editorial/pottery-painting.jpg"
+        : SEED_IMAGES.routesHero ?? placeholderFor("hero");
+
   return {
     slug: apiRoute.slug,
     title: apiRoute.title,
@@ -213,7 +222,7 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     audience: apiRoute.audience,
     summary: apiRoute.summary,
     story: apiRoute.story,
-    image: apiRoute.coverImage,
+    image: apiRoute.coverImage || routeFallbackImage,
     citySlugs: apiRoute.routeCityLinks?.map((l) => l.citySlug) ?? [],
     routeRegionKey: apiRoute.routeRegionKey ?? undefined,
     mapViewBox: "0 0 900 600",
@@ -226,8 +235,12 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
         story: s.story,
         culturalStory: s.culturalStory,
         details: s.details ?? [],
-        image: s.image,
-        images: s.images ?? [],
+        image: s.image || routeFallbackImage,
+        images: [
+          ...(s.images ?? []),
+          s.image,
+          routeFallbackImage,
+        ].filter((image): image is string => Boolean(image?.trim())),
         lat: s.lat ?? 0,
         lng: s.lng ?? 0,
         meal: s.meal ?? undefined,
@@ -266,6 +279,13 @@ function mapCollection(c: ApiStoreCollection): StoreCollection {
 // EventData is imported from "./api-data" (see top of file)
 
 function mapEvent(raw: ApiEvent, locale: Locale): EventData {
+  const eventFallbackImage =
+    raw.citySlug === "chaozhou"
+      ? "/editorial/pottery-painting.jpg"
+      : raw.citySlug === "zhanjiang"
+        ? "/editorial/guangdong-coast-hero.jpg"
+        : "/editorial/guangdong-coast-rocky.jpg";
+
   return {
     id: raw.id,
     slug: raw.slug,
@@ -279,7 +299,7 @@ function mapEvent(raw: ApiEvent, locale: Locale): EventData {
       ? pickLocalized(raw.description, locale)
       : "",
     relatedRouteSlugs: raw.relatedRouteSlugs ?? [],
-    image: raw.image ?? "",
+    image: raw.image || eventFallbackImage,
   };
 }
 
@@ -316,8 +336,20 @@ export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
     locale,
   );
   return res.data
-    .map((c) =>
-      sanitizeRegion({
+    .map((c) => {
+      const cityFallbackImage =
+        c.slug === "chaozhou"
+          ? "/editorial/pottery-workshop.jpg"
+          : c.slug === "zhanjiang"
+            ? "/editorial/guangdong-coast-boat.jpg"
+            : "/editorial/guangdong-coast-rocky.jpg";
+      const gallery = [
+        ...(c.galleryImages ?? []),
+        c.heroImage,
+        cityFallbackImage,
+      ].filter((image): image is string => Boolean(image?.trim()));
+
+      return sanitizeRegion({
         slug: c.slug as RegionSlug,
         adcode: c.adcode ?? 0,
         name: c.name,
@@ -327,12 +359,12 @@ export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
         tags: c.tags,
         food: c.foodDescription ?? "",
         routeSlugs: c.routes?.map((r) => r.slug) ?? [],
-        image: c.heroImage,
-        gallery: c.galleryImages,
+        image: c.heroImage || gallery[0] || cityFallbackImage,
+        gallery,
         serviceLabel: "",
         serviceHref: "/interpreting",
-      }),
-    )
+      });
+    })
     .filter(hasVisibleRegionContent);
 }
 
@@ -346,16 +378,28 @@ export async function fetchCityCulturesServer(
   );
 
   return res.data
-    .map((c) =>
-      sanitizeCityCulture({
+    .map((c) => {
+      const cityFallbackImage =
+        c.slug === "chaozhou"
+          ? "/editorial/pottery-workshop.jpg"
+          : c.slug === "zhanjiang"
+            ? "/editorial/guangdong-coast-boat.jpg"
+            : "/editorial/guangdong-coast-rocky.jpg";
+      const gallery = [
+        ...(c.galleryImages ?? []),
+        c.heroImage,
+        cityFallbackImage,
+      ].filter((image): image is string => Boolean(image?.trim()));
+
+      return sanitizeCityCulture({
         slug: c.slug,
         name: c.name,
         adcode: c.adcode ?? 0,
         label: c.regionLabel,
         summary: c.editorIntro ?? "",
         narrative: c.heroNarrative,
-        image: c.heroImage,
-        gallery: c.galleryImages ?? [],
+        image: c.heroImage || gallery[0] || cityFallbackImage,
+        gallery,
         tags: c.tags ?? [],
         food: c.foodTitle,
         foodDescription: c.foodDescription ?? "",
@@ -366,15 +410,22 @@ export async function fetchCityCulturesServer(
           c.sections?.map((s) => ({
             title: s.title,
             body: s.body,
-            image: s.image,
+            image: s.image || cityFallbackImage,
+            images:
+              [
+                ...(s.images ?? []),
+                s.image,
+                s.breathImage,
+                cityFallbackImage,
+              ].filter((image): image is string => Boolean(image?.trim())),
             stat:
               [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
               undefined,
-            breathImage: s.breathImage ?? undefined,
+            breathImage: s.breathImage ?? s.image ?? cityFallbackImage,
             breathQuote: s.breathQuote ?? undefined,
           })) ?? [],
-      }),
-    )
+      });
+    })
     .filter(hasVisibleCityContent);
 }
 
