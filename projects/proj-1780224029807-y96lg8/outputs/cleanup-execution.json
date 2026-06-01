@@ -1,0 +1,67 @@
+{
+  "deleted_dirs": [
+    "node_modules",
+    ".claude/worktrees/kind-swanson-b1f0a5/site/.next",
+    "api/coverage",
+    "api/dist",
+    "projects/proj-1778688122092-qgw3p6/outputs/node_modules",
+    "projects/proj-1778970788262-5mcldi/admin-frontend/dist",
+    "site/.next"
+  ],
+  "deleted_files": [
+    "api-dev.err.log",
+    "api-dev.out.log",
+    "api-node.err.log",
+    "api-node.out.log",
+    "site-dev.err.log",
+    "site-dev.out.log",
+    "site-start.err.log",
+    "site-start.out.log",
+    "api/dev-login.err.log",
+    "api/dev-login.out.log",
+    "projects/proj-1778970788262-5mcldi/outputs/admin-frontend-dev.log",
+    "site/..dev.log",
+    "site/dev-server.log",
+    ".claude/worktrees/compassionate-pike-10f12f/screenshot-test.txt",
+    ".claude/worktrees/compassionate-pike-10f12f/site/screenshot-test.txt",
+    ".claude/worktrees/compassionate-pike-10f12f/site/public/test-save.txt",
+    ".claude/worktrees/exciting-wing-3690c7/screenshot-test.txt",
+    ".claude/worktrees/exciting-wing-3690c7/site/screenshot-test.txt",
+    ".claude/worktrees/exciting-wing-3690c7/site/public/test-save.txt",
+    ".claude/worktrees/gallant-tesla-b8c8f0/screenshot-test.txt",
+    ".claude/worktrees/gallant-tesla-b8c8f0/site/screenshot-test.txt",
+    ".claude/worktrees/gallant-tesla-b8c8f0/site/public/test-save.txt",
+    ".claude/worktrees/intelligent-boyd-ab2538/screenshot-test.txt",
+    ".claude/worktrees/intelligent-boyd-ab2538/site/screenshot-test.txt",
+    ".claude/worktrees/intelligent-boyd-ab2538/site/public/test-save.txt",
+    ".claude/worktrees/kind-swanson-b1f0a5/screenshot-test.txt",
+    ".claude/worktrees/kind-swanson-b1f0a5/site/screenshot-test.txt",
+    ".claude/worktrees/kind-swanson-b1f0a5/site/out/test-save.txt",
+    ".claude/worktrees/kind-swanson-b1f0a5/site/public/test-save.txt",
+    ".claude/worktrees/recursing-elbakyan-7ef8aa/screenshot-test.txt",
+    ".claude/worktrees/recursing-elbakyan-7ef8aa/site/screenshot-test.txt",
+    ".claude/worktrees/recursing-elbakyan-7ef8aa/site/public/test-save.txt",
+    "site/screenshot-test.txt",
+    "site/out/test-save.txt",
+    "site/public/test-save.txt"
+  ],
+  "missing": [],
+  "errors": [
+    {
+      "path": ".claude/worktrees/kind-swanson-b1f0a5/site/node_modules",
+      "error": "PermissionError(13, '另一个程序正在使用此文件，进程无法访问。')"
+    },
+    {
+      "path": "api/node_modules",
+      "error": "PermissionError(13, '拒绝访问。')"
+    },
+    {
+      "path": "projects/proj-1778970788262-5mcldi/admin-frontend/node_modules",
+      "error": "PermissionError(13, '拒绝访问。')"
+    },
+    {
+      "path": "site/node_modules",
+      "error": "PermissionError(13, '拒绝访问。')"
+    }
+  ]
+}
