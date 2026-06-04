@@ -208,8 +208,8 @@ useKeyboardShortcuts([
       :class="{ 'mobile-open': mobileMenuOpen }"
     >
       <div class="logo-area" @click="router.push('/admin/dashboard')">
-        <span v-if="!isCollapse" class="logo-text">凌云游管理后台</span>
-        <span v-else class="logo-text-short">凌云游</span>
+        <span v-if="!isCollapse" class="logo-text">LingTour Admin</span>
+        <span v-else class="logo-text-short">LT</span>
       </div>
 
       <el-menu
@@ -244,7 +244,7 @@ useKeyboardShortcuts([
             <Fold v-if="!isCollapse && !isMobile" />
             <Expand v-else />
           </el-icon>
-          <span class="header-title hide-on-mobile">凌云游管理后台</span>
+          <span class="header-title hide-on-mobile">LingTour Admin</span>
         </div>
         <div class="header-right">
           <div v-if="showEditorLocaleSwitch" class="editor-locale-switch">

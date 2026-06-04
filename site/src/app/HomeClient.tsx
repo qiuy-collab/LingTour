@@ -114,48 +114,58 @@ export default function HomeClient({
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
       {/* 1. HERO: THE MASTER REGISTRY */}
-      <section className="relative overflow-hidden pt-24 pb-20 lg:pt-40 lg:pb-32">
+      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20 lg:pt-40 lg:pb-32">
         <div className="site-container relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            <div className="lg:col-span-7 z-10">
+          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center lg:gap-16">
+            <div className="col-span-7 z-10 sm:col-span-7 lg:col-span-7">
               <Reveal>
-                <div className="flex items-center gap-4 mb-10">
+                <div className="mb-8 flex items-center gap-4 sm:mb-10">
                   <div className="w-12 h-px bg-[var(--cinnabar)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("home.hero.title")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-5xl md:text-7xl lg:text-9xl xl:text-[10rem] leading-[0.82] tracking-[-0.05em] text-[var(--river-deep)]">
+                <h1 className="font-[family:var(--font-display)] text-[2.55rem] leading-[0.88] tracking-[-0.05em] text-[var(--river-deep)] sm:text-6xl md:text-7xl lg:text-9xl xl:text-[10rem]">
                   Guangdong, <br />
                   <span className="italic text-[var(--gold)]">Deeply</span>{" "}
                   <br />
                   Arranged.
                 </h1>
-                <p className="mt-12 max-w-xl text-xl leading-relaxed text-[var(--muted)] handwritten">
-                  {t("home.hero.subtitle")}
+                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-10 sm:text-xl">
+                  Travel Guangdong with clear routes, cultural context, and language support.
                 </p>
-                <div className="mt-12 flex flex-wrap gap-4">
+                <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
+                  {["Story routes", "Culture context", "Language support"].map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-8 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-4">
                   <Link
-                    href="/routes"
-                    className="btn-primary kinetic-link inline-flex min-w-0 w-full sm:w-auto sm:min-w-[15rem] items-center justify-center px-10 py-5 text-xs shadow-[0_18px_40px_rgba(20,52,61,0.22)]"
+                    href="/interpreting"
+                    className="btn-primary kinetic-link inline-flex min-w-0 w-full items-center justify-center px-6 py-4 text-xs shadow-[0_18px_40px_rgba(20,52,61,0.22)] sm:w-auto sm:min-w-[15rem] sm:px-10 sm:py-5"
                   >
                     <span className="relative z-10 text-white">
-                      {t("common.btn.explore")}
+                      Plan My Trip
                     </span>
                   </Link>
                   <Link
-                    href="/interpreting"
-                    className="btn-paper inline-flex items-center justify-center px-10 py-5 text-xs w-full sm:w-auto"
+                    href="/routes"
+                    className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs sm:w-auto sm:px-10 sm:py-5"
                   >
-                    {t("common.btn.bookNow")}
+                    Explore Routes
                   </Link>
                 </div>
               </Reveal>
             </div>
 
-            <div className="lg:col-span-5 relative mt-16 lg:mt-0">
+            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-5 lg:mt-0">
               <Reveal delay={300}>
-                <div className="relative aspect-[4/5] scrapbook-shadow rotate-3 border-[1rem] border-white overflow-hidden group">
+                <div className="group relative ml-auto aspect-[3/4] w-full overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:max-w-[23rem] sm:aspect-[4/5] sm:border-[1rem] sm:rotate-2 lg:rotate-3">
                   <img
                     src={heroImage}
                     alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
@@ -206,12 +216,12 @@ export default function HomeClient({
       <div className="relative z-10">
         {/* 1b. HERO STATS BAR */}
         {heroStats.length > 0 && (
-          <section className="site-container py-16 lg:py-20">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <section className="site-container py-12 sm:py-16 lg:py-20">
+            <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-4">
               {heroStats.map((stat, idx) => (
                 <Reveal key={idx} delay={idx * 100}>
                   <div className="text-center lg:text-left">
-                    <p className="font-[family:var(--font-display)] text-4xl lg:text-5xl text-[var(--river-deep)]">
+                    <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] sm:text-4xl lg:text-5xl">
                       {stat.title}
                     </p>
                     <p className="mt-3 text-sm text-[var(--muted)] handwritten">
@@ -241,17 +251,17 @@ export default function HomeClient({
         </div>
 
         {/* 4. SHOP: THE COLLECTOR'S SHELF */}
-        <section className="site-container py-24 lg:py-40">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
+        <section className="site-container py-16 sm:py-20 lg:py-40">
+          <div className="mb-10 flex flex-col justify-between gap-6 md:mb-20 md:flex-row md:items-end md:gap-12">
             <div className="max-w-2xl">
               <Reveal>
-                <div className="flex items-center gap-4 mb-6">
+                <div className="mb-5 flex items-center gap-4 md:mb-6">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("shop.page.title")}
                   </p>
                 </div>
-                <h2 className="font-[family:var(--font-display)] text-5xl md:text-7xl leading-[0.95] text-[var(--river-deep)]">
+                <h2 className="font-[family:var(--font-display)] text-[3.2rem] leading-[0.98] text-[var(--river-deep)] sm:text-5xl md:text-7xl">
                   {t("home.shop.title")}
                 </h2>
               </Reveal>
@@ -266,7 +276,7 @@ export default function HomeClient({
           </div>
 
           {storeProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-y-16 md:gap-y-0">
+            <div className="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-y-0">
               {storeProducts.slice(0, 3).map((product, idx) => (
                 <Reveal
                   key={product.slug}
@@ -283,8 +293,8 @@ export default function HomeClient({
                     className="group block relative"
                   >
                     <div
-                      className={`relative aspect-[3/4] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] ${
-                        idx % 2 === 0 ? "rotate-2" : "-rotate-2"
+                      className={`relative aspect-[4/5] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] sm:aspect-[3/4] ${
+                        idx % 2 === 0 ? "sm:rotate-2" : "sm:-rotate-2"
                       }`}
                     >
                       <img
@@ -292,30 +302,30 @@ export default function HomeClient({
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="absolute inset-0 h-full w-full object-cover"
+                        className="absolute inset-0 h-full w-full object-contain object-[center_15%] bg-[var(--paper)] p-3 sm:object-cover sm:object-center sm:bg-transparent sm:p-0"
                       />
                       <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
 
                       {/* Price Tag Overlay */}
-                      <div className="absolute -bottom-4 -right-4 bg-[var(--gold)] px-4 py-2 text-white shadow-lg rotate-12 z-20">
+                      <div className="absolute bottom-3 right-3 z-20 bg-[var(--gold)] px-3 py-2 text-white shadow-lg sm:-bottom-4 sm:-right-4 sm:rotate-12 sm:px-4">
                         <p className="text-[10px] font-bold tracking-widest">
                           {formatStorePrice(product.price, product.currency)}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-10 space-y-3">
+                    <div className="mt-8 space-y-2.5 sm:mt-10 sm:space-y-3">
                       <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                         {product.tag ??
                           product.collection ??
                           t("home.shop.handpicked")}
                       </p>
-                      <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
+                      <h3 className="font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
                         {product.name}
                       </h3>
-                      <p className="text-sm text-[var(--muted)] handwritten max-w-[20ch]">
-                        {product.collection ?? t("home.shop.localArchive")}
-                      </p>
+                        <p className="max-w-[20ch] text-sm text-[var(--muted)] handwritten">
+                          {product.collection ?? t("home.shop.localArchive")}
+                        </p>
                     </div>
                   </Link>
                 </Reveal>
@@ -342,9 +352,9 @@ export default function HomeClient({
         </div>
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
-        <section className="site-container py-24 lg:py-40">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
-            <div className="lg:col-span-5">
+        <section className="site-container py-16 sm:py-20 lg:py-40">
+          <div className="grid grid-cols-12 gap-5 sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-20">
+            <div className="col-span-7 lg:col-span-5">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
@@ -352,10 +362,10 @@ export default function HomeClient({
                     {t("interpreting.page.title")}
                   </p>
                 </div>
-                <h2 className="font-[family:var(--font-display)] text-6xl md:text-7xl leading-[0.9] text-[var(--river-deep)] mb-12">
+                <h2 className="mb-6 font-[family:var(--font-display)] text-[3.3rem] leading-[0.92] text-[var(--river-deep)] sm:mb-10 sm:text-6xl md:mb-12 md:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
-                <div className="space-y-12">
+                <div className="space-y-6 sm:space-y-12">
                   {testimonials
                     .slice(0, 2)
                     .map((item: { name: string; quote: string }) => (
@@ -363,7 +373,7 @@ export default function HomeClient({
                           <div className="absolute left-0 top-0 font-[family:var(--font-display)] text-6xl text-[var(--gold)] opacity-20 italic">
                             “
                           </div>
-                          <p className="text-xl leading-relaxed text-[var(--muted)] handwritten italic mb-4">
+                          <p className="handwritten mb-4 text-lg leading-relaxed text-[var(--muted)] italic sm:text-xl">
                             {item.quote}
                           </p>
                           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
@@ -373,10 +383,10 @@ export default function HomeClient({
                       ),
                     )}
                 </div>
-                <div className="mt-16">
+                <div className="mt-10 sm:mt-16">
                   <Link
                     href="/interpreting"
-                    className="px-12 py-5 bg-[var(--river-deep)] text-white text-xs font-bold uppercase tracking-[0.2em] transition-transform hover:scale-105 inline-block"
+                    className="inline-flex w-full items-center justify-center bg-[var(--river-deep)] px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition-transform hover:scale-105 sm:w-auto sm:px-12 sm:py-5"
                   >
                     {t("interpreting.cta.button")}
                   </Link>
@@ -384,15 +394,15 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="lg:col-span-7 relative">
+            <div className="col-span-5 lg:col-span-7 relative self-center">
               <Reveal delay={300}>
-                <div className="relative aspect-[16/10] scrapbook-shadow rotate-1 border-8 border-white overflow-hidden group">
+                <div className="group relative aspect-[3/4] overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:aspect-[16/10] sm:border-8 sm:rotate-1">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
                     loading="lazy"
                     decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 scale-105"
+                    className="absolute inset-0 h-full w-full object-cover grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 sm:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--river-deep)]/20 to-transparent" />
 
@@ -415,8 +425,8 @@ export default function HomeClient({
         </section>
 
         {/* 6. CULTURE: THE GALLERY ARCHIVE */}
-        <section className="site-container pb-24 lg:pb-40">
-          <div className="border-t border-black/5 pt-24 lg:pt-40">
+        <section className="site-container pb-16 sm:pb-20 lg:pb-40">
+          <div className="border-t border-black/5 pt-16 sm:pt-20 lg:pt-40">
             <CultureGallery highlights={cultureHighlights} />
           </div>
         </section>
@@ -427,8 +437,8 @@ export default function HomeClient({
             <div className="site-container">
               <div className="h-px bg-[var(--line)]" />
             </div>
-            <section className="site-container py-24 lg:py-32">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <section className="site-container py-20 lg:py-32">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {homeEntryCards.map((card, idx) => (
                   <Reveal key={card.id} delay={idx * 120}>
                     <Link
@@ -467,8 +477,8 @@ export default function HomeClient({
         )}
 
         {/* FINAL CTA: THE DEPARTURE LOG */}
-        <section className="site-container pb-24 lg:pb-40">
-          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-8 py-24 text-white lg:px-24 lg:py-32 scrapbook-shadow">
+        <section className="site-container pb-20 lg:pb-40">
+          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-24 lg:py-32">
             <div
               className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
@@ -480,22 +490,22 @@ export default function HomeClient({
                     {t("home.cta.eyebrow")}
                   </p>
                 </div>
-                <h2 className="font-[family:var(--font-display)] text-6xl md:text-8xl leading-[0.85] tracking-[-0.04em] mb-12">
+                <h2 className="mb-10 font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-[-0.04em] sm:text-5xl md:mb-12 md:text-7xl lg:text-8xl">
                   {t("home.cta.title.primary")} <br />
                   <span className="italic text-[var(--gold)]">
                     {t("home.cta.title.italic")}
                   </span>
                 </h2>
-                <div className="flex flex-wrap gap-6 mt-16">
+                <div className="mt-12 flex flex-wrap gap-4 sm:gap-6 md:mt-16">
                   <Link
                     href="/routes"
-                    className="btn-gold inline-flex items-center justify-center px-12 py-5 text-xs"
+                    className="btn-gold inline-flex w-full items-center justify-center px-8 py-4 text-xs sm:w-auto sm:px-12 sm:py-5"
                   >
                     {t("home.cta.startLog")}
                   </Link>
                   <Link
                     href="/interpreting"
-                    className="btn-ghost-dark inline-flex items-center justify-center px-12 py-5 text-xs"
+                    className="btn-ghost-dark inline-flex w-full items-center justify-center px-8 py-4 text-xs sm:w-auto sm:px-12 sm:py-5"
                   >
                     {t("home.cta.bookCoordination")}
                   </Link>

@@ -46,7 +46,7 @@ async function handleLogin() {
   <div class="login-container">
     <div class="login-card-wrapper">
       <div class="login-header">
-        <h1 class="login-title">凌云游管理后台</h1>
+        <h1 class="login-title">LingTour Admin</h1>
         <p class="login-subtitle">LingTour Admin</p>
       </div>
 

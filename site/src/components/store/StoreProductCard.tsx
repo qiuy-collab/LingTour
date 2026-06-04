@@ -16,39 +16,43 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
     <Reveal delay={index * 80}>
       <article
         className={[
-          "relative aspect-[4/5] bg-white transition-all duration-700 shadow-2xl overflow-visible",
-          index % 2 === 0 ? "rotate-[-1deg]" : "rotate-[1deg]",
-          "hover:rotate-0 hover:-translate-y-4 group"
+          "group relative overflow-hidden bg-white shadow-2xl transition-all duration-700 sm:aspect-[4/5] sm:overflow-visible",
+          index % 2 === 0 ? "sm:rotate-[-1deg]" : "sm:rotate-[1deg]",
+          "sm:hover:-translate-y-4 sm:hover:rotate-0"
         ].join(" ")}
       >
         {/* Physical Tag Attachment */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-12 bg-[var(--river-deep)]/20 z-0" />
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] z-0" />
+        <div className="absolute -top-6 left-1/2 z-0 hidden h-12 w-px -translate-x-1/2 bg-[var(--river-deep)]/20 sm:block" />
+        <div className="absolute -top-8 left-1/2 z-0 hidden h-3 w-3 -translate-x-1/2 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] sm:block" />
 
-        <Link href={`/shop/products/${product.slug}`} className="block h-full w-full relative z-10 overflow-hidden">
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover transition-all duration-1000 group-hover:scale-110"
-          />
-          {/* Subtle Glass Overlay for depth */}
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] group-hover:opacity-0 transition-opacity" />
+        <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden">
+          <div className="relative aspect-[4/5] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent">
+            <img
+              src={product.image}
+              alt={product.name}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full bg-[var(--paper)] p-3 object-contain object-[center_15%] transition-all duration-1000 group-hover:scale-105 sm:bg-transparent sm:p-0 sm:object-cover sm:object-center sm:group-hover:scale-110"
+            />
+            {/* Subtle Glass Overlay for depth */}
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] transition-opacity group-hover:opacity-0" />
+          </div>
         </Link>
 
         {/* The Interactive "Specimen Tag" */}
-        <div className="absolute -bottom-10 -right-4 z-20 w-40 bg-[var(--paper)] border border-[var(--line)] p-4 shadow-xl rotate-3 group-hover:rotate-0 transition-transform duration-500 origin-bottom-right scale-75 sm:scale-100">
+        <div className="relative z-20 border-t border-[var(--line)] bg-[var(--paper)] p-3 shadow-xl transition-transform duration-500 sm:absolute sm:bottom-3 sm:left-3 sm:right-3 sm:border sm:shadow-none md:bottom-4 md:left-4 md:right-4 lg:-bottom-10 lg:-right-4 lg:left-auto lg:w-40 lg:origin-bottom-right lg:rotate-3 lg:p-4 lg:shadow-xl lg:group-hover:rotate-0">
           {/* String loop hole */}
           <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-[var(--paper-deep)] border border-[var(--line)]" />
 
           <div className="space-y-3 pt-2">
             <div className="flex justify-between items-start">
-              <p className="text-[10px] font-mono text-[var(--muted)] tracking-tighter uppercase">ID_{product.slug.slice(0, 8)}</p>
+              <p className="text-[10px] font-mono text-[var(--muted)] tracking-[0.18em] uppercase">
+                Curated Object
+              </p>
               <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
             </div>
 
-            <h3 className="font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
+            <h3 className="font-[family:var(--font-display)] text-base leading-tight text-[var(--river-deep)] sm:text-lg">
               {product.name}
             </h3>
 
@@ -62,7 +66,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
                 </p>
               </div>
 
-              <Link href={`/shop/products/${product.slug}`} className="w-11 h-11 rounded-full bg-[var(--river-deep)] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+              <Link href={`/shop/products/${product.slug}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--river-deep)] text-white transition-transform sm:h-11 sm:w-11 sm:group-hover:scale-110">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </Link>
             </div>

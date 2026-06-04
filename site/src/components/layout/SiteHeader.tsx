@@ -115,7 +115,7 @@ export function SiteHeader() {
             href="/interpreting#booking"
             className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
-            Book
+            Plan Trip
           </Link>
         </div>
 
@@ -200,7 +200,7 @@ export function SiteHeader() {
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >
-                Book
+                Plan Trip
               </Link>
             </div>
           </Container>

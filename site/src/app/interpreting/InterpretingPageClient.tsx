@@ -46,16 +46,10 @@ const serviceImagePool = [
   SEED_IMAGES.ambientLandscape,
 ];
 
-const profileImagePool = [
-  SEED_IMAGES.interpretingShowcase,
-  SEED_IMAGES.ambientLandscape,
-  SEED_IMAGES.interpretingHero,
-];
-
 const buildPricingMatrix = (t: (key: string) => string): PricingTier[] => [
   {
     service: t("interpreting.pricing.city"),
-    icon: "→",
+    icon: "CITY",
     junior: "¥680",
     mid: "¥980",
     senior: "¥1,480",
@@ -63,7 +57,7 @@ const buildPricingMatrix = (t: (key: string) => string): PricingTier[] => [
   },
   {
     service: t("interpreting.pricing.route"),
-    icon: "⌑",
+    icon: "ROUTE",
     junior: "¥980",
     mid: "¥1,280",
     senior: "¥1,880",
@@ -71,7 +65,7 @@ const buildPricingMatrix = (t: (key: string) => string): PricingTier[] => [
   },
   {
     service: t("interpreting.pricing.group"),
-    icon: "◎",
+    icon: "GROUP",
     junior: "-",
     mid: "¥1,680",
     senior: "¥2,680+",
@@ -144,15 +138,17 @@ export default function InterpretingPageClient({
         specialty: profile.focus,
         languages: profile.language,
         serviceCount: 40 + (profiles.length - index) * 12,
-        image:
-          profileImagePool[index % profileImagePool.length] ??
-          placeholderFor("portrait"),
+        image: profile.avatar || placeholderFor("portrait"),
         needsPrefill: profile.focus,
         rateLabel: effectiveInterpretingData.serviceModes?.[index]?.price,
         bestFor: profile.helps?.join(" / "),
       };
     });
-  }, [effectiveInterpretingData.profiles, effectiveInterpretingData.serviceModes, profileLevels]);
+  }, [
+    effectiveInterpretingData.profiles,
+    effectiveInterpretingData.serviceModes,
+    profileLevels,
+  ]);
 
   if (loading && initialInterpretingData.serviceModes.length === 0) {
     return <LoadingSpinner text="Setting up the interpreting desk..." />;
@@ -174,59 +170,65 @@ export default function InterpretingPageClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
-      <section className="relative min-h-[70vh] flex items-center overflow-hidden pt-32 pb-20">
+      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:min-h-[70vh] lg:pt-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="max-w-4xl">
-            <Reveal>
-              <div className="flex items-center gap-6 mb-12">
-                <div className="w-12 h-12 rounded-full border border-[var(--line)] flex items-center justify-center font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
-                  L
+          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center">
+            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
+              <Reveal>
+                <div className="mb-8 flex items-center gap-4 sm:mb-12 sm:gap-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
+                    L
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
+                    {locale === "zh"
+                      ? "LingTour 口译 / 现场协作"
+                      : "LingTour Interpreting / Field Coordination"}
+                  </p>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
-                  {locale === "zh"
-                    ? "LingTour 口译 / 现场协作"
-                    : "LingTour Interpreting / Field Coordination"}
-                </p>
-              </div>
 
-              <h1 className="font-[family:var(--font-display)] text-7xl md:text-9xl lg:text-[11rem] leading-[0.8] tracking-[-0.04em] mb-12">
-                {locale === "zh" ? "让这一天" : "Let the day"} <br />
-                <span className="italic text-[var(--cinnabar)]">
-                  {locale === "zh" ? "说清楚。" : "Speak."}
-                </span>
-              </h1>
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[2.95rem] leading-[0.86] tracking-[-0.04em] sm:mb-10 sm:text-7xl md:mb-12 md:text-9xl lg:text-[11rem]">
+                  {locale === "zh" ? "让这一天" : "Let the day"} <br />
+                  <span className="italic text-[var(--cinnabar)]">
+                    {locale === "zh" ? "说清楚。" : "Speak."}
+                  </span>
+                </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
-                <p className="text-xl leading-relaxed text-[var(--muted)] handwritten">
-                  {t("interpreting.hero.subtitle")}
-                </p>
+                <div className="grid grid-cols-1 items-end gap-6 md:grid-cols-2 md:gap-12">
+                  <p className="handwritten text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                    {t("interpreting.hero.subtitle")}
+                  </p>
 
-                <div className="flex flex-wrap gap-4">
-                  <a
-                    href="#interpreting-booking"
-                    className="btn-primary inline-flex items-center justify-center px-10 py-5 text-xs leading-none active:scale-95"
-                  >
-                    {locale === "zh" ? "预约口译" : "Plan support"}
-                  </a>
-                  <a
-                    href="#service-types"
-                    className="btn-paper inline-flex items-center justify-center px-10 py-5 text-xs leading-none"
-                  >
-                    {locale === "zh" ? "查看类型" : "Choose a scene"}
-                  </a>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                    <a
+                      href="#interpreting-booking"
+                      className="btn-primary inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none active:scale-95 sm:w-auto sm:px-10 sm:py-5"
+                    >
+                      {locale === "zh" ? "预约口译" : "Plan support"}
+                    </a>
+                    <a
+                      href="#service-types"
+                      className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none sm:w-auto sm:px-10 sm:py-5"
+                    >
+                      {locale === "zh" ? "查看类型" : "Choose a scene"}
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            </div>
+
+            <div className="col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:self-center">
+              <Reveal delay={240}>
+                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:max-w-[18rem] sm:aspect-[4/5] sm:border-[0.9rem] lg:max-w-[20rem] lg:border-[12px]">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
+                    style={{ backgroundImage: `url(${cinematicImage})` }}
+                  />
+                </div>
+              </Reveal>
+            </div>
           </div>
-        </div>
-
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/4 h-[40vh] hidden lg:block overflow-hidden rotate-2 scrapbook-shadow border-[12px] border-white">
-          <div
-            className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 scale-110"
-            style={{ backgroundImage: `url(${cinematicImage})` }}
-          />
         </div>
       </section>
 
@@ -246,16 +248,16 @@ export default function InterpretingPageClient({
           {serviceTypes.map((item, index) => (
             <Reveal key={item.id} delay={index * 100} className="h-full">
               <article
-                className={`group relative flex h-full min-h-[420px] flex-col bg-white p-8 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 ${
-                  index % 2 === 0 ? "rotate-1" : "-rotate-1"
+                className={`group relative flex h-full min-h-[380px] flex-col bg-white p-6 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 sm:min-h-[420px] sm:p-8 ${
+                  index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
                 }`}
               >
                 <div className="absolute top-4 right-6 font-[family:var(--font-display)] text-8xl text-[var(--gold)]/10 select-none group-hover:text-[var(--gold)]/20 transition-colors">
                   0{index + 1}
                 </div>
 
-                <div className="relative z-10 h-full flex flex-col">
-                  <div className="border-b border-[var(--line)] pb-6 mb-6">
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="mb-6 border-b border-[var(--line)] pb-6">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                       {t("interpreting.atlas.baseRate")}
                     </p>
@@ -263,20 +265,20 @@ export default function InterpretingPageClient({
                       <span className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
                         {item.duration}
                       </span>
-                      <span className="text-[10px] uppercase font-bold text-[var(--muted)]">
+                      <span className="text-[10px] font-bold uppercase text-[var(--muted)]">
                         {t("interpreting.atlas.perDispatch")}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-[family:var(--font-display)] text-3xl leading-tight mb-2 text-[var(--river-deep)]">
+                    <h3 className="mb-2 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
                       {item.title}
                     </h3>
-                    <p className="text-xs font-bold text-[var(--gold)] uppercase tracking-widest mb-6 italic">
+                    <p className="mb-6 text-xs font-bold uppercase tracking-widest text-[var(--gold)] italic">
                       {item.subtitle}
                     </p>
-                    <p className="text-sm leading-relaxed text-[var(--muted)] handwritten mb-8">
+                    <p className="mb-8 handwritten text-sm leading-relaxed text-[var(--muted)]">
                       {item.body}
                     </p>
                   </div>
@@ -289,7 +291,7 @@ export default function InterpretingPageClient({
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-3 py-1 border border-[var(--line)] rounded-sm text-[10px] font-bold uppercase text-[var(--river-deep)] bg-[var(--paper-deep)]/30"
+                          className="rounded-sm border border-[var(--line)] bg-[var(--paper-deep)]/30 px-3 py-1 text-[10px] font-bold uppercase text-[var(--river-deep)]"
                         >
                           {tag}
                         </span>
@@ -310,13 +312,15 @@ export default function InterpretingPageClient({
         </div>
       </section>
 
-      <InterpreterShowcase
-        profiles={showcaseProfiles}
-        onSelectGuide={handleSelectGuide}
-        locale={locale}
-      />
+      {showcaseProfiles.length ? (
+        <InterpreterShowcase
+          profiles={showcaseProfiles}
+          onSelectGuide={handleSelectGuide}
+          locale={locale}
+        />
+      ) : null}
 
-      <section className="site-container py-16 lg:py-24">
+      <section className="site-container py-16 pb-28 lg:py-24">
         <Reveal>
           <div>
             <div className="mb-8 opacity-60">
@@ -325,14 +329,14 @@ export default function InterpretingPageClient({
               </p>
               <h2 className="mt-3 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
                 {locale === "zh"
-                  ? "服务类型 × 口译等级。"
-                  : "Service type × interpreter level."}
+                  ? "服务类型 x 口译等级。"
+                  : "Service type x interpreter level."}
               </h2>
             </div>
 
             <div className="overflow-x-auto overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
               <div className="min-w-[28rem] md:min-w-0">
-                <div className="hidden md:grid grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
                   <div className="p-4">{locale === "zh" ? "类型" : "Type"}</div>
                   <div className="p-4 text-center">
                     {t("interpreting.levels.junior")}
@@ -347,10 +351,10 @@ export default function InterpretingPageClient({
                 {matrix.map((row) => (
                   <div
                     key={row.service}
-                    className="grid grid-cols-1 md:grid-cols-[1.2fr_repeat(3,1fr)] border-t border-[var(--line)] text-sm text-[var(--muted)] transition hover:bg-white/60"
+                    className="grid grid-cols-1 border-t border-[var(--line)] text-sm text-[var(--muted)] transition hover:bg-white/60 md:grid-cols-[1.2fr_repeat(3,1fr)]"
                   >
                     <div className="flex items-center gap-3 p-4">
-                      <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--gold)]/15 text-xl text-[var(--gold)]">
+                      <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--gold)]/15 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">
                         {row.icon}
                       </span>
                       <div>
@@ -364,9 +368,15 @@ export default function InterpretingPageClient({
                     </div>
                     <div className="flex items-center justify-around gap-2 px-4 pb-4 md:hidden">
                       {[
-                        { label: t("interpreting.levels.junior"), value: row.junior },
+                        {
+                          label: t("interpreting.levels.junior"),
+                          value: row.junior,
+                        },
                         { label: t("interpreting.levels.mid"), value: row.mid },
-                        { label: t("interpreting.levels.senior"), value: row.senior },
+                        {
+                          label: t("interpreting.levels.senior"),
+                          value: row.senior,
+                        },
                       ].map((tier) => (
                         <div key={tier.label} className="text-center">
                           <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">
@@ -381,7 +391,7 @@ export default function InterpretingPageClient({
                     {[row.junior, row.mid, row.senior].map((price, i) => (
                       <div
                         key={`${row.service}-${i}`}
-                        className="hidden md:grid place-items-center p-4 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]"
+                        className="hidden place-items-center p-4 font-[family:var(--font-display)] text-xl text-[var(--river-deep)] md:grid"
                       >
                         {price}
                       </div>

@@ -4,10 +4,60 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>凌云游管理后台</title>
+    <title>LingTour Admin</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #13252e, #223744 52%, #314b5a);
+        color: #f5efe3;
+      }
+
+      .boot-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .boot-card {
+        width: min(420px, 100%);
+        border: 1px solid rgba(245, 239, 227, 0.14);
+        background: rgba(8, 16, 21, 0.36);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(14px);
+        padding: 28px;
+      }
+
+      .boot-card h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+
+      .boot-card p {
+        margin: 0;
+        color: rgba(245, 239, 227, 0.78);
+        line-height: 1.6;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="boot-shell">
+        <div class="boot-card">
+          <h1>LingTour Admin</h1>
+          <p>Loading the dashboard workspace...</p>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      <div class="boot-shell">
+        <div class="boot-card">
+          <h1>LingTour Admin</h1>
+          <p>JavaScript is required to open the admin workspace.</p>
+        </div>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
