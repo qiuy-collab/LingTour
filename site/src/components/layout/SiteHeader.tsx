@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 import { siteNavigation } from "@/data/navigation";
 import { AccountNavLink } from "@/components/layout/AccountNavLink";
 import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
@@ -31,6 +32,7 @@ const NAV_LABEL: Record<string, string> = {
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export function SiteHeader() {
   const rightNavigation = siteNavigation.filter((item) => ["/shop", "/community"].includes(item.href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-[var(--paper-deep)] bg-grain backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
       <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 md:grid-cols-[1fr_auto_1fr]">
         <nav className="hidden items-center justify-start gap-1 md:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
@@ -115,7 +117,7 @@ export function SiteHeader() {
             href="/interpreting#booking"
             className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
-            Plan Trip
+            {t("common.nav.planTrip")}
           </Link>
         </div>
 
@@ -143,7 +145,7 @@ export function SiteHeader() {
           <Container className="grid gap-4 py-4">
             <div className="grid gap-2">
               <p className="px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
-                Explore
+                {t("common.nav.mobile.explore")}
               </p>
               {siteNavigation.map((item) => {
                 const active = isActivePath(pathname, item.href);
@@ -168,7 +170,7 @@ export function SiteHeader() {
 
             <div className="border-t border-[var(--line)] pt-4">
               <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                Routes — Choose a region
+                {t("common.nav.mobile.chooseRegion")}
               </p>
               <div className="grid gap-1.5">
                 {DEFAULT_ROUTE_REGIONS.map((region) => {
@@ -200,7 +202,7 @@ export function SiteHeader() {
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >
-                Plan Trip
+                {t("common.nav.planTrip")}
               </Link>
             </div>
           </Container>
