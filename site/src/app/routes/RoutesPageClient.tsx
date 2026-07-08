@@ -37,48 +37,48 @@ export default function RoutesPageClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
-      <section className="relative overflow-hidden pt-24 pb-16 lg:pt-40 lg:pb-32">
+      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pt-40 lg:pb-32">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
 
         <div className="site-container relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-            <div className="lg:col-span-8">
+          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-start lg:gap-16">
+            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
               <Reveal>
                 <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
                   {t("routes.atlas.eyebrow")}
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-6xl md:text-8xl lg:text-[10rem] leading-[0.8] tracking-[-0.05em] text-[var(--river-deep)] mix-blend-multiply">
+                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.9] tracking-[-0.05em] text-[var(--river-deep)] mix-blend-multiply sm:text-6xl md:text-8xl lg:text-[10rem]">
                   {t("routes.atlas.titlePrimary")} <br />
                   <span className="text-[var(--gold)] italic">
                     {t("routes.atlas.titleItalic")}
                   </span>
                 </h1>
-                <div className="mt-16 flex flex-col md:flex-row gap-8 items-start">
-                  <div className="w-px h-24 bg-[var(--line)] hidden md:block" />
-                  <p className="max-w-xl text-xl leading-relaxed text-[var(--muted)]">
+                <div className="mt-8 flex flex-col items-start gap-4 md:mt-16 md:flex-row md:gap-8">
+                  <div className="hidden h-24 w-px bg-[var(--line)] md:block" />
+                  <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-xl">
                     {t("routes.atlas.lede")}
                   </p>
                 </div>
               </Reveal>
             </div>
 
-            <div className="lg:col-span-4 relative mt-12 lg:mt-0">
+            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:mt-0">
               <Reveal delay={300}>
-                <div className="relative aspect-[3/4] scrapbook-shadow -rotate-3 group">
+                <div className="group relative ml-auto aspect-[3/4] w-full scrapbook-shadow sm:max-w-[22rem] sm:aspect-[3/4] sm:-rotate-3">
                   <div
                     className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
                     style={{ backgroundImage: `url(${heroImage})` }}
                   />
                   <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
 
-                  <div className="absolute -bottom-8 -right-4 grid h-40 w-40 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[10px] font-bold uppercase tracking-[0.35em] text-[var(--cinnabar)]/45 animate-spin-slow">
+                  <div className="absolute -bottom-4 right-2 hidden h-32 w-32 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]/45 animate-spin-slow sm:grid sm:h-40 sm:w-40 sm:text-[10px] sm:tracking-[0.35em] lg:-bottom-8 lg:-right-4">
                     <span className="leading-relaxed">
                       Field
                       <br />
                       Dispatch
                     </span>
                   </div>
-                  <div className="absolute top-1/2 -right-12 handwritten text-2xl text-[var(--gold)] -rotate-90 origin-bottom-right whitespace-nowrap">
+                  <div className="handwritten absolute bottom-3 left-4 text-lg text-[var(--gold)] sm:bottom-auto sm:left-auto sm:top-1/2 sm:-right-12 sm:origin-bottom-right sm:-rotate-90 sm:text-2xl sm:whitespace-nowrap">
                     {t("routes.atlas.archiveBadge")}
                   </div>
                 </div>
@@ -88,7 +88,7 @@ export default function RoutesPageClient({
         </div>
       </section>
 
-      <section className="site-container py-12 lg:py-20">
+      <section className="site-container py-10 sm:py-12 lg:py-20">
         {storyRoutes.length === 0 ? (
           <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
@@ -102,18 +102,18 @@ export default function RoutesPageClient({
             </p>
           </div>
         ) : (
-          <div className="grid gap-x-12 gap-y-12 lg:gap-y-24 sm:grid-cols-2 lg:gap-x-20">
+          <div className="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:gap-x-20 lg:gap-y-20">
             {storyRoutes.map((route, i) => {
               const cardImage = route.image || placeholderFor("hero");
               return (
                 <Reveal key={route.slug} delay={i * 100}>
                   <Link href={`/routes/${route.slug}`} className="group block">
                     <article
-                      className={`relative transition-all duration-500 hover:-translate-y-3 ${
-                        i % 2 === 0 ? "rotate-1" : "-rotate-1"
+                      className={`relative grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start gap-4 transition-all duration-500 sm:block hover:-translate-y-3 ${
+                        i % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
                       }`}
                     >
-                      <div className="relative aspect-[16/10] scrapbook-shadow border-[0.85rem] border-white overflow-hidden bg-white">
+                      <div className="relative aspect-[4/5] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[16/10] sm:border-[0.85rem]">
                         <div
                           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.9] saturate-[0.85]"
                           style={{ backgroundImage: `url(${cardImage})` }}
@@ -127,11 +127,10 @@ export default function RoutesPageClient({
                           <div className="w-px h-6 bg-white/40 mt-1" />
                         </div>
 
-                        <div className="absolute -top-5 left-1/4 w-24 h-10 bg-white/20 backdrop-blur-sm rotate-6 z-20 border-x border-black/5" />
                       </div>
 
-                      <div className="mt-10 space-y-5 px-4 relative">
-                        <div className="absolute -top-16 -left-2 handwritten text-4xl text-[var(--gold)]/40 -rotate-12 select-none pointer-events-none">
+                      <div className="relative mt-0 space-y-3 px-0 pt-1 sm:mt-8 sm:space-y-4 sm:px-4 sm:pt-0">
+                        <div className="handwritten pointer-events-none absolute -top-12 left-0 hidden select-none text-3xl text-[var(--gold)]/40 sm:block sm:-left-2 sm:-top-16 sm:-rotate-12 sm:text-4xl">
                           #{i + 1}
                         </div>
 
@@ -142,15 +141,15 @@ export default function RoutesPageClient({
                           <div className="h-px flex-1 bg-[var(--line)]/50" />
                         </div>
 
-                        <h2 className="font-[family:var(--font-display)] text-4xl leading-[1.05] text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
+                        <h2 className="font-[family:var(--font-display)] text-[2.45rem] leading-[1] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                           {route.title}
                         </h2>
 
-                        <p className="line-clamp-2 text-base leading-relaxed text-[var(--muted)] handwritten max-w-[32ch]">
+                        <p className="handwritten line-clamp-3 max-w-none text-[13px] leading-relaxed text-[var(--muted)] sm:max-w-[32ch] sm:text-base">
                           {route.summary}
                         </p>
 
-                        <div className="flex items-center justify-between pt-6 border-t border-[var(--line)]/30">
+                        <div className="flex items-center justify-between border-t border-[var(--line)]/30 pt-4">
                           <div className="flex items-center gap-2">
                             <div className="handwritten text-xs text-[var(--muted)]">
                               {t("routes.atlas.waypoints")}
@@ -196,9 +195,9 @@ export default function RoutesPageClient({
         )}
       </section>
 
-      <section className="pb-24 lg:pb-32">
+      <section className="pb-20 lg:pb-32">
         <div className="site-container">
-          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-8 py-20 text-center text-white lg:px-20 lg:py-28 scrapbook-shadow">
+          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-center text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-20 lg:py-28">
             <div
               className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
@@ -208,13 +207,13 @@ export default function RoutesPageClient({
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
                   {t("routes.cta.localVoice.eyebrow")}
                 </p>
-                <h2 className="mt-8 font-[family:var(--font-display)] text-4xl leading-tight md:text-6xl">
+                <h2 className="mt-8 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl md:text-6xl">
                   {t("routes.cta.localVoice.title")}
                 </h2>
                 <div className="mt-12">
                   <Link
                     href="/interpreting"
-                    className="btn-gold inline-flex px-12 py-5 text-xs"
+                    className="btn-gold inline-flex w-full justify-center px-8 py-4 text-xs sm:w-auto sm:px-12 sm:py-5"
                   >
                     {t("routes.cta.localVoice.button")}
                   </Link>

@@ -29,6 +29,7 @@
   --parchment-tab: #e0d5c3;
   --bookmark-tape: #efe3a6;
   --drawer-badge: #e9dfc9;
+  --sandstone: #e6d7c4;
 }
 
 @theme inline {
@@ -119,6 +120,14 @@ button {
   select,
   textarea {
     font-size: max(16px, 1em);
+  }
+
+  [data-favorite-button="true"] {
+    padding-inline: 0.75rem !important;
+  }
+
+  [data-favorite-button="true"] [data-favorite-label] {
+    display: none !important;
   }
 }
 
