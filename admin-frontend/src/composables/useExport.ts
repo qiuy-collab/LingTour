@@ -1,5 +1,4 @@
 import { ElMessage } from 'element-plus'
-import * as XLSX from 'xlsx'
 
 export interface ExportColumn {
   /** Column header label */
@@ -95,7 +94,12 @@ export function exportCSV(options: ExportOptions): void {
  * Export data as Excel (.xlsx) file
  */
 export function exportExcel(options: ExportOptions): void {
+  void exportExcelAsync(options)
+}
+
+async function exportExcelAsync(options: ExportOptions): Promise<void> {
   try {
+    const XLSX = await import('xlsx')
     const sheetData = toSheetData(options)
     const wb = XLSX.utils.book_new()
     const ws = XLSX.utils.aoa_to_sheet(sheetData)
