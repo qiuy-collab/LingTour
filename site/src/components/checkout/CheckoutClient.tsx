@@ -391,44 +391,52 @@ export function CheckoutClient() {
                   Contact
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                  <label className="grid gap-2 sm:col-span-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-email" className="grid gap-2 sm:col-span-2">
+                    <span className="sr-only">Email</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Email
                     </span>
                     <input
+                      id="checkout-email"
                       value={form.email}
                       onChange={(event) => updateField("email", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder="you@company.com"
                     />
                   </label>
-                  <label className="grid gap-2 sm:col-span-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-recipient-name" className="grid gap-2 sm:col-span-2">
+                    <span className="sr-only">Recipient name</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Recipient name
                     </span>
                     <input
+                      id="checkout-recipient-name"
                       value={form.recipientName}
                       onChange={(event) => updateField("recipientName", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder={t("checkout.form.namePlaceholder")}
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-phone" className="grid gap-2">
+                    <span className="sr-only">Phone</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Phone
                     </span>
                     <input
+                      id="checkout-phone"
                       value={form.phone}
                       onChange={(event) => updateField("phone", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder="+65 ..."
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-payment-method" className="grid gap-2">
+                    <span className="sr-only">Payment method</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Payment method
                     </span>
                     <select
+                      id="checkout-payment-method"
                       value={form.paymentMethod}
                       onChange={(event) => updateField("paymentMethod", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
@@ -446,55 +454,65 @@ export function CheckoutClient() {
                   Delivery address
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
-                  <label className="grid gap-2 sm:col-span-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-street" className="grid gap-2 sm:col-span-2">
+                    <span className="sr-only">Street address</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Street address
                     </span>
                     <input
+                      id="checkout-street"
                       value={form.street}
                       onChange={(event) => updateField("street", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder={t("checkout.form.addressPlaceholder")}
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-city" className="grid gap-2">
+                    <span className="sr-only">City</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       City
                     </span>
                     <input
+                      id="checkout-city"
                       value={form.city}
                       onChange={(event) => updateField("city", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder={t("checkout.form.cityPlaceholder")}
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-state" className="grid gap-2">
+                    <span className="sr-only">State or region</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       State / region
                     </span>
                     <input
+                      id="checkout-state"
                       value={form.state}
                       onChange={(event) => updateField("state", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder={t("checkout.form.statePlaceholder")}
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-postal-code" className="grid gap-2">
+                    <span className="sr-only">Postal code</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Postal code
                     </span>
                     <input
+                      id="checkout-postal-code"
                       value={form.postalCode}
                       onChange={(event) => updateField("postalCode", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                       placeholder={t("checkout.form.postalCodePlaceholder")}
                     />
                   </label>
-                  <label className="grid gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <label htmlFor="checkout-country" className="grid gap-2">
+                    <span className="sr-only">Country</span>
+                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       Country
                     </span>
                     <input
+                      id="checkout-country"
                       value={form.country}
                       onChange={(event) => updateField("country", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
@@ -508,12 +526,16 @@ export function CheckoutClient() {
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
                   Handling note
                 </p>
-                <textarea
-                  value={form.note}
-                  onChange={(event) => updateField("note", event.target.value)}
-                  className="mt-5 min-h-[120px] w-full border border-[var(--line)] bg-transparent p-4 text-sm leading-7 outline-none focus:border-[var(--gold)]"
-                  placeholder={t("checkout.form.notesPlaceholder")}
-                />
+                <label htmlFor="checkout-note" className="mt-5 block">
+                  <span className="sr-only">Handling note</span>
+                  <textarea
+                    id="checkout-note"
+                    value={form.note}
+                    onChange={(event) => updateField("note", event.target.value)}
+                    className="min-h-[120px] w-full border border-[var(--line)] bg-transparent p-4 text-sm leading-7 outline-none focus:border-[var(--gold)]"
+                    placeholder={t("checkout.form.notesPlaceholder")}
+                  />
+                </label>
               </section>
             </div>
           </div>
