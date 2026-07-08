@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import {
   createCommunityFeedPost,
@@ -26,6 +25,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { FieldKit } from "@/components/community/FieldKit";
 import { useLocale } from "@/lib/locale-context";
 import { LocalUser, readStoredUser, signInWithGoogle } from "@/lib/auth-client";
+import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
 
 const channels = [
   "All",
@@ -379,26 +379,12 @@ export default function CommunityPage() {
       setToast(t("community.error.googleNotConfigured"));
       return;
     }
-    const { google } = window as any;
-    if (!google?.accounts?.id) {
+    if (!getGoogleIdentityApi()) {
       setToast(t("community.error.googleScriptNotLoaded"));
       return;
     }
     try {
-      const credential = await new Promise<string>((resolve, reject) => {
-        google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response: { credential?: string; error?: string }) => {
-            if (response.credential) resolve(response.credential);
-            else reject(new Error(response.error || "Google sign-in cancelled"));
-          },
-        });
-        google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            reject(new Error("Google sign-in popup was blocked or dismissed"));
-          }
-        });
-      });
+      const credential = await requestGoogleCredential(clientId);
       await signInWithGoogle(credential);
       syncAuth();
       setToast(AUTH_PROMPTS.googleConnectedPublish);

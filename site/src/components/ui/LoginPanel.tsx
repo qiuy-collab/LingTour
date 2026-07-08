@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiPost, ApiRequestError } from "@/lib/api-client";
 import { useLocale } from "@/lib/locale-context";
 import { countryOptions } from "@/lib/country-list";
+import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
 import {
   AuthResponse,
   persistAuthUser,
@@ -283,29 +284,12 @@ export function LoginPanel() {
         return;
       }
 
-      const { google } = window as any;
-      if (!google?.accounts?.id) {
+      if (!getGoogleIdentityApi()) {
         setError("Google Sign-In script not loaded.");
         return;
       }
 
-      const credential = await new Promise<string>((resolve, reject) => {
-        google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response: { credential?: string; error?: string }) => {
-            if (response.credential) {
-              resolve(response.credential);
-            } else {
-              reject(new Error(response.error || "Google sign-in cancelled"));
-            }
-          },
-        });
-        google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            reject(new Error("Google sign-in popup was blocked or dismissed"));
-          }
-        });
-      });
+      const credential = await requestGoogleCredential(clientId);
 
       await signInWithGoogle(credential);
       router.push("/");
