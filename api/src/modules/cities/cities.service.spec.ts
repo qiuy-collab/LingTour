@@ -10,6 +10,25 @@ describe('CitiesService', () => {
   let service: CitiesService;
   let cityRepo: jest.Mocked<Partial<Repository<City>>>;
   let sectionRepo: jest.Mocked<Partial<Repository<CityCultureSection>>>;
+  let queryRunner: {
+    connect: jest.Mock;
+    startTransaction: jest.Mock;
+    commitTransaction: jest.Mock;
+    rollbackTransaction: jest.Mock;
+    release: jest.Mock;
+    manager: {
+      create: jest.Mock;
+      save: jest.Mock;
+      update: jest.Mock;
+      findOneOrFail: jest.Mock;
+      delete: jest.Mock;
+      query: jest.Mock;
+      softDelete: jest.Mock;
+    };
+  };
+  let dataSource: {
+    createQueryRunner: jest.Mock;
+  };
 
   const mockCity: City = {
     id: 'uuid-city',
@@ -32,6 +51,27 @@ describe('CitiesService', () => {
   };
 
   beforeEach(async () => {
+    queryRunner = {
+      connect: jest.fn().mockResolvedValue(undefined),
+      startTransaction: jest.fn().mockResolvedValue(undefined),
+      commitTransaction: jest.fn().mockResolvedValue(undefined),
+      rollbackTransaction: jest.fn().mockResolvedValue(undefined),
+      release: jest.fn().mockResolvedValue(undefined),
+      manager: {
+        create: jest.fn(),
+        save: jest.fn(),
+        update: jest.fn(),
+        findOneOrFail: jest.fn(),
+        delete: jest.fn().mockResolvedValue(undefined),
+        query: jest.fn().mockResolvedValue([]),
+        softDelete: jest.fn().mockResolvedValue(undefined),
+      },
+    };
+
+    dataSource = {
+      createQueryRunner: jest.fn().mockReturnValue(queryRunner),
+    };
+
     cityRepo = {
       findAndCount: jest.fn().mockResolvedValue([[mockCity], 1]),
       findOne: jest.fn().mockResolvedValue(mockCity),
@@ -58,7 +98,7 @@ describe('CitiesService', () => {
           provide: getRepositoryToken(CityCultureSection),
           useValue: sectionRepo,
         },
-        { provide: DataSource, useValue: {} },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -133,7 +173,22 @@ describe('CitiesService', () => {
       cityRepo.findOne!.mockResolvedValue(mockCity as any);
 
       await service.softDelete('uuid-city');
-      expect(cityRepo.softRemove).toHaveBeenCalled();
+      expect(dataSource.createQueryRunner).toHaveBeenCalled();
+      expect(queryRunner.connect).toHaveBeenCalled();
+      expect(queryRunner.startTransaction).toHaveBeenCalled();
+      expect(queryRunner.manager.delete).toHaveBeenCalledWith(
+        CityCultureSection,
+        { cityId: 'uuid-city' },
+      );
+      expect(queryRunner.manager.query).toHaveBeenCalledWith(
+        'DELETE FROM route_city_links WHERE city_id = $1',
+        ['uuid-city'],
+      );
+      expect(queryRunner.manager.softDelete).toHaveBeenCalledWith(City, {
+        id: 'uuid-city',
+      });
+      expect(queryRunner.commitTransaction).toHaveBeenCalled();
+      expect(queryRunner.release).toHaveBeenCalled();
     });
   });
 });
