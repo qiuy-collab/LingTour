@@ -79,11 +79,15 @@ const emit = defineEmits<{
 
 .workspace-intro {
   padding: 18px 20px;
-  border: 1px solid #d9ecff;
-  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--lt-primary) 18%, var(--lt-border-color));
+  border-radius: var(--lt-radius-lg);
   background:
-    radial-gradient(circle at top left, rgba(64, 158, 255, 0.16), transparent 34%),
-    linear-gradient(135deg, #f7fbff 0%, #ffffff 65%);
+    radial-gradient(circle at top left, var(--lt-primary-soft), transparent 34%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 0%,
+      var(--lt-bg-card) 65%
+    );
 }
 
 .workspace-eyebrow {
@@ -92,7 +96,7 @@ const emit = defineEmits<{
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #409eff;
+  color: var(--lt-primary);
 }
 
 .workspace-headline {
@@ -106,7 +110,7 @@ const emit = defineEmits<{
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
-  color: #1f2a37;
+  color: var(--lt-text-primary);
 }
 
 .workspace-pill {
@@ -114,9 +118,9 @@ const emit = defineEmits<{
   align-items: center;
   min-height: 28px;
   padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(64, 158, 255, 0.12);
-  color: #1767c6;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--lt-primary) 12%, transparent);
+  color: var(--lt-primary-dark);
   font-size: 12px;
   font-weight: 600;
 }
@@ -124,7 +128,7 @@ const emit = defineEmits<{
 .workspace-intro p {
   margin: 10px 0 0;
   max-width: 760px;
-  color: #5b6472;
+  color: var(--lt-text-regular);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -142,10 +146,10 @@ const emit = defineEmits<{
   gap: 8px;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid #d7deea;
-  border-radius: 14px;
-  background: #fff;
-  color: #526071;
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-lg);
+  background: var(--lt-bg-card);
+  color: var(--lt-text-regular);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -158,22 +162,26 @@ const emit = defineEmits<{
 }
 
 .workspace-tab small {
-  color: #98a3b3;
+  color: var(--lt-text-secondary);
   font-size: 11px;
   font-weight: 700;
 }
 
 .workspace-tab:hover {
-  border-color: #b9d9ff;
-  box-shadow: 0 8px 20px rgba(31, 42, 55, 0.06);
+  border-color: color-mix(in srgb, var(--lt-primary) 28%, var(--lt-border-color));
+  box-shadow: var(--lt-shadow-md);
   transform: translateY(-1px);
 }
 
 .workspace-tab.active {
-  border-color: #409eff;
-  background: linear-gradient(135deg, #eff7ff 0%, #f7fbff 100%);
-  color: #1767c6;
-  box-shadow: 0 10px 24px rgba(64, 158, 255, 0.14);
+  border-color: var(--lt-primary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lt-primary-soft) 76%, var(--lt-bg-card)) 0%,
+    color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 100%
+  );
+  color: var(--lt-primary-dark);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--lt-primary) 14%, transparent);
 }
 
 .workspace-panel {
