@@ -5,10 +5,80 @@ import ElementPlus from 'unplugin-element-plus/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
+const elementChunkGroups: Record<string, string> = {
+  autocomplete: 'overlay',
+  breadcrumb: 'navigation',
+  button: 'core',
+  card: 'content',
+  checkbox: 'forms',
+  col: 'layout',
+  'config-provider': 'core',
+  'date-picker': 'forms',
+  descriptions: 'data',
+  dialog: 'overlay',
+  divider: 'layout',
+  drawer: 'overlay',
+  dropdown: 'navigation',
+  empty: 'data',
+  form: 'forms',
+  icon: 'core',
+  image: 'content',
+  input: 'forms',
+  'input-number': 'forms',
+  loading: 'core',
+  menu: 'navigation',
+  option: 'forms',
+  'option-group': 'forms',
+  pagination: 'data',
+  popover: 'overlay',
+  progress: 'data',
+  radio: 'forms',
+  row: 'layout',
+  scrollbar: 'layout',
+  select: 'forms',
+  skeleton: 'data',
+  space: 'layout',
+  switch: 'forms',
+  table: 'data',
+  'tab-pane': 'navigation',
+  tabs: 'navigation',
+  tag: 'data',
+  'time-picker': 'forms',
+  tooltip: 'overlay',
+  upload: 'forms',
+}
+
+function chunkNameForElementModule(id: string) {
+  const normalizedId = id.replace(/\\/g, '/')
+
+  if (normalizedId.includes('/@element-plus/icons-vue/')) {
+    return 'vendor-element-icons'
+  }
+
+  const componentMatch = normalizedId.match(
+    /\/element-plus\/(?:es|lib)\/components\/([^/]+)\//,
+  )
+
+  if (componentMatch) {
+    const group = elementChunkGroups[componentMatch[1]] ?? 'core'
+    return `vendor-element-${group}`
+  }
+
+  if (
+    normalizedId.includes('/element-plus/') ||
+    normalizedId.includes('/@element-plus/')
+  ) {
+    return 'vendor-element-core'
+  }
+
+  return undefined
+}
+
 function chunkNameForModule(id: string) {
   if (id.includes('node_modules')) {
-    if (id.includes('element-plus') || id.includes('@element-plus')) {
-      return 'vendor-element'
+    const elementChunkName = chunkNameForElementModule(id)
+    if (elementChunkName) {
+      return elementChunkName
     }
     if (id.includes('echarts')) {
       return 'vendor-charts'
