@@ -516,7 +516,6 @@ function BookSpread({
   widthClass,
   heightClass,
   minHeightPx,
-  immersive,
 }: {
   sections: CityCultureSection[];
   activeIdx: number;
@@ -529,7 +528,6 @@ function BookSpread({
   widthClass: string;
   heightClass: string;
   minHeightPx?: number | null;
-  immersive?: boolean;
 }) {
   const visibleIdx = flipState?.to ?? activeIdx;
   const activeSection = sections[visibleIdx];
@@ -956,7 +954,6 @@ export function CityArchivalBook({
             widthClass={widthClass}
             heightClass={desktopHeightClass}
             minHeightPx={measuredBookHeight}
-            immersive={immersive}
           />
         </div>
       </div>

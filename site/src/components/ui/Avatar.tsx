@@ -87,7 +87,6 @@ export function Avatar({
       {showImage ? (
         // Plain <img> on purpose: avatars come from arbitrary user URLs and we
         // do not want to push them through the next/image optimiser pipeline.
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src ?? undefined}
           alt={alt ?? name ?? "Avatar"}

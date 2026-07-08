@@ -73,9 +73,6 @@ export function CultureDetailClient({ slug }: { slug: string }) {
     notFound();
   }
 
-  const relatedCities = (cityCultures ?? []).filter((cityItem) =>
-    activeCity.relatedCitySlugs.includes(cityItem.slug),
-  );
   const relatedRoutes = (storyRoutes ?? []).filter((route) =>
     activeCity.routeSlugs.includes(route.slug),
   );
