@@ -1,27 +1,60 @@
 /**
- * English-only locale compatibility helpers.
+ * Lightweight locale store used by preview surfaces and translation helpers.
  *
- * The public site no longer exposes language switching. A tiny Locale type and
- * no-op helpers remain so data mappers can keep accepting a locale argument
- * while always resolving English copy.
+ * The public site currently defaults to English, but preview flows and tests
+ * still need a working locale state machine so components can temporarily
+ * switch into Chinese copy without reloading the app.
  */
 
 export type Locale = "en" | "zh";
 
-export function getLocale(): Locale {
-  return "en";
+const LOCALE_STORAGE_KEY = "lingtour-locale";
+const DEFAULT_LOCALE: Locale = "en";
+const listeners = new Set<(locale: Locale) => void>();
+
+let currentLocale: Locale = DEFAULT_LOCALE;
+
+function isLocale(value: unknown): value is Locale {
+  return value === "en" || value === "zh";
 }
 
-export function setLocale(_locale: Locale): void {
+function writeDocumentLanguage(locale: Locale) {
   if (typeof document !== "undefined") {
-    document.documentElement.setAttribute("lang", "en");
+    document.documentElement.setAttribute("lang", locale);
   }
 }
 
-export function subscribeToLocale(_cb: (locale: Locale) => void): () => void {
-  return () => {};
+function readStoredLocale(): Locale {
+  if (typeof window === "undefined") return currentLocale;
+  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  return isLocale(stored) ? stored : currentLocale;
 }
 
-export function isZh(_locale: Locale): boolean {
-  return false;
+export function getLocale(): Locale {
+  currentLocale = readStoredLocale();
+  return currentLocale;
+}
+
+export function setLocale(locale: Locale): void {
+  currentLocale = locale;
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  }
+
+  writeDocumentLanguage(locale);
+  listeners.forEach((listener) => listener(locale));
+}
+
+export function subscribeToLocale(
+  cb: (locale: Locale) => void,
+): () => void {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+export function isZh(locale: Locale): boolean {
+  return locale === "zh";
 }

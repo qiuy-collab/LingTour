@@ -21,12 +21,12 @@ export const dictionaries: Record<Locale, Record<string, DictValue>> = {
 
 for (const mod of allModules) {
   Object.assign(dictionaries.en, mod.en);
-  Object.assign(dictionaries.zh, mod.en);
+  Object.assign(dictionaries.zh, mod.zh);
 }
 
 /** Translate a key into the given locale. Falls back to English, then a readable missing-key label. */
-export function translate(key: string, _locale: Locale): string {
-  const val = dictionaries.en[key];
+export function translate(key: string, locale: Locale): string {
+  const val = dictionaries[locale][key] ?? dictionaries.en[key];
   if (val !== undefined && val !== null) return String(val);
   return `Missing translation: ${key}`;
 }
