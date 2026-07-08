@@ -1,4 +1,4 @@
-/* 全局样式重置 */
+/* Global reset */
 * {
   margin: 0;
   padding: 0;
@@ -15,13 +15,12 @@
 html,
 body {
   height: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family: var(--lt-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--admin-font-body);
-  background-color: var(--lt-bg-page, #f0f2f5);
-  color: var(--lt-text-primary, #303133);
+  background-color: var(--lt-bg-page);
+  color: var(--lt-text-primary);
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -29,26 +28,26 @@ body {
   height: 100%;
 }
 
-/* 滚动条美化 */
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--lt-scrollbar-track, #f1f1f1);
+  background: var(--lt-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--lt-scrollbar-thumb, #c0c4cc);
-  border-radius: 3px;
+  background: var(--lt-scrollbar-thumb);
+  border-radius: var(--lt-scrollbar-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--lt-scrollbar-thumb-hover, #909399);
+  background: var(--lt-scrollbar-thumb-hover);
 }
 
-/* Element Plus 表格全局样式微调 */
+/* Element Plus global tweaks */
 .el-table {
   font-size: var(--admin-font-body);
 }
@@ -58,7 +57,7 @@ body {
   justify-content: flex-end;
 }
 
-/* 搜索栏通用样式 */
+/* Shared search row */
 .search-bar {
   margin-bottom: 16px;
   display: flex;
@@ -67,12 +66,12 @@ body {
   align-items: center;
 }
 
-/* 表单卡片通用样式 */
+/* Shared form card */
 .form-card {
   max-width: 900px;
 }
 
-/* ===== 列表页统一规范 ===== */
+/* Shared list page structure */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -84,15 +83,14 @@ body {
   margin: 0;
   font-size: var(--admin-font-page-title) !important;
   font-weight: 600;
-  color: var(--lt-text-primary, #303133);
+  color: var(--lt-text-primary);
 }
 
 .page-header .page-desc {
   margin-top: 4px;
-  color: var(--lt-text-secondary, #909399);
+  color: var(--lt-text-secondary);
 }
 
-/* 工具栏 */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -109,28 +107,25 @@ body {
   flex-wrap: wrap;
 }
 
-/* 分页 */
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--lt-border-light, #f0f0f0);
+  border-top: 1px solid var(--lt-border-light);
 }
 
-/* 表格操作列按钮间距 */
 .el-table .el-button + .el-button {
   margin-left: 4px;
 }
 
-/* 表格内图片 fallback */
 .image-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--lt-radius-sm, 6px);
-  background: var(--lt-bg-card, #f5f7fa);
-  color: var(--lt-text-placeholder, #c0c4cc);
+  border-radius: var(--lt-radius-sm);
+  background: var(--lt-bg-hover);
+  color: var(--lt-text-placeholder);
   font-size: 11px;
   text-align: center;
   line-height: 1.3;
@@ -139,8 +134,8 @@ body {
 .admin-list-thumb {
   width: 50px;
   height: 50px;
-  border-radius: var(--lt-radius-sm, 6px);
-  background: var(--lt-bg-hover, #f5f7fa);
+  border-radius: var(--lt-radius-sm);
+  background: var(--lt-bg-hover);
   overflow: hidden;
 }
 
@@ -150,22 +145,22 @@ body {
 }
 
 .admin-list-empty {
-  color: var(--lt-text-placeholder, #c0c4cc);
+  color: var(--lt-text-placeholder);
 }
 
 .admin-list-meta {
   font-size: var(--admin-font-hint);
-  color: var(--lt-text-secondary, #909399);
+  color: var(--lt-text-secondary);
 }
 
 .admin-list-meta-compact {
   font-size: 11px;
-  color: var(--lt-text-secondary, #909399);
+  color: var(--lt-text-secondary);
 }
 
 .admin-list-note {
   font-size: var(--admin-font-hint);
-  color: var(--lt-text-regular, #606266);
+  color: var(--lt-text-regular);
 }
 
 .admin-list-inline {
@@ -174,9 +169,8 @@ body {
   gap: 8px;
 }
 
-/* 表格卡片 */
 .table-card {
-  border-radius: var(--lt-radius-md, 8px);
+  border-radius: var(--lt-radius-md);
 }
 
 .table-card .el-card__body {
@@ -184,13 +178,13 @@ body {
 }
 
 .table-card .el-table {
-  border-radius: var(--lt-radius-md, 8px) var(--lt-radius-md, 8px) 0 0;
+  border-radius: var(--lt-radius-md) var(--lt-radius-md) 0 0;
 }
 
 .table-card .pagination-wrap {
   padding: 16px 20px;
   margin-top: 0;
-  border-top: 1px solid var(--lt-border-light, #f0f0f0);
+  border-top: 1px solid var(--lt-border-light);
 }
 
 .card-title,

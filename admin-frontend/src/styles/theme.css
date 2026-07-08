@@ -2,10 +2,15 @@
 
 :root,
 [data-theme='light'] {
+  /* Typography */
+  --lt-font-sans: 'Trebuchet MS', 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+
   /* Radius */
   --lt-radius-sm: 6px;
   --lt-radius-md: 8px;
   --lt-radius-lg: 12px;
+  --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
   --lt-primary: #409eff;
@@ -59,10 +64,15 @@
 
 [data-theme='dark'],
 html.dark {
+  /* Typography */
+  --lt-font-sans: 'Trebuchet MS', 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+
   /* Radius */
   --lt-radius-sm: 6px;
   --lt-radius-md: 8px;
   --lt-radius-lg: 12px;
+  --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
   --lt-primary: #409eff;
