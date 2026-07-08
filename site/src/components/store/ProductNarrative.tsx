@@ -22,7 +22,7 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
           <Reveal>
             <div className="max-w-2xl space-y-8">
               <div>
-                <p className="font-handwritten text-2xl text-[var(--gold)]">
+                <p className="handwritten text-2xl text-[var(--gold)]">
                   Cultural Connection
                 </p>
                 <h2 className="mt-4 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)] md:text-6xl">
@@ -78,7 +78,7 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(17,25,35,0.4))] " />
                 <div className="absolute inset-x-0 bottom-0 p-8 text-white">
-                  <p className="font-handwritten text-xl text-[var(--gold)]">
+                  <p className="handwritten text-xl text-[var(--gold)]">
                     LingTour Goods
                   </p>
                   <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight">

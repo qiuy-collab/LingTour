@@ -64,7 +64,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
         <div className="site-container">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="font-handwritten text-lg text-[var(--gold)]">
+              <span className="handwritten text-lg text-[var(--gold)]">
                 Studio dispatch
               </span>
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/60">
@@ -88,7 +88,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
           <div className="lg:col-span-3 space-y-10">
             <Reveal>
               <div className="relative inline-block bg-[var(--river-deep)] p-6 scrapbook-shadow -rotate-2">
-                <p className="font-handwritten text-xl text-[var(--gold)]">Collection</p>
+                <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
                 <p className="mt-2 font-[family:var(--font-display)] text-2xl text-white leading-tight">
                   {collectionLabel}
                 </p>
@@ -104,7 +104,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 <h1 className="font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-tight text-[var(--river-deep)] lg:text-6xl">
                   {product.name}
                 </h1>
-                <p className="font-handwritten text-2xl text-[var(--gold)]">
+                <p className="handwritten text-2xl text-[var(--gold)]">
                   {product.tag}
                 </p>
               </div>
@@ -176,7 +176,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 </div>
 
                 {/* Image counter */}
-                <div className="absolute bottom-6 right-6 font-handwritten text-xl text-[var(--gold)]">
+                <div className="absolute bottom-6 right-6 handwritten text-xl text-[var(--gold)]">
                   {activeIndex + 1} / {images.length}
                 </div>
               </div>
@@ -224,7 +224,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                         }`}
                       >
                         <span className="text-sm font-bold uppercase tracking-widest">{option}</span>
-                        {finish === option && <span className="font-handwritten text-lg text-[var(--gold)]">Picked</span>}
+                        {finish === option && <span className="handwritten text-lg text-[var(--gold)]">Picked</span>}
                       </button>
                     ))}
                   </div>
