@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 type AvatarProps = {
   src?: string | null;
@@ -62,15 +62,13 @@ export function Avatar({
   ringClassName = "",
   alt,
 }: AvatarProps) {
-  const [imgFailed, setImgFailed] = useState(false);
-
   const initials = useMemo(() => getInitials(name), [name]);
   const colour = useMemo(
     () => pickColour((seed ?? name ?? "lingtour").toLowerCase()),
     [seed, name],
   );
 
-  const showImage = Boolean(src) && !imgFailed;
+  const showImage = Boolean(src);
   const fontSize = Math.max(11, Math.round(size * 0.4));
 
   return (
@@ -82,28 +80,23 @@ export function Avatar({
         backgroundColor: showImage ? "transparent" : colour.bg,
         color: colour.fg,
       }}
+      role="img"
       aria-label={alt ?? name ?? "Avatar"}
     >
+      <span
+        aria-hidden="true"
+        className="font-semibold tracking-wide"
+        style={{ fontSize, lineHeight: 1 }}
+      >
+        {initials}
+      </span>
       {showImage ? (
-        // Plain <img> on purpose: avatars come from arbitrary user URLs and we
-        // do not want to push them through the next/image optimiser pipeline.
-        <img
-          src={src ?? undefined}
-          alt={alt ?? name ?? "Avatar"}
-          width={size}
-          height={size}
-          loading="lazy"
-          onError={() => setImgFailed(true)}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : (
         <span
-          className="font-semibold tracking-wide"
-          style={{ fontSize, lineHeight: 1 }}
-        >
-          {initials}
-        </span>
-      )}
+          aria-hidden="true"
+          className="absolute inset-0 block bg-cover bg-center"
+          style={{ backgroundImage: `url("${src}")` }}
+        />
+      ) : null}
     </span>
   );
 }
