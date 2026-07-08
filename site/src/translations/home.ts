@@ -4,6 +4,10 @@ export const home = {
     "home.hero.subtitle": "LingTour connects you to Guangdong culture through story-driven routes, live interpreting, and objects that carry meaning.",
     "home.hero.scroll": "Scroll to explore",
 
+    "home.hero.tag.storyRoutes": "Story routes",
+    "home.hero.tag.cultureContext": "Culture context",
+    "home.hero.tag.languageSupport": "Language support",
+
     "home.heroStats.0.label": "Culture Lines",
     "home.heroStats.0.hint": "from coast to mountain",
     "home.heroStats.1.label": "Story Routes",
@@ -72,6 +76,10 @@ export const home = {
     "home.hero.title": "旅行不止于指南。",
     "home.hero.subtitle": "岭风译游通过故事化的路线、现场口译和承载意义的文创好物，带你走进广东文化。",
     "home.hero.scroll": "向下滚动探索",
+
+    "home.hero.tag.storyRoutes": "故事路线",
+    "home.hero.tag.cultureContext": "文化脉络",
+    "home.hero.tag.languageSupport": "语言支持",
 
     "home.heroStats.0.label": "文化线路",
     "home.heroStats.0.hint": "从海岸到山地",

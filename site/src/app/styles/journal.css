@@ -15,11 +15,13 @@
 }
 
 .handwritten {
-  font-family: "Kalam", "Segoe Script", cursive;
+  font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-style: italic;
+  line-height: 1.75;
 }
 
 .scrapbook-shadow {
-  box-shadow: 2px 4px 20px rgba(0, 0, 0, 0.08), 0 10px 40px rgba(0, 0, 0, 0.05);
+  box-shadow: 2px 4px 24px rgba(0, 0, 0, 0.10), 0 12px 48px rgba(0, 0, 0, 0.06);
 }
 
 @keyframes tape-stick {

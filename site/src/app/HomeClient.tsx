@@ -135,7 +135,11 @@ export default function HomeClient({
                   Travel Guangdong with clear routes, cultural context, and language support.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
-                  {["Story routes", "Culture context", "Language support"].map((label) => (
+                  {[
+                    t("home.hero.tag.storyRoutes"),
+                    t("home.hero.tag.cultureContext"),
+                    t("home.hero.tag.languageSupport"),
+                  ].map((label) => (
                     <span
                       key={label}
                       className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]"
@@ -165,16 +169,18 @@ export default function HomeClient({
 
             <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-5 lg:mt-0">
               <Reveal delay={300}>
-                <div className="group relative ml-auto aspect-[3/4] w-full overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:max-w-[23rem] sm:aspect-[4/5] sm:border-[1rem] sm:rotate-2 lg:rotate-3">
-                  <img
-                    src={heroImage}
-                    alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
-                    fetchPriority="high"
-                    loading="eager"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                  />
-                  {/* Subtle ink wash, kept on both real and placeholder images */}
-                  <div className="absolute inset-0 bg-black/10" />
+                <div className="group relative ml-auto aspect-[3/4] w-full tape-effect sm:max-w-[23rem] sm:aspect-[4/5] sm:rotate-2 lg:rotate-3">
+                  <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[1rem]">
+                    <img
+                      src={heroImage}
+                      alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
+                      fetchPriority="high"
+                      loading="eager"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    />
+                    {/* Subtle ink wash, kept on both real and placeholder images */}
+                    <div className="absolute inset-0 bg-black/10" />
+                  </div>
                 </div>
 
                 {/* Optional badge: editorial highlight from CMS or trust metric */}
@@ -214,13 +220,14 @@ export default function HomeClient({
       </section>
 
       <div className="relative z-10">
-        {/* 1b. HERO STATS BAR */}
+        {/* 1b. HERO STATS BAR — field-journal index, not SaaS metrics */}
         {heroStats.length > 0 && (
           <section className="site-container py-12 sm:py-16 lg:py-20">
             <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-4">
               {heroStats.map((stat, idx) => (
                 <Reveal key={idx} delay={idx * 100}>
-                  <div className="text-center lg:text-left">
+                  <div className="group relative text-center lg:text-left">
+                    <div className="mb-4 mx-auto w-8 h-px bg-[var(--gold)]/40 lg:mx-0" />
                     <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] sm:text-4xl lg:text-5xl">
                       {stat.title}
                     </p>
