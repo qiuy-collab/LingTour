@@ -158,20 +158,21 @@ function handleKeydown(e: KeyboardEvent) {
 .command-palette-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--lt-bg-mask);
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding-top: 120px;
-  z-index: 9999;
+  z-index: 2100;
 }
 
 .command-palette {
   width: 560px;
   max-width: 90vw;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-lg);
+  box-shadow: var(--lt-shadow-lg);
   overflow: hidden;
 }
 
@@ -179,13 +180,13 @@ function handleKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--lt-border-light);
   gap: 10px;
 }
 
 .search-icon {
   font-size: 18px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   flex-shrink: 0;
 }
 
@@ -194,21 +195,21 @@ function handleKeydown(e: KeyboardEvent) {
   border: none;
   outline: none;
   font-size: 15px;
-  color: #303133;
+  color: var(--lt-text-primary);
   background: transparent;
 }
 
 .palette-input::placeholder {
-  color: #c0c4cc;
+  color: var(--lt-text-placeholder);
 }
 
 .palette-kbd {
   font-size: 11px;
   padding: 2px 6px;
-  background: #f5f7fa;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  color: #909399;
+  background: var(--lt-bg-hover);
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-sm);
+  color: var(--lt-text-secondary);
   font-family: monospace;
 }
 
@@ -223,30 +224,34 @@ function handleKeydown(e: KeyboardEvent) {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--lt-radius-md);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .palette-item:hover,
 .palette-item.active {
-  background: #f0f7ff;
+  background: var(--lt-primary-soft);
 }
 
 .item-title {
   font-size: 14px;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .item-group {
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
+}
+
+.palette-item.active .item-title {
+  color: var(--lt-primary);
 }
 
 .palette-empty {
   padding: 32px 16px;
   text-align: center;
-  color: #909399;
+  color: var(--lt-text-secondary);
   font-size: 14px;
 }
 
@@ -254,18 +259,18 @@ function handleKeydown(e: KeyboardEvent) {
   display: flex;
   gap: 16px;
   padding: 8px 16px;
-  border-top: 1px solid #ebeef5;
-  background: #fafafa;
+  border-top: 1px solid var(--lt-border-light);
+  background: color-mix(in srgb, var(--lt-bg-hover) 70%, var(--lt-bg-card));
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 
 .palette-footer kbd {
   font-size: 11px;
   padding: 1px 4px;
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 3px;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-sm);
   font-family: monospace;
   margin-right: 4px;
 }
