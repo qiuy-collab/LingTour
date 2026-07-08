@@ -16,8 +16,8 @@ import { sanitizeUploadModule } from './upload-path';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         storage: diskStorage({
-          destination: async (req, _file, callback) => {
-            try {
+          destination: (req, _file, callback) => {
+            void (async () => {
               const uploadRoot = join(
                 process.cwd(),
                 configService.get<string>('UPLOAD_DIR', './uploads'),
@@ -28,7 +28,8 @@ import { sanitizeUploadModule } from './upload-path';
                   : undefined;
               const moduleFromRoute = (() => {
                 const url = String(req?.originalUrl ?? '');
-                if (url.includes('/public/community/upload')) return 'community';
+                if (url.includes('/public/community/upload'))
+                  return 'community';
                 if (url.includes('/auth/me/avatar')) return 'avatars';
                 return undefined;
               })();
@@ -40,9 +41,14 @@ import { sanitizeUploadModule } from './upload-path';
                 : uploadRoot;
               await mkdir(destination, { recursive: true });
               callback(null, destination);
-            } catch (error) {
-              callback(error as Error, '');
-            }
+            })().catch((error: unknown) => {
+              callback(
+                error instanceof Error
+                  ? error
+                  : new Error('Failed to create upload directory'),
+                '',
+              );
+            });
           },
           filename: (_req, file, callback) => {
             const uniqueName = `${uuidv4()}${extname(file.originalname)}`;

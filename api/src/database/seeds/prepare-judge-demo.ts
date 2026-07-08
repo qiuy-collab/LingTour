@@ -42,6 +42,30 @@ const DEMO_EDITOR_PASSWORD =
   process.env.SEED_EDITOR_PASSWORD ??
   'LingTour2026!';
 
+type CountRow = { count: number };
+type CityRow = { id: string; slug: string; name: unknown };
+type RouteRow = { id: string; slug: string; title: unknown };
+type ProductRow = {
+  id: string;
+  slug: string;
+  name: unknown;
+  collection_id: string | null;
+};
+type EventRow = { id: string; slug: string; title: unknown };
+type CommunityPostRow = { id: string; title: unknown; excerpt: unknown };
+type CommunityBriefRow = {
+  id: string;
+  slug: string;
+  title: unknown;
+  prompt: unknown;
+};
+type RouteSlugRow = { slug: string };
+type CityNameRow = { slug: string; name: unknown };
+type ServiceModeRow = { id: string; title: unknown; best_for: unknown };
+type InterpreterProfileRow = { id: string; name: unknown; focus: unknown };
+type InterpretingFaqRow = { id: string; question: unknown; answer: unknown };
+type HomeConfigRow = { id: string };
+
 function looksLikeTest(value: string) {
   return TEST_PATTERNS.some((pattern) => pattern.test(value));
 }
@@ -49,41 +73,53 @@ function looksLikeTest(value: string) {
 function asDisplayText(value: unknown): string {
   if (!value) return '';
   if (typeof value === 'string') return value;
-  if (Array.isArray(value)) return value.map((entry) => asDisplayText(entry)).join(' ');
+  if (Array.isArray(value))
+    return value.map((entry) => asDisplayText(entry)).join(' ');
   if (typeof value === 'object') {
     const objectValue = value as Record<string, unknown>;
-    return [
-      objectValue.en,
-      objectValue.zh,
-      ...Object.values(objectValue),
-    ]
+    return [objectValue.en, objectValue.zh, ...Object.values(objectValue)]
       .map((entry) => asDisplayText(entry))
       .join(' ');
   }
-  return String(value);
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return value.toString();
+  }
+  if (typeof value === 'symbol') {
+    return value.description ?? '';
+  }
+  return '';
 }
 
 async function countRows(dataSource: DataSource, table: string) {
-  const rows = (await dataSource.query(
+  const rows: CountRow[] = await dataSource.query(
     `SELECT COUNT(*)::int AS count FROM ${table}`,
-  )) as Array<{ count: number }>;
+  );
   return rows[0]?.count ?? 0;
 }
 
 async function deleteSoftDeletedRows(dataSource: DataSource) {
-  const softDeleteTables = ['cities', 'story_routes', 'store_products', 'community_posts'];
+  const softDeleteTables = [
+    'cities',
+    'story_routes',
+    'store_products',
+    'community_posts',
+  ];
   for (const table of softDeleteTables) {
     await dataSource.query(`DELETE FROM ${table} WHERE deleted_at IS NOT NULL`);
   }
 }
 
 async function trimCities(dataSource: DataSource) {
-  const rows = (await dataSource.query(
+  const rows: CityRow[] = await dataSource.query(
     `SELECT id, slug, name, published, created_at
      FROM cities
      WHERE deleted_at IS NULL
      ORDER BY published DESC, created_at DESC`,
-  )) as Array<{ id: string; slug: string; name: unknown }>;
+  );
 
   const keep = rows
     .filter((row) => !looksLikeTest(`${row.slug} ${asDisplayText(row.name)}`))
@@ -92,19 +128,27 @@ async function trimCities(dataSource: DataSource) {
 
   if (!keep.length) return keep;
 
-  await dataSource.query(`DELETE FROM city_culture_sections WHERE city_id <> ALL($1::uuid[])`, [keep]);
-  await dataSource.query(`DELETE FROM route_city_links WHERE city_id <> ALL($1::uuid[])`, [keep]);
-  await dataSource.query(`DELETE FROM cities WHERE id <> ALL($1::uuid[])`, [keep]);
+  await dataSource.query(
+    `DELETE FROM city_culture_sections WHERE city_id <> ALL($1::uuid[])`,
+    [keep],
+  );
+  await dataSource.query(
+    `DELETE FROM route_city_links WHERE city_id <> ALL($1::uuid[])`,
+    [keep],
+  );
+  await dataSource.query(`DELETE FROM cities WHERE id <> ALL($1::uuid[])`, [
+    keep,
+  ]);
   return keep;
 }
 
 async function trimRoutes(dataSource: DataSource) {
-  const rows = (await dataSource.query(
+  const rows: RouteRow[] = await dataSource.query(
     `SELECT id, slug, title, published, created_at
      FROM story_routes
      WHERE deleted_at IS NULL
      ORDER BY published DESC, created_at DESC`,
-  )) as Array<{ id: string; slug: string; title: unknown }>;
+  );
 
   const keep = rows
     .filter((row) => !looksLikeTest(`${row.slug} ${asDisplayText(row.title)}`))
@@ -113,44 +157,61 @@ async function trimRoutes(dataSource: DataSource) {
 
   if (!keep.length) return keep;
 
-  await dataSource.query(`DELETE FROM route_stops WHERE route_id <> ALL($1::uuid[])`, [keep]);
-  await dataSource.query(`DELETE FROM route_city_links WHERE route_id <> ALL($1::uuid[])`, [keep]);
-  await dataSource.query(`DELETE FROM story_routes WHERE id <> ALL($1::uuid[])`, [keep]);
+  await dataSource.query(
+    `DELETE FROM route_stops WHERE route_id <> ALL($1::uuid[])`,
+    [keep],
+  );
+  await dataSource.query(
+    `DELETE FROM route_city_links WHERE route_id <> ALL($1::uuid[])`,
+    [keep],
+  );
+  await dataSource.query(
+    `DELETE FROM story_routes WHERE id <> ALL($1::uuid[])`,
+    [keep],
+  );
   return keep;
 }
 
 async function trimProductsAndCollections(dataSource: DataSource) {
-  const rows = (await dataSource.query(
+  const rows: ProductRow[] = await dataSource.query(
     `SELECT id, slug, name, collection_id, published, created_at
      FROM store_products
      WHERE deleted_at IS NULL
      ORDER BY published DESC, created_at DESC`,
-  )) as Array<{ id: string; slug: string; name: unknown; collection_id: string | null }>;
+  );
 
   const keepProducts = rows
     .filter((row) => !looksLikeTest(`${row.slug} ${asDisplayText(row.name)}`))
     .slice(0, KEEP_LIMITS.products);
 
   const keepProductIds = keepProducts.map((row) => row.id);
-  const keepCollectionIds = [...new Set(keepProducts.map((row) => row.collection_id).filter(Boolean))];
+  const keepCollectionIds = [
+    ...new Set(keepProducts.map((row) => row.collection_id).filter(Boolean)),
+  ];
 
   if (keepProductIds.length) {
-    await dataSource.query(`DELETE FROM store_products WHERE id <> ALL($1::uuid[])`, [keepProductIds]);
+    await dataSource.query(
+      `DELETE FROM store_products WHERE id <> ALL($1::uuid[])`,
+      [keepProductIds],
+    );
   }
 
   if (keepCollectionIds.length) {
-    await dataSource.query(`DELETE FROM store_collections WHERE id <> ALL($1::uuid[])`, [keepCollectionIds]);
+    await dataSource.query(
+      `DELETE FROM store_collections WHERE id <> ALL($1::uuid[])`,
+      [keepCollectionIds],
+    );
   }
 
   return { keepProductIds, keepCollectionIds };
 }
 
 async function trimEvents(dataSource: DataSource) {
-  const rows = (await dataSource.query(
+  const rows: EventRow[] = await dataSource.query(
     `SELECT id, slug, title, status, created_at
      FROM events
      ORDER BY (CASE WHEN status = 'published' THEN 0 ELSE 1 END), created_at DESC`,
-  )) as Array<{ id: string; slug: string; title: unknown }>;
+  );
 
   const keep = rows
     .filter((row) => !looksLikeTest(`${row.slug} ${asDisplayText(row.title)}`))
@@ -158,20 +219,25 @@ async function trimEvents(dataSource: DataSource) {
     .map((row) => row.id);
 
   if (keep.length) {
-    await dataSource.query(`DELETE FROM events WHERE id <> ALL($1::uuid[])`, [keep]);
+    await dataSource.query(`DELETE FROM events WHERE id <> ALL($1::uuid[])`, [
+      keep,
+    ]);
   }
 }
 
 async function trimCommunity(dataSource: DataSource) {
-  const rows = (await dataSource.query(
+  const rows: CommunityPostRow[] = await dataSource.query(
     `SELECT id, title, excerpt, status, created_at
      FROM community_posts
      WHERE deleted_at IS NULL
      ORDER BY (CASE WHEN status = 'published' THEN 0 ELSE 1 END), created_at DESC`,
-  )) as Array<{ id: string; title: unknown; excerpt: unknown }>;
+  );
 
   const preferred = rows.filter(
-    (row) => !looksLikeTest(`${asDisplayText(row.title)} ${asDisplayText(row.excerpt)}`),
+    (row) =>
+      !looksLikeTest(
+        `${asDisplayText(row.title)} ${asDisplayText(row.excerpt)}`,
+      ),
   );
   const keepSource =
     preferred.length >= KEEP_LIMITS.communityPosts
@@ -180,39 +246,56 @@ async function trimCommunity(dataSource: DataSource) {
   const keep = keepSource.map((row) => row.id);
 
   if (keep.length) {
-    await dataSource.query(`DELETE FROM community_posts WHERE id <> ALL($1::uuid[])`, [keep]);
+    await dataSource.query(
+      `DELETE FROM community_posts WHERE id <> ALL($1::uuid[])`,
+      [keep],
+    );
     await normalizeCommunityPosts(dataSource, keep);
   }
 
-  const briefRows = (await dataSource.query(
+  const briefRows: CommunityBriefRow[] = await dataSource.query(
     `SELECT id, slug, title, prompt, active, sort_order
      FROM community_briefs
      ORDER BY active DESC, sort_order ASC, created_at DESC`,
-  )) as Array<{ id: string; slug: string; title: unknown; prompt: unknown }>;
+  );
 
   const keepBriefs = briefRows
-    .filter((row) => !looksLikeTest(`${row.slug} ${asDisplayText(row.title)} ${asDisplayText(row.prompt)}`))
+    .filter(
+      (row) =>
+        !looksLikeTest(
+          `${row.slug} ${asDisplayText(row.title)} ${asDisplayText(row.prompt)}`,
+        ),
+    )
     .slice(0, KEEP_LIMITS.briefs)
     .map((row) => row.id);
 
   if (keepBriefs.length) {
-    await dataSource.query(`DELETE FROM community_briefs WHERE id <> ALL($1::uuid[])`, [keepBriefs]);
+    await dataSource.query(
+      `DELETE FROM community_briefs WHERE id <> ALL($1::uuid[])`,
+      [keepBriefs],
+    );
   }
 }
 
-async function normalizeCommunityPosts(dataSource: DataSource, keepIds: string[]) {
+async function normalizeCommunityPosts(
+  dataSource: DataSource,
+  keepIds: string[],
+) {
   if (!keepIds.length) return;
 
-  const routeRows = (await dataSource.query(
+  const routeRows: RouteSlugRow[] = await dataSource.query(
     `SELECT slug FROM story_routes WHERE deleted_at IS NULL ORDER BY published DESC, created_at DESC`,
-  )) as Array<{ slug: string }>;
-  const cityRows = (await dataSource.query(
+  );
+  const cityRows: CityNameRow[] = await dataSource.query(
     `SELECT slug, name FROM cities WHERE deleted_at IS NULL ORDER BY published DESC, created_at DESC`,
-  )) as Array<{ slug: string; name: unknown }>;
+  );
 
   const demos = [
     {
-      title: { en: 'Morning Notes from Guangzhou Arcade Streets', zh: 'Morning Notes from Guangzhou Arcade Streets' },
+      title: {
+        en: 'Morning Notes from Guangzhou Arcade Streets',
+        zh: 'Morning Notes from Guangzhou Arcade Streets',
+      },
       excerpt: {
         en: 'A short field note about breakfast steam, shaded arcades, and the river rhythm that holds Guangzhou together.',
         zh: 'A short field note about breakfast steam, shaded arcades, and the river rhythm that holds Guangzhou together.',
@@ -224,13 +307,19 @@ async function normalizeCommunityPosts(dataSource: DataSource, keepIds: string[]
       featured: true,
     },
     {
-      title: { en: 'Sunset Impressions from the Southern Coast', zh: 'Sunset Impressions from the Southern Coast' },
+      title: {
+        en: 'Sunset Impressions from the Southern Coast',
+        zh: 'Sunset Impressions from the Southern Coast',
+      },
       excerpt: {
         en: 'A calm post about fishing harbour light, volcanic shore air, and the slower table culture of Zhanjiang.',
         zh: 'A calm post about fishing harbour light, volcanic shore air, and the slower table culture of Zhanjiang.',
       },
       tags: ['Coastal', 'Field note'],
-      location: asDisplayText(cityRows[1]?.name) || asDisplayText(cityRows[0]?.name) || 'Zhanjiang',
+      location:
+        asDisplayText(cityRows[1]?.name) ||
+        asDisplayText(cityRows[0]?.name) ||
+        'Zhanjiang',
       route: routeRows[1]?.slug ?? routeRows[0]?.slug ?? '',
       mood: 'Calm',
       featured: false,
@@ -270,55 +359,81 @@ async function normalizeCommunityPosts(dataSource: DataSource, keepIds: string[]
 }
 
 async function trimInterpreting(dataSource: DataSource) {
-  const modeRows = (await dataSource.query(
+  const modeRows: ServiceModeRow[] = await dataSource.query(
     `SELECT id, title, best_for, sort_order
      FROM interpreting_service_modes
      ORDER BY sort_order ASC, created_at DESC`,
-  )) as Array<{ id: string; title: unknown; best_for: unknown }>;
+  );
   const keepModes = modeRows
-    .filter((row) => !looksLikeTest(`${asDisplayText(row.title)} ${asDisplayText(row.best_for)}`))
+    .filter(
+      (row) =>
+        !looksLikeTest(
+          `${asDisplayText(row.title)} ${asDisplayText(row.best_for)}`,
+        ),
+    )
     .slice(0, KEEP_LIMITS.serviceModes)
     .map((row) => row.id);
   if (keepModes.length) {
-    await dataSource.query(`DELETE FROM interpreting_service_modes WHERE id <> ALL($1::uuid[])`, [keepModes]);
+    await dataSource.query(
+      `DELETE FROM interpreting_service_modes WHERE id <> ALL($1::uuid[])`,
+      [keepModes],
+    );
   }
 
-  const profileRows = (await dataSource.query(
+  const profileRows: InterpreterProfileRow[] = await dataSource.query(
     `SELECT id, name, focus, status, sort_order
      FROM interpreter_profiles
      ORDER BY (CASE WHEN status = 'active' THEN 0 ELSE 1 END), sort_order ASC, created_at DESC`,
-  )) as Array<{ id: string; name: unknown; focus: unknown }>;
+  );
   const keepProfiles = profileRows
-    .filter((row) => !looksLikeTest(`${asDisplayText(row.name)} ${asDisplayText(row.focus)}`))
+    .filter(
+      (row) =>
+        !looksLikeTest(
+          `${asDisplayText(row.name)} ${asDisplayText(row.focus)}`,
+        ),
+    )
     .slice(0, KEEP_LIMITS.profiles)
     .map((row) => row.id);
   if (keepProfiles.length) {
-    await dataSource.query(`DELETE FROM interpreter_profiles WHERE id <> ALL($1::uuid[])`, [keepProfiles]);
+    await dataSource.query(
+      `DELETE FROM interpreter_profiles WHERE id <> ALL($1::uuid[])`,
+      [keepProfiles],
+    );
   }
 
-  const faqRows = (await dataSource.query(
+  const faqRows: InterpretingFaqRow[] = await dataSource.query(
     `SELECT id, question, answer, sort_order
      FROM interpreting_faqs
      ORDER BY sort_order ASC, created_at DESC`,
-  )) as Array<{ id: string; question: unknown; answer: unknown }>;
+  );
   const keepFaqs = faqRows
-    .filter((row) => !looksLikeTest(`${asDisplayText(row.question)} ${asDisplayText(row.answer)}`))
+    .filter(
+      (row) =>
+        !looksLikeTest(
+          `${asDisplayText(row.question)} ${asDisplayText(row.answer)}`,
+        ),
+    )
     .slice(0, KEEP_LIMITS.faqs)
     .map((row) => row.id);
   if (keepFaqs.length) {
-    await dataSource.query(`DELETE FROM interpreting_faqs WHERE id <> ALL($1::uuid[])`, [keepFaqs]);
+    await dataSource.query(
+      `DELETE FROM interpreting_faqs WHERE id <> ALL($1::uuid[])`,
+      [keepFaqs],
+    );
   }
 }
 
 async function trimSupportingTables(dataSource: DataSource) {
   await dataSource.query(`DELETE FROM frontend_featured`);
 
-  const homeConfigRows = (await dataSource.query(
+  const homeConfigRows: HomeConfigRow[] = await dataSource.query(
     `SELECT id FROM home_configs ORDER BY created_at DESC`,
-  )) as Array<{ id: string }>;
+  );
   const keepHomeConfigId = homeConfigRows[0]?.id;
   if (keepHomeConfigId) {
-    await dataSource.query(`DELETE FROM home_configs WHERE id <> $1`, [keepHomeConfigId]);
+    await dataSource.query(`DELETE FROM home_configs WHERE id <> $1`, [
+      keepHomeConfigId,
+    ]);
   }
 }
 
@@ -363,7 +478,10 @@ async function prepareJudgeDemo(apply: boolean) {
   });
 
   await dataSource.initialize();
-  const uploadRoot = path.join(process.cwd(), process.env.UPLOAD_DIR ?? './uploads');
+  const uploadRoot = path.join(
+    process.cwd(),
+    process.env.UPLOAD_DIR ?? './uploads',
+  );
 
   const beforeCounts = await Promise.all([
     countRows(dataSource, 'cities'),
@@ -399,7 +517,11 @@ async function prepareJudgeDemo(apply: boolean) {
   await ensureDemoAccounts(dataSource);
 
   const referencedMedia = await collectReferencedMediaFilenames(dataSource);
-  const syncedMedia = await syncMediaLibraryRecords(dataSource, referencedMedia, uploadRoot);
+  const syncedMedia = await syncMediaLibraryRecords(
+    dataSource,
+    referencedMedia,
+    uploadRoot,
+  );
 
   const afterCounts = await Promise.all([
     countRows(dataSource, 'cities'),

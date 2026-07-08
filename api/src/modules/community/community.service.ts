@@ -39,7 +39,7 @@ export class CommunityService {
     const qb = this.postRepo
       .createQueryBuilder('p')
       .where('p.status = :status', {
-        status: 'published' as CommunityPostStatus,
+        status: 'published',
       });
 
     if (query.channel) {
@@ -72,14 +72,14 @@ export class CommunityService {
 
   async getPublicPostById(id: string) {
     const post = await this.postRepo.findOne({
-      where: { id, status: 'published' as CommunityPostStatus },
+      where: { id, status: 'published' },
     });
     if (!post) throw new NotFoundException('Post not found');
     return post;
   }
 
   async listAdmin(query: {
-    status?: CommunityPostStatus | string;
+    status?: CommunityPostStatus;
     channel?: string;
     q?: string;
     page?: number;
@@ -92,8 +92,10 @@ export class CommunityService {
 
     const qb = this.postRepo.createQueryBuilder('p');
     if (query.includeDeleted) qb.withDeleted();
-    if (query.status) qb.andWhere('p.status = :status', { status: query.status });
-    if (query.channel) qb.andWhere('p.channel = :channel', { channel: query.channel });
+    if (query.status)
+      qb.andWhere('p.status = :status', { status: query.status });
+    if (query.channel)
+      qb.andWhere('p.channel = :channel', { channel: query.channel });
     if (query.q) {
       qb.andWhere('(p.title::text ILIKE :q OR p.excerpt::text ILIKE :q)', {
         q: `%${query.q}%`,
@@ -120,7 +122,7 @@ export class CommunityService {
   async create(dto: UpsertCommunityPostDto) {
     const post = this.postRepo.create({
       channel: dto.channel,
-      status: (dto.status ?? 'published') as CommunityPostStatus,
+      status: dto.status ?? 'published',
       user: dto.user,
       userId: dto.userId ?? null,
       userEmail: dto.userEmail ?? '',
@@ -142,7 +144,7 @@ export class CommunityService {
   async update(id: string, dto: UpsertCommunityPostDto) {
     const post = await this.getAdminById(id);
     Object.assign(post, dto);
-    if (dto.status) post.status = dto.status as CommunityPostStatus;
+    if (dto.status) post.status = dto.status;
     if (dto.userId !== undefined) post.userId = dto.userId;
     if (dto.userEmail !== undefined) post.userEmail = dto.userEmail;
     return this.postRepo.save(post);
