@@ -200,11 +200,21 @@ function PracticalStrip({ stop }: { stop: Stop }) {
 function ImagePlate({ stop }: { stop: Stop }) {
   const { t } = useLocale();
   const frames = imageStackFor(stop);
-  if (!frames.length) return null;
-
-  const frameCount = frames.length;
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const frameCount = frames.length;
+
+  useEffect(() => {
+    if (!frameCount) {
+      setActiveIndex(0);
+      return;
+    }
+
+    setActiveIndex((current) => Math.min(current, frameCount - 1));
+  }, [frameCount]);
+
+  if (!frameCount) return null;
+
   const leadFrame = frames[activeIndex] ?? frames[0];
   const stackedFrames = frames
     .filter((_, index) => index !== activeIndex)
