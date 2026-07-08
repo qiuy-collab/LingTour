@@ -24,7 +24,7 @@ export function SiteFooter() {
   }
 
   return (
-    <footer className="border-t border-black/5 bg-[var(--river-deep)] bg-grain text-white overflow-hidden relative">
+    <footer className="border-t border-white/10 bg-[var(--river-deep)] bg-grain text-white overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-1 bg-[var(--gold)]/20" />
       <Container className="grid gap-16 py-20 lg:grid-cols-[1.5fr_1fr_1fr] relative z-10">
         <div className="space-y-8">
