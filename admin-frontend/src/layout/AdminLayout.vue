@@ -302,7 +302,7 @@ useKeyboardShortcuts([
   background-color: var(--lt-bg-sidebar);
   overflow-x: hidden;
   overflow-y: auto;
-  transition: width 0.3s, transform 0.3s;
+  transition: transform 0.3s, background-color 0.3s;
 }
 
 .logo-area {
@@ -311,18 +311,18 @@ useKeyboardShortcuts([
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--lt-text-inverse) 10%, transparent);
 }
 
 .logo-text {
-  color: #fff;
+  color: var(--lt-text-inverse);
   font-size: 18px;
   font-weight: bold;
   white-space: nowrap;
 }
 
 .logo-text-short {
-  color: #fff;
+  color: var(--lt-text-inverse);
   font-size: 14px;
   font-weight: bold;
 }
@@ -424,7 +424,7 @@ useKeyboardShortcuts([
 }
 
 :deep(.el-menu-item-group__title) {
-  color: #8899aa;
+  color: color-mix(in srgb, var(--lt-text-inverse) 58%, transparent);
   font-size: 12px;
   padding: 16px 20px 8px;
 }
