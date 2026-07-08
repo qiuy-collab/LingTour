@@ -36,7 +36,7 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?orderNo=${orderNo}`,
+          return_url: `${window.location.origin}/checkout/success?orderNo=${encodeURIComponent(orderNo)}&status=confirmed`,
         },
         redirect: "if_required",
       });
@@ -48,7 +48,7 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
         onSuccess();
       }
     },
-    [stripe, elements, orderNo, onSuccess, onError],
+    [stripe, elements, orderNo, onSuccess, onError, t],
   );
 
   return (
@@ -86,12 +86,12 @@ export function StripePaymentForm({
   onSuccess,
   onError,
 }: StripePaymentFormProps) {
+  const { t } = useLocale();
+
   if (!stripePromise) {
     return (
       <div className="border-l-2 border-[var(--gold)] bg-[var(--gold)]/6 px-4 py-3 text-sm text-[var(--muted)]">
-        Stripe is not configured. Set{" "}
-        <code className="font-mono text-xs">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code>{" "}
-        to enable live payments.
+        {t("checkout.payment.unavailable")}
       </div>
     );
   }

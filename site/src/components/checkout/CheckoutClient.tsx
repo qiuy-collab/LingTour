@@ -55,6 +55,15 @@ function formatStorePrice(price: number, currency = "CNY") {
   return formatCurrency(price, currency);
 }
 
+function fillTemplate(
+  template: string,
+  replacements: Record<string, string | number>,
+) {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) =>
+    replacements[key] === undefined ? `{${key}}` : String(replacements[key]),
+  );
+}
+
 export function CheckoutClient() {
   const searchParams = useSearchParams();
   const productSlug = searchParams.get("product");
@@ -142,7 +151,7 @@ export function CheckoutClient() {
           setItems([{ ...products[0], quantity: 1 }]);
         }
       } catch {
-        setError("We could not load the current checkout selection.");
+        setError(t("checkout.error.loadSelection"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -152,7 +161,7 @@ export function CheckoutClient() {
     return () => {
       cancelled = true;
     };
-  }, [locale, productSlug]);
+  }, [locale, productSlug, t]);
 
   const totals = useMemo(() => {
     if (items.length === 0) return { subtotal: 0, handling: 0, total: 0 };
@@ -178,6 +187,22 @@ export function CheckoutClient() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const formatOrderStatus = useCallback(
+    (status: string) => {
+      const statusKeyMap: Record<string, string> = {
+        pending: "checkout.success.statusPending",
+        confirmed: "checkout.success.statusConfirmed",
+        shipped: "checkout.success.statusShipped",
+        delivered: "checkout.success.statusDelivered",
+        cancelled: "checkout.success.statusCancelled",
+      };
+
+      const key = statusKeyMap[status];
+      return key ? t(key) : status.replace(/_/g, " ");
+    },
+    [t],
+  );
+
   const isSandboxSecret = (secret: string) => secret.startsWith("pi_sandbox_");
 
   const handlePaymentSuccess = useCallback(() => {
@@ -193,7 +218,11 @@ export function CheckoutClient() {
 
     const incomplete = items.find((item) => !item.id);
     if (incomplete) {
-      setError(`"${incomplete.name}" is not yet mapped to a live catalog item. Re-add it from the store before checkout.`);
+      setError(
+        fillTemplate(t("checkout.error.itemUnavailable"), {
+          item: incomplete.name,
+        }),
+      );
       return;
     }
 
@@ -227,7 +256,7 @@ export function CheckoutClient() {
       setError(
         submitError instanceof Error
           ? submitError.message
-          : "We could not create your order right now.",
+          : t("checkout.error.createOrder"),
       );
     } finally {
       setSubmitting(false);
@@ -239,7 +268,7 @@ export function CheckoutClient() {
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
         <div className="flex min-h-screen items-center justify-center">
           <p className="handwritten text-lg text-[var(--muted)]">
-            Preparing your order summary...
+            {t("checkout.empty.loading")}
           </p>
         </div>
       </main>
@@ -251,13 +280,13 @@ export function CheckoutClient() {
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
         <div className="flex min-h-screen flex-col items-center justify-center gap-6">
           <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-            Your bag is empty.
+            {t("checkout.empty.bagTitle")}
           </p>
           <p className="text-sm text-[var(--muted)]">
-            Add a live catalog item before starting checkout.
+            {t("checkout.empty.bagBody")}
           </p>
           <Link href="/shop" className="btn-paper px-8 py-3 text-xs">
-            Return to store
+            {t("checkout.empty.returnToStore")}
           </Link>
         </div>
       </main>
@@ -269,14 +298,22 @@ export function CheckoutClient() {
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-            Complete payment
+            {t("checkout.page.paymentEyebrow")}
           </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-4xl italic">
-            Almost there.
+            {t("checkout.page.paymentTitle")}
           </h1>
           <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
-            Order <span className="font-bold">{orderResult.orderNo}</span> has
-            been created. Complete payment below to confirm your order.
+            {fillTemplate(t("checkout.page.paymentBody"), {
+              orderNo: orderResult.orderNo,
+            }).split(orderResult.orderNo).map((segment, index, arr) => (
+              <span key={`${segment}-${index}`}>
+                {segment}
+                {index < arr.length - 1 ? (
+                  <span className="font-bold">{orderResult.orderNo}</span>
+                ) : null}
+              </span>
+            ))}
           </p>
 
           <div className="mt-6 mb-2 flex items-end justify-between border-b border-[var(--line)] pb-4">
@@ -335,7 +372,7 @@ export function CheckoutClient() {
                 {t("checkout.success.status")}
               </p>
               <p className="mt-2 text-lg font-bold capitalize text-[var(--river-deep)]">
-                {orderResult.status}
+                {formatOrderStatus(orderResult.status)}
               </p>
             </div>
             <div className="border border-[var(--line)] bg-white/65 p-4">
@@ -368,14 +405,13 @@ export function CheckoutClient() {
           <div className="mx-auto max-w-2xl">
             <div className="mb-12">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-                Store checkout
+                {t("checkout.page.eyebrow")}
               </p>
               <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
-                Finalize delivery details.
+                {t("checkout.page.heading")}
               </h1>
               <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
-                This checkout now creates a live order record. Enter delivery
-                details that the operations team can actually ship against.
+                {t("checkout.page.body")}
               </p>
             </div>
 
@@ -388,26 +424,26 @@ export function CheckoutClient() {
             <div className="space-y-10">
               <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                  Contact
+                  {t("checkout.form.contactSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-email" className="grid gap-2 sm:col-span-2">
-                    <span className="sr-only">Email</span>
+                    <span className="sr-only">{t("checkout.form.email")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Email
+                      {t("checkout.form.email")}
                     </span>
                     <input
                       id="checkout-email"
                       value={form.email}
                       onChange={(event) => updateField("email", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="you@company.com"
+                      placeholder={t("checkout.form.emailPlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-recipient-name" className="grid gap-2 sm:col-span-2">
-                    <span className="sr-only">Recipient name</span>
+                    <span className="sr-only">{t("checkout.form.recipientName")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Recipient name
+                      {t("checkout.form.recipientName")}
                     </span>
                     <input
                       id="checkout-recipient-name"
@@ -418,22 +454,22 @@ export function CheckoutClient() {
                     />
                   </label>
                   <label htmlFor="checkout-phone" className="grid gap-2">
-                    <span className="sr-only">Phone</span>
+                    <span className="sr-only">{t("checkout.form.phone")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Phone
+                      {t("checkout.form.phone")}
                     </span>
                     <input
                       id="checkout-phone"
                       value={form.phone}
                       onChange={(event) => updateField("phone", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="+65 ..."
+                      placeholder={t("checkout.form.phonePlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-payment-method" className="grid gap-2">
-                    <span className="sr-only">Payment method</span>
+                    <span className="sr-only">{t("checkout.form.paymentMethod")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Payment method
+                      {t("checkout.form.paymentMethod")}
                     </span>
                     <select
                       id="checkout-payment-method"
@@ -441,9 +477,9 @@ export function CheckoutClient() {
                       onChange={(event) => updateField("paymentMethod", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
                     >
-                      <option value="card">Card</option>
-                      <option value="wechat">WeChat Pay</option>
-                      <option value="alipay">Alipay</option>
+                      <option value="card">{t("checkout.form.paymentOption.card")}</option>
+                      <option value="wechat">{t("checkout.form.paymentOption.wechat")}</option>
+                      <option value="alipay">{t("checkout.form.paymentOption.alipay")}</option>
                     </select>
                   </label>
                 </div>
@@ -451,13 +487,13 @@ export function CheckoutClient() {
 
               <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                  Delivery address
+                  {t("checkout.form.addressSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-street" className="grid gap-2 sm:col-span-2">
-                    <span className="sr-only">Street address</span>
+                    <span className="sr-only">{t("checkout.form.streetAddress")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Street address
+                      {t("checkout.form.streetAddress")}
                     </span>
                     <input
                       id="checkout-street"
@@ -468,9 +504,9 @@ export function CheckoutClient() {
                     />
                   </label>
                   <label htmlFor="checkout-city" className="grid gap-2">
-                    <span className="sr-only">City</span>
+                    <span className="sr-only">{t("checkout.form.city")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      City
+                      {t("checkout.form.city")}
                     </span>
                     <input
                       id="checkout-city"
@@ -481,9 +517,9 @@ export function CheckoutClient() {
                     />
                   </label>
                   <label htmlFor="checkout-state" className="grid gap-2">
-                    <span className="sr-only">State or region</span>
+                    <span className="sr-only">{t("checkout.form.state")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      State / region
+                      {t("checkout.form.state")}
                     </span>
                     <input
                       id="checkout-state"
@@ -494,9 +530,9 @@ export function CheckoutClient() {
                     />
                   </label>
                   <label htmlFor="checkout-postal-code" className="grid gap-2">
-                    <span className="sr-only">Postal code</span>
+                    <span className="sr-only">{t("checkout.form.postalCode")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Postal code
+                      {t("checkout.form.postalCode")}
                     </span>
                     <input
                       id="checkout-postal-code"
@@ -507,9 +543,9 @@ export function CheckoutClient() {
                     />
                   </label>
                   <label htmlFor="checkout-country" className="grid gap-2">
-                    <span className="sr-only">Country</span>
+                    <span className="sr-only">{t("checkout.form.country")}</span>
                     <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      Country
+                      {t("checkout.form.country")}
                     </span>
                     <input
                       id="checkout-country"
@@ -524,10 +560,10 @@ export function CheckoutClient() {
 
               <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                  Handling note
+                  {t("checkout.form.handlingNote")}
                 </p>
                 <label htmlFor="checkout-note" className="mt-5 block">
-                  <span className="sr-only">Handling note</span>
+                  <span className="sr-only">{t("checkout.form.handlingNote")}</span>
                   <textarea
                     id="checkout-note"
                     value={form.note}
@@ -545,7 +581,7 @@ export function CheckoutClient() {
           <div className="sticky top-24 mx-auto max-w-md">
             <div className="border border-[var(--line)] bg-white/70 p-8 scrapbook-shadow">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
-                Order summary
+                {t("checkout.summary.title")}
               </p>
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
@@ -562,7 +598,9 @@ export function CheckoutClient() {
                         {item.name}
                       </p>
                       <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
-                        Qty {item.quantity}
+                        {fillTemplate(t("checkout.summary.quantity"), {
+                          count: item.quantity,
+                        })}
                       </p>
                     </div>
                     <p className="text-sm font-bold text-[var(--river-deep)]">
@@ -588,10 +626,10 @@ export function CheckoutClient() {
                 <div className="flex items-end justify-between border-t border-[var(--line)] pt-5">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                      Order total
+                      {t("checkout.summary.orderTotal")}
                     </p>
                     <p className="mt-2 text-sm text-[var(--muted)]">
-                      Stored as a live order record for operations follow-up.
+                      {t("checkout.summary.operationsNote")}
                     </p>
                   </div>
                   <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
@@ -614,8 +652,7 @@ export function CheckoutClient() {
               </button>
 
               <p className="mt-4 text-xs leading-6 text-[var(--muted)]">
-                Your order will be created and you&apos;ll proceed to secure
-                payment via Stripe. No charges until you confirm.
+                {t("checkout.payment.nextStep")}
               </p>
             </div>
           </div>
