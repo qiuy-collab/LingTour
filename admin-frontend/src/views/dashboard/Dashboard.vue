@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import { BarChart, LineChart, PieChart } from 'echarts/charts'
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
+import { init, use, graphic, type ECharts } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
 import { getDashboardStats } from '@/api/dashboard'
 import type { DashboardData } from '@/types/dashboard'
 import { ElMessage } from 'element-plus'
@@ -14,6 +17,16 @@ import {
   Tickets,
 } from '@element-plus/icons-vue'
 
+use([
+  LineChart,
+  PieChart,
+  BarChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  CanvasRenderer,
+])
+
 const iconMap: Record<string, any> = { User, MapLocation, Guide, Goods, Microphone, Calendar, Tickets }
 
 const loading = ref(false)
@@ -23,9 +36,9 @@ const data = ref<DashboardData | null>(null)
 const trendChartRef = ref<HTMLDivElement>()
 const pieChartRef = ref<HTMLDivElement>()
 const barChartRef = ref<HTMLDivElement>()
-let trendChart: echarts.ECharts | null = null
-let pieChart: echarts.ECharts | null = null
-let barChart: echarts.ECharts | null = null
+let trendChart: ECharts | null = null
+let pieChart: ECharts | null = null
+let barChart: ECharts | null = null
 
 async function fetchData() {
   loading.value = true
@@ -50,7 +63,7 @@ function renderCharts() {
 function renderTrendChart() {
   if (!trendChartRef.value || !data.value) return
   if (trendChart) trendChart.dispose()
-  trendChart = echarts.init(trendChartRef.value)
+  trendChart = init(trendChartRef.value)
 
   const dates = data.value.orderTrend.map((t) => t.date.slice(5)) // MM-DD
   const amounts = data.value.orderTrend.map((t) => t.amount)
@@ -102,7 +115,7 @@ function renderTrendChart() {
         smooth: true,
         itemStyle: { color: '#409EFF' },
         areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
             { offset: 1, color: 'rgba(64, 158, 255, 0.05)' },
           ]),
@@ -116,7 +129,7 @@ function renderTrendChart() {
         smooth: true,
         itemStyle: { color: '#67C23A' },
         areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          color: new graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
             { offset: 1, color: 'rgba(103, 194, 58, 0.05)' },
           ]),
@@ -129,7 +142,7 @@ function renderTrendChart() {
 function renderPieChart() {
   if (!pieChartRef.value || !data.value) return
   if (pieChart) pieChart.dispose()
-  pieChart = echarts.init(pieChartRef.value)
+  pieChart = init(pieChartRef.value)
 
   const pieData = data.value.bookingModeDist.map((item) => ({
     name: item.mode,
@@ -174,7 +187,7 @@ function renderPieChart() {
 function renderBarChart() {
   if (!barChartRef.value || !data.value) return
   if (barChart) barChart.dispose()
-  barChart = echarts.init(barChartRef.value)
+  barChart = init(barChartRef.value)
 
   const cities = data.value.topCities.map((c) => c.city)
   const routeCounts = data.value.topCities.map((c) => c.routeCount)
