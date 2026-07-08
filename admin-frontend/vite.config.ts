@@ -2,6 +2,30 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
+function chunkNameForModule(id: string) {
+  if (id.includes('node_modules')) {
+    if (id.includes('element-plus') || id.includes('@element-plus')) {
+      return 'vendor-element'
+    }
+    if (id.includes('echarts')) {
+      return 'vendor-charts'
+    }
+    if (id.includes('xlsx')) {
+      return 'vendor-spreadsheet'
+    }
+    if (
+      id.includes('vue-router') ||
+      id.includes('/vue/') ||
+      id.includes('/pinia/')
+    ) {
+      return 'vendor-vue'
+    }
+    return 'vendor-misc'
+  }
+
+  return undefined
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '')
   const apiOrigin = env.VITE_API_ORIGIN || 'http://localhost:8000'
@@ -33,6 +57,15 @@ export default defineConfig(({ mode }) => {
       port: 4173,
       strictPort: true,
       allowedHosts: ['admin.lingfengtranstour.cn'],
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            return chunkNameForModule(id)
+          },
+        },
+      },
     },
   }
 })
