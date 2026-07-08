@@ -114,6 +114,13 @@
     "community.success.pendingReview": "Posted to review queue. It is pinned here for you while awaiting approval.",
     "community.success.published": "Published. You earned 1 field stamp.",
     "community.error.submitFailed": "Could not submit your field note right now.",
+    "community.error.imageUploadFailed": "Image upload failed. Please try again.",
+    "community.error.dispatchFailed": "Could not dispatch this post right now.",
+    "community.fieldKit.titlePlaceholder": "Optional title for text or image dispatch...",
+    "community.fieldKit.notePlaceholder": "Write a field note, or leave this blank for a pure photo signal...",
+    "community.post.illustratedNote": "Illustrated note",
+    "community.post.photoSignal": "Photo signal",
+    "community.post.textDispatch": "Text dispatch",
   },
 
   zh: {
@@ -231,6 +238,13 @@
     "community.success.pendingReview": "已提交审核。在等待审批期间，内容已固定显示。",
     "community.success.published": "已发布。您获得了 1 枚田野印章。",
     "community.error.submitFailed": "目前无法提交您的田野笔记。",
+    "community.error.imageUploadFailed": "图片上传失败，请重试。",
+    "community.error.dispatchFailed": "暂时无法发布。",
+    "community.fieldKit.titlePlaceholder": "为文字或图片快讯添加可选标题...",
+    "community.fieldKit.notePlaceholder": "写下一段田野笔记，或留空以发布纯图片信号...",
+    "community.post.illustratedNote": "图文笔记",
+    "community.post.photoSignal": "图片信号",
+    "community.post.textDispatch": "文字快讯",
   },
 };
 

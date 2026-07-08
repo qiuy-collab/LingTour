@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { AUTH_PROMPTS } from "@/lib/auth-prompts";
+import { useLocale } from "@/lib/locale-context";
 import { apiClient, ApiRequestError } from "@/lib/api-client";
 
 type FieldKitProps<TChannel extends string> = {
@@ -42,6 +43,7 @@ export function FieldKit<TChannel extends string>({
   channels,
   compact = false,
 }: FieldKitProps<TChannel>) {
+  const { t } = useLocale();
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [activeChannel, setActiveChannel] = useState<TChannel>(channels[1]);
@@ -123,7 +125,7 @@ export function FieldKit<TChannel extends string>({
       setError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Image upload failed. Please try again.",
+          : t("community.error.imageUploadFailed"),
       );
       setImage(null);
     } finally {
@@ -155,7 +157,7 @@ export function FieldKit<TChannel extends string>({
       setError(
         publishError instanceof Error
           ? publishError.message
-          : "Could not dispatch this post right now.",
+          : t("community.error.dispatchFailed"),
       );
     } finally {
       setSubmitting(false);
@@ -291,7 +293,7 @@ export function FieldKit<TChannel extends string>({
                   value={title}
                   disabled={locked}
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Optional title for text or image dispatch..."
+                  placeholder={t("community.fieldKit.titlePlaceholder")}
                   className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-xl" : "text-2xl"}`}
@@ -307,7 +309,7 @@ export function FieldKit<TChannel extends string>({
                   value={note}
                   disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
-                  placeholder="Write a field note, or leave this blank for a pure photo signal..."
+                  placeholder={t("community.fieldKit.notePlaceholder")}
                   className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-base" : "text-lg"}`}

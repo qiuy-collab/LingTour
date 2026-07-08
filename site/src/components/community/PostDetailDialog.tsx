@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
 import { Avatar } from "@/components/ui/Avatar";
+import { useLocale } from "@/lib/locale-context";
 
 type Identity = {
   name: string;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export function PostDetailDialog({ post, onClose }: Props) {
+  const { t } = useLocale();
   useEffect(() => {
     if (!post) return;
     const previous = document.body.style.overflow;
@@ -82,10 +84,10 @@ export function PostDetailDialog({ post, onClose }: Props) {
             <div className={hasImage ? "mt-6" : ""}>
               <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--gold)]">
                 {hasImage && hasText
-                  ? "Illustrated note"
+                  ? t("community.post.illustratedNote")
                   : hasImage
-                    ? "Photo signal"
-                    : "Text dispatch"}
+                    ? t("community.post.photoSignal")
+                    : t("community.post.textDispatch")}
               </p>
               <h2 className="mt-3 font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] sm:text-5xl">
                 {post.title}
