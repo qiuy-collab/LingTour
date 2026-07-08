@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale } from "@/lib/locale-context";
 import type { CultureFeature } from "@/types/content";
 import { placeholderFor } from "@/lib/placeholders";
 
 interface Props {
   highlights?: CultureFeature[];
-}
-
-function stripMarkdown(text: string): string {
-  return text.replace(/^#{1,3}\s+/gm, "").replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
 }
 
 /**
@@ -20,24 +17,26 @@ function stripMarkdown(text: string): string {
  * Journal-style placeholder, which is editable by ops via the admin UI.
  */
 export function CultureGallery({ highlights = [] }: Props) {
+  const { t } = useLocale();
+
   if (!highlights.length) {
     return (
       <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-          Culture Atlas
+          {t("culture.atlas.eyebrow")}
         </p>
         <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-          The atlas is opening.
+          {t("culture.atlas.empty.title")}
         </h3>
         <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
-          City highlights appear here once the editorial team curates them.
+          {t("culture.atlas.empty.body")}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-x-12 gap-y-20 md:grid-cols-2">
+    <div className="grid gap-x-12 gap-y-14 md:grid-cols-2 md:gap-y-20">
       {highlights.map((item, idx) => {
         const image = item.image || placeholderFor("hero");
         const place = item.place || item.title || "Lingnan culture";
@@ -46,18 +45,17 @@ export function CultureGallery({ highlights = [] }: Props) {
             key={item.slug}
             href={item.href ?? `/culture/${item.slug}`}
             className={`group relative transition-all duration-500 hover:-translate-y-2 ${
-              idx % 2 === 0 ? "-rotate-1" : "rotate-1"
+              idx % 2 === 0 ? "md:-rotate-1" : "md:rotate-1"
             }`}
           >
-            <div className="relative aspect-[3/2] scrapbook-shadow border-[0.75rem] border-white overflow-hidden bg-white">
-              <div
-                className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
-                style={{ backgroundImage: `url(${image})` }}
-              />
-              <div className="absolute inset-0 bg-black/5" />
-
-              {/* Tape decoration */}
-              <div className="absolute -top-3 left-1/4 w-16 h-6 bg-white/30 backdrop-blur-sm rotate-3 z-20" />
+            <div className="relative aspect-[3/2] tape-effect">
+              <div className="absolute inset-0 scrapbook-shadow border-[0.75rem] border-white overflow-hidden bg-white">
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${image})` }}
+                />
+                <div className="absolute inset-0 bg-black/5" />
+              </div>
             </div>
 
             <div className="mt-8 space-y-4 px-2">
@@ -68,16 +66,12 @@ export function CultureGallery({ highlights = [] }: Props) {
                 </p>
               </div>
 
-              <h3 className="font-[family:var(--font-display)] text-4xl leading-tight text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
+              <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                 {item.title}
               </h3>
 
-              <p className="text-sm leading-relaxed text-[var(--muted)] handwritten max-w-[30ch]">
-                {stripMarkdown(item.body)}
-              </p>
-
               <div className="pt-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
-                <span>View archive</span>
+                <span>{t("culture.atlas.openArchive")}</span>
                 <svg
                   className="h-3 w-3 transition-transform group-hover:translate-x-1"
                   fill="none"
