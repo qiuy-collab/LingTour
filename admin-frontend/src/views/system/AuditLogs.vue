@@ -284,7 +284,7 @@ onMounted(() => {
 
 .page-desc {
   margin: 6px 0 0;
-  color: #8b95a4;
+  color: var(--lt-text-secondary);
   font-size: 13px;
 }
 
@@ -305,18 +305,18 @@ onMounted(() => {
 }
 
 .stat-label {
-  color: #8b95a4;
+  color: var(--lt-text-secondary);
   font-size: 12px;
 }
 
 .stat-card strong {
   font-size: 24px;
   line-height: 1;
-  color: #1f2a37;
+  color: var(--lt-text-primary);
 }
 
 .stat-card small {
-  color: #606266;
+  color: var(--lt-text-regular);
 }
 
 .search-bar {
@@ -352,7 +352,7 @@ onMounted(() => {
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .detail-json {
@@ -360,8 +360,8 @@ onMounted(() => {
   padding: 12px;
   max-height: 360px;
   overflow: auto;
-  border-radius: 8px;
-  background: #f5f7fa;
+  border-radius: var(--lt-radius-md);
+  background: var(--lt-bg-hover);
   font-size: 12px;
   line-height: 1.5;
 }
