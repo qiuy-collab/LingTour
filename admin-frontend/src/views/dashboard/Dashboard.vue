@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
 import { init, use, graphic, type ECharts } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { getDashboardStats } from '@/api/dashboard'
 import type { DashboardData } from '@/types/dashboard'
+import { useTheme } from '@/composables/useTheme'
 import { ElMessage } from 'element-plus'
 import {
   User,
@@ -28,9 +29,123 @@ use([
 ])
 
 const iconMap: Record<string, any> = { User, MapLocation, Guide, Goods, Microphone, Calendar, Tickets }
+const { isDark } = useTheme()
 
 const loading = ref(false)
 const data = ref<DashboardData | null>(null)
+
+type DashboardStatKey = keyof DashboardData['stats']
+
+interface DashboardStatCard {
+  key: DashboardStatKey
+  label: string
+  icon: keyof typeof iconMap
+  color: string
+  softColor: string
+}
+
+const statCards: DashboardStatCard[] = [
+  {
+    key: 'totalUsers',
+    label: '用户总数',
+    icon: 'User',
+    color: 'var(--lt-primary)',
+    softColor: 'color-mix(in srgb, var(--lt-primary) 16%, transparent)',
+  },
+  {
+    key: 'totalCities',
+    label: '覆盖城市',
+    icon: 'MapLocation',
+    color: 'var(--lt-success)',
+    softColor: 'color-mix(in srgb, var(--lt-success) 16%, transparent)',
+  },
+  {
+    key: 'totalRoutes',
+    label: '已发布路线',
+    icon: 'Guide',
+    color: 'var(--lt-warning)',
+    softColor: 'color-mix(in srgb, var(--lt-warning) 16%, transparent)',
+  },
+  {
+    key: 'totalProducts',
+    label: '商城商品',
+    icon: 'Goods',
+    color: 'var(--lt-danger)',
+    softColor: 'color-mix(in srgb, var(--lt-danger) 16%, transparent)',
+  },
+  {
+    key: 'totalInterpreters',
+    label: '口译员',
+    icon: 'Microphone',
+    color: 'var(--lt-info)',
+    softColor: 'color-mix(in srgb, var(--lt-info) 16%, transparent)',
+  },
+  {
+    key: 'pendingBookings',
+    label: '待处理预约',
+    icon: 'Calendar',
+    color: 'var(--lt-warning)',
+    softColor: 'color-mix(in srgb, var(--lt-warning) 16%, transparent)',
+  },
+  {
+    key: 'pendingOrders',
+    label: '待处理订单',
+    icon: 'Tickets',
+    color: 'var(--lt-route-mountain)',
+    softColor: 'color-mix(in srgb, var(--lt-route-mountain) 16%, transparent)',
+  },
+]
+
+function resolveThemeColor(token: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback
+  const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+  return value || fallback
+}
+
+function resolveThemeRadius(token: string, fallback: number) {
+  const rawValue = resolveThemeColor(token, `${fallback}px`)
+  const parsed = Number.parseFloat(rawValue)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function withAlpha(hexColor: string, alpha: number) {
+  const normalized = hexColor.replace('#', '').trim()
+  const expanded = normalized.length === 3
+    ? normalized.split('').map((char) => `${char}${char}`).join('')
+    : normalized
+
+  if (expanded.length !== 6) {
+    return hexColor
+  }
+
+  const red = Number.parseInt(expanded.slice(0, 2), 16)
+  const green = Number.parseInt(expanded.slice(2, 4), 16)
+  const blue = Number.parseInt(expanded.slice(4, 6), 16)
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
+
+function getDashboardPalette() {
+  const primary = resolveThemeColor('--lt-primary', '#409eff')
+  const success = resolveThemeColor('--lt-success', '#67c23a')
+  const warning = resolveThemeColor('--lt-warning', '#e6a23c')
+  const info = resolveThemeColor('--lt-info', '#909399')
+  const cardBackground = resolveThemeColor('--lt-bg-card', '#ffffff')
+  const radiusSm = resolveThemeRadius('--lt-radius-sm', 6)
+
+  return {
+    primary,
+    success,
+    warning,
+    info,
+    cardBackground,
+    radiusSm,
+    primaryStrong: withAlpha(primary, 0.3),
+    primarySoft: withAlpha(primary, 0.05),
+    successStrong: withAlpha(success, 0.3),
+    successSoft: withAlpha(success, 0.05),
+  }
+}
 
 // ECharts 实例
 const trendChartRef = ref<HTMLDivElement>()
@@ -64,6 +179,7 @@ function renderTrendChart() {
   if (!trendChartRef.value || !data.value) return
   if (trendChart) trendChart.dispose()
   trendChart = init(trendChartRef.value)
+  const palette = getDashboardPalette()
 
   const dates = data.value.orderTrend.map((t) => t.date.slice(5)) // MM-DD
   const amounts = data.value.orderTrend.map((t) => t.amount)
@@ -113,11 +229,11 @@ function renderTrendChart() {
         type: 'line',
         data: amounts,
         smooth: true,
-        itemStyle: { color: '#409EFF' },
+        itemStyle: { color: palette.primary },
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
-            { offset: 1, color: 'rgba(64, 158, 255, 0.05)' },
+            { offset: 0, color: palette.primaryStrong },
+            { offset: 1, color: palette.primarySoft },
           ]),
         },
       },
@@ -127,11 +243,11 @@ function renderTrendChart() {
         yAxisIndex: 1,
         data: counts,
         smooth: true,
-        itemStyle: { color: '#67C23A' },
+        itemStyle: { color: palette.success },
         areaStyle: {
           color: new graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(103, 194, 58, 0.3)' },
-            { offset: 1, color: 'rgba(103, 194, 58, 0.05)' },
+            { offset: 0, color: palette.successStrong },
+            { offset: 1, color: palette.successSoft },
           ]),
         },
       },
@@ -143,6 +259,7 @@ function renderPieChart() {
   if (!pieChartRef.value || !data.value) return
   if (pieChart) pieChart.dispose()
   pieChart = init(pieChartRef.value)
+  const palette = getDashboardPalette()
 
   const pieData = data.value.bookingModeDist.map((item) => ({
     name: item.mode,
@@ -166,8 +283,8 @@ function renderPieChart() {
         center: ['60%', '50%'],
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 4,
-          borderColor: '#fff',
+          borderRadius: palette.radiusSm,
+          borderColor: palette.cardBackground,
           borderWidth: 2,
         },
         label: {
@@ -178,7 +295,7 @@ function renderPieChart() {
           label: { show: true, fontSize: 14, fontWeight: 'bold' },
         },
         data: pieData,
-        color: ['#409EFF', '#67C23A', '#E6A23C'],
+        color: [palette.primary, palette.success, palette.warning],
       },
     ],
   })
@@ -188,6 +305,7 @@ function renderBarChart() {
   if (!barChartRef.value || !data.value) return
   if (barChart) barChart.dispose()
   barChart = init(barChartRef.value)
+  const palette = getDashboardPalette()
 
   const cities = data.value.topCities.map((c) => c.city)
   const routeCounts = data.value.topCities.map((c) => c.routeCount)
@@ -222,14 +340,14 @@ function renderBarChart() {
         name: '关联路线',
         type: 'bar',
         data: routeCounts,
-        itemStyle: { color: '#409EFF', borderRadius: [4, 4, 0, 0] },
+        itemStyle: { color: palette.primary, borderRadius: [palette.radiusSm, palette.radiusSm, 0, 0] },
         barMaxWidth: 30,
       },
       {
         name: '口译预约',
         type: 'bar',
         data: bookingCounts,
-        itemStyle: { color: '#E6A23C', borderRadius: [4, 4, 0, 0] },
+        itemStyle: { color: palette.warning, borderRadius: [palette.radiusSm, palette.radiusSm, 0, 0] },
         barMaxWidth: 30,
       },
     ],
@@ -248,6 +366,12 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
 })
 
+watch(isDark, async () => {
+  if (!data.value) return
+  await nextTick()
+  renderCharts()
+})
+
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   trendChart?.dispose()
@@ -264,18 +388,10 @@ onUnmounted(() => {
 
     <!-- 统计卡片 -->
     <div class="stats-grid">
-      <div v-for="card in [
-        { key: 'totalUsers', label: '用户总数', icon: 'User', color: '#409EFF' },
-        { key: 'totalCities', label: '覆盖城市', icon: 'MapLocation', color: '#67C23A' },
-        { key: 'totalRoutes', label: '已发布路线', icon: 'Guide', color: '#E6A23C' },
-        { key: 'totalProducts', label: '商城商品', icon: 'Goods', color: '#F56C6C' },
-        { key: 'totalInterpreters', label: '口译员', icon: 'Microphone', color: '#909399' },
-        { key: 'pendingBookings', label: '待处理预约', icon: 'Calendar', color: '#FF9800' },
-        { key: 'pendingOrders', label: '待处理订单', icon: 'Tickets', color: '#9C27B0' },
-      ]" :key="card.key">
+      <div v-for="card in statCards" :key="card.key">
         <el-card shadow="hover" class="stat-card">
           <div class="stat-content">
-            <div class="stat-icon" :style="{ background: card.color + '1a', color: card.color }">
+            <div class="stat-icon" :style="{ background: card.softColor, color: card.color }">
               <el-icon :size="24">
                 <component :is="iconMap[card.icon]" />
               </el-icon>
@@ -283,7 +399,7 @@ onUnmounted(() => {
             <div class="stat-text">
               <div class="stat-label">{{ card.label }}</div>
               <div class="stat-value" :style="{ color: card.color }">
-                {{ data?.stats?.[card.key as keyof NonNullable<typeof data>['stats']] ?? '-' }}
+                {{ data?.stats?.[card.key] ?? '-' }}
               </div>
             </div>
           </div>
@@ -351,7 +467,7 @@ onUnmounted(() => {
 .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--lt-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,7 +481,7 @@ onUnmounted(() => {
 
 .stat-label {
   font-size: 13px;
-  color: var(--lt-text-secondary, #909399);
+  color: var(--lt-text-secondary);
   margin-bottom: 4px;
 }
 
@@ -382,7 +498,7 @@ onUnmounted(() => {
 .chart-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--lt-text-primary, #303133);
+  color: var(--lt-text-primary);
 }
 
 .chart-container {
