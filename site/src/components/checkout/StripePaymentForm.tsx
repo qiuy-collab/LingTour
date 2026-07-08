@@ -90,7 +90,7 @@ export function StripePaymentForm({
 
   if (!stripePromise) {
     return (
-      <div className="border-l-2 border-[var(--gold)] bg-[var(--gold)]/6 px-4 py-3 text-sm text-[var(--muted)]">
+      <div className="border border-[var(--gold)]/30 bg-[var(--gold)]/8 px-4 py-3 text-sm text-[var(--muted)]">
         {t("checkout.payment.unavailable")}
       </div>
     );
@@ -104,9 +104,13 @@ export function StripePaymentForm({
         appearance: {
           theme: "stripe",
           variables: {
-            colorPrimary: "#2d4a3e",
-            borderRadius: "4px",
-            fontFamily: "system-ui, sans-serif",
+            colorPrimary: "#14343d",
+            colorText: "#17202a",
+            colorDanger: "#842b23",
+            colorBackground: "#f4f2ee",
+            borderRadius: "0px",
+            fontFamily:
+              '"Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif',
           },
         },
       }}
