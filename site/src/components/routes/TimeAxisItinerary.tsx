@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useSpring } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 
 type Stop = {
   time: string;
@@ -197,6 +198,7 @@ function PracticalStrip({ stop }: { stop: Stop }) {
 }
 
 function ImagePlate({ stop }: { stop: Stop }) {
+  const { t } = useLocale();
   const frames = imageStackFor(stop);
   if (!frames.length) return null;
 
@@ -283,7 +285,7 @@ function ImagePlate({ stop }: { stop: Stop }) {
         <div className="pointer-events-none absolute -top-3 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-[3deg] border border-black/5 bg-[rgba(244,236,220,0.72)] backdrop-blur-[2px]" />
         {frameCount > 1 ? (
           <div className="pointer-events-none absolute bottom-3 right-3 border border-black/5 bg-[var(--paper)]/88 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/65 backdrop-blur-[1px]">
-            Tap to flip
+            {t("interpreting.card.tapToFlip")}
           </div>
         ) : null}
       </button>

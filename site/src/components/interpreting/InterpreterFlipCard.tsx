@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/lib/locale-context";
 
 interface InterpreterFlipCardProps {
   role: string;
@@ -11,6 +12,7 @@ interface InterpreterFlipCardProps {
 }
 
 export function InterpreterFlipCard({ role, language, focus, helps, index }: InterpreterFlipCardProps) {
+  const { t } = useLocale();
   const [flipped, setFlipped] = useState(false);
 
   return (
@@ -36,13 +38,13 @@ export function InterpreterFlipCard({ role, language, focus, helps, index }: Int
         >
           <div>
             <span className="border border-white/14 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--gold)]">
-              Profile 0{index + 1}
+              {t("interpreting.card.profilePrefix")} 0{index + 1}
             </span>
             <h3 className="mt-5 font-[family:var(--font-display)] text-2xl text-white">{role}</h3>
             <p className="mt-3 text-sm leading-6 text-white/50">{language}</p>
           </div>
           <p className="text-xs uppercase tracking-[0.16em] text-white/30">
-            Tap to flip ↻
+            {t("interpreting.card.tapToFlip")} ↻
           </p>
         </div>
 

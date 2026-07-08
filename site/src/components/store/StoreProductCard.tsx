@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale } from "@/lib/locale-context";
 import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { Price } from "@/components/ui/Price";
 import type { StoreProduct } from "@/data/store";
@@ -12,6 +13,7 @@ type StoreProductCardProps = {
 };
 
 export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) {
+  const { t } = useLocale();
   return (
     <Reveal delay={index * 80}>
       <article
@@ -47,7 +49,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
           <div className="space-y-3 pt-2">
             <div className="flex justify-between items-start">
               <p className="text-[10px] font-mono text-[var(--muted)] tracking-[0.18em] uppercase">
-                Curated Object
+                {t("shop.card.curatedObject")}
               </p>
               <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
             </div>

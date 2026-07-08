@@ -1,6 +1,8 @@
 const copy = {
   "interpreting.page.title": "Interpreting",
   "interpreting.page.subtitle": "Language support for markets, meals, meetings, and travel days.",
+  "interpreting.card.profilePrefix": "Profile",
+  "interpreting.card.tapToFlip": "Tap to flip",
   "interpreting.hero.title": "Let the day speak clearly.",
   "interpreting.hero.subtitle": "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one.",
   "interpreting.hero.scroll": "Scroll to explore",
@@ -138,6 +140,8 @@ const copyZh = {
 
   "interpreting.page.title": "翻译陪同",
   "interpreting.page.subtitle": "为市场、餐饮、会议和出行日提供语言支持。",
+  "interpreting.card.profilePrefix": "档案",
+  "interpreting.card.tapToFlip": "点击翻转",
   "interpreting.hero.title": "让每一天都清晰可述。",
   "interpreting.hero.subtitle": "无论是市场、会议、路线还是餐饮：一位本地翻译，让语言、节奏、礼仪与空间融为一体。",
   "interpreting.hero.scroll": "向下滚动探索",

@@ -2,6 +2,7 @@ export const shop = {
   en: {
     "shop.page.title": "Shop",
     "shop.page.subtitle": "Route-linked objects selected for craft value, provenance, and story.",
+    "shop.card.curatedObject": "Curated Object",
     "shop.page.viewAll": "All products",
     "shop.page.collections": "Collections",
     "shop.page.sortBy": "Sort by",
@@ -46,6 +47,7 @@ export const shop = {
   zh: {
     "shop.page.title": "文创商店",
     "shop.page.subtitle": "围绕产地、工艺与故事线索挑选的路线关联器物。",
+    "shop.card.curatedObject": "精选好物",
     "shop.page.viewAll": "全部商品",
     "shop.page.collections": "系列",
     "shop.page.sortBy": "排序",
