@@ -6,6 +6,7 @@ import { interpretersApi } from '@/api/interpreters'
 import { InterpreterStatusMap, InterpreterStatusColorMap } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
 import type { Interpreter } from '@/types/interpreting'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
@@ -130,14 +131,14 @@ async function handleEnable(row: Interpreter) {
     <el-table :data="list" v-loading="loading" stripe empty-text="暂无口译员数据">
       <el-table-column label="头像" width="70">
         <template #default="{ row }">
-          <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
+          <el-avatar v-if="row.avatar" :src="resolveMediaUrl(row.avatar)" :size="40" />
           <el-avatar v-else :size="40">{{ nameZh(row).charAt(0) }}</el-avatar>
         </template>
       </el-table-column>
       <el-table-column label="姓名" width="140">
         <template #default="{ row }">
           <div>{{ pickI18n(row.name) }}</div>
-          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.name, 'en') }}</div>
+          <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
         </template>
       </el-table-column>
       <el-table-column label="服务语种" width="200" show-overflow-tooltip>
@@ -146,7 +147,7 @@ async function handleEnable(row: Interpreter) {
       <el-table-column label="专注领域" min-width="180" show-overflow-tooltip>
         <template #default="{ row }">
           <div>{{ pickI18n(row.focus) }}</div>
-          <div style="font-size: 12px; color: #909399">{{ pickI18n(row.focus, 'en') }}</div>
+          <div class="admin-list-meta">{{ pickI18n(row.focus, 'en') }}</div>
         </template>
       </el-table-column>
       <el-table-column label="能力标签" min-width="200">

@@ -8,6 +8,7 @@ import type { Product } from '@/types/product'
 import { pickI18n } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
@@ -112,8 +113,8 @@ async function handleToggleStatus(row: Product) {
           <template #default="{ row }">
             <el-image
               v-if="row.image"
-              :src="row.image"
-              style="width: 50px; height: 50px; border-radius: 4px"
+              :src="resolveMediaUrl(row.image)"
+              class="admin-list-thumb"
               fit="cover"
             />
           </template>
@@ -121,7 +122,7 @@ async function handleToggleStatus(row: Product) {
         <el-table-column label="商品名称" min-width="180">
           <template #default="{ row }">
             <div>{{ pickI18n(row.name) }}</div>
-            <div style="font-size: 12px; color: #909399">{{ pickI18n(row.name, 'en') }}</div>
+            <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
           </template>
         </el-table-column>
         <el-table-column label="所属系列" width="160">

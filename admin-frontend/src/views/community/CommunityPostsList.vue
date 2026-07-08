@@ -6,6 +6,7 @@ import type { CommunityPost, PostChannel, PostStatus } from '@/types/community'
 import { PostChannelMap, PostChannelColorMap, PostStatusMap, PostStatusColorMap } from '@/types/community'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
@@ -130,22 +131,22 @@ function formatInteractions(post: CommunityPost): string {
           <template #default="{ row }">
             <el-image
               v-if="row.image"
-              :src="row.image"
-              style="width: 50px; height: 50px; border-radius: 4px"
+              :src="resolveMediaUrl(row.image)"
+              class="admin-list-thumb"
               fit="cover"
               preview-teleported
             />
-            <span v-else style="color: #c0c4cc">无图</span>
+            <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
         <el-table-column label="用户" width="150">
           <template #default="{ row }">
-            <div style="display: flex; align-items: center; gap: 8px">
+            <div class="admin-list-inline">
               <el-avatar v-if="row.userAvatar" :src="row.userAvatar" :size="28" />
               <div>
                 <div style="font-size: 13px">{{ row.userName }}</div>
-                <div style="font-size: 11px; color: #909399">@{{ row.userHandle }}</div>
+                <div class="admin-list-meta-compact">@{{ row.userHandle }}</div>
               </div>
             </div>
           </template>
@@ -160,7 +161,7 @@ function formatInteractions(post: CommunityPost): string {
         <el-table-column prop="date" label="日期" width="110" align="center" />
         <el-table-column label="互动" width="130" align="center">
           <template #default="{ row }">
-            <span style="font-size: 12px; color: #606266">{{ formatInteractions(row) }}</span>
+            <span class="admin-list-note">{{ formatInteractions(row) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90" align="center">

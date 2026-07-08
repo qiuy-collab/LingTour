@@ -9,21 +9,22 @@ import { pickI18n } from '@/types/common'
 import { formatRouteTagLabel, normalizeRouteTag } from '@/constants/guangdongRegions'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
 // ─── 文化标签映射 ──────────────────────────
 const cultureTagMap: Record<string, { label: string; color: string }> = {
-  'Bay Area': { label: formatRouteTagLabel('Bay Area'), color: '#409EFF' },
-  Chaoshan: { label: formatRouteTagLabel('Chaoshan'), color: '#E6A23C' },
-  Hakka: { label: formatRouteTagLabel('Hakka'), color: '#67C23A' },
-  Coastal: { label: formatRouteTagLabel('Coastal'), color: '#00B5AD' },
-  Mountain: { label: formatRouteTagLabel('Mountain'), color: '#FF5722' },
+  'Bay Area': { label: formatRouteTagLabel('Bay Area'), color: 'var(--lt-route-bay)' },
+  Chaoshan: { label: formatRouteTagLabel('Chaoshan'), color: 'var(--lt-route-chaoshan)' },
+  Hakka: { label: formatRouteTagLabel('Hakka'), color: 'var(--lt-route-hakka)' },
+  Coastal: { label: formatRouteTagLabel('Coastal'), color: 'var(--lt-route-coastal)' },
+  Mountain: { label: formatRouteTagLabel('Mountain'), color: 'var(--lt-route-mountain)' },
 }
 
 function getCultureTagInfo(tag: string) {
   const normalizedTag = normalizeRouteTag(tag)
-  return cultureTagMap[normalizedTag] || { label: normalizedTag, color: '#909399' }
+  return cultureTagMap[normalizedTag] || { label: normalizedTag, color: 'var(--lt-info)' }
 }
 
 // ─── 列表数据 (useListPage) ─────────────
@@ -123,10 +124,10 @@ async function handleToggleStatus(routeItem: Route) {
         <el-table-column label="封面" width="80">
           <template #default="{ row }">
             <el-image
-              :src="row.coverImage"
+              :src="resolveMediaUrl(row.coverImage)"
               fit="cover"
-              style="width: 50px; height: 50px; border-radius: 4px"
-              :preview-src-list="[row.coverImage]"
+              class="admin-list-thumb"
+              :preview-src-list="resolveMediaUrl(row.coverImage) ? [resolveMediaUrl(row.coverImage)] : []"
               preview-teleported
             />
           </template>
@@ -247,6 +248,6 @@ async function handleToggleStatus(routeItem: Route) {
 
 .route-title-en {
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 </style>

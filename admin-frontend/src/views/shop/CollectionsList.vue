@@ -5,6 +5,7 @@ import type { StoreCollection } from '@/types/collection'
 import { pickI18n } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
@@ -57,8 +58,8 @@ function handleEdit(id: string) {
           <template #default="{ row }">
             <el-image
               v-if="row.image"
-              :src="row.image"
-              style="width: 50px; height: 50px; border-radius: 4px"
+              :src="resolveMediaUrl(row.image)"
+              class="admin-list-thumb"
               fit="cover"
             />
           </template>
@@ -66,7 +67,7 @@ function handleEdit(id: string) {
         <el-table-column label="系列名称" min-width="180">
           <template #default="{ row }">
             <div>{{ pickI18n(row.title) }}</div>
-            <div style="font-size: 12px; color: #909399">{{ pickI18n(row.title, 'en') }}</div>
+            <div class="admin-list-meta">{{ pickI18n(row.title, 'en') }}</div>
           </template>
         </el-table-column>
         <el-table-column label="关联路线" width="160">

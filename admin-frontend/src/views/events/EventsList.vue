@@ -7,6 +7,7 @@ import type { Event, EventStatus } from '@/types/event'
 import { EventStatusMap, EventStatusColorMap } from '@/types/event'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
@@ -195,18 +196,18 @@ const cityOptions = computed(() => {
           <template #default="{ row }">
             <el-image
               v-if="row.image"
-              :src="row.image"
-              style="width: 60px; height: 40px; border-radius: 4px"
+              :src="resolveMediaUrl(row.image)"
+              class="admin-list-thumb admin-list-thumb--wide"
               fit="cover"
               preview-teleported
             />
-            <span v-else style="color: #c0c4cc">无图</span>
+            <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>
         <el-table-column prop="title" label="活动名称" min-width="180">
           <template #default="{ row }">
             <div>{{ row.title || '' }}</div>
-            <div style="font-size: 12px; color: #909399">{{ row.titleEn || '' }}</div>
+            <div class="admin-list-meta">{{ row.titleEn || '' }}</div>
           </template>
         </el-table-column>
         <el-table-column label="日期" width="200" align="center">
@@ -243,7 +244,7 @@ const cityOptions = computed(() => {
         <el-table-column label="关联路线" width="120" align="center">
           <template #default="{ row }">
             <span v-if="row.relatedRouteSlugs.length">{{ row.relatedRouteSlugs.length }}条</span>
-            <span v-else style="color: #c0c4cc">—</span>
+            <span v-else class="admin-list-empty">—</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="240" fixed="right">
@@ -364,27 +365,27 @@ const cityOptions = computed(() => {
 }
 .calendar-event-count {
   margin-left: 16px;
-  color: var(--lt-text-secondary, #909399);
+  color: var(--lt-text-secondary);
   font-size: 14px;
 }
 
 .calendar-grid {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
+  border: 1px solid var(--lt-border-light);
+  border-radius: var(--lt-radius-md);
   overflow: hidden;
 }
 .calendar-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: #f5f7fa;
+  background: var(--lt-bg-hover);
 }
 .calendar-header-cell {
   text-align: center;
   padding: 8px 0;
   font-weight: 600;
   font-size: 13px;
-  color: var(--lt-text-regular, #606266);
-  border-bottom: 1px solid #ebeef5;
+  color: var(--lt-text-regular);
+  border-bottom: 1px solid var(--lt-border-light);
 }
 .calendar-body {
   display: grid;
@@ -392,21 +393,21 @@ const cityOptions = computed(() => {
 }
 .calendar-cell {
   min-height: 90px;
-  border-right: 1px solid #ebeef5;
-  border-bottom: 1px solid #ebeef5;
+  border-right: 1px solid var(--lt-border-light);
+  border-bottom: 1px solid var(--lt-border-light);
   padding: 4px;
   position: relative;
 }
 .calendar-cell:nth-child(7n) { border-right: none; }
-.calendar-cell-empty { background: #fafbfc; }
-.calendar-cell.is-today { background: #ecf5ff; }
+.calendar-cell-empty { background: var(--lt-bg-hover); }
+.calendar-cell.is-today { background: var(--lt-primary-soft); }
 .calendar-cell.is-today .calendar-day-num {
-  color: #409eff;
+  color: var(--lt-primary);
   font-weight: 700;
 }
 .calendar-day-num {
   font-size: 13px;
-  color: var(--lt-text-regular, #606266);
+  color: var(--lt-text-regular);
   margin-bottom: 4px;
   text-align: right;
   padding-right: 4px;
