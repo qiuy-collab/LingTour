@@ -8,6 +8,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useLocale } from "@/lib/locale-context";
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -20,6 +21,7 @@ type PaymentFormInnerProps = {
 };
 
 function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps) {
+  const { t } = useLocale();
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -40,7 +42,7 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
       });
 
       if (error) {
-        onError(error.message ?? "Payment failed. Please try again.");
+        onError(error.message ?? t("checkout.payment.failed"));
         setProcessing(false);
       } else {
         onSuccess();
@@ -65,7 +67,7 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
             : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
         }`}
       >
-        {processing ? "Processing payment..." : "Pay now"}
+        {processing ? t("checkout.payment.processing") : t("checkout.payment.payNow")}
       </button>
     </form>
   );

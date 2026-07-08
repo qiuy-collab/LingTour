@@ -58,7 +58,7 @@ function formatStorePrice(price: number, currency = "CNY") {
 export function CheckoutClient() {
   const searchParams = useSearchParams();
   const productSlug = searchParams.get("product");
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
 
   const [items, setItems] = useState<CheckoutItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -280,7 +280,7 @@ export function CheckoutClient() {
           </p>
 
           <div className="mt-6 mb-2 flex items-end justify-between border-b border-[var(--line)] pb-4">
-            <span className="text-sm text-[var(--muted)]">Total</span>
+            <span className="text-sm text-[var(--muted)]">{t("checkout.summary.total")}</span>
             <span className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
               {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
             </span>
@@ -310,21 +310,21 @@ export function CheckoutClient() {
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-3xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-            {paymentComplete ? "Payment confirmed" : "Order logged"}
+            {paymentComplete ? t("checkout.success.paymentConfirmed") : t("checkout.success.orderLogged")}
           </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
-            {paymentComplete ? "Thank you." : "Registry confirmed."}
+            {paymentComplete ? t("checkout.success.thankYou") : t("checkout.success.registryConfirmed")}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
             {paymentComplete
-              ? "Your payment has been processed successfully. We'll begin preparing your order for shipment shortly."
-              : "Your order is now in the system as a live pending request. We have created the order record and the operations team can continue from the admin console with payment follow-up and fulfillment."}
+              ? t("checkout.success.paymentMessage")
+              : t("checkout.success.orderMessage")}
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <div className="border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
-                Order no.
+                {t("checkout.success.orderNo")}
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
                 {orderResult.orderNo}
@@ -332,7 +332,7 @@ export function CheckoutClient() {
             </div>
             <div className="border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
-                Status
+                {t("checkout.success.status")}
               </p>
               <p className="mt-2 text-lg font-bold capitalize text-[var(--river-deep)]">
                 {orderResult.status}
@@ -340,7 +340,7 @@ export function CheckoutClient() {
             </div>
             <div className="border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
-                Total
+                {t("checkout.success.total")}
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
                 {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
@@ -350,10 +350,10 @@ export function CheckoutClient() {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/shop" className="btn-primary px-8 py-4 text-xs">
-              Continue browsing
+              {t("checkout.success.continueBrowsing")}
             </Link>
             <Link href="/community" className="btn-paper px-8 py-4 text-xs">
-              Visit community
+              {t("checkout.success.visitCommunity")}
             </Link>
           </div>
         </div>
@@ -410,7 +410,7 @@ export function CheckoutClient() {
                       value={form.recipientName}
                       onChange={(event) => updateField("recipientName", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="Full delivery name"
+                      placeholder={t("checkout.form.namePlaceholder")}
                     />
                   </label>
                   <label className="grid gap-2">
@@ -454,7 +454,7 @@ export function CheckoutClient() {
                       value={form.street}
                       onChange={(event) => updateField("street", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="Street, building, unit"
+                      placeholder={t("checkout.form.addressPlaceholder")}
                     />
                   </label>
                   <label className="grid gap-2">
@@ -465,7 +465,7 @@ export function CheckoutClient() {
                       value={form.city}
                       onChange={(event) => updateField("city", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="City"
+                      placeholder={t("checkout.form.cityPlaceholder")}
                     />
                   </label>
                   <label className="grid gap-2">
@@ -476,7 +476,7 @@ export function CheckoutClient() {
                       value={form.state}
                       onChange={(event) => updateField("state", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="State or region"
+                      placeholder={t("checkout.form.statePlaceholder")}
                     />
                   </label>
                   <label className="grid gap-2">
@@ -487,7 +487,7 @@ export function CheckoutClient() {
                       value={form.postalCode}
                       onChange={(event) => updateField("postalCode", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="Postal code"
+                      placeholder={t("checkout.form.postalCodePlaceholder")}
                     />
                   </label>
                   <label className="grid gap-2">
@@ -498,7 +498,7 @@ export function CheckoutClient() {
                       value={form.country}
                       onChange={(event) => updateField("country", event.target.value)}
                       className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
-                      placeholder="Country"
+                      placeholder={t("checkout.form.countryPlaceholder")}
                     />
                   </label>
                 </div>
@@ -512,7 +512,7 @@ export function CheckoutClient() {
                   value={form.note}
                   onChange={(event) => updateField("note", event.target.value)}
                   className="mt-5 min-h-[120px] w-full border border-[var(--line)] bg-transparent p-4 text-sm leading-7 outline-none focus:border-[var(--gold)]"
-                  placeholder="Anything the fulfillment team should know before packing or dispatching."
+                  placeholder={t("checkout.form.notesPlaceholder")}
                 />
               </section>
             </div>
@@ -552,13 +552,13 @@ export function CheckoutClient() {
 
               <div className="mt-8 space-y-4 border-t border-[var(--line)] pt-6">
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-                  <span>Items subtotal</span>
+                  <span>{t("checkout.summary.subtotal")}</span>
                   <span className="font-semibold text-[var(--river-deep)]">
                     {formatStorePrice(totals.subtotal, items[0]?.currency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-                  <span>Handling estimate</span>
+                  <span>{t("checkout.summary.shipping")}</span>
                   <span className="font-semibold text-[var(--river-deep)]">
                     {formatStorePrice(totals.handling, items[0]?.currency)}
                   </span>
@@ -588,7 +588,7 @@ export function CheckoutClient() {
                     : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
                 }`}
               >
-                {submitting ? "Creating order..." : "Place order"}
+                {submitting ? t("checkout.form.creatingOrder") : t("checkout.form.placeOrder")}
               </button>
 
               <p className="mt-4 text-xs leading-6 text-[var(--muted)]">
