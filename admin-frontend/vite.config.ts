@@ -1,6 +1,9 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import ElementPlus from 'unplugin-element-plus/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 function chunkNameForModule(id: string) {
   if (id.includes('node_modules')) {
@@ -31,7 +34,14 @@ export default defineConfig(({ mode }) => {
   const apiOrigin = env.VITE_API_ORIGIN || 'http://localhost:8000'
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      Components({
+        dts: false,
+        resolvers: [ElementPlusResolver({ importStyle: 'css' })],
+      }),
+      ElementPlus({}),
+    ],
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
