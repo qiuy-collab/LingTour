@@ -130,6 +130,10 @@ export default function InterpretingPageClient({
     return profiles.map((profile, index) => {
       const levelLabel =
         profileLevels[Math.min(index, profileLevels.length - 1)];
+      const profileAvatar =
+        "avatar" in profile && typeof profile.avatar === "string"
+          ? profile.avatar
+          : undefined;
       return {
         id: profile.id,
         level: levelLabel,
@@ -138,7 +142,7 @@ export default function InterpretingPageClient({
         specialty: profile.focus,
         languages: profile.language,
         serviceCount: 40 + (profiles.length - index) * 12,
-        image: profile.avatar || placeholderFor("portrait"),
+        image: profileAvatar || placeholderFor("portrait"),
         needsPrefill: profile.focus,
         rateLabel: effectiveInterpretingData.serviceModes?.[index]?.price,
         bestFor: profile.helps?.join(" / "),
