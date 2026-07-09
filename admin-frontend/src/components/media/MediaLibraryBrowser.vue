@@ -512,7 +512,7 @@ onMounted(() => {
 
 .file-count {
   font-size: 13px;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 
 .upload-progress-bar {
@@ -522,7 +522,7 @@ onMounted(() => {
 
 .picker-hint {
   margin-bottom: 16px;
-  color: #606266;
+  color: var(--lt-text-regular);
   font-size: 13px;
 }
 
@@ -534,36 +534,36 @@ onMounted(() => {
 
 .media-card {
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--lt-radius-md);
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  background: var(--lt-bg-card);
+  box-shadow: var(--lt-shadow-sm);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .media-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--lt-shadow-lg);
 }
 
 .media-card.selected {
-  border-color: #409eff;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: var(--lt-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lt-primary) 20%, transparent);
 }
 
 .media-card.orphan {
-  border-color: #e6a23c;
+  border-color: var(--lt-warning);
 }
 
 .media-card.orphan.selected {
-  border-color: #409eff;
+  border-color: var(--lt-primary);
 }
 
 .media-thumb {
   position: relative;
   width: 100%;
   padding-top: 100%;
-  background: #f5f7fa;
+  background: var(--lt-bg-hover);
 }
 
 .media-thumb img {
@@ -581,7 +581,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.4);
+  background: color-mix(in srgb, var(--lt-text-primary) 40%, transparent);
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -596,7 +596,7 @@ onMounted(() => {
 
 .media-name {
   font-size: 12px;
-  color: #303133;
+  color: var(--lt-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -605,7 +605,7 @@ onMounted(() => {
 
 .media-meta {
   font-size: 11px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   margin: 4px 0 0;
 }
 
@@ -620,15 +620,15 @@ onMounted(() => {
   display: inline-block;
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 3px;
-  background: #ecf5ff;
-  color: #409eff;
+  border-radius: var(--lt-radius-sm);
+  background: var(--lt-primary-soft);
+  color: var(--lt-primary);
   line-height: 1.4;
 }
 
 .tag.entity {
-  background: #fdf6ec;
-  color: #e6a23c;
+  background: color-mix(in srgb, var(--lt-warning) 16%, transparent);
+  color: var(--lt-warning);
 }
 
 .pagination {
