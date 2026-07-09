@@ -420,6 +420,7 @@ interface ApiInterpreterProfile {
   language: string;
   focus: string;
   helps: string[];
+  avatar?: string;
 }
 
 interface ApiInterpretingFaq {
@@ -728,14 +729,37 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
       ]
     : [];
 
+  const cityBySlug = new Map(regionShowcase.map((city) => [city.slug, city]));
+
   const cultureHighlightsFromApi = (homeConfig.cultureHighlights ?? []).map(
-    (item) => ({
-      slug: item.slug,
-      title: pickLocalized(item.title, locale),
-      body: pickLocalized(item.body, locale),
-      href: item.href ?? `/culture/${item.slug}`,
-      image: item.image || undefined,
-    }),
+    (item) => {
+      const linkedSlug =
+        (typeof item.slug === "string" && item.slug.trim()) ||
+        (typeof (item as { citySlug?: string }).citySlug === "string" &&
+        (item as { citySlug?: string }).citySlug?.trim()) ||
+        "";
+      const linkedCity = linkedSlug
+        ? cityBySlug.get(linkedSlug as (typeof regionShowcase)[number]["slug"])
+        : undefined;
+
+      return {
+        slug: linkedSlug || item.slug,
+        title:
+          pickLocalized(item.title, locale) ||
+          linkedCity?.label ||
+          linkedCity?.name ||
+          "",
+        body:
+          pickLocalized(item.body, locale) || linkedCity?.summary || "",
+        href: item.href ?? `/culture/${linkedSlug || item.slug}`,
+        image:
+          item.image ||
+          linkedCity?.image ||
+          linkedCity?.gallery?.[0] ||
+          undefined,
+        place: linkedCity?.label || linkedCity?.name || undefined,
+      };
+    },
   );
 
   const cultureHighlights: CultureFeature[] =
@@ -746,6 +770,7 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
           title: city.label,
           body: city.summary,
           href: `/culture/${city.slug}`,
+          image: city.image || city.gallery?.[0] || undefined,
         }));
 
   // Map the editorial hero block. All fields fall through to undefined,

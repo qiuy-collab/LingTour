@@ -37,7 +37,7 @@ const newHelpZh = ref('')
 const newHelpEn = ref('')
 
 const rules = {
-  'name.zh': [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  'name.zh': [{ required: true, message: '请输入中文姓名', trigger: 'blur' }],
   'language.zh': [{ required: true, message: '请输入服务语言', trigger: 'blur' }],
   city: [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
 }
@@ -130,7 +130,7 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>基础信息</template>
+          <template #header>基本信息</template>
           <el-row :gutter="16">
             <el-col :span="8">
               <el-form-item label="排序权重">
@@ -141,17 +141,30 @@ async function handleSave() {
               <el-form-item label="状态">
                 <el-select v-model="form.status" style="width: 100%">
                   <el-option label="待审核" value="pending_review" />
-                  <el-option label="已激活" value="active" />
+                  <el-option label="已启用" value="active" />
                   <el-option label="已停用" value="inactive" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="头像">
+              <el-form-item label="封面 / 头像">
                 <ImageUpload v-model="form.avatar" module="interpreting" />
+                <div class="field-tip">
+                  前台口译员卡片封面直接使用这里的图片，建议上传竖向人物照。
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
+
+          <el-alert
+            v-if="form.status === 'active' && !form.avatar"
+            type="warning"
+            :closable="false"
+            show-icon
+            title="当前口译员已设为 active，但还没有封面图。前台会退回占位图。"
+            class="section-alert"
+          />
+
           <el-form-item label="姓名" prop="name.zh">
             <I18nInput v-model="form.name" />
           </el-form-item>
@@ -185,7 +198,7 @@ async function handleSave() {
           model-value="bio"
           title="口译员内容工作台"
           eyebrow="Interpreter Content"
-          description="头像、状态、能力标签和基础履历放固定区，面向前台展示的简介集中在这里编辑。"
+          description="将前台展示的个人简介集中在这里维护，封面图、状态和能力标签则保留在上方基础信息区域。"
           active-label="个人简介"
           :tabs="[{ key: 'bio', label: '个人简介' }]"
         >
@@ -204,7 +217,6 @@ async function handleSave() {
 <style scoped>
 @import '@/assets/editor-common.css';
 
-/* Narrower single-column layout for interpreter editor */
 .editor-shell {
   grid-template-columns: minmax(0, 1fr);
   max-width: 900px;
@@ -212,6 +224,17 @@ async function handleSave() {
 
 .workspace-panel {
   min-height: 220px;
+}
+
+.field-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #7a7f87;
+}
+
+.section-alert {
+  margin-bottom: 16px;
 }
 
 .tag-list {
