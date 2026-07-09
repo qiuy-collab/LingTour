@@ -13,6 +13,7 @@ const props = withDefaults(
     modelValue: boolean
     multiple?: boolean
     limit?: number
+    accept?: string
     module?: string
     entityType?: string
     entityId?: string
@@ -21,6 +22,7 @@ const props = withDefaults(
   {
     multiple: false,
     limit: 1,
+    accept: 'image/jpeg,image/png,image/webp,image/gif',
     module: '',
     entityType: '',
     entityId: '',
@@ -34,9 +36,24 @@ const emit = defineEmits<{
 }>()
 
 const browserRef = ref<MediaBrowserExpose>()
+const selectionCount = ref(0)
 const visible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
+})
+const dialogTitle = computed(() =>
+  props.multiple ? 'Select media files' : 'Select an image',
+)
+const selectionLabel = computed(() => {
+  if (!selectionCount.value) {
+    return props.multiple ? 'No media selected yet' : 'No image selected yet'
+  }
+
+  if (props.multiple) {
+    return `${selectionCount.value} of ${props.limit} selected`
+  }
+
+  return '1 image selected'
 })
 
 watch(
@@ -44,6 +61,7 @@ watch(
   (value) => {
     if (!value) {
       browserRef.value?.resetSelection()
+      selectionCount.value = 0
     }
   },
 )
@@ -51,39 +69,89 @@ watch(
 function handleConfirm() {
   const urls = browserRef.value?.getSelectedUrls() || []
   if (!urls.length) {
-    ElMessage.warning('请先选择图片')
+    ElMessage.warning('Please select at least one image first')
     return
   }
   emit('confirm', urls)
   visible.value = false
+}
+
+function handleSelectionChange(files: Array<{ url: string }>) {
+  selectionCount.value = files.length
 }
 </script>
 
 <template>
   <el-dialog
     v-model="visible"
-    title="媒体库"
-    width="1100px"
-    top="5vh"
+    :title="dialogTitle"
+    width="min(1100px, calc(100vw - 32px))"
+    top="3vh"
     destroy-on-close
+    class="media-picker-dialog"
   >
+    <div class="dialog-intro">
+      <p class="dialog-summary">{{ selectionLabel }}</p>
+      <p class="dialog-meta">
+        <span>{{ multiple ? `Select up to ${limit}` : 'Choose one image' }}</span>
+        <span v-if="module">Folder: {{ module }}</span>
+      </p>
+    </div>
+
     <MediaLibraryBrowser
       ref="browserRef"
       mode="picker"
       :multiple="multiple"
       :limit="limit"
+      :accept="accept"
       :default-module="module"
       :entity-type="entityType"
       :entity-id="entityId"
       :seed-urls="selectedUrls"
       :selected-urls="selectedUrls"
+      @selection-change="handleSelectionChange"
     />
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="handleConfirm">确定</el-button>
+        <el-button @click="visible = false">Cancel</el-button>
+        <el-button type="primary" :disabled="selectionCount === 0" @click="handleConfirm">
+          {{ selectionCount === 0 ? 'Select media' : `Use ${selectionCount} selected` }}
+        </el-button>
       </div>
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+.dialog-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.dialog-summary {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lt-text-primary);
+}
+
+.dialog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--lt-text-secondary);
+}
+
+@media (max-width: 767px) {
+  .dialog-intro {
+    align-items: flex-start;
+  }
+}
+</style>

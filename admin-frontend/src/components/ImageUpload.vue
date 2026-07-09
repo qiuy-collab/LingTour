@@ -44,6 +44,21 @@ const fileList = ref<UploadItem[]>([])
 const pickerVisible = ref(false)
 const isMultiple = computed(() => props.mode === 'multiple' || props.multiple)
 const uploadLimit = computed(() => (isMultiple.value ? props.limit : 1))
+const hasReachedLimit = computed(
+  () => isMultiple.value && fileList.value.length >= uploadLimit.value,
+)
+const triggerLabel = computed(() => {
+  if (!fileList.value.length) return 'Choose media'
+  if (!isMultiple.value) return 'Replace image'
+  if (hasReachedLimit.value) return 'Manage selection'
+  return 'Add more media'
+})
+const helperCopy = computed(() => {
+  if (isMultiple.value) {
+    return `${fileList.value.length} of ${uploadLimit.value} image slots used`
+  }
+  return fileList.value.length ? '1 image selected' : 'No image selected yet'
+})
 
 watch(
   () => props.modelValue,
@@ -178,11 +193,12 @@ function moveItem(index: number, delta: -1 | 1) {
         @click="openMediaPicker"
       >
         <el-icon class="upload-icon"><Picture /></el-icon>
-        <span class="upload-trigger-text">{{ fileList.length ? 'Replace / Add' : 'Choose media' }}</span>
+        <span class="upload-trigger-text">{{ triggerLabel }}</span>
       </button>
     </div>
 
     <div class="upload-meta">
+      <span>{{ helperCopy }}</span>
       <span>{{ isMultiple ? `Up to ${uploadLimit} images` : 'Single image selection' }}</span>
       <span>Select from the media library or upload a local image inside the dialog.</span>
       <span v-if="module">Folder: {{ module }}</span>
@@ -192,6 +208,7 @@ function moveItem(index: number, delta: -1 | 1) {
       v-model="pickerVisible"
       :multiple="isMultiple"
       :limit="uploadLimit"
+      :accept="accept"
       :module="module"
       :entity-type="entityType || undefined"
       :entity-id="entityId || undefined"
@@ -217,8 +234,8 @@ function moveItem(index: number, delta: -1 | 1) {
   width: 120px;
   height: 120px;
   overflow: hidden;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-md);
   cursor: pointer;
 }
 
@@ -234,7 +251,7 @@ function moveItem(index: number, delta: -1 | 1) {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.52);
+  background: color-mix(in srgb, var(--lt-text-primary) 52%, transparent);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -257,7 +274,7 @@ function moveItem(index: number, delta: -1 | 1) {
 }
 
 .delete-icon:hover {
-  color: #f56c6c;
+  color: var(--lt-danger);
 }
 
 .upload-trigger {
@@ -268,25 +285,30 @@ function moveItem(index: number, delta: -1 | 1) {
   gap: 8px;
   width: 120px;
   height: 120px;
-  border: 1px dashed #dcdfe6;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px dashed var(--lt-border-color);
+  border-radius: var(--lt-radius-md);
+  background: var(--lt-bg-card);
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .upload-trigger:hover {
-  border-color: #409eff;
+  border-color: var(--lt-primary);
+  background: var(--lt-bg-hover);
+  transform: translateY(-1px);
 }
 
 .upload-icon {
   font-size: 28px;
-  color: #409eff;
+  color: var(--lt-primary);
 }
 
 .upload-trigger-text {
   font-size: 12px;
-  color: #606266;
+  color: var(--lt-text-regular);
   text-align: center;
   padding: 0 8px;
 }
@@ -297,6 +319,6 @@ function moveItem(index: number, delta: -1 | 1) {
   gap: 12px;
   margin-top: 10px;
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 </style>

@@ -11,6 +11,7 @@ const props = withDefaults(
     mode?: 'manage' | 'picker'
     multiple?: boolean
     limit?: number
+    accept?: string
     defaultModule?: string
     entityType?: string
     entityId?: string
@@ -21,6 +22,7 @@ const props = withDefaults(
     mode: 'manage',
     multiple: false,
     limit: 1,
+    accept: 'image/jpeg,image/png,image/webp,image/gif',
     defaultModule: '',
     entityType: '',
     entityId: '',
@@ -52,6 +54,17 @@ const uploadInputRef = ref<HTMLInputElement | null>(null)
 const modules = ['', 'cities', 'routes', 'shop', 'community', 'events', 'home', 'avatars', 'interpreting', 'seed']
 const isPickerMode = computed(() => props.mode === 'picker')
 const canSelectMore = computed(() => (props.multiple ? selectedFilenames.value.length < props.limit : true))
+const selectionSummary = computed(() => {
+  if (!isPickerMode.value) {
+    return `${selectedFilenames.value.length} selected`
+  }
+
+  if (props.multiple) {
+    return `${selectedFilenames.value.length} / ${props.limit} selected`
+  }
+
+  return selectedFilenames.value.length ? '1 image selected' : 'No image selected'
+})
 
 function unwrapListPayload<T>(payload: unknown): { data: T[]; total: number } {
   if (Array.isArray(payload)) {
@@ -286,6 +299,10 @@ function toggleSelect(file: MediaFile) {
   emit('select', file)
 }
 
+function clearSelection() {
+  selectedFilenames.value = []
+}
+
 function triggerUploadPicker() {
   uploadInputRef.value?.click()
 }
@@ -438,17 +455,26 @@ onMounted(() => {
         >
           Delete selected ({{ selectedFilenames.length }})
         </el-button>
+
+        <span v-if="isPickerMode" class="selection-chip">{{ selectionSummary }}</span>
       </div>
 
       <div class="toolbar-right">
         <span class="file-count">Total {{ total }} file(s)</span>
+        <el-button
+          v-if="isPickerMode && selectedFilenames.length > 0"
+          text
+          @click="clearSelection"
+        >
+          Clear selection
+        </el-button>
         <el-button type="primary" :loading="uploading" @click="triggerUploadPicker">
           {{ uploading ? 'Uploading...' : (isPickerMode ? 'Upload to library' : 'Upload file') }}
         </el-button>
         <input
           ref="uploadInputRef"
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          :accept="accept"
           multiple
           hidden
           @change="handleUpload"
@@ -466,7 +492,7 @@ onMounted(() => {
     </div>
 
     <div class="picker-hint" v-if="isPickerMode">
-      Click cards to select multiple media files. Existing referenced images are shown here too, even if they were not uploaded through the library.
+      Click cards to add or remove them from the selection. Referenced images stay available here even when they were not uploaded through the media library.
     </div>
 
     <div class="media-grid" v-if="displayFiles.length > 0">
@@ -544,6 +570,18 @@ onMounted(() => {
 .file-count {
   font-size: 13px;
   color: var(--lt-text-secondary);
+}
+
+.selection-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--lt-radius-lg);
+  background: var(--lt-primary-soft);
+  color: var(--lt-primary);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .upload-progress-bar {
