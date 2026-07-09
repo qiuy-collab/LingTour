@@ -62,10 +62,15 @@ import { sanitizeUploadModule } from './upload-path';
           ),
         },
         fileFilter: (_req, file, callback) => {
-          const allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+          const allowedMimes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/gif',
+          ];
           if (!allowedMimes.includes(file.mimetype)) {
             return callback(
-              new Error('Unsupported file type. Allowed: jpg, png, webp'),
+              new Error('Unsupported file type. Allowed: jpg, png, webp, gif'),
               false,
             );
           }

@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   Body,
+  Req,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
@@ -13,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UploadService } from './upload.service';
 
@@ -20,6 +22,18 @@ import { UploadService } from './upload.service';
 @Controller('api/v1/admin/upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
+
+  private readPositiveInt(
+    value: string | undefined,
+    fallback: number,
+    max?: number,
+  ): number {
+    const parsed = Number.parseInt(value ?? '', 10);
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      return fallback;
+    }
+    return max ? Math.min(parsed, max) : parsed;
+  }
 
   @Roles('admin', 'editor')
   @Get('files')
@@ -29,12 +43,18 @@ export class UploadController {
     @Query('limit') limit = '30',
     @Query('module') module?: string,
   ) {
-    return this.uploadService.listFiles(+page, +limit, module);
+    return this.uploadService.listFiles(
+      this.readPositiveInt(page, 1),
+      this.readPositiveInt(limit, 30, 120),
+      module,
+    );
   }
 
   @Roles('admin', 'editor')
   @Get('media')
-  @ApiOperation({ summary: 'Query media files with filters (from media_files table)' })
+  @ApiOperation({
+    summary: 'Query media files with filters (from media_files table)',
+  })
   async queryMedia(
     @Query('page') page = '1',
     @Query('limit') limit = '30',
@@ -46,8 +66,8 @@ export class UploadController {
     @Query('dateTo') dateTo?: string,
   ) {
     return this.uploadService.queryMediaFiles({
-      page: +page,
-      limit: +limit,
+      page: this.readPositiveInt(page, 1),
+      limit: this.readPositiveInt(limit, 30, 120),
       module,
       entityType,
       entityId,
@@ -65,8 +85,11 @@ export class UploadController {
     return { data: orphans, total: orphans.length };
   }
 
+  @Roles('admin', 'editor')
   @Delete('files/:filename')
-  @ApiOperation({ summary: 'Delete an uploaded file and its media_files record' })
+  @ApiOperation({
+    summary: 'Delete an uploaded file and its media_files record',
+  })
   async deleteFile(@Param('filename') filename: string) {
     const deleted = await this.uploadService.deleteFile(filename);
     if (!deleted) {
@@ -95,7 +118,8 @@ export class UploadController {
         },
         entityType: {
           type: 'string',
-          description: 'Entity type for ownership tracking (city, route, product, etc.)',
+          description:
+            'Entity type for ownership tracking (city, route, product, etc.)',
         },
         entityId: {
           type: 'string',
@@ -108,16 +132,27 @@ export class UploadController {
     FileInterceptor('file', {
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
       fileFilter: (req, file, cb) => {
-        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const allowedMimeTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif',
+        ];
         if (allowedMimeTypes.includes(file.mimetype)) {
           cb(null, true);
         } else {
-          cb(new BadRequestException('Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed.'), false);
+          cb(
+            new BadRequestException(
+              'Invalid file type. Only JPEG, PNG, WEBP, and GIF are allowed.',
+            ),
+            false,
+          );
         }
       },
     }),
   )
   async uploadFile(
+    @Req() request: Request,
     @UploadedFile() file: Express.Multer.File,
     @Body('module') module?: string,
     @Body('entityType') entityType?: string,
@@ -127,19 +162,26 @@ export class UploadController {
       throw new BadRequestException('File is required');
     }
 
+    const authUser = request['user'] as { sub?: string } | undefined;
     const result = await this.uploadService.storeUploadedFile(file, {
       module,
       entityType,
       entityId,
+      uploadedBy: authUser?.sub,
     });
 
     return {
       url: result.url,
       filename: result.filename,
       mediaFileId: result.mediaFileId,
+      module: module ?? null,
+      entityType: entityType ?? null,
+      entityId: entityId ?? null,
+      originalName: file.originalname,
       originalname: file.originalname,
       size: file.size,
       mimetype: file.mimetype,
+      createdAt: new Date().toISOString(),
     };
   }
 }

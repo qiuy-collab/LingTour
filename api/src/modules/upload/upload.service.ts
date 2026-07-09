@@ -36,6 +36,8 @@ export interface MediaFileRecord {
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
+  private readonly defaultPageSize = 30;
+  private readonly maxPageSize = 120;
 
   constructor(
     private readonly configService: ConfigService,
@@ -52,6 +54,20 @@ export class UploadService {
   private getUploadDestination(module?: string): string {
     const safeModule = sanitizeUploadModule(module);
     return safeModule ? join(this.uploadDir, safeModule) : this.uploadDir;
+  }
+
+  private normalizePage(page?: number): number {
+    if (!Number.isFinite(page) || !page || page < 1) {
+      return 1;
+    }
+    return Math.floor(page);
+  }
+
+  private normalizeLimit(limit?: number): number {
+    if (!Number.isFinite(limit) || !limit || limit < 1) {
+      return this.defaultPageSize;
+    }
+    return Math.min(Math.floor(limit), this.maxPageSize);
   }
 
   /**
@@ -86,7 +102,7 @@ export class UploadService {
     const options: StoreFileOptions =
       typeof moduleOrOptions === 'string'
         ? { module: moduleOrOptions }
-        : moduleOrOptions ?? {};
+        : (moduleOrOptions ?? {});
 
     const safeModule = sanitizeUploadModule(options.module);
 
@@ -119,8 +135,13 @@ export class UploadService {
          ON CONFLICT (filename) DO UPDATE SET
            original_name = EXCLUDED.original_name,
            mime_type = EXCLUDED.mime_type,
-           size_bytes = EXCLUDED.size_bytes
-         RETURNING id`,
+           size_bytes = EXCLUDED.size_bytes,
+           module = EXCLUDED.module,
+           uploaded_by = EXCLUDED.uploaded_by,
+           entity_type = EXCLUDED.entity_type,
+           entity_id = EXCLUDED.entity_id,
+           url = EXCLUDED.url
+         RETURNING id, created_at`,
         [
           result.filename,
           file.originalname ?? null,
@@ -152,11 +173,15 @@ export class UploadService {
   async listFiles(page = 1, limit = 30, module?: string) {
     try {
       const safeModule = sanitizeUploadModule(module);
+      const safePage = this.normalizePage(page);
+      const safeLimit = this.normalizeLimit(limit);
       const directories = safeModule ? [safeModule] : [''];
       const files: Array<{ name: string; absolutePath: string }> = [];
 
       for (const directory of directories) {
-        const dir = directory ? join(this.uploadDir, directory) : this.uploadDir;
+        const dir = directory
+          ? join(this.uploadDir, directory)
+          : this.uploadDir;
         const entries = (await readdir(dir, { withFileTypes: true }).catch(
           () => [],
         )) as Dirent[];
@@ -219,18 +244,25 @@ export class UploadService {
         .filter(Boolean)
         .sort(
           (a, b) =>
-            new Date(b!.createdAt).getTime() -
-            new Date(a!.createdAt).getTime(),
+            new Date(b!.createdAt).getTime() - new Date(a!.createdAt).getTime(),
         ) as NonNullable<(typeof fileInfos)[number]>[];
 
       const total = validFiles.length;
-      const items = validFiles.slice((page - 1) * limit, page * limit);
+      const items = validFiles.slice(
+        (safePage - 1) * safeLimit,
+        safePage * safeLimit,
+      );
 
-      return { data: items, total, page, pageSize: limit };
+      return { data: items, total, page: safePage, pageSize: safeLimit };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn(`Failed to list files: ${message}`);
-      return { data: [], total: 0, page, pageSize: limit };
+      return {
+        data: [],
+        total: 0,
+        page: this.normalizePage(page),
+        pageSize: this.normalizeLimit(limit),
+      };
     }
   }
 
@@ -271,16 +303,23 @@ export class UploadService {
     search?: string;
     dateFrom?: string;
     dateTo?: string;
-  }): Promise<{ items: MediaFileRecord[]; total: number; page: number; limit: number }> {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 30;
+  }): Promise<{
+    data: MediaFileRecord[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    const page = this.normalizePage(params.page);
+    const limit = this.normalizeLimit(params.limit);
+    const module = sanitizeUploadModule(params.module);
+    const search = params.search?.trim();
     const conditions: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
 
-    if (params.module) {
+    if (module) {
       conditions.push(`module = $${paramIndex++}`);
-      values.push(params.module);
+      values.push(module);
     }
     if (params.entityType) {
       conditions.push(`entity_type = $${paramIndex++}`);
@@ -290,11 +329,11 @@ export class UploadService {
       conditions.push(`entity_id = $${paramIndex++}`);
       values.push(params.entityId);
     }
-    if (params.search) {
+    if (search) {
       conditions.push(
         `(filename ILIKE $${paramIndex} OR original_name ILIKE $${paramIndex})`,
       );
-      values.push(`%${params.search}%`);
+      values.push(`%${search}%`);
       paramIndex++;
     }
     if (params.dateFrom) {
@@ -306,7 +345,8 @@ export class UploadService {
       values.push(params.dateTo);
     }
 
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const where =
+      conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     try {
       const countResult = await this.dataSource.query(
@@ -325,18 +365,20 @@ export class UploadService {
         [...values, limit, offset],
       );
 
-      return { items, total, page, limit };
+      return { data: items, total, page, pageSize: limit };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn(`Failed to query media_files: ${message}`);
-      return { items: [], total: 0, page, limit };
+      return { data: [], total: 0, page, pageSize: limit };
     }
   }
 
   /**
    * Find orphan files: files on disk that are NOT tracked in media_files.
    */
-  async findOrphanFiles(): Promise<Array<{ filename: string; url: string; size: number; createdAt: string }>> {
+  async findOrphanFiles(): Promise<
+    Array<{ filename: string; url: string; size: number; createdAt: string }>
+  > {
     try {
       // Get all files from media_files table
       const trackedRows = await this.dataSource.query(
@@ -350,7 +392,12 @@ export class UploadService {
       const allDiskFiles = await this.scanAllDiskFiles();
 
       // Filter to only those not in media_files
-      const orphans: Array<{ filename: string; url: string; size: number; createdAt: string }> = [];
+      const orphans: Array<{
+        filename: string;
+        url: string;
+        size: number;
+        createdAt: string;
+      }> = [];
 
       for (const diskFile of allDiskFiles) {
         if (!trackedSet.has(diskFile.name)) {
@@ -369,7 +416,8 @@ export class UploadService {
       }
 
       return orphans.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -381,7 +429,9 @@ export class UploadService {
   /**
    * Internal helper to scan all files on disk under the upload directory.
    */
-  private async scanAllDiskFiles(): Promise<Array<{ name: string; absolutePath: string }>> {
+  private async scanAllDiskFiles(): Promise<
+    Array<{ name: string; absolutePath: string }>
+  > {
     const files: Array<{ name: string; absolutePath: string }> = [];
     const rootDir = this.uploadDir;
 

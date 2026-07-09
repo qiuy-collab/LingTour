@@ -53,9 +53,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh an expired JWT (1h grace period)' })
   async refresh(@Req() request: Request) {
     const authHeader = request.headers['authorization'] || '';
-    const token = authHeader.startsWith('Bearer ')
-      ? authHeader.slice(7)
-      : '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
     if (!token) {
       throw new UnauthorizedException('Missing Authorization token');
     }
@@ -100,10 +98,7 @@ export class AuthController {
   @Patch('me')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update current user profile' })
-  async updateMe(
-    @Req() request: Request,
-    @Body() dto: UpdateProfileDto,
-  ) {
+  async updateMe(@Req() request: Request, @Body() dto: UpdateProfileDto) {
     const authUser = request['user'] as { sub?: string };
     return this.authService.updateMe(authUser.sub as string, dto);
   }
@@ -142,7 +137,12 @@ export class AuthController {
     if (!authUser?.sub) {
       throw new BadRequestException('Authentication required');
     }
-    const result = await this.uploadService.storeUploadedFile(file, 'avatars');
+    const result = await this.uploadService.storeUploadedFile(file, {
+      module: 'avatars',
+      uploadedBy: authUser.sub,
+      entityType: 'user',
+      entityId: authUser.sub,
+    });
     // Persist immediately so the next /auth/me reflects the new avatar.
     await this.authService.updateMe(authUser.sub, { avatarUrl: result.url });
     return { url: result.url };
@@ -163,7 +163,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Add a favorite' })
   async addFavorite(
     @Req() request: Request,
-    @Body() body: { targetType: string; targetId: string; targetTitle?: string; targetImage?: string },
+    @Body()
+    body: {
+      targetType: string;
+      targetId: string;
+      targetTitle?: string;
+      targetImage?: string;
+    },
   ) {
     const authUser = request['user'] as { sub?: string };
     const targetType = body.targetType as 'route' | 'city' | 'product';
@@ -190,6 +196,10 @@ export class AuthController {
     if (!['route', 'city', 'product'].includes(targetType)) {
       throw new BadRequestException('Invalid favorite target type');
     }
-    return this.usersService.removeFavorite(authUser.sub as string, targetType, targetId);
+    return this.usersService.removeFavorite(
+      authUser.sub as string,
+      targetType,
+      targetId,
+    );
   }
 }

@@ -49,9 +49,33 @@ const showOrphans = ref(false)
 const orphanCount = ref(0)
 const uploadInputRef = ref<HTMLInputElement | null>(null)
 
-const modules = ['', 'cities', 'routes', 'shop', 'community', 'events', 'home', 'avatars', 'interpreting']
+const modules = ['', 'cities', 'routes', 'shop', 'community', 'events', 'home', 'avatars', 'interpreting', 'seed']
 const isPickerMode = computed(() => props.mode === 'picker')
 const canSelectMore = computed(() => (props.multiple ? selectedFilenames.value.length < props.limit : true))
+
+function unwrapListPayload<T>(payload: unknown): { data: T[]; total: number } {
+  if (Array.isArray(payload)) {
+    return { data: payload as T[], total: payload.length }
+  }
+
+  if (payload && typeof payload === 'object') {
+    const record = payload as Record<string, unknown>
+    if (Array.isArray(record.data)) {
+      return {
+        data: record.data as T[],
+        total: typeof record.total === 'number' ? record.total : record.data.length,
+      }
+    }
+    if (Array.isArray(record.items)) {
+      return {
+        data: record.items as T[],
+        total: typeof record.total === 'number' ? record.total : record.items.length,
+      }
+    }
+  }
+
+  return { data: [], total: 0 }
+}
 
 function buildSelectionKey(url: string) {
   const trimmed = url.trim()
@@ -136,9 +160,9 @@ async function fetchFiles() {
   try {
     if (showOrphans.value) {
       const res = await getOrphanFiles()
-      const d = res.data?.data ?? res.data
-      files.value = d.data ?? []
-      total.value = d.total ?? 0
+      const listPayload = unwrapListPayload<MediaFile>(res.data?.data ?? res.data)
+      files.value = listPayload.data
+      total.value = listPayload.total
     } else {
       const res = await queryMediaFiles({
         page: page.value,
@@ -148,9 +172,9 @@ async function fetchFiles() {
         entityType: props.entityType || undefined,
         entityId: props.entityId || undefined,
       })
-      const d = res.data?.data ?? res.data
-      files.value = d.data ?? []
-      total.value = d.total ?? 0
+      const listPayload = unwrapListPayload<MediaFile>(res.data?.data ?? res.data)
+      files.value = listPayload.data
+      total.value = listPayload.total
     }
   } catch {
     ElMessage.error('Failed to load media files')
@@ -162,8 +186,7 @@ async function fetchFiles() {
 async function checkOrphanCount() {
   try {
     const res = await getOrphanFiles()
-    const d = res.data?.data ?? res.data
-    orphanCount.value = d.total ?? 0
+    orphanCount.value = unwrapListPayload<MediaFile>(res.data?.data ?? res.data).total
   } catch {
     // ignore
   }
@@ -177,6 +200,13 @@ function formatSize(bytes: number): string {
 
 function getFullUrl(file: MediaFile): string {
   return resolveMediaUrl(file.url)
+}
+
+function formatTimestamp(value?: string) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString()
 }
 
 function copyUrl(file: MediaFile) {
@@ -297,7 +327,7 @@ async function handleUpload(event: Event) {
           module: payload?.module || moduleFilter.value || props.defaultModule || null,
           entity_type: payload?.entityType || props.entityType || null,
           entity_id: payload?.entityId || props.entityId || null,
-          original_name: payload?.originalName || file.name,
+          original_name: payload?.originalName || payload?.originalname || file.name,
         }
         uploadedFiles.push(mediaFile)
         return mediaFile
@@ -467,6 +497,7 @@ onMounted(() => {
         <div class="media-info">
           <p class="media-name" :title="file.filename">{{ (file.original_name || file.filename).split('/').pop() }}</p>
           <p class="media-meta">{{ file.size_bytes || file.size ? formatSize(file.size_bytes ?? file.size) : 'Referenced image' }}</p>
+          <p class="media-meta" v-if="formatTimestamp(file.createdAt)">{{ formatTimestamp(file.createdAt) }}</p>
           <p class="media-detail" v-if="file.module || file.entity_type">
             <span v-if="file.module" class="tag">{{ file.module }}</span>
             <span v-if="file.entity_type" class="tag entity">{{ file.entity_type }}{{ file.entity_id ? ':' + file.entity_id.slice(0, 8) : '' }}</span>
