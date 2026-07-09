@@ -109,11 +109,11 @@ export default function RoutesPageClient({
                 <Reveal key={route.slug} delay={i * 100}>
                   <Link href={`/routes/${route.slug}`} className="group block">
                     <article
-                      className={`relative grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start gap-4 transition-all duration-500 sm:block hover:-translate-y-3 ${
+                      className={`relative flex flex-col transition-all duration-500 hover:-translate-y-3 ${
                         i % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
                       }`}
                     >
-                      <div className="relative aspect-[4/5] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[16/10] sm:border-[0.85rem]">
+                      <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[16/10] sm:border-[0.85rem]">
                         <div
                           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.9] saturate-[0.85]"
                           style={{ backgroundImage: `url(${cardImage})` }}
@@ -129,7 +129,7 @@ export default function RoutesPageClient({
 
                       </div>
 
-                      <div className="relative mt-0 space-y-3 px-0 pt-1 sm:mt-8 sm:space-y-4 sm:px-4 sm:pt-0">
+                      <div className="relative mt-6 space-y-3 px-1 sm:mt-8 sm:space-y-4 sm:px-4">
                         <div className="handwritten pointer-events-none absolute -top-12 left-0 hidden select-none text-3xl text-[var(--gold)]/40 sm:block sm:-left-2 sm:-top-16 sm:-rotate-12 sm:text-4xl">
                           #{i + 1}
                         </div>
@@ -141,11 +141,11 @@ export default function RoutesPageClient({
                           <div className="h-px flex-1 bg-[var(--line)]/50" />
                         </div>
 
-                        <h2 className="font-[family:var(--font-display)] text-[2.45rem] leading-[1] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
+                        <h2 className="font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                           {route.title}
                         </h2>
 
-                        <p className="handwritten line-clamp-3 max-w-none text-[13px] leading-relaxed text-[var(--muted)] sm:max-w-[32ch] sm:text-base">
+                        <p className="handwritten line-clamp-3 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] sm:max-w-[32ch] sm:text-base">
                           {route.summary}
                         </p>
 

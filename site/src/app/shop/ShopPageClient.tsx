@@ -62,10 +62,10 @@ export default function ShopPageClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
-      <section className="relative overflow-hidden pt-24 pb-20">
+      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20">
         <div className="site-container">
-          <div className="flex flex-col lg:flex-row gap-16 items-center">
-            <div className="flex-1">
+          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center lg:gap-16">
+            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <span className="w-10 h-px bg-[var(--cinnabar)]" />
@@ -73,26 +73,26 @@ export default function ShopPageClient({
                     {t("shop.atlas.eyebrow")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-6xl md:text-8xl lg:text-9xl leading-[0.85] tracking-[-0.03em] text-[var(--river-deep)]">
+                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] sm:text-6xl md:text-8xl lg:text-9xl">
                   {t("shop.atlas.titlePrimary")} <br />
                   <span className="italic text-[var(--gold)]">
                     {t("shop.atlas.titleItalic")}
                   </span>
                 </h1>
-                <p className="mt-12 max-w-xl text-lg leading-relaxed text-[var(--muted)] handwritten">
+                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
                   {t("shop.atlas.lede")}
                 </p>
               </Reveal>
             </div>
 
-            <div className="w-full lg:w-1/3 relative">
+            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:mt-0">
               <Reveal delay={200}>
-                <div className="relative aspect-square rotate-6 scrapbook-shadow bg-white p-4">
+                <div className="relative ml-auto aspect-[3/4] w-full bg-white p-2 scrapbook-shadow sm:max-w-[22rem] sm:aspect-square sm:p-4 sm:rotate-6">
                   <div
-                    className="w-full h-full bg-cover bg-center"
+                    className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}
                   />
-                  <div className="absolute -top-4 -left-4 w-20 h-10 bg-[var(--gold)] flex items-center justify-center text-[var(--night)] font-bold text-xs -rotate-12 shadow-lg uppercase tracking-widest">
+                  <div className="absolute -top-3 -left-3 flex h-9 w-16 items-center justify-center bg-[var(--gold)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--night)] shadow-lg sm:-top-4 sm:-left-4 sm:h-10 sm:w-20 sm:text-xs sm:-rotate-12 sm:tracking-widest">
                     {t("shop.atlas.crafted")}
                   </div>
                 </div>
@@ -102,7 +102,7 @@ export default function ShopPageClient({
         </div>
       </section>
 
-      <section className="site-container py-12 lg:py-20">
+      <section className="site-container py-10 lg:py-20">
         <Reveal>
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
             {t("shop.atlas.collectionsEyebrow")}
@@ -131,22 +131,31 @@ export default function ShopPageClient({
               return (
                 <Reveal key={collection.title} delay={i * 100}>
                   <Link href={collection.href} className="group block">
-                    <article className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-[var(--night)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(17,25,35,0.15)]">
-                      <div
-                        className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-110"
-                        style={{ backgroundImage: `url(${cardImage})` }}
-                      />
-                      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(17,25,35,0.95),rgba(17,25,35,0.15)_60%,rgba(17,25,35,0))]" />
-                      <div className="relative z-10 flex h-full flex-col justify-end p-8 text-white">
-                        <p className="text-[10px] uppercase tracking-[0.25em] text-white/50">
+                    <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
+                      <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.9rem]">
+                        <div
+                          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition duration-1000 group-hover:scale-105 sm:bg-cover"
+                          style={{ backgroundImage: `url(${cardImage})` }}
+                        />
+                        <div className="absolute inset-0 bg-black/5" />
+                        <div className="absolute left-4 top-4 bg-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
                           {collection.route}
+                        </div>
+                      </div>
+                      <div className="mt-6 border border-[var(--line)] bg-white/72 p-6 scrapbook-shadow">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+                          {t("shop.atlas.collectionsEyebrow")}
                         </p>
-                        <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight lg:text-4xl">
+                        <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
                           {collection.title}
                         </h3>
-                        <p className="mt-5 text-sm leading-7 text-white/70 opacity-100 md:opacity-0 md:transition-opacity md:duration-500 md:group-hover:opacity-100">
+                        <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)]">
                           {collection.body}
                         </p>
+                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
+                          <span>{t("common.btn.enter")}</span>
+                          <div className="h-px w-8 bg-[var(--gold)] transition-all duration-300 group-hover:w-12" />
+                        </div>
                       </div>
                     </article>
                   </Link>
@@ -157,7 +166,7 @@ export default function ShopPageClient({
         )}
       </section>
 
-      <section className="site-container py-12 lg:py-20">
+      <section className="site-container py-10 lg:py-20">
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
@@ -196,9 +205,9 @@ export default function ShopPageClient({
         )}
       </section>
 
-      <section className="pb-16 lg:pb-24">
+      <section className="pb-20 lg:pb-24">
         <div className="site-container">
-          <div className="relative overflow-hidden rounded-2xl bg-[var(--night)] px-8 py-16 text-center text-white lg:px-20 lg:py-24">
+          <div className="relative overflow-hidden bg-[var(--night)] px-8 py-16 text-center text-white scrapbook-shadow lg:px-20 lg:py-24">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.08),transparent_60%)]" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
