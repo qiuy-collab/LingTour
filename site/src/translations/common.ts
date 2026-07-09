@@ -15,6 +15,10 @@
     "common.nav.planTrip": "Plan Trip",
     "common.nav.mobile.explore": "Explore",
     "common.nav.mobile.chooseRegion": "Routes — Choose a region",
+    "common.nav.routesMega.eyebrow": "Routes / Field discovery",
+    "common.nav.routesMega.viewAll": "View all routes",
+    "common.nav.routesMega.loadingMap": "Loading map...",
+    "common.nav.routesMega.comingSoon": "Coming soon",
     "common.footer.link.community": "Traveler Community",
     "common.nav.account": "Account",
     "common.nav.login": "Login",
@@ -139,6 +143,10 @@
     "common.nav.planTrip": "规划行程",
     "common.nav.mobile.explore": "探索",
     "common.nav.mobile.chooseRegion": "路线 — 选择区域",
+    "common.nav.routesMega.eyebrow": "路线 / 田野发现",
+    "common.nav.routesMega.viewAll": "查看全部路线",
+    "common.nav.routesMega.loadingMap": "地图载入中...",
+    "common.nav.routesMega.comingSoon": "即将上线",
     "common.footer.link.community": "旅行者社区",
     "common.nav.account": "账户",
     "common.nav.login": "登录",
@@ -247,4 +255,3 @@
     "community.post.textDispatch": "文字快讯",
   },
 };
-

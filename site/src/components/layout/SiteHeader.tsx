@@ -21,13 +21,13 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const NAV_LABEL: Record<string, string> = {
-  "/": "Home",
-  "/culture": "Culture",
-  "/routes": "Routes",
-  "/interpreting": "Interpreting",
-  "/shop": "Shop",
-  "/community": "Community",
+const NAV_LABEL_KEY: Record<string, string> = {
+  "/": "common.nav.home",
+  "/culture": "common.nav.culture",
+  "/routes": "common.nav.routes",
+  "/interpreting": "common.nav.interpreting",
+  "/shop": "common.nav.shop",
+  "/community": "common.nav.community",
 };
 
 export function SiteHeader() {
@@ -76,7 +76,7 @@ export function SiteHeader() {
                 }`}
                 aria-current={active ? "page" : undefined}
               >
-                {NAV_LABEL[item.href] ?? item.label}
+                {t(NAV_LABEL_KEY[item.href] ?? item.label)}
               </Link>
             );
           })}
@@ -107,7 +107,7 @@ export function SiteHeader() {
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
-                  {NAV_LABEL[item.href] ?? item.label}
+                  {t(NAV_LABEL_KEY[item.href] ?? item.label)}
                 </Link>
               );
             })}
@@ -124,7 +124,7 @@ export function SiteHeader() {
         <button
           type="button"
           className="grid h-10 w-10 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         >
@@ -162,7 +162,7 @@ export function SiteHeader() {
                     aria-current={active ? "page" : undefined}
                     onClick={() => setIsOpen(false)}
                   >
-                    {NAV_LABEL[item.href] ?? item.label}
+                    {t(NAV_LABEL_KEY[item.href] ?? item.label)}
                   </Link>
                 );
               })}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useLocale } from "@/lib/locale-context";
 import {
   getMapFeatures,
   buildProjection,
@@ -19,19 +20,20 @@ import {
 const initialFeatures = getMapFeatures();
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
+  const { locale, t } = useLocale();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
   const [routeRegions, setRouteRegions] =
     useState<RouteRegion[]>(DEFAULT_ROUTE_REGIONS);
 
   useEffect(() => {
-    fetchRoutes("en").then(setRoutes).catch(() => {});
-    fetchRouteRegions("en")
+    fetchRoutes(locale).then(setRoutes).catch(() => {});
+    fetchRouteRegions(locale)
       .then((data) =>
         setRouteRegions(data.length ? data : DEFAULT_ROUTE_REGIONS),
       )
       .catch(() => setRouteRegions(DEFAULT_ROUTE_REGIONS));
-  }, []);
+  }, [locale]);
 
   const mapPaths = useMemo(() => {
     if (!initialFeatures.length) {
@@ -61,7 +63,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
         }`}
         aria-current={active ? "page" : undefined}
       >
-        Routes
+        {t("common.nav.routes")}
       </Link>
 
       <div className="invisible fixed left-0 top-[4.55rem] z-40 w-screen translate-y-3 border-y border-black/5 bg-[var(--paper-deep)] bg-grain opacity-0 shadow-[0_40px_100px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-400 group-hover/routes:visible group-hover/routes:translate-y-0 group-hover/routes:opacity-100 group-focus-within/routes:visible group-focus-within/routes:translate-y-0 group-focus-within/routes:opacity-100">
@@ -69,14 +71,14 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
           <div className="mb-12 flex flex-col justify-between gap-8 border-b border-black/5 pb-10 md:flex-row md:items-end">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                Routes / Field Discovery
+                {t("common.nav.routesMega.eyebrow")}
               </p>
             </div>
             <Link
               href="/routes"
               className="px-8 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
             >
-              View all routes
+              {t("common.nav.routesMega.viewAll")}
             </Link>
           </div>
 
@@ -133,7 +135,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                         </svg>
                       ) : (
                         <div className="grid h-full place-items-center text-xs text-[var(--muted)] handwritten">
-                          Loading Map...
+                          {t("common.nav.routesMega.loadingMap")}
                         </div>
                       )}
                     </div>
@@ -160,7 +162,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                       ))
                     ) : (
                       <p className="text-sm text-[var(--muted)] handwritten">
-                        Coming soon
+                        {t("common.nav.routesMega.comingSoon")}
                       </p>
                     )}
                   </div>
