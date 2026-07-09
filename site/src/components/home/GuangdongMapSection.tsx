@@ -172,8 +172,9 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                     <img
                       src={activeImage}
                       alt={activeCity.name}
-                      loading="lazy"
-                      decoding="async"
+                      loading="eager"
+                      decoding="sync"
+                      fetchPriority="high"
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                   ) : (

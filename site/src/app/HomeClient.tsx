@@ -307,8 +307,9 @@ export default function HomeClient({
                       <img
                         src={product.image}
                         alt={product.name}
-                        loading="lazy"
-                        decoding="async"
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority={idx === 0 ? "high" : "auto"}
                         className="absolute inset-0 h-full w-full object-cover object-center bg-[var(--paper)] p-0 sm:bg-transparent"
                       />
                       <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
@@ -407,8 +408,9 @@ export default function HomeClient({
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
-                    loading="lazy"
-                    decoding="async"
+                    loading="eager"
+                    decoding="sync"
+                    fetchPriority="high"
                     className="absolute inset-0 h-full w-full object-cover grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 sm:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--river-deep)]/20 to-transparent" />
