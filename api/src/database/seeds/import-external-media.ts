@@ -20,6 +20,10 @@ type ImportContext = {
   reused: number;
 };
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const STATIC_FALLBACK_UPLOADS: Record<string, string> = {
   'https://images.unsplash.com/photo-1594910413523-d2391693c004?auto=format&fit=crop&w=1200&q=82':
     '/uploads/shop/volcanic-soil-bowl-gallery-1-f2c4ab6f052f.jpg',
@@ -30,11 +34,13 @@ function isRemoteUrl(value: unknown): value is string {
 }
 
 function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'asset';
+  return (
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80) || 'asset'
+  );
 }
 
 function inferExtension(url: string, contentType: string | null): string {
@@ -44,7 +50,8 @@ function inferExtension(url: string, contentType: string | null): string {
   if (loweredType.includes('gif')) return '.gif';
   if (loweredType.includes('svg')) return '.svg';
   if (loweredType.includes('avif')) return '.avif';
-  if (loweredType.includes('jpeg') || loweredType.includes('jpg')) return '.jpg';
+  if (loweredType.includes('jpeg') || loweredType.includes('jpg'))
+    return '.jpg';
 
   try {
     const pathname = new URL(url).pathname;
@@ -79,13 +86,26 @@ async function ensureMediaTracked(
        entity_type = EXCLUDED.entity_type,
        entity_id = EXCLUDED.entity_id,
        url = EXCLUDED.url`,
-    [filename, originalName, mimeType, sizeBytes, module, buildPublicUploadUrl(filename)],
+    [
+      filename,
+      originalName,
+      mimeType,
+      sizeBytes,
+      module,
+      buildPublicUploadUrl(filename),
+    ],
   );
 }
 
 async function trackExistingUpload(uploadUrl: string, module: string) {
-  const filename = normalizeStoredRelativePath(uploadUrl.replace(/^\/uploads\//, ''));
-  const absolutePath = join(process.cwd(), process.env.UPLOAD_DIR ?? './uploads', ...filename.split('/'));
+  const filename = normalizeStoredRelativePath(
+    uploadUrl.replace(/^\/uploads\//, ''),
+  );
+  const absolutePath = join(
+    process.cwd(),
+    process.env.UPLOAD_DIR ?? './uploads',
+    ...filename.split('/'),
+  );
   const fileStat = await stat(absolutePath);
   const originalName = filename.split('/').pop() ?? filename;
 
@@ -136,9 +156,33 @@ async function importRemoteImage(
   const baseName = `${slugify(hint)}-${hash}`;
 
   if (context.apply) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download ${url}: ${response.status} ${response.statusText}`);
+    let response: Response | null = null;
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      response = await fetch(url, {
+        headers: {
+          Accept: 'image/*,*/*;q=0.8',
+          'User-Agent': 'LingTour media importer/1.0',
+        },
+      });
+
+      if (response.ok) {
+        break;
+      }
+
+      const shouldRetry =
+        response.status === 429 || response.status >= 500 || response.status === 403;
+      if (!shouldRetry || attempt === 3) {
+        throw new Error(
+          `Failed to download ${url}: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      await sleep((attempt + 1) * 1500);
+    }
+
+    if (!response || !response.ok) {
+      throw new Error(`Failed to download ${url}: no successful response`);
     }
 
     contentType = response.headers.get('content-type');
@@ -146,7 +190,10 @@ async function importRemoteImage(
     bytes = Buffer.from(await response.arrayBuffer());
   }
 
-  const storedPath = buildStoredUploadPath(`${baseName}${extension}`, safeModule);
+  const storedPath = buildStoredUploadPath(
+    `${baseName}${extension}`,
+    safeModule,
+  );
   const absolutePath = join(context.uploadRoot, ...storedPath.split('/'));
   const originalName = `${baseName}${extension}`;
 
@@ -186,7 +233,12 @@ async function convertImageArray(
     const value = source[index];
     if (isRemoteUrl(value)) {
       nextValues.push(
-        await importRemoteImage(value, module, `${hintPrefix}-${index + 1}`, context),
+        await importRemoteImage(
+          value,
+          module,
+          `${hintPrefix}-${index + 1}`,
+          context,
+        ),
       );
       changed = true;
     } else {
@@ -198,17 +250,11 @@ async function convertImageArray(
 }
 
 async function processCities(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT id, slug, hero_image, gallery_images, food_images
        FROM cities
       WHERE deleted_at IS NULL`,
-  )) as Array<{
-    id: string;
-    slug: string;
-    hero_image: string;
-    gallery_images: string[];
-    food_images: string[];
-  }>;
+  );
 
   let updated = 0;
 
@@ -219,7 +265,12 @@ async function processCities(context: ImportContext) {
     let nextFood = row.food_images;
 
     if (isRemoteUrl(row.hero_image)) {
-      nextHero = await importRemoteImage(row.hero_image, 'cities', `${row.slug}-hero`, context);
+      nextHero = await importRemoteImage(
+        row.hero_image,
+        'cities',
+        `${row.slug}-hero`,
+        context,
+      );
       changed = true;
     }
 
@@ -258,7 +309,12 @@ async function processCities(context: ImportContext) {
                 food_images = $3::jsonb,
                 updated_at = now()
           WHERE id = $4`,
-        [nextHero, JSON.stringify(nextGallery), JSON.stringify(nextFood), row.id],
+        [
+          nextHero,
+          JSON.stringify(nextGallery),
+          JSON.stringify(nextFood),
+          row.id,
+        ],
       );
     }
   }
@@ -267,18 +323,11 @@ async function processCities(context: ImportContext) {
 }
 
 async function processCitySections(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT s.id, c.slug AS city_slug, s.sort_order, s.image, s.images, s.breath_image
        FROM city_culture_sections s
        JOIN cities c ON c.id = s.city_id`,
-  )) as Array<{
-    id: string;
-    city_slug: string;
-    sort_order: number;
-    image: string;
-    images: string[];
-    breath_image: string | null;
-  }>;
+  );
 
   let updated = 0;
 
@@ -290,7 +339,12 @@ async function processCitySections(context: ImportContext) {
     const hintBase = `${row.city_slug}-section-${row.sort_order + 1}`;
 
     if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(row.image, 'cities', `${hintBase}-image`, context);
+      nextImage = await importRemoteImage(
+        row.image,
+        'cities',
+        `${hintBase}-image`,
+        context,
+      );
       changed = true;
     }
 
@@ -337,9 +391,9 @@ async function processCitySections(context: ImportContext) {
 }
 
 async function processStoryRoutes(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT id, slug, cover_image FROM story_routes WHERE deleted_at IS NULL`,
-  )) as Array<{ id: string; slug: string; cover_image: string }>;
+  );
 
   let updated = 0;
 
@@ -371,17 +425,11 @@ async function processStoryRoutes(context: ImportContext) {
 }
 
 async function processRouteStops(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT s.id, r.slug AS route_slug, s.sort_order, s.image, s.images
        FROM route_stops s
        JOIN story_routes r ON r.id = s.route_id`,
-  )) as Array<{
-    id: string;
-    route_slug: string;
-    sort_order: number;
-    image: string;
-    images: string[];
-  }>;
+  );
 
   let updated = 0;
 
@@ -392,7 +440,12 @@ async function processRouteStops(context: ImportContext) {
     const hintBase = `${row.route_slug}-stop-${row.sort_order + 1}`;
 
     if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(row.image, 'routes', `${hintBase}-image`, context);
+      nextImage = await importRemoteImage(
+        row.image,
+        'routes',
+        `${hintBase}-image`,
+        context,
+      );
       changed = true;
     }
 
@@ -427,9 +480,9 @@ async function processRouteStops(context: ImportContext) {
 }
 
 async function processStoreCollections(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT id, slug, image FROM store_collections`,
-  )) as Array<{ id: string; slug: string; image: string }>;
+  );
 
   let updated = 0;
 
@@ -439,7 +492,12 @@ async function processStoreCollections(context: ImportContext) {
     }
 
     updated += 1;
-    const nextImage = await importRemoteImage(row.image, 'shop', `${row.slug}-cover`, context);
+    const nextImage = await importRemoteImage(
+      row.image,
+      'shop',
+      `${row.slug}-cover`,
+      context,
+    );
 
     if (context.apply) {
       await AppDataSource.query(
@@ -456,16 +514,11 @@ async function processStoreCollections(context: ImportContext) {
 }
 
 async function processStoreProducts(context: ImportContext) {
-  const rows = (await AppDataSource.query(
+  const rows = await AppDataSource.query(
     `SELECT id, slug, image, gallery
        FROM store_products
       WHERE deleted_at IS NULL`,
-  )) as Array<{
-    id: string;
-    slug: string;
-    image: string;
-    gallery: string[];
-  }>;
+  );
 
   let updated = 0;
 
@@ -475,7 +528,12 @@ async function processStoreProducts(context: ImportContext) {
     let nextGallery = row.gallery;
 
     if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(row.image, 'shop', `${row.slug}-main`, context);
+      nextImage = await importRemoteImage(
+        row.image,
+        'shop',
+        `${row.slug}-main`,
+        context,
+      );
       changed = true;
     }
 
@@ -511,9 +569,7 @@ async function processStoreProducts(context: ImportContext) {
 }
 
 async function processEvents(context: ImportContext) {
-  const rows = (await AppDataSource.query(
-    `SELECT id, slug, image FROM events`,
-  )) as Array<{ id: string; slug: string; image: string | null }>;
+  const rows = await AppDataSource.query(`SELECT id, slug, image FROM events`);
 
   let updated = 0;
 
@@ -523,7 +579,12 @@ async function processEvents(context: ImportContext) {
     }
 
     updated += 1;
-    const nextImage = await importRemoteImage(row.image, 'events', `${row.slug}-cover`, context);
+    const nextImage = await importRemoteImage(
+      row.image,
+      'events',
+      `${row.slug}-cover`,
+      context,
+    );
 
     if (context.apply) {
       await AppDataSource.query(
@@ -541,7 +602,10 @@ async function processEvents(context: ImportContext) {
 
 async function main() {
   const apply = process.argv.includes('--apply');
-  const uploadRoot = resolve(process.cwd(), process.env.UPLOAD_DIR ?? './uploads');
+  const uploadRoot = resolve(
+    process.cwd(),
+    process.env.UPLOAD_DIR ?? './uploads',
+  );
 
   await AppDataSource.initialize();
 
