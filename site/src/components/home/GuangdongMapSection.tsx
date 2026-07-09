@@ -144,9 +144,9 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     .replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
 
   return (
-    <section className="relative overflow-hidden py-24 lg:py-40">
+    <section className="relative overflow-hidden py-16 sm:py-20 lg:py-40">
       <div className="site-container relative z-10">
-        <div className="mb-20">
+        <div className="mb-8 sm:mb-12 lg:mb-20">
           <Reveal>
             <div className="mb-6 flex items-center gap-4">
               <div className="h-px w-10 bg-[var(--cinnabar)]" />
@@ -154,20 +154,20 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 Geographical Exploration
               </p>
             </div>
-            <h2 className="max-w-4xl font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-[-0.04em] text-[var(--river-deep)] md:text-7xl lg:text-8xl">
+            <h2 className="max-w-4xl font-[family:var(--font-display)] text-[3.2rem] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-7xl lg:text-8xl">
               On the Map, Preview Your Next Feast.
             </h2>
           </Reveal>
         </div>
 
-        <div className="relative min-h-[16rem] md:min-h-[28rem] lg:min-h-[40rem]">
-          <div className="scrapbook-shadow absolute left-0 top-0 z-30 w-[min(90vw,17rem)] rotate-1 border-8 border-white bg-white/95 p-4 backdrop-blur-sm md:w-56 lg:w-52">
+        <div className="relative">
+          <div className="scrapbook-shadow relative z-30 mx-auto mb-6 w-full max-w-[19rem] border-[0.4rem] border-white bg-white/95 p-3 backdrop-blur-sm sm:max-w-[22rem] md:absolute md:left-0 md:top-0 md:mx-0 md:mb-0 md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:w-52">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
                 className="group block"
               >
-                <div className="relative mb-4 aspect-[4/3] overflow-hidden">
+                <div className="relative mb-3 aspect-[16/10] overflow-hidden md:mb-4 md:aspect-[4/3]">
                   {activeImage ? (
                     <img
                       src={activeImage}
@@ -183,19 +183,19 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 </div>
               </Link>
 
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <div>
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                     {panelEyebrow}
                   </p>
-                  <h3 className="font-[family:var(--font-display)] text-2xl italic leading-none text-[var(--river-deep)]">
+                  <h3 className="font-[family:var(--font-display)] text-[1.75rem] italic leading-none text-[var(--river-deep)] md:text-2xl">
                     {panelTitle}
                   </h3>
                 </div>
 
                 <div className="h-px bg-[var(--line)]" />
 
-                <div className="min-h-[4.5rem]">
+                <div className="min-h-[3.5rem] md:min-h-[4.5rem]">
                   {activeEvent ? (
                     <div className="animate-reveal">
                       <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
@@ -212,16 +212,16 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2">
+                <div className="grid grid-cols-2 gap-2 pt-1 md:pt-2">
                   <Link
                     href={`/culture/${activeCity.slug}`}
-                    className="border border-[var(--river-deep)] py-3 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                    className="border border-[var(--river-deep)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white md:py-3"
                   >
                     Story
                   </Link>
                   <Link
                     href={`/interpreting?city=${activeCity.slug}`}
-                    className="bg-[var(--cinnabar)] py-3 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)]"
+                    className="bg-[var(--cinnabar)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)] md:py-3"
                   >
                     Book
                   </Link>
@@ -230,7 +230,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
             </Reveal>
           </div>
 
-          <div className="pointer-events-none absolute inset-0 z-10">
+          <div className="relative z-10 h-[18rem] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] sm:h-[24rem] md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
             <div className="pointer-events-auto h-full w-full opacity-60">
               {mapData ? (
                 <svg

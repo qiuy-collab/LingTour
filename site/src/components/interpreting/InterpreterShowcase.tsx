@@ -48,7 +48,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
         </Reveal>
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-3">
+      <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:gap-8">
         {profiles.map((profile, index) => {
           const isSelected = selectedProfileId === profile.id;
 
@@ -57,13 +57,13 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
               <article
                 className={[
                   "group relative overflow-hidden bg-[var(--paper)] bg-grain transition-all duration-500 scrapbook-shadow border border-[var(--line)]",
-                  index % 2 === 0 ? "rotate-1" : "-rotate-1",
+                  index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1",
                   isSelected
                     ? "border-[var(--cinnabar)] ring-1 ring-[var(--cinnabar)]/20"
                     : "hover:-translate-y-2 hover:rotate-0",
                 ].join(" ")}
               >
-                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)]">
+                <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] sm:aspect-[4/5]">
                   <div
                     className={[
                       "absolute inset-0 bg-cover bg-center transition-all duration-1000",
@@ -91,8 +91,8 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                   </div>
                 </div>
 
-                <div className="p-8">
-                  <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="p-5 sm:p-8">
+                  <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex-1">
                       <p className="text-xs leading-relaxed text-[var(--muted)] italic mb-2">
                         {profile.languages}
@@ -105,7 +105,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                       </div>
                     </div>
                     {profile.rateLabel ? (
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-1">Rate</p>
                         <p className="text-sm font-bold text-[var(--river-deep)]">{profile.rateLabel.split(' ')[0]}</p>
                       </div>
@@ -113,7 +113,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                   </div>
 
                   {profile.bestFor ? (
-                    <div className="mb-8 p-4 bg-[var(--paper-deep)]/40 border-l border-[var(--gold)]/30 italic">
+                    <div className="mb-8 border border-[var(--gold)]/20 bg-[var(--paper-deep)]/40 p-4 italic">
                       <p className="text-[13px] leading-relaxed text-[var(--muted)] handwritten">
                         &ldquo;{profile.bestFor}&rdquo;
                       </p>

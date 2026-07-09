@@ -334,8 +334,8 @@ export default function InterpretingPageClient({
               </h2>
             </div>
 
-            <div className="overflow-x-auto overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
-              <div className="min-w-[28rem] md:min-w-0">
+            <div className="overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
+              <div>
                 <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
                   <div className="p-4">{locale === "zh" ? "类型" : "Type"}</div>
                   <div className="p-4 text-center">
@@ -366,7 +366,7 @@ export default function InterpretingPageClient({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-around gap-2 px-4 pb-4 md:hidden">
+                    <div className="grid grid-cols-3 gap-3 px-4 pb-4 md:hidden">
                       {[
                         {
                           label: t("interpreting.levels.junior"),

@@ -89,19 +89,19 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
   );
 
   return (
-    <section id="interpreting-booking" className="site-container pb-16 lg:pb-24">
+    <section id="interpreting-booking" className="site-container pb-28 md:pb-20 lg:pb-24">
       <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-16">
         <div className="lg:sticky lg:top-28">
           <div className="mb-8 opacity-60">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
               {locale === "zh" ? "\u9884\u7ea6" : "Booking"}
             </p>
-            <h2 className="mt-3 max-w-[10ch] font-[family:var(--font-display)] text-[2.6rem] leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap lg:text-3xl">
+            <h2 className="mt-3 max-w-[10ch] font-[family:var(--font-display)] text-[2.25rem] leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap lg:text-3xl">
               {locale === "zh" ? "\u544a\u8bc9\u6211\u4eec\u4f60\u8981\u53bb\u54ea\u3002" : "Tell us where you are going."}
             </h2>
           </div>
           <div className="space-y-4">
-            <div className="bg-[var(--paper)] p-8 scrapbook-shadow border border-[var(--line)] rotate-[-0.5deg]">
+            <div className="border border-[var(--line)] bg-[var(--paper)] p-5 scrapbook-shadow rotate-[-0.5deg] sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                   {locale === "zh" ? "\u5b9e\u65f6\u7b80\u62a5" : "Live Brief"}
@@ -131,9 +131,9 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
                     type="button"
                     onClick={() => setBookingStep(index)}
                     className={[
-                      "group flex w-full items-start gap-6 p-6 transition-all duration-500",
+                      "group flex w-full items-start gap-4 p-4 transition-all duration-500 sm:gap-6 sm:p-6",
                       isActive
-                        ? "bg-[var(--paper)] scrapbook-shadow border border-[var(--line)] translate-x-2"
+                        ? "border border-[var(--line)] bg-[var(--paper)] scrapbook-shadow sm:translate-x-2"
                         : "opacity-40 hover:opacity-100 hover:translate-x-1",
                     ].join(" ")}
                   >
@@ -146,7 +146,7 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
                       {index + 1}
                     </span>
                     <div className="text-left">
-                      <span className={`block font-[family:var(--font-display)] text-2xl leading-tight ${isActive ? 'text-[var(--river-deep)]' : 'text-[var(--muted)]'}`}>
+                      <span className={`block font-[family:var(--font-display)] text-xl leading-tight sm:text-2xl ${isActive ? 'text-[var(--river-deep)]' : 'text-[var(--muted)]'}`}>
                         {item.title}
                       </span>
                       <span className="mt-2 block text-[13px] leading-relaxed text-[var(--muted)] handwritten italic">
@@ -158,7 +158,7 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
               })}
             </div>
 
-            <div className="p-6 border-l-2 border-[var(--gold)]/30 bg-[var(--gold)]/5 rotate-[0.5deg]">
+            <div className="border border-[var(--gold)]/20 bg-[var(--gold)]/5 p-5 rotate-[0.5deg] sm:p-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-3">
                 {locale === "zh" ? "\u63d0\u793a" : "Field Manual"}
               </p>
@@ -175,14 +175,14 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
           </div>
         </div>
 
-        <div className="relative overflow-visible bg-[var(--paper)] bg-grain p-8 lg:p-12 scrapbook-shadow border border-[var(--line)] rotate-[0.3deg]">
+        <div className="relative overflow-visible border border-[var(--line)] bg-[var(--paper)] bg-grain p-6 scrapbook-shadow rotate-[0.3deg] sm:p-8 lg:p-12">
           <div className="absolute top-0 right-0 w-40 h-40 border-l border-b border-[var(--line)] opacity-10 pointer-events-none" />
 
           <div className="relative z-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] mb-4">
               {locale === "zh" ? "\u670d\u52a1\u53f0" : "Registry Desk"}
             </p>
-            <h3 className="font-[family:var(--font-display)] text-5xl italic text-[var(--river-deep)] mb-12">
+            <h3 className="mb-8 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)] sm:mb-12 sm:text-5xl">
               {locale === "zh" ? "\u63d0\u4ea4\u9884\u7ea6\u9700\u6c42" : "Build Request"}
             </h3>
             <div className="mt-7">

@@ -245,7 +245,7 @@ function MultiStepFormInner({
   return (
     <div className="overflow-visible rounded-[1.75rem] border border-[var(--line)] bg-[rgba(255,255,255,0.92)] shadow-[0_18px_50px_rgba(17,25,35,0.08)] backdrop-blur-sm">
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
-        <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-white/72 px-4 py-3">
+        <label className="flex cursor-pointer flex-col gap-2 rounded-2xl bg-white/72 px-4 py-3 sm:flex-row sm:items-center">
           <input
             type="checkbox"
             checked={fastTrack}
@@ -264,7 +264,7 @@ function MultiStepFormInner({
       </div>
 
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-label text-[var(--gold)]">Step {step + 1} of {totalSteps}</p>
           <p className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)]">
             {fastTrack
@@ -351,7 +351,7 @@ function MultiStepFormInner({
                 </button>
 
                 {showCalendar && (
-                  <div className="absolute right-0 top-full z-30 mt-2 w-72 max-w-[calc(100vw-3rem)] rounded-[1.25rem] border border-[var(--line)] bg-white p-4 shadow-[0_18px_40px_rgba(17,25,35,0.12)]">
+                  <div className="absolute left-0 right-0 top-full z-30 mt-2 rounded-[1.25rem] border border-[var(--line)] bg-white p-4 shadow-[0_18px_40px_rgba(17,25,35,0.12)] sm:left-auto sm:right-0 sm:w-72 sm:max-w-[calc(100vw-3rem)]">
                     <div className="mb-3 flex items-center justify-between">
                       <button
                         type="button"
@@ -449,8 +449,8 @@ function MultiStepFormInner({
                   ["Group size", form.groupSize],
                   ["Needs", form.needs],
                 ].map(([label, value]) => (
-                  <div key={label} className="flex items-baseline gap-3 border-b border-[var(--line)] pb-2 last:border-0">
-                    <span className="w-24 shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{label}</span>
+                  <div key={label} className="flex flex-col gap-1 border-b border-[var(--line)] pb-2 last:border-0 sm:flex-row sm:items-baseline sm:gap-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)] sm:w-24 sm:shrink-0">{label}</span>
                     <span className={value ? "text-[var(--ink)]" : "italic text-[var(--muted)]"}>{value || "Not provided"}</span>
                   </div>
                 ))}
@@ -463,7 +463,7 @@ function MultiStepFormInner({
           <div className="grid gap-5">
             {depositSession ? (
               <div className="rounded-[1.5rem] border border-[var(--gold)]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.88))] p-5 shadow-[0_18px_50px_rgba(17,25,35,0.06)]">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-label text-[var(--gold)]">Deposit ready</p>
                     <h4 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
@@ -516,7 +516,7 @@ function MultiStepFormInner({
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-5 sm:px-8">
+      <div className="flex flex-col-reverse gap-3 border-t border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <button
           type="button"
           onClick={() => {
@@ -524,7 +524,7 @@ function MultiStepFormInner({
             setStep(next);
             onStepChange?.(next, fastTrack);
           }}
-          className={`text-[14px] transition ${step === 0 ? "cursor-not-allowed text-[var(--muted)]/40" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
+          className={`w-full text-left text-[14px] transition sm:w-auto ${step === 0 ? "cursor-not-allowed text-[var(--muted)]/40" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
           disabled={step === 0}
         >
           Back
@@ -535,7 +535,7 @@ function MultiStepFormInner({
             type="button"
             onClick={payDepositNow}
             disabled={!depositSession || paymentProcessing}
-            className={`rounded-full px-6 py-3 text-[14px] font-semibold transition-all ${
+            className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
               depositSession && !paymentProcessing
                 ? "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
@@ -548,7 +548,7 @@ function MultiStepFormInner({
             type="button"
             onClick={openDepositCheckout}
             disabled={!canNext() || submitting}
-            className={`rounded-full px-6 py-3 text-[14px] font-semibold transition-all ${
+            className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
               canNext() && !submitting
                 ? "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
@@ -565,7 +565,7 @@ function MultiStepFormInner({
               onStepChange?.(next, fastTrack);
             }}
             disabled={!canNext()}
-            className={`rounded-full px-6 py-3 text-[14px] font-semibold transition-all ${
+            className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
               canNext()
                 ? "bg-[var(--gold)] text-[var(--night)] shadow-[0_12px_30px_rgba(197,160,57,0.18)] hover:bg-[var(--gold)]/90"
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
@@ -578,7 +578,7 @@ function MultiStepFormInner({
             type="button"
             onClick={openDepositCheckout}
             disabled={submitting}
-            className={`rounded-full px-6 py-3 text-[14px] font-semibold transition ${
+            className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition sm:w-auto ${
               submitting
                 ? "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
                 : "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
