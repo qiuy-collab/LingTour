@@ -167,9 +167,9 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[23rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
+            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[23rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative mx-auto aspect-[3/4] w-full tape-effect sm:aspect-[4/5] sm:rotate-2 lg:ml-auto lg:rotate-3">
+                <div className="group relative mx-auto aspect-[6/5] w-full tape-effect sm:aspect-[4/5] sm:rotate-2 lg:ml-auto lg:rotate-3">
                   <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[1rem]">
                     <img
                       src={heroImage}
@@ -300,7 +300,7 @@ export default function HomeClient({
                     className="group block relative"
                   >
                     <div
-                      className={`relative aspect-[4/5] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] sm:aspect-[3/4] ${
+                      className={`relative aspect-[16/11] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] sm:aspect-[3/4] ${
                         idx % 2 === 0 ? "sm:rotate-2" : "sm:-rotate-2"
                       }`}
                     >
@@ -309,7 +309,7 @@ export default function HomeClient({
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="absolute inset-0 h-full w-full object-contain object-[center_15%] bg-[var(--paper)] p-3 sm:object-cover sm:object-center sm:bg-transparent sm:p-0"
+                        className="absolute inset-0 h-full w-full object-cover object-center bg-[var(--paper)] p-0 sm:bg-transparent"
                       />
                       <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
 
@@ -403,7 +403,7 @@ export default function HomeClient({
 
             <div className="relative mx-auto w-full max-w-[24rem] self-center lg:col-span-7 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative aspect-[3/4] overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:aspect-[16/10] sm:border-8 sm:rotate-1">
+                <div className="group relative aspect-[6/5] overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:aspect-[16/10] sm:border-8 sm:rotate-1">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"

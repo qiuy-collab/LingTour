@@ -60,9 +60,9 @@ export default function CulturePageClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
+            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
               <Reveal delay={200}>
-                <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-8 sm:rotate-2 lg:ml-auto">
+                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-8 sm:rotate-2 lg:ml-auto">
                   <div
                     className="absolute inset-0 bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}

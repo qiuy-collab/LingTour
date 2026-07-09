@@ -85,9 +85,9 @@ export default function ShopPageClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
+            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
               <Reveal delay={200}>
-                <div className="relative mx-auto aspect-[3/4] w-full bg-white p-2 scrapbook-shadow sm:aspect-square sm:p-4 sm:rotate-6 lg:ml-auto">
+                <div className="relative mx-auto aspect-[6/5] w-full bg-white p-2 scrapbook-shadow sm:aspect-square sm:p-4 sm:rotate-6 lg:ml-auto">
                   <div
                     className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}
@@ -134,7 +134,7 @@ export default function ShopPageClient({
                     <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
                       <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.9rem]">
                         <div
-                          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition duration-1000 group-hover:scale-105 sm:bg-cover"
+                          className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-105"
                           style={{ backgroundImage: `url(${cardImage})` }}
                         />
                         <div className="absolute inset-0 bg-black/5" />

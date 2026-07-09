@@ -28,13 +28,13 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
         <div className="absolute -top-8 left-1/2 z-0 hidden h-3 w-3 -translate-x-1/2 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] sm:block" />
 
         <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden">
-          <div className="relative aspect-[4/5] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent">
+          <div className="relative aspect-[16/11] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent sm:aspect-auto">
             <img
               src={product.image}
               alt={product.name}
               loading="lazy"
               decoding="async"
-              className="absolute inset-0 h-full w-full bg-[var(--paper)] p-3 object-contain object-[center_15%] transition-all duration-1000 group-hover:scale-105 sm:bg-transparent sm:p-0 sm:object-cover sm:object-center sm:group-hover:scale-110"
+              className="absolute inset-0 h-full w-full bg-[var(--paper)] object-cover object-center transition-all duration-1000 group-hover:scale-105 sm:bg-transparent sm:p-0 sm:object-cover sm:object-center sm:group-hover:scale-110"
             />
             {/* Subtle Glass Overlay for depth */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] transition-opacity group-hover:opacity-0" />

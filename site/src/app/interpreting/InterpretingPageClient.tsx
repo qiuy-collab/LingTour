@@ -218,9 +218,9 @@ export default function InterpretingPageClient({
               </Reveal>
             </div>
 
-            <div className="mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[20rem] lg:col-span-4 lg:max-w-none lg:self-center">
+            <div className="mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[20rem] lg:col-span-4 lg:max-w-none lg:self-center">
               <Reveal delay={240}>
-                <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[20rem] lg:border-[12px]">
+                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[20rem] lg:border-[12px]">
                   <div
                     className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
                     style={{ backgroundImage: `url(${cinematicImage})` }}

@@ -62,9 +62,9 @@ export default function RoutesPageClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
+            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative mx-auto aspect-[3/4] w-full scrapbook-shadow sm:aspect-[3/4] sm:-rotate-3 lg:ml-auto">
+                <div className="group relative mx-auto aspect-[6/5] w-full scrapbook-shadow sm:aspect-[3/4] sm:-rotate-3 lg:ml-auto">
                   <div
                     className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
                     style={{ backgroundImage: `url(${heroImage})` }}
