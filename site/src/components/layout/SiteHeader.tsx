@@ -114,7 +114,7 @@ export function SiteHeader() {
           </nav>
           <AccountNavLink />
           <Link
-            href="/interpreting#booking"
+            href="/interpreting#interpreting-booking"
             className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
           >
             {t("common.nav.planTrip")}
@@ -198,7 +198,7 @@ export function SiteHeader() {
             <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
               <AccountNavLink onNavigate={() => setIsOpen(false)} />
               <Link
-                href="/interpreting#booking"
+                href="/interpreting#interpreting-booking"
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
                 onClick={() => setIsOpen(false)}
               >

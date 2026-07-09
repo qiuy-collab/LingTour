@@ -1,5 +1,12 @@
 export const home = {
   en: {
+    "home.hero.eyebrow": "LingTour Guangdong",
+    "home.hero.headingLine1": "Guangdong,",
+    "home.hero.headingAccent": "Deeply",
+    "home.hero.headingLine3": "Arranged.",
+    "home.hero.body": "Travel Guangdong with clear routes, cultural context, and language support.",
+    "home.hero.primaryCta": "Plan my trip",
+    "home.hero.secondaryCta": "Explore routes",
     "home.hero.title": "Travel beyond the guidebook.",
     "home.hero.subtitle": "LingTour connects you to Guangdong culture through story-driven routes, live interpreting, and objects that carry meaning.",
     "home.hero.scroll": "Scroll to explore",
@@ -73,6 +80,13 @@ export const home = {
   },
 
   zh: {
+    "home.hero.eyebrow": "LingTour 广东",
+    "home.hero.headingLine1": "把广东",
+    "home.hero.headingAccent": "读深",
+    "home.hero.headingLine3": "一点。",
+    "home.hero.body": "用清晰的路线、文化脉络与语言支持，慢慢走进广东。",
+    "home.hero.primaryCta": "开始规划行程",
+    "home.hero.secondaryCta": "浏览路线",
     "home.hero.title": "旅行不止于指南。",
     "home.hero.subtitle": "岭风译游通过故事化的路线、现场口译和承载意义的文创好物，带你走进广东文化。",
     "home.hero.scroll": "向下滚动探索",

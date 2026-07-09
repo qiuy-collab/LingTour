@@ -122,17 +122,17 @@ export default function HomeClient({
                 <div className="mb-8 flex items-center gap-4 sm:mb-10">
                   <div className="w-12 h-px bg-[var(--cinnabar)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    {t("home.hero.title")}
+                    {t("home.hero.eyebrow")}
                   </p>
                 </div>
                 <h1 className="font-[family:var(--font-display)] text-[2.55rem] leading-[0.88] tracking-[-0.05em] text-[var(--river-deep)] sm:text-6xl md:text-7xl lg:text-9xl xl:text-[10rem]">
-                  Guangdong, <br />
-                  <span className="italic text-[var(--gold)]">Deeply</span>{" "}
+                  {t("home.hero.headingLine1")} <br />
+                  <span className="italic text-[var(--gold)]">{t("home.hero.headingAccent")}</span>{" "}
                   <br />
-                  Arranged.
+                  {t("home.hero.headingLine3")}
                 </h1>
                 <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-10 sm:text-xl">
-                  Travel Guangdong with clear routes, cultural context, and language support.
+                  {t("home.hero.body")}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
                   {[
@@ -154,14 +154,14 @@ export default function HomeClient({
                     className="btn-primary kinetic-link inline-flex min-w-0 w-full items-center justify-center px-6 py-4 text-xs shadow-[0_18px_40px_rgba(20,52,61,0.22)] sm:w-auto sm:min-w-[15rem] sm:px-10 sm:py-5"
                   >
                     <span className="relative z-10 text-white">
-                      Plan My Trip
+                      {t("home.hero.primaryCta")}
                     </span>
                   </Link>
                   <Link
                     href="/routes"
                     className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs sm:w-auto sm:px-10 sm:py-5"
                   >
-                    Explore Routes
+                    {t("home.hero.secondaryCta")}
                   </Link>
                 </div>
               </Reveal>
