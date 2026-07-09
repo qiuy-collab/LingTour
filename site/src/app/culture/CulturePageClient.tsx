@@ -39,8 +39,8 @@ export default function CulturePageClient({
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
       <section className="relative overflow-hidden pt-20 pb-12 sm:pb-16 lg:pt-32 lg:pb-24">
         <div className="site-container">
-          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center lg:gap-12">
-            <div className="col-span-7 z-10 sm:col-span-7 lg:col-span-7">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
+            <div className="z-10 max-w-3xl lg:col-span-7">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="h-px w-12 bg-[var(--cinnabar)]" />
@@ -60,9 +60,9 @@ export default function CulturePageClient({
               </Reveal>
             </div>
 
-            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-5 lg:mt-0">
+            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:max-w-[22rem] sm:aspect-[4/5] sm:border-8 sm:rotate-2">
+                <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-8 sm:rotate-2 lg:ml-auto">
                   <div
                     className="absolute inset-0 bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}

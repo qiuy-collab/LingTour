@@ -116,8 +116,8 @@ export default function HomeClient({
       {/* 1. HERO: THE MASTER REGISTRY */}
       <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20 lg:pt-40 lg:pb-32">
         <div className="site-container relative">
-          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center lg:gap-16">
-            <div className="col-span-7 z-10 sm:col-span-7 lg:col-span-7">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
+            <div className="z-10 max-w-3xl lg:col-span-7">
               <Reveal>
                 <div className="mb-8 flex items-center gap-4 sm:mb-10">
                   <div className="w-12 h-px bg-[var(--cinnabar)]" />
@@ -167,9 +167,9 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-5 lg:mt-0">
+            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[23rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative ml-auto aspect-[3/4] w-full tape-effect sm:max-w-[23rem] sm:aspect-[4/5] sm:rotate-2 lg:rotate-3">
+                <div className="group relative mx-auto aspect-[3/4] w-full tape-effect sm:aspect-[4/5] sm:rotate-2 lg:ml-auto lg:rotate-3">
                   <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[1rem]">
                     <img
                       src={heroImage}
@@ -360,8 +360,8 @@ export default function HomeClient({
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
         <section className="site-container py-16 sm:py-20 lg:py-40">
-          <div className="grid grid-cols-12 gap-5 sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-20">
-            <div className="col-span-7 lg:col-span-5">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-20">
+            <div className="max-w-2xl lg:col-span-5">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
@@ -401,7 +401,7 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="col-span-5 lg:col-span-7 relative self-center">
+            <div className="relative mx-auto w-full max-w-[24rem] self-center lg:col-span-7 lg:max-w-none">
               <Reveal delay={300}>
                 <div className="group relative aspect-[3/4] overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:aspect-[16/10] sm:border-8 sm:rotate-1">
                   <img

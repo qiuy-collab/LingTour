@@ -174,8 +174,8 @@ export default function InterpretingPageClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center">
-            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+            <div className="max-w-3xl lg:col-span-8">
               <Reveal>
                 <div className="mb-8 flex items-center gap-4 sm:mb-12 sm:gap-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
@@ -218,9 +218,9 @@ export default function InterpretingPageClient({
               </Reveal>
             </div>
 
-            <div className="col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:self-center">
+            <div className="mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[20rem] lg:col-span-4 lg:max-w-none lg:self-center">
               <Reveal delay={240}>
-                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:max-w-[18rem] sm:aspect-[4/5] sm:border-[0.9rem] lg:max-w-[20rem] lg:border-[12px]">
+                <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[20rem] lg:border-[12px]">
                   <div
                     className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
                     style={{ backgroundImage: `url(${cinematicImage})` }}

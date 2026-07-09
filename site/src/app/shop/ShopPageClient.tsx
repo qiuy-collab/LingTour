@@ -64,8 +64,8 @@ export default function ShopPageClient({
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
       <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20">
         <div className="site-container">
-          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-center lg:gap-16">
-            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
+            <div className="max-w-3xl lg:col-span-8">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <span className="w-10 h-px bg-[var(--cinnabar)]" />
@@ -85,9 +85,9 @@ export default function ShopPageClient({
               </Reveal>
             </div>
 
-            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:mt-0">
+            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[3/4] w-full bg-white p-2 scrapbook-shadow sm:max-w-[22rem] sm:aspect-square sm:p-4 sm:rotate-6">
+                <div className="relative mx-auto aspect-[3/4] w-full bg-white p-2 scrapbook-shadow sm:aspect-square sm:p-4 sm:rotate-6 lg:ml-auto">
                   <div
                     className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}

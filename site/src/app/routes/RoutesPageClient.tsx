@@ -41,8 +41,8 @@ export default function RoutesPageClient({
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
 
         <div className="site-container relative">
-          <div className="grid grid-cols-12 gap-5 sm:gap-10 lg:items-start lg:gap-16">
-            <div className="col-span-7 sm:col-span-7 lg:col-span-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
+            <div className="max-w-3xl lg:col-span-8">
               <Reveal>
                 <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
                   {t("routes.atlas.eyebrow")}
@@ -62,9 +62,9 @@ export default function RoutesPageClient({
               </Reveal>
             </div>
 
-            <div className="relative col-span-5 mt-1 self-center sm:col-span-5 sm:mt-4 lg:col-span-4 lg:mt-0">
+            <div className="relative mx-auto mt-2 w-full max-w-[18rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative ml-auto aspect-[3/4] w-full scrapbook-shadow sm:max-w-[22rem] sm:aspect-[3/4] sm:-rotate-3">
+                <div className="group relative mx-auto aspect-[3/4] w-full scrapbook-shadow sm:aspect-[3/4] sm:-rotate-3 lg:ml-auto">
                   <div
                     className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
                     style={{ backgroundImage: `url(${heroImage})` }}
