@@ -24,6 +24,8 @@
     "demo:judge:dry-run": "ts-node src/database/seeds/prepare-judge-demo.ts",
     "products:prepare-images": "ts-node src/database/seeds/prepare-product-images.ts --apply",
     "products:prepare-images:dry-run": "ts-node src/database/seeds/prepare-product-images.ts",
+    "content:sync": "ts-node src/database/seeds/sync-showcase-content.ts --apply",
+    "content:sync:dry-run": "ts-node src/database/seeds/sync-showcase-content.ts",
     "media:ingest-external": "ts-node src/database/seeds/import-external-media.ts --apply",
     "media:ingest-external:dry-run": "ts-node src/database/seeds/import-external-media.ts"
   },
