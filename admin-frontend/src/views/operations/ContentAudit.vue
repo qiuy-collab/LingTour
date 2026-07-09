@@ -189,7 +189,7 @@ onMounted(loadReport)
 
 .page-header p {
   margin: 6px 0 0;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 
 .summary-row {
@@ -209,7 +209,7 @@ onMounted(loadReport)
 .summary-icon {
   width: 46px;
   height: 46px;
-  border-radius: 12px;
+  border-radius: var(--lt-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,27 +217,27 @@ onMounted(loadReport)
 }
 
 .summary-total {
-  color: #409eff;
-  background: rgba(64, 158, 255, 0.12);
+  color: var(--lt-primary);
+  background: color-mix(in srgb, var(--lt-primary) 12%, transparent);
 }
 
 .summary-error {
-  color: #f56c6c;
-  background: rgba(245, 108, 108, 0.12);
+  color: var(--lt-danger);
+  background: color-mix(in srgb, var(--lt-danger) 12%, transparent);
 }
 
 .summary-warning {
-  color: #e6a23c;
-  background: rgba(230, 162, 60, 0.12);
+  color: var(--lt-warning);
+  background: color-mix(in srgb, var(--lt-warning) 12%, transparent);
 }
 
 .summary-ok {
-  color: #67c23a;
-  background: rgba(103, 194, 58, 0.12);
+  color: var(--lt-success);
+  background: color-mix(in srgb, var(--lt-success) 12%, transparent);
 }
 
 .summary-label {
-  color: #909399;
+  color: var(--lt-text-secondary);
   font-size: 13px;
 }
 
@@ -245,7 +245,7 @@ onMounted(loadReport)
   margin-top: 4px;
   font-size: 24px;
   font-weight: 700;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .filters-card {
@@ -260,7 +260,7 @@ onMounted(loadReport)
 }
 
 .generated-at {
-  color: #909399;
+  color: var(--lt-text-secondary);
   font-size: 13px;
 }
 </style>
