@@ -207,17 +207,22 @@ useKeyboardShortcuts([
       class="admin-aside"
       :class="{ 'mobile-open': mobileMenuOpen }"
     >
-      <div class="logo-area" @click="router.push('/admin/dashboard')">
+      <button
+        type="button"
+        class="logo-area"
+        aria-label="返回管理后台首页"
+        @click="router.push('/admin/dashboard')"
+      >
         <span v-if="!isCollapse" class="logo-text">LingTour Admin</span>
         <span v-else class="logo-text-short">LT</span>
-      </div>
+      </button>
 
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse && !isMobile"
         background-color="var(--lt-bg-sidebar)"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        text-color="var(--lt-sidebar-text)"
+        active-text-color="var(--lt-sidebar-active)"
         @select="handleMenuSelect"
       >
         <template v-for="group in filteredMenuGroups" :key="group.title">
@@ -240,10 +245,18 @@ useKeyboardShortcuts([
       <!-- 顶部 Header -->
       <el-header class="admin-header">
         <div class="header-left">
-          <el-icon class="collapse-btn" @click="toggleSidebar">
-            <Fold v-if="!isCollapse && !isMobile" />
-            <Expand v-else />
-          </el-icon>
+          <button
+            type="button"
+            class="header-icon-button collapse-btn"
+            :aria-label="isMobile ? '打开导航菜单' : isCollapse ? '展开导航菜单' : '收起导航菜单'"
+            :aria-expanded="isMobile ? mobileMenuOpen : !isCollapse"
+            @click="toggleSidebar"
+          >
+            <el-icon>
+              <Fold v-if="!isCollapse && !isMobile" />
+              <Expand v-else />
+            </el-icon>
+          </button>
           <span class="header-title hide-on-mobile">LingTour Admin</span>
         </div>
         <div class="header-right">
@@ -252,9 +265,14 @@ useKeyboardShortcuts([
             <el-segmented v-model="editorLocale" :options="editorLocaleOptions" size="small" />
           </div>
           <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
-            <el-icon class="header-action-btn" @click="showCommandPalette = true">
-              <Search />
-            </el-icon>
+            <button
+              type="button"
+              class="header-icon-button header-action-btn"
+              aria-label="打开搜索"
+              @click="showCommandPalette = true"
+            >
+              <el-icon><Search /></el-icon>
+            </button>
           </el-tooltip>
           <ThemeToggle />
           <NotificationBell />
@@ -306,12 +324,15 @@ useKeyboardShortcuts([
 }
 
 .logo-area {
+  width: 100%;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  border: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--lt-text-inverse) 10%, transparent);
+  background: transparent;
 }
 
 .logo-text {
@@ -346,7 +367,6 @@ useKeyboardShortcuts([
 
 .collapse-btn {
   font-size: 20px;
-  cursor: pointer;
   color: var(--lt-text-secondary);
   transition: color 0.2s;
 }
@@ -398,13 +418,30 @@ useKeyboardShortcuts([
 
 .header-action-btn {
   font-size: 18px;
-  cursor: pointer;
   color: var(--lt-text-regular);
   transition: color 0.2s;
 }
 
 .header-action-btn:hover {
   color: var(--lt-primary);
+}
+
+.header-icon-button {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lt-radius-md);
+  background: transparent;
+  cursor: pointer;
+}
+
+.header-icon-button:hover {
+  background: var(--lt-bg-hover);
 }
 
 /* Page transition */

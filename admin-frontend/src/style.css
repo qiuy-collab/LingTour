@@ -24,6 +24,29 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--lt-primary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 #app {
   height: 100%;
 }
@@ -50,6 +73,12 @@ body {
 /* Element Plus global tweaks */
 .el-table {
   font-size: var(--admin-font-body);
+}
+
+.el-button,
+.el-input__wrapper,
+.el-select__wrapper {
+  min-height: 40px;
 }
 
 .el-pagination {
@@ -171,6 +200,7 @@ body {
 
 .table-card {
   border-radius: var(--lt-radius-md);
+  border-color: var(--lt-border-light);
 }
 
 .table-card .el-card__body {

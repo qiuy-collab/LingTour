@@ -49,7 +49,13 @@ function handleMarkAllRead() {
   <el-popover placement="bottom-end" :width="360" trigger="click">
     <template #reference>
       <el-badge :value="notifStore.unreadCount" :hidden="!notifStore.hasUnread" :max="99">
-        <el-icon class="notification-bell" :size="20"><Bell /></el-icon>
+        <button
+          type="button"
+          class="notification-bell"
+          :aria-label="notifStore.hasUnread ? `打开通知，${notifStore.unreadCount} 条未读` : '打开通知'"
+        >
+          <el-icon :size="20"><Bell /></el-icon>
+        </button>
       </el-badge>
     </template>
 
@@ -68,9 +74,10 @@ function handleMarkAllRead() {
       </div>
 
       <div class="notif-list" v-if="notifStore.notifications.length > 0">
-        <div
+        <button
           v-for="notif in notifStore.notifications"
           :key="notif.id"
+          type="button"
           :class="['notif-item', { unread: !notif.read }]"
           @click="handleClick(notif)"
         >
@@ -81,7 +88,7 @@ function handleMarkAllRead() {
             <span class="notif-time">{{ formatDateTime(notif.createdAt) }}</span>
           </div>
           <p class="notif-body">{{ notif.title || notif.body }}</p>
-        </div>
+        </button>
       </div>
       <div v-else class="notif-empty">暂无通知</div>
 
@@ -94,13 +101,23 @@ function handleMarkAllRead() {
 
 <style scoped>
 .notification-bell {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lt-radius-md);
+  background: transparent;
   cursor: pointer;
-  color: #606266;
-  transition: color 0.2s;
+  color: var(--lt-text-regular);
+  transition: color 0.2s, background-color 0.2s;
 }
 
 .notification-bell:hover {
-  color: #409eff;
+  color: var(--lt-primary);
+  background: var(--lt-bg-hover);
 }
 
 .notif-panel {
@@ -112,13 +129,13 @@ function handleMarkAllRead() {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--lt-border-light);
 }
 
 .notif-title {
   font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .notif-list {
@@ -127,18 +144,23 @@ function handleMarkAllRead() {
 }
 
 .notif-item {
+  display: block;
+  width: 100%;
   padding: 10px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background 0.15s;
+  border: 0;
+  border-bottom: 1px solid var(--lt-border-lighter);
+  background: var(--lt-bg-card);
+  text-align: left;
+  transition: background-color 0.15s;
 }
 
 .notif-item:hover {
-  background: #f5f7fa;
+  background: var(--lt-bg-hover);
 }
 
 .notif-item.unread {
-  background: #f0f7ff;
+  background: var(--lt-primary-soft);
 }
 
 .notif-item-header {
@@ -150,12 +172,12 @@ function handleMarkAllRead() {
 
 .notif-time {
   font-size: 11px;
-  color: #c0c4cc;
+  color: var(--lt-text-placeholder);
 }
 
 .notif-body {
   font-size: 13px;
-  color: #606266;
+  color: var(--lt-text-regular);
   margin: 0;
   line-height: 1.4;
   overflow: hidden;
@@ -166,13 +188,13 @@ function handleMarkAllRead() {
 .notif-empty {
   padding: 32px 16px;
   text-align: center;
-  color: #c0c4cc;
+  color: var(--lt-text-placeholder);
   font-size: 13px;
 }
 
 .notif-footer {
   padding: 8px 16px;
   text-align: center;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--lt-border-light);
 }
 </style>

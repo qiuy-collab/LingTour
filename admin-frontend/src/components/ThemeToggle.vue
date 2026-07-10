@@ -19,10 +19,12 @@ function handleCommand(mode: ThemeMode) {
 <template>
   <el-dropdown trigger="click" @command="handleCommand">
     <el-tooltip :content="isDark ? '切换主题 (当前: 深色)' : '切换主题 (当前: 浅色)'" placement="bottom">
-      <el-icon class="theme-toggle-btn">
-        <Moon v-if="isDark" />
-        <Sunny v-else />
-      </el-icon>
+      <button type="button" class="theme-toggle-btn" aria-label="切换后台主题">
+        <el-icon>
+          <Moon v-if="isDark" />
+          <Sunny v-else />
+        </el-icon>
+      </button>
     </el-tooltip>
     <template #dropdown>
       <el-dropdown-menu>
@@ -42,18 +44,28 @@ function handleCommand(mode: ThemeMode) {
 
 <style scoped>
 .theme-toggle-btn {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lt-radius-md);
+  background: transparent;
   font-size: 18px;
   cursor: pointer;
-  color: var(--lt-text-regular, #606266);
-  transition: color 0.2s;
+  color: var(--lt-text-regular);
+  transition: color 0.2s, background-color 0.2s;
 }
 
 .theme-toggle-btn:hover {
-  color: var(--lt-primary, #409eff);
+  color: var(--lt-primary);
+  background: var(--lt-bg-hover);
 }
 
 :deep(.is-active) {
-  color: var(--lt-primary, #409eff);
+  color: var(--lt-primary);
   font-weight: 600;
 }
 </style>

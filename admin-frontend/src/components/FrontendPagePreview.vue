@@ -331,13 +331,13 @@ onBeforeUnmount(() => {
 .preview-toolbar strong {
   display: block;
   font-size: 14px;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .preview-toolbar p {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   word-break: break-all;
 }
 
@@ -349,11 +349,11 @@ onBeforeUnmount(() => {
 
 .toolbar-locale-hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--lt-text-secondary);
 }
 
 .toolbar-actions a {
-  color: #409eff;
+  color: var(--lt-primary);
   font-size: 12px;
   text-decoration: none;
 }
@@ -361,10 +361,10 @@ onBeforeUnmount(() => {
 .preview-frame-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid #dcdfe6;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 12px 32px rgba(17, 25, 35, 0.08);
+  border: 1px solid var(--lt-border-color);
+  border-radius: var(--lt-radius-lg);
+  background: var(--lt-bg-card);
+  box-shadow: var(--lt-shadow-md);
   width: 100%;
 }
 
@@ -377,18 +377,18 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 14px;
   padding: 24px;
-  background: rgba(255, 255, 255, 0.96);
+  background: color-mix(in srgb, var(--lt-bg-card) 96%, transparent);
 }
 
 .preview-state p {
   margin: 0;
-  color: #606266;
+  color: var(--lt-text-regular);
   font-size: 13px;
   line-height: 1.6;
 }
 
 .preview-state-error strong {
-  color: #303133;
+  color: var(--lt-text-primary);
   font-size: 16px;
 }
 
@@ -399,7 +399,7 @@ onBeforeUnmount(() => {
 }
 
 .preview-state-actions a {
-  color: #409eff;
+  color: var(--lt-primary);
   font-size: 13px;
   text-decoration: none;
 }
@@ -407,7 +407,7 @@ onBeforeUnmount(() => {
 .preview-frame {
   display: block;
   border: 0;
-  background: #fff;
+  background: var(--lt-bg-card);
   transform-origin: top left;
 }
 

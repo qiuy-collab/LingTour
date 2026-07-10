@@ -45,18 +45,18 @@ defineEmits<{
 }
 
 .empty-icon {
-  color: #c0c4cc;
+  color: var(--lt-text-placeholder);
 }
 
 .empty-title {
   font-size: 15px;
-  color: #606266;
+  color: var(--lt-text-regular);
   margin: 0 0 4px;
 }
 
 .empty-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   margin: 0;
 }
 </style>

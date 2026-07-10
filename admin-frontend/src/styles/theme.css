@@ -7,41 +7,43 @@
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
-  --lt-radius-sm: 6px;
-  --lt-radius-md: 8px;
-  --lt-radius-lg: 12px;
+  --lt-radius-sm: 4px;
+  --lt-radius-md: 6px;
+  --lt-radius-lg: 8px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
-  --lt-primary: #409eff;
-  --lt-primary-light: #66b1ff;
-  --lt-primary-dark: #3a8ee6;
-  --lt-primary-soft: #ecf5ff;
+  --lt-primary: #24535e;
+  --lt-primary-light: #3f707a;
+  --lt-primary-dark: #14343d;
+  --lt-primary-soft: rgba(36, 83, 94, 0.1);
 
   /* Background */
-  --lt-bg-page: #f0f2f5;
+  --lt-bg-page: #eef0ed;
   --lt-bg-card: #ffffff;
-  --lt-bg-sidebar: #304156;
+  --lt-bg-sidebar: #14343d;
+  --lt-sidebar-text: #c9d4d3;
+  --lt-sidebar-active: #ffffff;
   --lt-bg-header: #ffffff;
-  --lt-bg-hover: #f5f7fa;
+  --lt-bg-hover: #f1f4f2;
   --lt-bg-mask: rgba(0, 0, 0, 0.5);
 
   /* Text */
-  --lt-text-primary: #303133;
-  --lt-text-regular: #606266;
-  --lt-text-secondary: #909399;
-  --lt-text-placeholder: #c0c4cc;
+  --lt-text-primary: #17202a;
+  --lt-text-regular: #4d5963;
+  --lt-text-secondary: #66717d;
+  --lt-text-placeholder: #87919a;
   --lt-text-inverse: #ffffff;
 
   /* Border */
-  --lt-border-color: #e6e6e6;
-  --lt-border-light: #ebeef5;
-  --lt-border-lighter: #f2f6fc;
+  --lt-border-color: rgba(23, 32, 42, 0.18);
+  --lt-border-light: rgba(23, 32, 42, 0.12);
+  --lt-border-lighter: rgba(23, 32, 42, 0.07);
 
   /* Shadow */
   --lt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --lt-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --lt-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --lt-shadow-md: 0 4px 12px rgba(17, 25, 35, 0.08);
+  --lt-shadow-lg: 0 10px 28px rgba(17, 25, 35, 0.12);
 
   /* Scrollbar */
   --lt-scrollbar-track: #f1f1f1;
@@ -60,6 +62,25 @@
   --lt-route-hakka: var(--lt-success);
   --lt-route-coastal: #00b5ad;
   --lt-route-mountain: #ff5722;
+
+  /* Element Plus follows the product register instead of its default blue. */
+  --el-color-primary: var(--lt-primary);
+  --el-color-primary-light-3: #5c8189;
+  --el-color-primary-light-5: #8ca5aa;
+  --el-color-primary-light-7: #bdcacc;
+  --el-color-primary-light-8: #d5ddde;
+  --el-color-primary-light-9: #eaf0f0;
+  --el-color-primary-dark-2: var(--lt-primary-dark);
+  --el-font-family: var(--lt-font-sans);
+  --el-border-radius-base: var(--lt-radius-md);
+  --el-border-radius-small: var(--lt-radius-sm);
+  --el-border-color: var(--lt-border-color);
+  --el-border-color-light: var(--lt-border-light);
+  --el-border-color-lighter: var(--lt-border-lighter);
+  --el-text-color-primary: var(--lt-text-primary);
+  --el-text-color-regular: var(--lt-text-regular);
+  --el-text-color-secondary: var(--lt-text-secondary);
+  --el-text-color-placeholder: var(--lt-text-placeholder);
 }
 
 [data-theme='dark'],
@@ -69,21 +90,23 @@ html.dark {
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
-  --lt-radius-sm: 6px;
-  --lt-radius-md: 8px;
-  --lt-radius-lg: 12px;
+  --lt-radius-sm: 4px;
+  --lt-radius-md: 6px;
+  --lt-radius-lg: 8px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
-  --lt-primary: #409eff;
-  --lt-primary-light: #66b1ff;
-  --lt-primary-dark: #337ecc;
-  --lt-primary-soft: rgba(64, 158, 255, 0.16);
+  --lt-primary: #69a0ab;
+  --lt-primary-light: #8cb8c0;
+  --lt-primary-dark: #4f828d;
+  --lt-primary-soft: rgba(105, 160, 171, 0.16);
 
   /* Background */
   --lt-bg-page: #141414;
   --lt-bg-card: #1d1d1d;
   --lt-bg-sidebar: #1d1e1f;
+  --lt-sidebar-text: #cfd3dc;
+  --lt-sidebar-active: #ffffff;
   --lt-bg-header: #1d1d1d;
   --lt-bg-hover: #262727;
   --lt-bg-mask: rgba(0, 0, 0, 0.7);
@@ -139,7 +162,16 @@ html.dark {
   --el-fill-color-lighter: #1d1d1d;
   --el-fill-color-blank: #1d1d1d;
   --el-mask-color: rgba(0, 0, 0, 0.7);
-  --el-color-primary: #409eff;
+  --el-color-primary: var(--lt-primary);
+  --el-color-primary-light-3: #84b2ba;
+  --el-color-primary-light-5: #a6c7cd;
+  --el-color-primary-light-7: #c8dcdf;
+  --el-color-primary-light-8: #d8e6e8;
+  --el-color-primary-light-9: #e9f1f2;
+  --el-color-primary-dark-2: var(--lt-primary-dark);
+  --el-font-family: var(--lt-font-sans);
+  --el-border-radius-base: var(--lt-radius-md);
+  --el-border-radius-small: var(--lt-radius-sm);
 }
 
 /* ===== Dark mode global overrides ===== */

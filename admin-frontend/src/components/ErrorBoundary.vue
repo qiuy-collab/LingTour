@@ -19,7 +19,7 @@ onErrorCaptured((err: Error) => {
 </script>
 
 <template>
-  <div v-if="hasError" class="error-boundary">
+  <div v-if="hasError" class="error-boundary" role="alert" aria-live="assertive">
     <div class="error-content">
       <el-icon class="error-icon" :size="64"><Warning /></el-icon>
       <h2 class="error-title">页面出现了问题</h2>
@@ -45,19 +45,19 @@ onErrorCaptured((err: Error) => {
 }
 
 .error-icon {
-  color: #f56c6c;
+  color: var(--lt-danger);
   margin-bottom: 16px;
 }
 
 .error-title {
   font-size: 20px;
-  color: #303133;
+  color: var(--lt-text-primary);
   margin: 0 0 8px;
 }
 
 .error-message {
   font-size: 14px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   margin: 0 0 24px;
   word-break: break-word;
 }

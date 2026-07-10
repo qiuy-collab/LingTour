@@ -42,13 +42,14 @@ function handleClick(path?: string) {
       v-for="(item, index) in breadcrumbs"
       :key="index"
     >
-      <span
+      <button
         v-if="item.path && index < breadcrumbs.length - 1"
+        type="button"
         class="breadcrumb-link"
         @click="handleClick(item.path)"
       >
         {{ item.title }}
-      </span>
+      </button>
       <span v-else class="breadcrumb-current">{{ item.title }}</span>
     </el-breadcrumb-item>
   </el-breadcrumb>
@@ -61,16 +62,20 @@ function handleClick(path?: string) {
 
 .breadcrumb-link {
   cursor: pointer;
-  color: #606266;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--lt-text-regular);
   transition: color 0.2s;
 }
 
-.breadcrumb-link:hover {
-  color: #409eff;
+.breadcrumb-link:hover,
+.breadcrumb-link:focus-visible {
+  color: var(--lt-primary);
 }
 
 .breadcrumb-current {
-  color: #303133;
+  color: var(--lt-text-primary);
   font-weight: 500;
 }
 </style>

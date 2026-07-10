@@ -63,7 +63,7 @@
   margin-bottom: 16px;
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 /* ── Selected-item card grid (cities, routes, etc.) ───────── */
@@ -75,9 +75,9 @@
 
 .selected-card {
   padding: 12px;
-  border: 1px solid #dbe5f1;
-  border-radius: 12px;
-  background: #f8fbff;
+  border: 1px solid var(--lt-border-light);
+  border-radius: var(--lt-radius-md);
+  background: var(--lt-bg-hover);
 }
 
 .selected-card strong,
@@ -86,11 +86,11 @@
 }
 
 .selected-card strong {
-  color: #303133;
+  color: var(--lt-text-primary);
 }
 
 .selected-card span {
   margin-top: 4px;
-  color: #909399;
+  color: var(--lt-text-secondary);
   font-size: 12px;
 }

@@ -25,7 +25,7 @@ const show = computed(() => {
 
 <template>
   <Transition name="batch-bar-slide">
-    <div v-if="show" class="batch-action-bar">
+    <div v-if="show" class="batch-action-bar" role="status" aria-live="polite">
       <div class="batch-action-bar__info">
         已选择 <strong>{{ selectedCount }}</strong> 项
       </div>
@@ -48,22 +48,22 @@ const show = computed(() => {
   align-items: center;
   gap: 16px;
   padding: 12px 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+  background: var(--lt-bg-card);
+  border-radius: var(--lt-radius-md);
+  box-shadow: 0 -4px 12px rgba(17, 25, 35, 0.1);
   z-index: 100;
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--lt-border-light);
   margin-top: 16px;
 }
 
 .batch-action-bar__info {
   font-size: 14px;
-  color: #606266;
+  color: var(--lt-text-regular);
   white-space: nowrap;
 }
 
 .batch-action-bar__info strong {
-  color: #409eff;
+  color: var(--lt-primary);
 }
 
 .batch-action-bar__actions {
@@ -75,7 +75,7 @@ const show = computed(() => {
 /* Slide transition */
 .batch-bar-slide-enter-active,
 .batch-bar-slide-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .batch-bar-slide-enter-from,
