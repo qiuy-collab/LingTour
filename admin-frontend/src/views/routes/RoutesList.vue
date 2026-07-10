@@ -13,7 +13,7 @@ import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
-// ─── 文化标签映射 ──────────────────────────
+// Culture-tag presentation
 const cultureTagMap: Record<string, { label: string; color: string }> = {
   'Bay Area': { label: formatRouteTagLabel('Bay Area'), color: 'var(--lt-route-bay)' },
   Chaoshan: { label: formatRouteTagLabel('Chaoshan'), color: 'var(--lt-route-chaoshan)' },
@@ -27,7 +27,7 @@ function getCultureTagInfo(tag: string) {
   return cultureTagMap[normalizedTag] || { label: normalizedTag, color: 'var(--lt-info)' }
 }
 
-// ─── 列表数据 (useListPage) ─────────────
+// List data
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -40,13 +40,13 @@ const {
   defaultFilters: { keyword: '', status: '', cityName: '' },
 })
 
-// ─── 城市选项（从列表中提取） ────────────
+// City options derived from loaded records
 const cityOptions = computed(() => {
   const cities = new Set(list.value.map((r) => r.cityName).filter(Boolean))
   return Array.from(cities).sort()
 })
 
-// ─── 操作 ──────────────────────────────
+// Actions
 function handleCreate() {
   router.push('/admin/routes/create')
 }
@@ -60,14 +60,14 @@ async function handleToggleStatus(routeItem: Route) {
     if (routeItem.published) {
       await routesApi.unpublishRoute(routeItem.id)
       routeItem.published = false
-      ElMessage.success('已下架')
+      ElMessage.success('Route unpublished')
     } else {
       await routesApi.publishRoute(routeItem.id)
       routeItem.published = true
-      ElMessage.success('已发布')
+      ElMessage.success('Route published')
     }
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '状态更新失败')
+    ElMessage.error(err?.response?.data?.message || 'Failed to update route status')
   }
 }
 </script>
@@ -75,31 +75,31 @@ async function handleToggleStatus(routeItem: Route) {
 <template>
   <div class="routes-page">
     <div class="page-header">
-      <h2>路线管理</h2>
-      <el-button type="primary" :icon="Plus" @click="handleCreate">新增路线</el-button>
+      <h2>Routes</h2>
+      <el-button type="primary" :icon="Plus" @click="handleCreate">Add route</el-button>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="搜索标题/Slug..."
+      search-placeholder="Search by title or slug..."
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.status"
-        placeholder="状态筛选"
+        placeholder="Status"
         clearable
         style="width: 120px"
         @change="handleSearch"
       >
-        <el-option label="全部" value="" />
-        <el-option label="草稿" value="draft" />
-        <el-option label="已发布" value="published" />
-        <el-option label="已下架" value="archived" />
+        <el-option label="All" value="" />
+        <el-option label="Draft" value="draft" />
+        <el-option label="Published" value="published" />
+        <el-option label="Archived" value="archived" />
       </el-select>
       <el-select
         v-model="filters.cityName"
-        placeholder="城市筛选"
+        placeholder="City"
         clearable
         style="width: 140px"
         @change="handleSearch"
@@ -121,7 +121,7 @@ async function handleToggleStatus(routeItem: Route) {
         style="width: 100%"
         row-key="id"
       >
-        <el-table-column label="封面" width="80">
+        <el-table-column label="Cover" width="80">
           <template #default="{ row }">
             <el-image
               :src="resolveMediaUrl(row.coverImage)"
@@ -133,7 +133,7 @@ async function handleToggleStatus(routeItem: Route) {
           </template>
         </el-table-column>
 
-        <el-table-column label="标题" min-width="180">
+        <el-table-column label="Title" min-width="180">
           <template #default="{ row }">
             <div>
               <div class="route-title">{{ pickI18n(row.title) }}</div>
@@ -144,7 +144,7 @@ async function handleToggleStatus(routeItem: Route) {
 
         <el-table-column prop="slug" label="Slug" width="130" />
 
-        <el-table-column label="文化标签" width="100">
+        <el-table-column label="Culture" width="100">
           <template #default="{ row }">
             <el-tag
               :color="getCultureTagInfo(row.cultureTag).color"
@@ -156,39 +156,39 @@ async function handleToggleStatus(routeItem: Route) {
           </template>
         </el-table-column>
 
-        <el-table-column prop="cityName" label="城市" width="100">
+        <el-table-column prop="cityName" label="City" width="100">
           <template #default="{ row }">
             {{ row.cityName }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="duration" label="时长" width="90">
+        <el-table-column prop="duration" label="Duration" width="90">
           <template #default="{ row }">
             {{ row.duration }}
           </template>
         </el-table-column>
 
-        <el-table-column label="站点数" width="80" align="center">
+        <el-table-column label="Stops" width="80" align="center">
           <template #default="{ row }">
             <el-tag round size="small">{{ row.stops?.length || 0 }}</el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column label="价格" width="90">
+        <el-table-column label="Price" width="90">
           <template #default="{ row }">
             ¥{{ row.price || 0 }}
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="100">
+        <el-table-column label="Status" width="100">
           <template #default="{ row }">
             <el-tag :type="row.published ? 'success' : 'info'" size="small">
-              {{ row.published ? '已发布' : '草稿' }}
+              {{ row.published ? 'Published' : 'Draft' }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="Actions" width="200" fixed="right">
           <template #default="{ row }">
             <el-button
               type="primary"
@@ -197,7 +197,7 @@ async function handleToggleStatus(routeItem: Route) {
               size="small"
               @click="handleEdit(row.id)"
             >
-              编辑
+              Edit
             </el-button>
             <el-button
               link
@@ -205,7 +205,7 @@ async function handleToggleStatus(routeItem: Route) {
               size="small"
               @click="handleToggleStatus(row)"
             >
-              {{ row.published ? '下架' : '发布' }}
+              {{ row.published ? 'Unpublish' : 'Publish' }}
             </el-button>
             <el-button
               type="danger"
@@ -214,7 +214,7 @@ async function handleToggleStatus(routeItem: Route) {
               size="small"
               @click="handleDelete(row.id, pickI18n(row.title as any))"
             >
-              删除
+              Delete
             </el-button>
           </template>
         </el-table-column>

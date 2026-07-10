@@ -10,7 +10,7 @@ import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
 
-// ─── 列表数据 (useListPage) ─────────────
+// List data
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -31,12 +31,12 @@ const {
   defaultFilters: { keyword: '', status: '' },
 })
 
-// ─── 城市名修复 ──────────────────────────
+// City-name fallback
 function isReadableName(value: string) {
   const text = value.trim()
   if (!text) return false
   if (text.includes('�')) return false
-  return /[一-鿿A-Za-z0-9]/.test(text)
+  return /[\p{L}\p{N}]/u.test(text)
 }
 
 function displayCityName(city: City, locale: 'zh' | 'en' = 'zh') {
@@ -62,7 +62,7 @@ async function hydrateBrokenNames(items: City[]) {
   return items.map((item) => detailMap.get(item.id) || item)
 }
 
-// ─── 操作 ──────────────────────────────
+// Actions
 function handleCreate() {
   router.push('/admin/cities/create')
 }
@@ -84,32 +84,32 @@ function regionColor(region: string) {
 <template>
   <div class="cities-page">
     <div class="page-header">
-      <h2>城市管理</h2>
-      <el-button type="primary" :icon="Plus" @click="handleCreate">新增城市</el-button>
+      <h2>Cities</h2>
+      <el-button type="primary" :icon="Plus" @click="handleCreate">Add city</el-button>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="搜索城市名/Slug..."
+      search-placeholder="Search by city name or slug..."
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.status"
-        placeholder="状态"
+        placeholder="Status"
         clearable
         style="width: 120px"
         @change="handleSearch"
       >
-        <el-option label="全部" value="" />
-        <el-option label="已发布" value="published" />
-        <el-option label="草稿" value="draft" />
+        <el-option label="All" value="" />
+        <el-option label="Published" value="published" />
+        <el-option label="Draft" value="draft" />
       </el-select>
     </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table v-loading="loading" :data="list" stripe style="width: 100%" row-key="id">
-        <el-table-column label="缩略图" width="92">
+        <el-table-column label="Thumbnail" width="92">
           <template #default="{ row }">
             <el-image
               :src="resolveMediaUrl(row.heroImage)"
@@ -119,13 +119,13 @@ function regionColor(region: string) {
               preview-teleported
             >
               <template #error>
-                <div class="image-fallback">加载失败</div>
+                <div class="image-fallback">Unavailable</div>
               </template>
             </el-image>
           </template>
         </el-table-column>
 
-        <el-table-column label="城市名" min-width="180">
+        <el-table-column label="City" min-width="180">
           <template #default="{ row }">
             <div>
               <div class="city-name">{{ displayCityName(row) }}</div>
@@ -136,7 +136,7 @@ function regionColor(region: string) {
 
         <el-table-column prop="slug" label="Slug" width="140" />
 
-        <el-table-column label="地区标签" width="160">
+        <el-table-column label="Region" width="160">
           <template #default="{ row }">
             <el-tag :color="regionColor(pickI18n(row.regionLabel) || '')" effect="dark" size="small">
               {{ pickI18n(row.regionLabel) }}
@@ -144,7 +144,7 @@ function regionColor(region: string) {
           </template>
         </el-table-column>
 
-        <el-table-column label="标签" min-width="180">
+        <el-table-column label="Tags" min-width="180">
           <template #default="{ row }">
             <el-tag
               v-for="(tag, idx) in row.tags || []"
@@ -157,27 +157,27 @@ function regionColor(region: string) {
           </template>
         </el-table-column>
 
-        <el-table-column label="段落数" width="90" align="center">
+        <el-table-column label="Sections" width="90" align="center">
           <template #default="{ row }">
             {{ row.sections?.length || 0 }}
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="90">
+        <el-table-column label="Status" width="90">
           <template #default="{ row }">
             <el-tag :type="row.published ? 'success' : 'info'" size="small">
-              {{ row.published ? '已发布' : '草稿' }}
+              {{ row.published ? 'Published' : 'Draft' }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="Actions" width="180" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link :icon="Edit" size="small" @click="handleEdit(row.id)">
-              编辑
+              Edit
             </el-button>
             <el-button type="danger" link :icon="Delete" size="small" @click="handleDelete(row.id, displayCityName(row))">
-              删除
+              Delete
             </el-button>
           </template>
         </el-table-column>

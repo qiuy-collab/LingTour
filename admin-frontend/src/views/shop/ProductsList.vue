@@ -12,7 +12,7 @@ import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
-// ─── 列表数据 (useListPage) ─────────────
+// List data
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -25,7 +25,7 @@ const {
   defaultFilters: { keyword: '', status: '', collectionId: '' },
 })
 
-// ─── 系列选项 ──────────────────────────
+// Collection options
 const collectionOptions = ref<{ id: string; title: string }[]>([])
 
 async function fetchCollections() {
@@ -42,7 +42,7 @@ async function fetchCollections() {
 
 onMounted(fetchCollections)
 
-// ─── 操作 ──────────────────────────────
+// Actions
 function handleCreate() {
   router.push('/admin/shop/products/create')
 }
@@ -53,17 +53,17 @@ function handleEdit(id: string) {
 
 async function handleToggleStatus(row: Product) {
   const newStatus = !row.published
-  const label = newStatus ? '上架' : '下架'
-  const productName = pickI18n(row.name as any) || '该商品'
+  const action = newStatus ? 'publish' : 'unpublish'
+  const productName = pickI18n(row.name as any) || 'this product'
   try {
-    await ElMessageBox.confirm(`确定${label}「${productName}」?`, `${label}确认`, {
+    await ElMessageBox.confirm(`${action === 'publish' ? 'Publish' : 'Unpublish'} "${productName}"?`, 'Confirm status change', {
       type: newStatus ? 'success' : 'warning',
     })
     await productsApi.updateProduct(row.id, { published: newStatus })
     row.published = newStatus
-    ElMessage.success(`${productName} 已${label}`)
+    ElMessage.success(`${productName} ${newStatus ? 'is now on sale' : 'has been taken off sale'}`)
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
+    if (err?.response) ElMessage.error(err.response.data?.message || 'Failed to update product status')
   }
 }
 </script>
@@ -71,19 +71,19 @@ async function handleToggleStatus(row: Product) {
 <template>
   <div>
     <div class="page-header">
-      <h2>商品管理</h2>
-      <el-button type="primary" @click="handleCreate">新增商品</el-button>
+      <h2>Products</h2>
+      <el-button type="primary" @click="handleCreate">Add product</el-button>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="搜索商品名称 / slug"
+      search-placeholder="Search by product name or slug"
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.collectionId"
-        placeholder="所属系列"
+        placeholder="Collection"
         clearable
         style="width: 160px"
         @change="handleSearch"
@@ -97,19 +97,19 @@ async function handleToggleStatus(row: Product) {
       </el-select>
       <el-select
         v-model="filters.status"
-        placeholder="状态"
+        placeholder="Status"
         clearable
         style="width: 120px"
         @change="handleSearch"
       >
-        <el-option label="在售" value="on_sale" />
-        <el-option label="下架" value="off_shelf" />
+        <el-option label="On sale" value="on_sale" />
+        <el-option label="Off sale" value="off_shelf" />
       </el-select>
     </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column label="主图" width="80">
+        <el-table-column label="Image" width="80">
           <template #default="{ row }">
             <el-image
               v-if="row.image"
@@ -119,46 +119,46 @@ async function handleToggleStatus(row: Product) {
             />
           </template>
         </el-table-column>
-        <el-table-column label="商品名称" min-width="180">
+        <el-table-column label="Product" min-width="180">
           <template #default="{ row }">
             <div>{{ pickI18n(row.name) }}</div>
             <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="所属系列" width="160">
+        <el-table-column label="Collection" width="160">
           <template #default="{ row }">
             {{ pickI18n(row.collectionName) || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="价格" width="120" align="right">
+        <el-table-column label="Price" width="120" align="right">
           <template #default="{ row }">
             <span style="font-weight: 600">{{ row.currency }} {{ row.price }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="stock" label="库存" width="80" align="center">
+        <el-table-column prop="stock" label="Stock" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.stock <= 5 ? 'danger' : row.stock <= 20 ? 'warning' : ''" size="small">
               {{ row.stock }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column label="Status" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="row.published ? 'success' : 'info'" size="small">
-              {{ row.published ? '在售' : '下架' }}
+              {{ row.published ? 'On sale' : 'Off sale' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="Actions" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">Edit</el-button>
             <el-button
               :type="row.published ? 'warning' : 'success'"
               link
               size="small"
               @click="handleToggleStatus(row)"
             >
-              {{ row.published ? '下架' : '上架' }}
+              {{ row.published ? 'Unpublish' : 'Publish' }}
             </el-button>
             <el-button
               type="danger"
@@ -166,7 +166,7 @@ async function handleToggleStatus(row: Product) {
               size="small"
               @click="handleDelete(row.id, pickI18n(row.name as any))"
             >
-              删除
+              Delete
             </el-button>
           </template>
         </el-table-column>
