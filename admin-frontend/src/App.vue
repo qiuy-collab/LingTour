@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { getSettings } from '@/api/settings'
-import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import en from 'element-plus/es/locale/lang/en'
 
 onMounted(async () => {
   try {
@@ -19,7 +19,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <el-config-provider :locale="zhCn">
+  <el-config-provider :locale="en">
     <router-view />
   </el-config-provider>
 </template>

@@ -6,13 +6,10 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
 import {
-  getLocale,
   setLocale as setStoredLocale,
-  subscribeToLocale,
   type Locale,
 } from "@/lib/locale";
 import { translate } from "@/translations";
@@ -36,38 +33,19 @@ interface LocaleProviderProps {
 
 export function LocaleProvider({
   children,
-  initialLocale,
+  initialLocale: _initialLocale,
 }: LocaleProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>(
-    initialLocale ?? getLocale(),
-  );
+  const locale: Locale = "en";
 
   useEffect(() => {
-    setStoredLocale(locale);
-  }, [locale]);
-
-  useEffect(() => {
-    if (initialLocale && initialLocale !== locale) {
-      setLocaleState(initialLocale);
-    }
-  }, [initialLocale, locale]);
-
-  useEffect(() => {
-    return subscribeToLocale((nextLocale) => {
-      setLocaleState((current) =>
-        current === nextLocale ? current : nextLocale,
-      );
-    });
+    setStoredLocale("en");
   }, []);
 
-  const setLocale = useCallback((nextLocale: Locale) => {
-    setLocaleState(nextLocale);
+  const setLocale = useCallback((_nextLocale: Locale) => {
+    setStoredLocale("en");
   }, []);
 
-  const t = useCallback(
-    (key: string) => translate(key, locale),
-    [locale],
-  );
+  const t = useCallback((key: string) => translate(key, "en"), []);
 
   const value = useMemo(
     () => ({

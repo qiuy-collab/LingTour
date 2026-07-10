@@ -39,7 +39,7 @@ export function toI18n(val: unknown): I18nObject {
   return { zh: '', en: '' }
 }
 
-export function pickI18n(val: unknown, locale: keyof I18nObject = 'zh'): string {
+export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string {
   if (!val) return ''
   if (typeof val === 'string') {
     // Handle JSON-stringified I18nObject (e.g. '{"en":"...","zh":"..."}')

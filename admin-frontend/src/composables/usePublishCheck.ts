@@ -113,7 +113,7 @@ function checkCity(data: FormData): { errors: string[]; warnings: string[] } {
 
   // Bilingual consistency
   if (data.name) {
-    checkBilingual(data.name, '城市名称', warnings)
+    checkBilingual(data.name, 'City name', warnings)
   }
 
   return { errors, warnings }
@@ -149,10 +149,10 @@ function checkRoute(data: FormData): { errors: string[]; warnings: string[] } {
 
   // Bilingual consistency
   if (data.title) {
-    checkBilingual(data.title, '路线标题', warnings)
+    checkBilingual(data.title, 'Route title', warnings)
   }
   if (data.summary) {
-    checkBilingual(data.summary, '路线摘要', warnings)
+    checkBilingual(data.summary, 'Route summary', warnings)
   }
 
   // Validate routeSlugs reference (basic format check)
@@ -193,10 +193,10 @@ function checkProduct(data: FormData): { errors: string[]; warnings: string[] } 
   // Bilingual consistency
   const nameField = data.name || data.title
   if (nameField) {
-    checkBilingual(nameField, '商品名称', warnings)
+    checkBilingual(nameField, 'Product name', warnings)
   }
   if (data.story) {
-    checkBilingual(data.story, '商品故事', warnings)
+    checkBilingual(data.story, 'Product story', warnings)
   }
 
   return { errors, warnings }
@@ -227,10 +227,10 @@ function checkEvent(data: FormData): { errors: string[]; warnings: string[] } {
 
   // Bilingual consistency
   if (data.title) {
-    checkBilingual(data.title, '活动标题', warnings)
+    checkBilingual(data.title, 'Event title', warnings)
   }
   if (data.summary) {
-    checkBilingual(data.summary, '活动摘要', warnings)
+    checkBilingual(data.summary, 'Event summary', warnings)
   }
 
   // Validate related route slugs
@@ -255,13 +255,10 @@ function checkBilingual(
   if (!value || typeof value !== 'object') return
 
   const i18n = value as I18nField
-  const hasZh = Boolean(i18n.zh && i18n.zh.trim())
   const hasEn = Boolean(i18n.en && i18n.en.trim())
 
-  if (hasZh && !hasEn) {
-    warnings.push(`${fieldName} 已填写中文但缺少英文翻译`)
-  } else if (!hasZh && hasEn) {
-    warnings.push(`${fieldName} 已填写英文但缺少中文翻译`)
+  if (!hasEn) {
+    warnings.push(`${fieldName} is missing English content`)
   }
 }
 

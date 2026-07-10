@@ -19,7 +19,7 @@ defineEmits<{
 
 <template>
   <div class="empty-state">
-    <el-empty :description="description || '暂无数据'">
+    <el-empty :description="description || 'No data'">
       <template #image>
         <el-icon class="empty-icon" :size="48">
           <component :is="icon || FolderOpened" />

@@ -33,25 +33,22 @@ const form = reactive<InterpreterFormData>({
   city: '',
 })
 
-const newHelpZh = ref('')
 const newHelpEn = ref('')
 
 const rules = {
-  'name.zh': [{ required: true, message: '请输入中文姓名', trigger: 'blur' }],
-  'language.zh': [{ required: true, message: '请输入服务语言', trigger: 'blur' }],
-  city: [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
+  'name.en': [{ required: true, message: 'Enter the interpreter name', trigger: 'blur' }],
+  'language.en': [{ required: true, message: 'Enter supported languages', trigger: 'blur' }],
+  city: [{ required: true, message: 'Enter the service city', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 
 function addHelp() {
-  const zh = newHelpZh.value.trim()
   const en = newHelpEn.value.trim()
-  if (!zh && !en) return
-  if (!form.helps.some((item) => item.zh === zh && item.en === en)) {
-    form.helps.push({ zh, en })
+  if (!en) return
+  if (!form.helps.some((item) => item.en === en)) {
+    form.helps.push({ zh: '', en })
   }
-  newHelpZh.value = ''
   newHelpEn.value = ''
 }
 
@@ -84,7 +81,7 @@ onMounted(async () => {
     })
     resetDirty()
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '加载口译员数据失败'))
+    ElMessage.error(extractErrorMessage(error, 'Failed to load interpreter'))
   } finally {
     loading.value = false
   }
@@ -94,7 +91,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('请先补全必填项')
+    ElMessage.warning('Complete the required fields')
     return
   }
 
@@ -102,15 +99,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await interpretersApi.updateInterpreter(route.params.id as string, form)
-      ElMessage.success('口译员已更新')
+      ElMessage.success('Interpreter updated')
     } else {
       await interpretersApi.createInterpreter(form)
-      ElMessage.success('口译员已创建')
+      ElMessage.success('Interpreter created')
     }
     disableDirtyCheck()
     router.push('/admin/interpreting/profiles')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '保存失败'))
+    ElMessage.error(extractErrorMessage(error, 'Save failed'))
   } finally {
     saving.value = false
   }
@@ -120,7 +117,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? '编辑口译员' : '新增口译员'"
+      :title="isEdit ? 'Edit Interpreter' : 'Create Interpreter'"
       back-to="/admin/interpreting/profiles"
       :saving="saving"
       :dirty="isDirty"
@@ -130,27 +127,27 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>基本信息</template>
+          <template #header>Basic Information</template>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="排序权重">
+              <el-form-item label="Sort Order">
                 <el-input-number v-model="form.sortOrder" :min="1" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="状态">
+              <el-form-item label="Status">
                 <el-select v-model="form.status" style="width: 100%">
-                  <el-option label="待审核" value="pending_review" />
-                  <el-option label="已启用" value="active" />
-                  <el-option label="已停用" value="inactive" />
+                  <el-option label="Pending Review" value="pending_review" />
+                  <el-option label="Active" value="active" />
+                  <el-option label="Inactive" value="inactive" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="封面 / 头像">
+              <el-form-item label="Cover / Avatar">
                 <ImageUpload v-model="form.avatar" module="interpreting" />
                 <div class="field-tip">
-                  前台口译员卡片封面直接使用这里的图片，建议上传竖向人物照。
+                  Used as the public interpreter card cover. A portrait image is recommended.
                 </div>
               </el-form-item>
             </el-col>
@@ -161,50 +158,48 @@ async function handleSave() {
             type="warning"
             :closable="false"
             show-icon
-            title="当前口译员已设为 active，但还没有封面图。前台会退回占位图。"
+            title="This active interpreter has no cover image. The public site will use a placeholder."
             class="section-alert"
           />
 
-          <el-form-item label="姓名" prop="name.zh">
+          <el-form-item label="Name" prop="name.en">
             <I18nInput v-model="form.name" />
           </el-form-item>
-          <el-form-item label="服务语言" prop="language.zh">
+          <el-form-item label="Languages" prop="language.en">
             <I18nInput v-model="form.language" />
           </el-form-item>
-          <el-form-item label="服务城市" prop="city">
+          <el-form-item label="Service City" prop="city">
             <el-input v-model="form.city" />
           </el-form-item>
-          <el-form-item label="专注领域">
+          <el-form-item label="Specialty">
             <I18nInput v-model="form.focus" />
           </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>能力标签</template>
+          <template #header>Capability Tags</template>
           <div class="tag-list">
             <el-tag v-for="(item, index) in form.helps" :key="index" closable @close="removeHelp(index)">
-              {{ item.zh || item.en }}
-              <template v-if="item.zh && item.en"> / {{ item.en }}</template>
+              {{ item.en || item.zh }}
             </el-tag>
           </div>
           <div class="tag-input-row">
-            <el-input v-model="newHelpZh" placeholder="中文标签" @keyup.enter="addHelp" />
             <el-input v-model="newHelpEn" placeholder="English tag" @keyup.enter="addHelp" />
-            <el-button type="primary" @click="addHelp">添加</el-button>
+            <el-button type="primary" @click="addHelp">Add</el-button>
           </div>
         </el-card>
 
         <EditorWorkspace
           model-value="bio"
-          title="口译员内容工作台"
+          title="Interpreter Content"
           eyebrow="Interpreter Content"
-          description="将前台展示的个人简介集中在这里维护，封面图、状态和能力标签则保留在上方基础信息区域。"
-          active-label="个人简介"
-          :tabs="[{ key: 'bio', label: '个人简介' }]"
+          description="Edit the biography shown on the public interpreter profile."
+          active-label="Biography"
+          :tabs="[{ key: 'bio', label: 'Biography' }]"
         >
           <div class="workspace-panel">
-            <div class="panel-title">个人简介</div>
-            <el-form-item label="简介正文">
+            <div class="panel-title">Biography</div>
+            <el-form-item label="Biography Copy">
               <I18nMarkdownEditor v-model="form.bio" :rows="8" />
             </el-form-item>
           </div>

@@ -2,11 +2,10 @@ import { ref } from 'vue'
 
 export type EditorLocale = 'zh' | 'en'
 
-const editorLocale = ref<EditorLocale>('zh')
+const editorLocale = ref<EditorLocale>('en')
 
 const editorLocaleOptions = [
-  { label: '中文', value: 'zh' },
-  { label: 'EN', value: 'en' },
+  { label: 'English', value: 'en' },
 ]
 
 export function useEditorLocale() {

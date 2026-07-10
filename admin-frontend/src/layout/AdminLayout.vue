@@ -8,7 +8,6 @@ import CommandPalette from '@/components/CommandPalette.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
-import { useEditorLocale } from '@/composables/useEditorLocale'
 import {
   DataAnalysis,
   MapLocation,
@@ -40,14 +39,10 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 useTheme()
-const { editorLocale, editorLocaleOptions } = useEditorLocale()
 
 const isCollapse = ref(false)
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
-const showEditorLocaleSwitch = computed(() =>
-  /\/create$|\/edit$|\/home$|\/settings$/.test(route.path),
-)
 
 // Responsive detection
 function checkMobile() {
@@ -97,52 +92,52 @@ interface MenuGroup {
 
 const menuGroups: MenuGroup[] = [
   {
-    title: '概览',
+    title: 'Overview',
     items: [
-      { path: '/admin/dashboard', title: '仪表盘', icon: DataAnalysis },
+      { path: '/admin/dashboard', title: 'Dashboard', icon: DataAnalysis },
     ],
   },
   {
-    title: '内容管理',
+    title: 'Content',
     items: [
-      { path: '/admin/cities', title: '城市管理', icon: MapLocation },
-      { path: '/admin/routes', title: '路线管理', icon: Guide },
+      { path: '/admin/cities', title: 'Cities', icon: MapLocation },
+      { path: '/admin/routes', title: 'Routes', icon: Guide },
     ],
   },
   {
-    title: '商城管理',
+    title: 'Commerce',
     items: [
-      { path: '/admin/shop/collections', title: '系列管理', icon: Collection },
-      { path: '/admin/shop/products', title: '商品管理', icon: Goods },
-      { path: '/admin/orders', title: '订单管理', icon: Document },
+      { path: '/admin/shop/collections', title: 'Collections', icon: Collection },
+      { path: '/admin/shop/products', title: 'Products', icon: Goods },
+      { path: '/admin/orders', title: 'Orders', icon: Document },
     ],
   },
   {
-    title: '口译服务',
+    title: 'Interpreting',
     items: [
-      { path: '/admin/interpreting/modes', title: '服务模式', icon: SetUp },
-      { path: '/admin/interpreting/profiles', title: '口译员', icon: UserFilled },
-      { path: '/admin/interpreting/bookings', title: '预约管理', icon: Calendar },
+      { path: '/admin/interpreting/modes', title: 'Service Modes', icon: SetUp },
+      { path: '/admin/interpreting/profiles', title: 'Interpreters', icon: UserFilled },
+      { path: '/admin/interpreting/bookings', title: 'Bookings', icon: Calendar },
       { path: '/admin/interpreting/faqs', title: 'FAQ', icon: ChatLineSquare },
     ],
   },
   {
-    title: '运营管理',
+    title: 'Operations',
     items: [
-      { path: '/admin/events', title: '活动管理', icon: Present },
-      { path: '/admin/community', title: '社区帖子', icon: ChatDotSquare },
-      { path: '/admin/home', title: '首页配置', icon: HomeFilled },
-      { path: '/admin/operations/audit', title: '数据体检', icon: WarningFilled },
-      { path: '/admin/media', title: '媒体库', icon: Picture },
+      { path: '/admin/events', title: 'Events', icon: Present },
+      { path: '/admin/community', title: 'Community Posts', icon: ChatDotSquare },
+      { path: '/admin/home', title: 'Homepage', icon: HomeFilled },
+      { path: '/admin/operations/audit', title: 'Content Audit', icon: WarningFilled },
+      { path: '/admin/media', title: 'Media Library', icon: Picture },
     ],
   },
   {
-    title: '系统管理',
+    title: 'System',
     items: [
-      { path: '/admin/users', title: '用户管理', icon: Avatar, roles: ['admin'] },
-      { path: '/admin/system/audit-logs', title: '操作日志', icon: List, roles: ['admin'] },
-      { path: '/admin/system/notifications', title: '通知中心', icon: Bell },
-      { path: '/admin/settings', title: '系统设置', icon: Setting, roles: ['admin'] },
+      { path: '/admin/users', title: 'Users', icon: Avatar, roles: ['admin'] },
+      { path: '/admin/system/audit-logs', title: 'Audit Logs', icon: List, roles: ['admin'] },
+      { path: '/admin/system/notifications', title: 'Notifications', icon: Bell },
+      { path: '/admin/settings', title: 'Settings', icon: Setting, roles: ['admin'] },
     ],
   },
 ]
@@ -210,7 +205,7 @@ useKeyboardShortcuts([
       <button
         type="button"
         class="logo-area"
-        aria-label="返回管理后台首页"
+        aria-label="Return to admin dashboard"
         @click="router.push('/admin/dashboard')"
       >
         <span v-if="!isCollapse" class="logo-text">LingTour Admin</span>
@@ -248,7 +243,7 @@ useKeyboardShortcuts([
           <button
             type="button"
             class="header-icon-button collapse-btn"
-            :aria-label="isMobile ? '打开导航菜单' : isCollapse ? '展开导航菜单' : '收起导航菜单'"
+            :aria-label="isMobile ? 'Open navigation' : isCollapse ? 'Expand navigation' : 'Collapse navigation'"
             :aria-expanded="isMobile ? mobileMenuOpen : !isCollapse"
             @click="toggleSidebar"
           >
@@ -260,15 +255,11 @@ useKeyboardShortcuts([
           <span class="header-title hide-on-mobile">LingTour Admin</span>
         </div>
         <div class="header-right">
-          <div v-if="showEditorLocaleSwitch" class="editor-locale-switch">
-            <span class="editor-locale-label">编辑语言</span>
-            <el-segmented v-model="editorLocale" :options="editorLocaleOptions" size="small" />
-          </div>
-          <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
+          <el-tooltip content="Search (Ctrl+K)" placement="bottom">
             <button
               type="button"
               class="header-icon-button header-action-btn"
-              aria-label="打开搜索"
+              aria-label="Open search"
               @click="showCommandPalette = true"
             >
               <el-icon><Search /></el-icon>
@@ -279,13 +270,13 @@ useKeyboardShortcuts([
           <el-dropdown>
             <span class="user-info">
               <el-icon><Avatar /></el-icon>
-              <span class="hide-on-mobile">{{ authStore.currentUser?.name || '管理员' }}</span>
+              <span class="hide-on-mobile">{{ authStore.currentUser?.name || 'Administrator' }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="handleLogout">
                   <el-icon><SwitchButton /></el-icon>
-                  退出登录
+                  Sign out
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>

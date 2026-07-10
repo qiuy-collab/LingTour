@@ -33,10 +33,10 @@ const routeOptions = ref<Array<{ id: string; slug: string; title: string; cityNa
 
 const rules = {
   slug: [
-    { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case 格式', trigger: 'blur' },
+    { required: true, message: 'Enter a slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug must use kebab-case', trigger: 'blur' },
   ],
-  'name.zh': [{ required: true, message: '请输入城市名称（中文）', trigger: 'blur' }],
+  'name.en': [{ required: true, message: 'Enter the city name', trigger: 'blur' }],
 }
 
 const form = reactive<any>({
@@ -89,9 +89,8 @@ function normalizeSection(section: any, index: number) {
 }
 
 function addTag() {
-  if (!newTag.zh.trim() && !newTag.en.trim()) return
-  form.tags.push({ zh: newTag.zh.trim(), en: newTag.en.trim() })
-  newTag.zh = ''
+  if (!newTag.en.trim()) return
+  form.tags.push({ zh: '', en: newTag.en.trim() })
   newTag.en = ''
 }
 
@@ -143,7 +142,7 @@ const chapterTabs = computed(() => [
   { key: 'intro', label: 'Intro' },
   ...form.sections.map((section: any, index: number) => ({
     key: `section-${index}`,
-    label: section.title?.zh?.trim() || section.title?.en?.trim() || `Section ${index + 1}`,
+    label: section.title?.en?.trim() || section.title?.zh?.trim() || `Section ${index + 1}`,
     badge: `#${index + 1}`,
   })),
   { key: 'food', label: 'Food' },
@@ -175,8 +174,8 @@ async function loadRouteOptions() {
   routeOptions.value = (res.data.data.data || []).map((item: any) => ({
     id: item.id,
     slug: item.slug,
-    title: item.title?.zh || item.title?.en || item.slug,
-    cityName: item.cityName?.zh || item.cityName?.en || '',
+    title: item.title?.en || item.title?.zh || item.slug,
+    cityName: item.cityName?.en || item.cityName?.zh || '',
   }))
 }
 
@@ -242,7 +241,7 @@ onMounted(async () => {
     }
     resetDirty()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, '加载城市数据失败'))
+    ElMessage.error(extractErrorMessage(err, 'Failed to load city data'))
     router.push('/admin/cities')
   } finally {
     loading.value = false
@@ -253,7 +252,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('请检查必填项')
+    ElMessage.warning('Check the required fields')
     return
   }
 
@@ -261,15 +260,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await citiesApi.updateCity(route.params.id as string, toPayload())
-      ElMessage.success('城市更新成功')
+      ElMessage.success('City updated')
     } else {
       await citiesApi.createCity(toPayload() as CityFormData)
-      ElMessage.success('城市创建成功')
+      ElMessage.success('City created')
     }
     disableDirtyCheck()
     router.push('/admin/cities')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '保存失败'))
+    ElMessage.error(extractErrorMessage(error, 'Save failed'))
   } finally {
     saving.value = false
   }
@@ -285,7 +284,7 @@ const selectedRouteCards = computed(() =>
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? '编辑城市' : '新增城市'"
+      :title="isEdit ? 'Edit City' : 'Create City'"
       back-to="/admin/cities"
       :saving="saving"
       :dirty="isDirty"
@@ -295,7 +294,7 @@ const selectedRouteCards = computed(() =>
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>基础信息</template>
+          <template #header>Basic Information</template>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="Slug" prop="slug">
@@ -303,12 +302,12 @@ const selectedRouteCards = computed(() =>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="地图地区">
+              <el-form-item label="Map Region">
                 <el-select
                   v-model="form.adcode"
                   filterable
                   clearable
-                  placeholder="选择广东地图对应地区"
+                  placeholder="Select a Guangdong map region"
                   style="width: 100%"
                 >
                   <el-option
@@ -318,26 +317,25 @@ const selectedRouteCards = computed(() =>
                     :value="option.adcode"
                   />
                 </el-select>
-                <div class="form-hint-text">首页地图和路线地区高亮都依赖这个地区编码。</div>
+                <div class="form-hint-text">Used by homepage and route map highlighting.</div>
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="城市名称" prop="name.zh">
+          <el-form-item label="City Name" prop="name.en">
             <I18nInput v-model="form.name" />
           </el-form-item>
-          <el-form-item label="地区标签">
+          <el-form-item label="Region Label">
             <I18nInput v-model="form.regionLabel" />
           </el-form-item>
-          <el-form-item label="标签">
+          <el-form-item label="Tags">
             <div class="tag-list">
               <el-tag v-for="(tag, index) in form.tags" :key="index" closable @close="removeTag(Number(index))">
-                {{ tag.zh || tag.en }} / {{ tag.en || tag.zh }}
+                {{ tag.en || tag.zh }}
               </el-tag>
             </div>
             <div class="inline-row">
-              <el-input v-model="newTag.zh" placeholder="中文标签" />
               <el-input v-model="newTag.en" placeholder="English tag" />
-              <el-button :icon="Plus" @click="addTag">添加</el-button>
+              <el-button :icon="Plus" @click="addTag">Add</el-button>
             </div>
           </el-form-item>
         </el-card>
@@ -345,21 +343,21 @@ const selectedRouteCards = computed(() =>
         <EditorWorkspace
           v-model="activeChapter"
           eyebrow="City Story Workspace"
-          title="章节工作台"
-          description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
+          title="City Content"
+          description="Edit overview, introduction, sections, and food content."
           :active-label="chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview'"
           :tabs="chapterTabs"
         >
           <template #toolbar>
             <div class="chapter-actions">
-              <el-button size="small" type="primary" :icon="Plus" @click="addSection">新增 Section</el-button>
+              <el-button size="small" type="primary" :icon="Plus" @click="addSection">Add Section</el-button>
               <el-button
                 size="small"
                 :icon="ArrowUp"
                 :disabled="!isSectionChapter || activeSectionIndex === 0"
                 @click="moveActiveSection(-1)"
               >
-                上移
+                Move Up
               </el-button>
               <el-button
                 size="small"
@@ -367,7 +365,7 @@ const selectedRouteCards = computed(() =>
                 :disabled="!isSectionChapter || activeSectionIndex === form.sections.length - 1"
                 @click="moveActiveSection(1)"
               >
-                下移
+                Move Down
               </el-button>
               <el-button
                 size="small"
@@ -376,91 +374,91 @@ const selectedRouteCards = computed(() =>
                 :disabled="!isSectionChapter"
                 @click="removeSection(activeSectionIndex)"
               >
-                删除
+                Delete
               </el-button>
             </div>
           </template>
 
           <div v-if="activeChapter === 'overview'" class="workspace-panel">
-            <div class="panel-title">Overview（图文）</div>
-            <el-form-item label="Overview 主图">
+            <div class="panel-title">Overview</div>
+            <el-form-item label="Overview Image">
               <ImageUpload v-model="form.heroImage" module="cities" />
             </el-form-item>
-            <el-form-item label="Overview 文案">
+            <el-form-item label="Overview Copy">
               <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
             </el-form-item>
           </div>
 
           <div v-else-if="activeChapter === 'intro'" class="workspace-panel">
-            <div class="panel-title">Intro（图文）</div>
-            <el-form-item label="Intro 正文">
+            <div class="panel-title">Introduction</div>
+            <el-form-item label="Introduction Copy">
               <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
             </el-form-item>
-            <el-form-item label="Intro 图片组">
+            <el-form-item label="Introduction Gallery">
               <ImageUpload v-model="form.galleryImages" multiple :limit="12" module="cities" />
             </el-form-item>
           </div>
 
           <div v-else-if="isSectionChapter && activeSection" class="workspace-panel">
             <div class="panel-title">
-              {{ activeSection.title?.zh?.trim() || activeSection.title?.en?.trim() || `Section ${activeSectionIndex + 1}` }}
+              {{ activeSection.title?.en?.trim() || activeSection.title?.zh?.trim() || `Section ${activeSectionIndex + 1}` }}
             </div>
-            <el-form-item label="Section 图片">
+            <el-form-item label="Section Image">
               <ImageUpload v-model="activeSection.image" module="cities" />
             </el-form-item>
-            <el-form-item label="Section 图片集">
+            <el-form-item label="Section Gallery">
               <ImageUpload v-model="activeSection.images" multiple :limit="10" module="cities" />
             </el-form-item>
-            <el-form-item label="Section 标题">
+            <el-form-item label="Section Title">
               <I18nInput v-model="activeSection.title" />
             </el-form-item>
-            <el-form-item label="Section 正文">
+            <el-form-item label="Section Copy">
               <I18nMarkdownEditor v-model="activeSection.body" :rows="8" />
             </el-form-item>
             <el-row :gutter="12">
               <el-col :span="12">
-                <el-form-item label="数据标签">
+                <el-form-item label="Data Label">
                   <I18nInput v-model="activeSection.statLabel" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="数据内容">
+                <el-form-item label="Data Value">
                   <I18nInput v-model="activeSection.statValue" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="呼吸图">
+            <el-form-item label="Feature Image">
               <ImageUpload v-model="activeSection.breathImage" module="cities" />
             </el-form-item>
-            <el-form-item label="引语">
+            <el-form-item label="Quote">
               <I18nInput v-model="activeSection.breathQuote" type="textarea" :rows="3" />
             </el-form-item>
           </div>
 
           <div v-else-if="activeChapter === 'food'" class="workspace-panel">
-            <div class="panel-title">Food（图文）</div>
-            <el-form-item label="Food 标题">
+            <div class="panel-title">Food</div>
+            <el-form-item label="Food Title">
               <I18nInput v-model="form.foodTitle" />
             </el-form-item>
-            <el-form-item label="Food 正文">
+            <el-form-item label="Food Copy">
               <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
             </el-form-item>
-            <el-form-item label="Food 图片组">
+            <el-form-item label="Food Gallery">
               <ImageUpload v-model="form.foodImages" multiple :limit="10" module="cities" />
             </el-form-item>
           </div>
         </EditorWorkspace>
 
         <el-card shadow="never" class="section-card">
-          <template #header>关联路线</template>
-          <el-form-item label="选择现有路线">
+          <template #header>Linked Routes</template>
+          <el-form-item label="Select Routes">
             <el-select
               v-model="form.routeSlugs"
               multiple
               filterable
               collapse-tags
               collapse-tags-tooltip
-              placeholder="直接选择已配置路线"
+              placeholder="Select configured routes"
               style="width: 100%"
             >
               <el-option
@@ -470,7 +468,7 @@ const selectedRouteCards = computed(() =>
                 :value="routeItem.slug"
               />
             </el-select>
-            <div class="form-hint-text">这里决定城市页下方关联路线，以及路线和城市之间的互相联动。</div>
+            <div class="form-hint-text">Controls linked routes and route-to-city map highlighting.</div>
           </el-form-item>
           <div v-if="selectedRouteCards.length" class="selected-grid">
             <div v-for="routeItem in selectedRouteCards" :key="routeItem.slug" class="selected-card">
@@ -478,15 +476,15 @@ const selectedRouteCards = computed(() =>
               <span>{{ routeItem.cityName || routeItem.slug }}</span>
             </div>
           </div>
-          <div v-else class="empty-hint">还没有关联路线</div>
+          <div v-else class="empty-hint">No linked routes</div>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>发布状态</template>
-          <el-form-item label="状态">
+          <template #header>Publishing</template>
+          <el-form-item label="Status">
             <el-radio-group v-model="form.status">
-              <el-radio label="draft">草稿</el-radio>
-              <el-radio label="published">已发布</el-radio>
+              <el-radio label="draft">Draft</el-radio>
+              <el-radio label="published">Published</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-card>

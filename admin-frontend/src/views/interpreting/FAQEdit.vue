@@ -28,8 +28,8 @@ const form = reactive<FAQFormData>({
 })
 
 const rules = {
-  category: [{ required: true, message: '请选择分类', trigger: 'change' }],
-  'question.zh': [{ required: true, message: '请输入问题', trigger: 'blur' }],
+  category: [{ required: true, message: 'Select a category', trigger: 'change' }],
+  'question.en': [{ required: true, message: 'Enter the question', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -54,7 +54,7 @@ onMounted(async () => {
     })
     resetDirty()
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '加载 FAQ 失败'))
+    ElMessage.error(extractErrorMessage(error, 'Failed to load FAQ'))
   } finally {
     loading.value = false
   }
@@ -64,7 +64,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('请先补全必填项')
+    ElMessage.warning('Complete the required fields')
     return
   }
 
@@ -72,15 +72,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await faqsApi.updateFAQ(route.params.id as string, form)
-      ElMessage.success('FAQ 已更新')
+      ElMessage.success('FAQ updated')
     } else {
       await faqsApi.createFAQ(form)
-      ElMessage.success('FAQ 已创建')
+      ElMessage.success('FAQ created')
     }
     disableDirtyCheck()
     router.push('/admin/interpreting/faqs')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '保存失败'))
+    ElMessage.error(extractErrorMessage(error, 'Save failed'))
   } finally {
     saving.value = false
   }
@@ -90,7 +90,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? '编辑 FAQ' : '新增 FAQ'"
+      :title="isEdit ? 'Edit FAQ' : 'Create FAQ'"
       back-to="/admin/interpreting/faqs"
       :saving="saving"
       :dirty="isDirty"
@@ -100,19 +100,19 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>基础信息</template>
+          <template #header>Basic Information</template>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="排序权重">
+              <el-form-item label="Sort Order">
                 <el-input-number v-model="form.sortOrder" :min="1" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="分类" prop="category">
+              <el-form-item label="Category" prop="category">
                 <el-select v-model="form.category" style="width: 100%">
-                  <el-option label="口译服务" value="interpreting" />
-                  <el-option label="通用问题" value="general" />
-                  <el-option label="路线相关" value="routes" />
+                  <el-option label="Interpreting" value="interpreting" />
+                  <el-option label="General" value="general" />
+                  <el-option label="Routes" value="routes" />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -121,18 +121,18 @@ async function handleSave() {
 
         <EditorWorkspace
           model-value="content"
-          title="FAQ 内容工作台"
+          title="FAQ Content"
           eyebrow="FAQ Content"
-          description="分类和排序放固定区，问题与答案在这里集中编辑。"
-          active-label="问答内容"
-          :tabs="[{ key: 'content', label: '问答内容' }]"
+          description="Edit the English question and answer."
+          active-label="Question & Answer"
+          :tabs="[{ key: 'content', label: 'Question & Answer' }]"
         >
           <div class="workspace-panel">
-            <div class="panel-title">问题与答案</div>
-            <el-form-item label="问题" prop="question.zh">
+            <div class="panel-title">Question & Answer</div>
+            <el-form-item label="Question" prop="question.en">
               <I18nInput v-model="form.question" />
             </el-form-item>
-            <el-form-item label="答案">
+            <el-form-item label="Answer">
               <I18nMarkdownEditor v-model="form.answer" :rows="8" />
             </el-form-item>
           </div>

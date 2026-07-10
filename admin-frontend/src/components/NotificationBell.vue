@@ -52,7 +52,7 @@ function handleMarkAllRead() {
         <button
           type="button"
           class="notification-bell"
-          :aria-label="notifStore.hasUnread ? `打开通知，${notifStore.unreadCount} 条未读` : '打开通知'"
+          :aria-label="notifStore.hasUnread ? `Open notifications, ${notifStore.unreadCount} unread` : 'Open notifications'"
         >
           <el-icon :size="20"><Bell /></el-icon>
         </button>
@@ -61,7 +61,7 @@ function handleMarkAllRead() {
 
     <div class="notif-panel">
       <div class="notif-header">
-        <span class="notif-title">通知</span>
+        <span class="notif-title">Notifications</span>
         <el-button
           v-if="notifStore.hasUnread"
           type="primary"
@@ -69,7 +69,7 @@ function handleMarkAllRead() {
           size="small"
           @click="handleMarkAllRead"
         >
-          全部已读
+          Mark all read
         </el-button>
       </div>
 
@@ -90,10 +90,10 @@ function handleMarkAllRead() {
           <p class="notif-body">{{ notif.title || notif.body }}</p>
         </button>
       </div>
-      <div v-else class="notif-empty">暂无通知</div>
+      <div v-else class="notif-empty">No notifications</div>
 
       <div class="notif-footer">
-        <el-button type="primary" link @click="handleViewAll">查看全部</el-button>
+        <el-button type="primary" link @click="handleViewAll">View all</el-button>
       </div>
     </div>
   </el-popover>

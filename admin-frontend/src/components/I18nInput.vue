@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { I18nObject } from '@/types/common'
-import { useEditorLocale } from '@/composables/useEditorLocale'
 
 const props = defineProps<{
   modelValue: I18nObject
@@ -15,24 +14,21 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: I18nObject): void
 }>()
 
-const { editorLocale } = useEditorLocale()
-
 const internalValue = computed({
   get: () => props.modelValue || { zh: '', en: '' },
   set: (val) => emit('update:modelValue', val),
 })
 
-const currentValue = computed(() => internalValue.value[editorLocale.value] || '')
+const currentValue = computed(() => internalValue.value.en || '')
 
 const currentPlaceholder = computed(() =>
-  props.placeholder ||
-  (editorLocale.value === 'zh' ? '请输入中文内容' : 'Enter English content'),
+  props.placeholder || 'Enter English content',
 )
 
-const localeLabel = computed(() => (editorLocale.value === 'zh' ? '中文 (ZH)' : 'English (EN)'))
+const localeLabel = 'English (EN)'
 
 const updateCurrent = (val: string) => {
-  internalValue.value = { ...internalValue.value, [editorLocale.value]: val }
+  internalValue.value = { ...internalValue.value, en: val }
 }
 </script>
 

@@ -27,13 +27,13 @@ const show = computed(() => {
   <Transition name="batch-bar-slide">
     <div v-if="show" class="batch-action-bar" role="status" aria-live="polite">
       <div class="batch-action-bar__info">
-        已选择 <strong>{{ selectedCount }}</strong> 项
+        <strong>{{ selectedCount }}</strong> selected
       </div>
       <div class="batch-action-bar__actions">
         <!-- Slot for batch action buttons (delete, publish, export, etc.) -->
         <slot name="actions" />
       </div>
-      <el-button size="small" @click="emit('clear')">取消选择</el-button>
+      <el-button size="small" @click="emit('clear')">Clear selection</el-button>
     </div>
   </Transition>
 </template>

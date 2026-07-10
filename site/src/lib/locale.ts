@@ -24,26 +24,20 @@ function writeDocumentLanguage(locale: Locale) {
   }
 }
 
-function readStoredLocale(): Locale {
-  if (typeof window === "undefined") return currentLocale;
-  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return isLocale(stored) ? stored : currentLocale;
-}
-
 export function getLocale(): Locale {
-  currentLocale = readStoredLocale();
+  currentLocale = DEFAULT_LOCALE;
   return currentLocale;
 }
 
-export function setLocale(locale: Locale): void {
-  currentLocale = locale;
+export function setLocale(_locale: Locale): void {
+  currentLocale = DEFAULT_LOCALE;
 
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, DEFAULT_LOCALE);
   }
 
-  writeDocumentLanguage(locale);
-  listeners.forEach((listener) => listener(locale));
+  writeDocumentLanguage(DEFAULT_LOCALE);
+  listeners.forEach((listener) => listener(DEFAULT_LOCALE));
 }
 
 export function subscribeToLocale(
