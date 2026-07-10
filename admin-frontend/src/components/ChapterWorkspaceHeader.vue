@@ -48,7 +48,7 @@ function selectTab(key: string) {
       </div>
     </div>
 
-    <div class="workspace-tabs" role="tablist" aria-label="章节导航">
+    <div class="workspace-tabs" role="tablist" aria-label="Editor sections">
       <button
         v-for="tab in tabs"
         :key="tab.key"

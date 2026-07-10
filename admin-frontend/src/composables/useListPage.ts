@@ -64,7 +64,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
       list.value = transform ? transform(items) : items
       total.value = data?.total ?? items.length
     } catch (err: any) {
-      const msg = err?.response?.data?.message || '获取数据失败'
+      const msg = err?.response?.data?.message || 'Failed to load data'
       ElMessage.error(msg)
       list.value = []
       total.value = 0
@@ -116,12 +116,12 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
     if (!deleteApi) return
     try {
       await ElMessageBox.confirm(
-        `确定删除${name ? ` "${name}" ` : '该项'}？此操作不可恢复。`,
-        '删除确认',
-        { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+        `Delete ${name ? `"${name}"` : 'this item'}? This action cannot be undone.`,
+        'Confirm deletion',
+        { confirmButtonText: 'Delete', cancelButtonText: 'Cancel', type: 'warning' }
       )
       await deleteApi(id)
-      ElMessage.success('删除成功')
+      ElMessage.success('Deleted successfully')
       // If current page becomes empty after delete, go to previous page
       if (list.value.length === 1 && page.value > 1) {
         page.value--
@@ -131,7 +131,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
     } catch (err: any) {
       if (err === 'cancel' || err?.toString?.().includes('cancel')) return
       if (err?.response) {
-        ElMessage.error(err.response.data?.message || '删除失败')
+        ElMessage.error(err.response.data?.message || 'Deletion failed')
       }
     }
   }
@@ -141,9 +141,9 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
     if (!deleteApi || selectedIds.value.length === 0) return
     try {
       await ElMessageBox.confirm(
-        `确定批量删除选中的 ${selectedIds.value.length} 项？此操作不可恢复。`,
-        '批量删除确认',
-        { confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning' }
+        `Delete the ${selectedIds.value.length} selected items? This action cannot be undone.`,
+        'Confirm bulk deletion',
+        { confirmButtonText: 'Delete selected', cancelButtonText: 'Cancel', type: 'warning' }
       )
       const ids = [...selectedIds.value]
       let successCount = 0
@@ -155,7 +155,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
           // continue with remaining
         }
       }
-      ElMessage.success(`成功删除 ${successCount} 项`)
+      ElMessage.success(`Deleted ${successCount} items`)
       clearSelection()
       fetchList()
     } catch (err: any) {
@@ -185,7 +185,7 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
       const items = data?.data || data || []
       return transform ? transform(items) : items
     } catch {
-      ElMessage.error('获取全部数据失败')
+      ElMessage.error('Failed to load all records')
       return []
     }
   }

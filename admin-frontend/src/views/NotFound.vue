@@ -13,10 +13,10 @@ function goHome() {
   <div class="not-found-page">
     <div class="not-found-content">
       <h1 class="not-found-code">404</h1>
-      <h2 class="not-found-title">页面不存在</h2>
-      <p class="not-found-desc">你访问的页面不存在或已被移除</p>
+      <h2 class="not-found-title">Page not found</h2>
+      <p class="not-found-desc">The page may have moved or no longer exists.</p>
       <el-button type="primary" :icon="HomeFilled" @click="goHome">
-        返回首页
+        Return to dashboard
       </el-button>
     </div>
   </div>

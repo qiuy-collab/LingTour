@@ -18,8 +18,8 @@ const form = reactive({
 })
 
 const rules: FormRules = {
-  email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  email: [{ required: true, message: 'Enter your email address', trigger: 'blur' }],
+  password: [{ required: true, message: 'Enter your password', trigger: 'blur' }],
 }
 
 async function handleLogin() {
@@ -30,12 +30,12 @@ async function handleLogin() {
   loading.value = true
   try {
     await authStore.login(form.email, form.password)
-    ElMessage.success('登录成功')
-    // 登录后跳回原页面或默认 dashboard
+    ElMessage.success('Signed in successfully')
+    // Return to the requested page or the dashboard after sign-in.
     const redirect = (route.query.redirect as string) || '/admin/dashboard'
     router.push(redirect)
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '登录失败,请检查邮箱和密码')
+    ElMessage.error(err?.response?.data?.message || 'Sign-in failed. Check your email and password.')
   } finally {
     loading.value = false
   }
@@ -61,7 +61,7 @@ async function handleLogin() {
           <el-form-item prop="email">
             <el-input
               v-model="form.email"
-              placeholder="请输入邮箱 (admin@lingtour.cn)"
+              placeholder="Email address (admin@lingtour.cn)"
               :prefix-icon="UserFilled"
               size="large"
             />
@@ -71,7 +71,7 @@ async function handleLogin() {
             <el-input
               v-model="form.password"
               type="password"
-              placeholder="请输入密码"
+              placeholder="Password"
               :prefix-icon="Lock"
               size="large"
               show-password
@@ -86,7 +86,7 @@ async function handleLogin() {
               class="login-btn"
               @click="handleLogin"
             >
-              登 录
+              Sign in
             </el-button>
           </el-form-item>
         </el-form>

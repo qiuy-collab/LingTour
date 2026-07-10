@@ -13,7 +13,7 @@ const props = withDefaults(
   }>(),
   {
     modelValue: '',
-    searchPlaceholder: '搜索...',
+    searchPlaceholder: 'Search...',
     showReset: true,
   },
 )
@@ -56,8 +56,8 @@ function handleReset() {
       />
       <!-- Slot for additional filter controls (el-select, el-date-picker, etc.) -->
       <slot />
-      <el-button type="primary" :icon="Search" @click="$emit('search')">搜索</el-button>
-      <el-button v-if="showReset" :icon="RefreshRight" @click="handleReset">重置</el-button>
+      <el-button type="primary" :icon="Search" @click="$emit('search')">Search</el-button>
+      <el-button v-if="showReset" :icon="RefreshRight" @click="handleReset">Reset</el-button>
     </div>
     <div class="list-toolbar__right">
       <slot name="right" />
