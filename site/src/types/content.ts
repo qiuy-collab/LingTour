@@ -64,6 +64,15 @@ export type HomeHeroStat = {
   body: string;
 };
 
+export type HomeVideo = {
+  url: string;
+  poster?: string;
+  title?: string;
+  description?: string;
+  duration?: string;
+  resolution?: string;
+};
+
 /**
  * Editorial hero block on the home page.
  *
@@ -91,6 +100,8 @@ export type HomeHero = {
    * Optional image for the interpreting / field-notes block.
    */
   interpretingImage?: string;
+  /** Optional click-to-play film chapter configured in the homepage CMS. */
+  video?: HomeVideo;
 };
 
 export type HomeEntryCard = {

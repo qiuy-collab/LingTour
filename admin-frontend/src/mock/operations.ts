@@ -197,6 +197,23 @@ export const mockCommunityPosts: CommunityPost[] = [
 
 // ─── 首页配置 Mock ──────────────────────────────
 export const mockHomeConfig: HomeConfig = {
+  hero: {
+    image: '',
+    caption: { zh: '', en: '' },
+    ctaImage: '',
+    interpretingImage: '',
+    interpretingLabel: { zh: '', en: '' },
+    badgeValue: '',
+    badgeLabel: { zh: '', en: '' },
+    video: {
+      url: '',
+      poster: '',
+      title: { zh: '', en: '' },
+      description: { zh: '', en: '' },
+      duration: '',
+      resolution: '',
+    },
+  },
   heroStats: [
     {
       title: { zh: '12+', en: '12+' },

@@ -136,6 +136,14 @@ interface ApiHomeConfig {
     badge?: { value?: string; label?: LocalizedText };
     interpretingLabel?: LocalizedText;
     interpretingImage?: string;
+    video?: {
+      url?: string;
+      poster?: string;
+      title?: LocalizedText;
+      description?: LocalizedText;
+      duration?: string;
+      resolution?: string;
+    };
     stats?: Array<{ title: LocalizedText; description: LocalizedText }>;
   };
   heroStats?: Array<{ title: LocalizedText; description: LocalizedText }>;
@@ -462,6 +470,20 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
       ? pickLocalized(homeConfig.hero.interpretingLabel, locale)
       : undefined,
     interpretingImage: homeConfig.hero?.interpretingImage,
+    video: homeConfig.hero?.video?.url
+      ? {
+          url: homeConfig.hero.video.url,
+          poster: homeConfig.hero.video.poster || undefined,
+          title: homeConfig.hero.video.title
+            ? pickLocalized(homeConfig.hero.video.title, locale)
+            : undefined,
+          description: homeConfig.hero.video.description
+            ? pickLocalized(homeConfig.hero.video.description, locale)
+            : undefined,
+          duration: homeConfig.hero.video.duration || undefined,
+          resolution: homeConfig.hero.video.resolution || undefined,
+        }
+      : undefined,
   };
 
   const featured =

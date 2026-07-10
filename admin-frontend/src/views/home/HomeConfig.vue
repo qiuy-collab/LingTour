@@ -27,6 +27,23 @@ const cityOptions = ref<Array<{ slug: string; name: string }>>([])
 const activeBlock = ref<HomeConfigBlock>('routeRegions')
 
 const config = reactive<HomeConfig>({
+  hero: {
+    image: '',
+    caption: { zh: '', en: '' },
+    ctaImage: '',
+    interpretingImage: '',
+    interpretingLabel: { zh: '', en: '' },
+    badgeValue: '',
+    badgeLabel: { zh: '', en: '' },
+    video: {
+      url: '',
+      poster: '',
+      title: { zh: '', en: '' },
+      description: { zh: '', en: '' },
+      duration: '',
+      resolution: '',
+    },
+  },
   heroStats: [],
   trustMetrics: [],
   entryCards: [],
@@ -222,7 +239,86 @@ async function handleSave() {
       :active-label="HomeConfigBlockLabels[activeBlock]"
       :tabs="workspaceTabs"
     >
-      <div v-if="activeBlock === 'routeRegions'" class="workspace-panel">
+      <div v-if="activeBlock === 'hero'" class="workspace-panel">
+        <div class="panel-title">Hero Media & Film Chapter</div>
+        <div class="block-item">
+          <div class="block-item-header">
+            <span>Homepage cover system</span>
+          </div>
+          <el-row :gutter="16">
+            <el-col :span="8">
+              <el-form-item label="Hero cover">
+                <ImageUpload v-model="config.hero.image" module="home" />
+                <div class="field-hint">Full-bleed image shown in the first fold.</div>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="Interpreting cover">
+                <ImageUpload v-model="config.hero.interpretingImage" module="home" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="Departure CTA cover">
+                <ImageUpload v-model="config.hero.ctaImage" module="home" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-form-item label="Hero caption">
+            <I18nInput v-model="config.hero.caption" />
+          </el-form-item>
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="Interpreting label">
+                <I18nInput v-model="config.hero.interpretingLabel" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="Badge value">
+                <el-input v-model="config.hero.badgeValue" placeholder="60+" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="Badge label">
+                <I18nInput v-model="config.hero.badgeLabel" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div class="block-item">
+          <div class="block-item-header">
+            <span>Video chapter (optional)</span>
+          </div>
+          <el-form-item label="Video URL">
+            <el-input v-model="config.hero.video.url" placeholder="https://.../guangdong-field-film.mp4" />
+            <div class="field-hint">Leave empty to hide the whole section. Direct MP4/WebM, YouTube and Vimeo links are supported.</div>
+          </el-form-item>
+          <el-form-item label="Poster image">
+            <ImageUpload v-model="config.hero.video.poster" module="home" />
+            <div class="field-hint">Shown before the visitor chooses to play the film.</div>
+          </el-form-item>
+          <el-form-item label="Film title">
+            <I18nInput v-model="config.hero.video.title" />
+          </el-form-item>
+          <el-form-item label="Film description">
+            <I18nInput v-model="config.hero.video.description" type="textarea" :rows="2" />
+          </el-form-item>
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="Duration">
+                <el-input v-model="config.hero.video.duration" placeholder="2 min" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="Format">
+                <el-input v-model="config.hero.video.resolution" placeholder="4K" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+      </div>
+
+      <div v-else-if="activeBlock === 'routeRegions'" class="workspace-panel">
         <div class="panel-title">Route Regions</div>
         <div v-for="(item, index) in config.routeRegions" :key="item.key || index" class="block-item">
           <div class="block-item-header">

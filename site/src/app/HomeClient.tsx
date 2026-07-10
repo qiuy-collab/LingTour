@@ -15,6 +15,7 @@ import { CultureGallery } from "@/components/home/CultureGallery";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
 import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
 import { HomeEntryFilmstrip } from "@/components/home/HomeEntryFilmstrip";
+import { HomeVideoChapter } from "@/components/home/HomeVideoChapter";
 import { ShopProductImage } from "@/components/store/ShopProductImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
@@ -204,6 +205,10 @@ export default function HomeClient({
             </div>
           </section>
         )}
+
+        {hero.video?.url ? (
+          <HomeVideoChapter video={hero.video} fallbackPoster={heroImage} />
+        ) : null}
 
         {/* 2. MAP PILLAR */}
         <GuangdongMapSection cities={regionShowcase} events={liveEvents} />

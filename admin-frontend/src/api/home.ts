@@ -6,6 +6,23 @@ import { DEFAULT_ROUTE_REGIONS } from '@/constants/guangdongRegions'
 
 function fromApi(raw: any): HomeConfig {
   return {
+    hero: {
+      image: raw.hero?.image || '',
+      caption: toI18n(raw.hero?.caption),
+      ctaImage: raw.hero?.ctaImage || '',
+      interpretingImage: raw.hero?.interpretingImage || '',
+      interpretingLabel: toI18n(raw.hero?.interpretingLabel),
+      badgeValue: raw.hero?.badge?.value || '',
+      badgeLabel: toI18n(raw.hero?.badge?.label),
+      video: {
+        url: raw.hero?.video?.url || '',
+        poster: raw.hero?.video?.poster || '',
+        title: toI18n(raw.hero?.video?.title),
+        description: toI18n(raw.hero?.video?.description),
+        duration: raw.hero?.video?.duration || '',
+        resolution: raw.hero?.video?.resolution || '',
+      },
+    },
     heroStats: (raw.hero?.stats || raw.heroStats || []).map((s: any) => ({
       title: toI18n(s.title),
       description: toI18n(s.description ?? s.body ?? s.label),
@@ -46,6 +63,23 @@ function fromApi(raw: any): HomeConfig {
 function toApi(data: HomeConfig) {
   return {
     hero: {
+      image: data.hero.image,
+      caption: data.hero.caption,
+      ctaImage: data.hero.ctaImage,
+      interpretingImage: data.hero.interpretingImage,
+      interpretingLabel: data.hero.interpretingLabel,
+      badge: {
+        value: data.hero.badgeValue,
+        label: data.hero.badgeLabel,
+      },
+      video: {
+        url: data.hero.video.url,
+        poster: data.hero.video.poster,
+        title: data.hero.video.title,
+        description: data.hero.video.description,
+        duration: data.hero.video.duration,
+        resolution: data.hero.video.resolution,
+      },
       stats: data.heroStats.map((s) => ({
         title: s.title,
         description: s.description,

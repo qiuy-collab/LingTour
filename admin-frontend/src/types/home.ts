@@ -5,6 +5,24 @@ export interface HeroStat {
   description: I18nObject
 }
 
+export interface HomeHeroConfig {
+  image: string
+  caption: I18nObject
+  ctaImage: string
+  interpretingImage: string
+  interpretingLabel: I18nObject
+  badgeValue: string
+  badgeLabel: I18nObject
+  video: {
+    url: string
+    poster: string
+    title: I18nObject
+    description: I18nObject
+    duration: string
+    resolution: string
+  }
+}
+
 export interface TrustMetric {
   value: string
   label: I18nObject
@@ -38,6 +56,7 @@ export interface RouteRegionConfig {
 }
 
 export interface HomeConfig {
+  hero: HomeHeroConfig
   heroStats: HeroStat[]
   trustMetrics: TrustMetric[]
   entryCards: EntryCard[]
@@ -48,6 +67,7 @@ export interface HomeConfig {
 }
 
 export type HomeConfigBlock =
+  | 'hero'
   | 'heroStats'
   | 'trustMetrics'
   | 'entryCards'
@@ -57,6 +77,7 @@ export type HomeConfigBlock =
   | 'testimonials'
 
 export const HomeConfigBlockLabels: Record<HomeConfigBlock, string> = {
+  hero: '首屏与影片',
   heroStats: 'Hero 统计卡片',
   trustMetrics: '信任指标',
   entryCards: '入口卡片',

@@ -191,6 +191,14 @@ interface ApiHomeConfig {
     badge?: { value?: string; label?: LocalizedText };
     interpretingLabel?: LocalizedText;
     interpretingImage?: string;
+    video?: {
+      url?: string;
+      poster?: string;
+      title?: LocalizedText;
+      description?: LocalizedText;
+      duration?: string;
+      resolution?: string;
+    };
     stats?: Array<{ title: LocalizedText; description: LocalizedText }>;
   };
   heroStats?: Array<{ title: LocalizedText; description: LocalizedText }>;
@@ -781,6 +789,18 @@ export async function fetchHomeData(locale: Locale): Promise<HomeData> {
     caption: heroSrc.caption ? pickLocalized(heroSrc.caption, locale) : undefined,
     ctaImage: heroSrc.ctaImage || undefined,
     interpretingImage: heroSrc.interpretingImage || undefined,
+    video: heroSrc.video?.url
+      ? {
+          url: heroSrc.video.url,
+          poster: heroSrc.video.poster || undefined,
+          title: heroSrc.video.title ? pickLocalized(heroSrc.video.title, locale) : undefined,
+          description: heroSrc.video.description
+            ? pickLocalized(heroSrc.video.description, locale)
+            : undefined,
+          duration: heroSrc.video.duration || undefined,
+          resolution: heroSrc.video.resolution || undefined,
+        }
+      : undefined,
     interpretingLabel: heroSrc.interpretingLabel
       ? pickLocalized(heroSrc.interpretingLabel, locale)
       : undefined,
