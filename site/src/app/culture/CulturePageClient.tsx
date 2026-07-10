@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useDeferredValue, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCities } from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
@@ -8,6 +10,13 @@ import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { CityCulture } from "@/data/culture";
+import { ArchiveFilterBar } from "@/components/ui/ArchiveFilterBar";
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+}
 
 interface CulturePageClientProps {
   initialCityCultures: CityCulture[];
@@ -17,11 +26,21 @@ export default function CulturePageClient({
   initialCityCultures,
 }: CulturePageClientProps) {
   const { t, locale } = useLocale();
+  const [search, setSearch] = useState("");
+  const [region, setRegion] = useState("");
+  const [tag, setTag] = useState("");
+  const deferredSearch = useDeferredValue(search.trim().toLocaleLowerCase(locale));
   const { data: cityCultures, loading, error, refetch } = useApiQuery(
     () => fetchCities(locale),
     [locale],
     { initialData: initialCityCultures },
   );
+
+  useEffect(() => {
+    setSearch("");
+    setRegion("");
+    setTag("");
+  }, [locale]);
 
   if (loading && initialCityCultures.length === 0) {
     return <LoadingSpinner text="Opening the city atlas..." />;
@@ -32,6 +51,18 @@ export default function CulturePageClient({
   }
 
   const cultures = cityCultures ?? initialCityCultures;
+  const regionOptions = uniqueValues(cultures.map((city) => city.label));
+  const tagOptions = uniqueValues(cultures.flatMap((city) => city.tags));
+  const filteredCultures = cultures.filter((city) => {
+    const searchable = [city.name, city.label, city.summary, city.narrative, ...city.tags]
+      .join(" ")
+      .toLocaleLowerCase(locale);
+    return (
+      (!deferredSearch || searchable.includes(deferredSearch)) &&
+      (!region || city.label === region) &&
+      (!tag || city.tags.includes(tag))
+    );
+  });
   const heroImage = SEED_IMAGES.cultureHero ?? placeholderFor("portrait");
   const ctaImage = SEED_IMAGES.cultureCta ?? placeholderFor("hero");
 
@@ -48,7 +79,7 @@ export default function CulturePageClient({
                     {t("culture.atlas.eyebrow")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] sm:text-6xl md:text-8xl lg:text-9xl">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
                   {t("culture.atlas.titlePrimary")} <br />
                   <span className="italic text-[var(--gold)]">
                     {t("culture.atlas.titleItalic")}
@@ -86,6 +117,38 @@ export default function CulturePageClient({
       </section>
 
       <section className="site-container py-10 lg:py-20">
+        {cultures.length > 0 ? (
+          <ArchiveFilterBar
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchLabel={t("culture.filter.searchLabel")}
+            searchPlaceholder={t("culture.filter.searchPlaceholder")}
+            countLabel={t("culture.filter.count")
+              .replace("{visible}", String(filteredCultures.length))
+              .replace("{total}", String(cultures.length))}
+            allLabel={t("culture.filter.all")}
+            clearLabel={t("culture.filter.clear")}
+            groups={[
+              {
+                label: t("culture.filter.region"),
+                value: region,
+                options: regionOptions.map((value) => ({ value, label: value })),
+                onChange: setRegion,
+              },
+              {
+                label: t("culture.filter.tags"),
+                value: tag,
+                options: tagOptions.map((value) => ({ value, label: value })),
+                onChange: setTag,
+              },
+            ]}
+            onClear={() => {
+              setSearch("");
+              setRegion("");
+              setTag("");
+            }}
+          />
+        ) : null}
         {cultures.length === 0 ? (
           <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
@@ -98,12 +161,40 @@ export default function CulturePageClient({
               {t("culture.atlas.empty.body")}
             </p>
           </div>
+        ) : filteredCultures.length === 0 ? (
+          <div className="mx-auto max-w-xl py-16 text-center">
+            <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+              {t("culture.filter.emptyTitle")}
+            </h3>
+            <p className="handwritten mt-4 text-base text-[var(--muted)]">
+              {t("culture.filter.emptyBody")}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setRegion("");
+                setTag("");
+              }}
+              className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] underline underline-offset-4"
+            >
+              {t("culture.filter.clear")}
+            </button>
+          </div>
         ) : (
           <div className="grid gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-y-24">
-            {cultures.map((city, index) => {
+            <AnimatePresence initial={false} mode="popLayout">
+            {filteredCultures.map((city, index) => {
               const cardImage = city.image || placeholderFor("square");
               return (
-                <Reveal key={city.slug} delay={index * 80}>
+                <motion.div
+                  key={city.slug}
+                  layout
+                  initial={false}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <Link href={`/culture/${city.slug}`} className="group block">
                     <article
                       className={`relative flex h-full flex-col transition-all duration-500 hover:-translate-y-3 ${
@@ -177,9 +268,10 @@ export default function CulturePageClient({
                       </div>
                     </article>
                   </Link>
-                </Reveal>
+                </motion.div>
               );
             })}
+            </AnimatePresence>
           </div>
         )}
       </section>

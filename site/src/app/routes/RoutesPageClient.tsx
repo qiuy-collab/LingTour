@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useDeferredValue, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import { fetchRoutes } from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
@@ -8,6 +10,13 @@ import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { StoryRoute } from "@/data/routes";
+import { ArchiveFilterBar } from "@/components/ui/ArchiveFilterBar";
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+}
 
 interface RoutesPageClientProps {
   initialRoutes: StoryRoute[];
@@ -17,11 +26,23 @@ export default function RoutesPageClient({
   initialRoutes,
 }: RoutesPageClientProps) {
   const { t, locale } = useLocale();
+  const [search, setSearch] = useState("");
+  const [culture, setCulture] = useState("");
+  const [duration, setDuration] = useState("");
+  const [audience, setAudience] = useState("");
+  const deferredSearch = useDeferredValue(search.trim().toLocaleLowerCase(locale));
   const { data, loading, error, refetch } = useApiQuery(
     () => fetchRoutes(locale),
     [locale],
     { initialData: initialRoutes },
   );
+
+  useEffect(() => {
+    setSearch("");
+    setCulture("");
+    setDuration("");
+    setAudience("");
+  }, [locale]);
 
   if (loading && initialRoutes.length === 0) {
     return <LoadingSpinner text="Drawing the routes..." />;
@@ -32,6 +53,20 @@ export default function RoutesPageClient({
   }
 
   const storyRoutes = data ?? initialRoutes;
+  const cultureOptions = uniqueValues(storyRoutes.map((route) => route.culture));
+  const durationOptions = uniqueValues(storyRoutes.map((route) => route.duration));
+  const audienceOptions = uniqueValues(storyRoutes.map((route) => route.audience));
+  const filteredRoutes = storyRoutes.filter((route) => {
+    const searchable = [route.title, route.city, route.culture, route.duration, route.audience, route.summary]
+      .join(" ")
+      .toLocaleLowerCase(locale);
+    return (
+      (!deferredSearch || searchable.includes(deferredSearch)) &&
+      (!culture || route.culture === culture) &&
+      (!duration || route.duration === duration) &&
+      (!audience || route.audience === audience)
+    );
+  });
   const heroImage = SEED_IMAGES.routesHero ?? placeholderFor("portrait");
   const ctaImage = SEED_IMAGES.routesCta ?? placeholderFor("hero");
 
@@ -47,7 +82,7 @@ export default function RoutesPageClient({
                 <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
                   {t("routes.atlas.eyebrow")}
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.9] tracking-[-0.05em] text-[var(--river-deep)] mix-blend-multiply sm:text-6xl md:text-8xl lg:text-[10rem]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply">
                   {t("routes.atlas.titlePrimary")} <br />
                   <span className="text-[var(--gold)] italic">
                     {t("routes.atlas.titleItalic")}
@@ -89,6 +124,45 @@ export default function RoutesPageClient({
       </section>
 
       <section className="site-container py-10 sm:py-12 lg:py-20">
+        {storyRoutes.length > 0 ? (
+          <ArchiveFilterBar
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchLabel={t("routes.filter.searchLabel")}
+            searchPlaceholder={t("routes.filter.searchPlaceholder")}
+            countLabel={t("routes.filter.count")
+              .replace("{visible}", String(filteredRoutes.length))
+              .replace("{total}", String(storyRoutes.length))}
+            allLabel={t("routes.filter.all")}
+            clearLabel={t("routes.filter.clear")}
+            groups={[
+              {
+                label: t("routes.filter.culture"),
+                value: culture,
+                options: cultureOptions.map((value) => ({ value, label: value })),
+                onChange: setCulture,
+              },
+              {
+                label: t("routes.filter.duration"),
+                value: duration,
+                options: durationOptions.map((value) => ({ value, label: value })),
+                onChange: setDuration,
+              },
+              {
+                label: t("routes.filter.audience"),
+                value: audience,
+                options: audienceOptions.map((value) => ({ value, label: value })),
+                onChange: setAudience,
+              },
+            ]}
+            onClear={() => {
+              setSearch("");
+              setCulture("");
+              setDuration("");
+              setAudience("");
+            }}
+          />
+        ) : null}
         {storyRoutes.length === 0 ? (
           <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
@@ -101,12 +175,41 @@ export default function RoutesPageClient({
               {t("routes.atlas.empty.body")}
             </p>
           </div>
+        ) : filteredRoutes.length === 0 ? (
+          <div className="mx-auto max-w-xl py-16 text-center">
+            <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+              {t("routes.filter.emptyTitle")}
+            </h3>
+            <p className="handwritten mt-4 text-base text-[var(--muted)]">
+              {t("routes.filter.emptyBody")}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setCulture("");
+                setDuration("");
+                setAudience("");
+              }}
+              className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] underline underline-offset-4"
+            >
+              {t("routes.filter.clear")}
+            </button>
+          </div>
         ) : (
           <div className="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:gap-x-20 lg:gap-y-20">
-            {storyRoutes.map((route, i) => {
+            <AnimatePresence initial={false} mode="popLayout">
+            {filteredRoutes.map((route, i) => {
               const cardImage = route.image || placeholderFor("hero");
               return (
-                <Reveal key={route.slug} delay={i * 100}>
+                <motion.div
+                  key={route.slug}
+                  layout
+                  initial={false}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <Link href={`/routes/${route.slug}`} className="group block">
                     <article
                       className={`relative flex flex-col transition-all duration-500 hover:-translate-y-3 ${
@@ -188,9 +291,10 @@ export default function RoutesPageClient({
                       </div>
                     </article>
                   </Link>
-                </Reveal>
+                </motion.div>
               );
             })}
+            </AnimatePresence>
           </div>
         )}
       </section>

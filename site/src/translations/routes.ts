@@ -56,6 +56,16 @@ export const routes = {
     "routes.atlas.empty.title": "Routes are being curated.",
     "routes.atlas.empty.body":
       "Story routes are written one by one with local guides. New routes appear here as soon as they're published.",
+    "routes.filter.searchLabel": "Search story routes",
+    "routes.filter.searchPlaceholder": "Route, city, culture, or audience...",
+    "routes.filter.count": "{visible}/{total} routes",
+    "routes.filter.all": "All",
+    "routes.filter.clear": "Clear filters",
+    "routes.filter.culture": "Culture",
+    "routes.filter.duration": "Duration",
+    "routes.filter.audience": "For whom",
+    "routes.filter.emptyTitle": "No routes match this brief.",
+    "routes.filter.emptyBody": "Widen the culture, duration, or audience filters to continue exploring.",
 
     "routes.cta.localVoice.eyebrow": "Need a local voice?",
     "routes.cta.localVoice.title":
@@ -120,6 +130,16 @@ export const routes = {
     "routes.atlas.empty.title": "路线正在编辑。",
     "routes.atlas.empty.body":
       "故事路线由我们和当地向导一条一条写出。新路线发布后会出现在这里。",
+    "routes.filter.searchLabel": "搜索故事路线",
+    "routes.filter.searchPlaceholder": "路线、城市、文化或适合人群……",
+    "routes.filter.count": "显示 {visible}/{total} 条路线",
+    "routes.filter.all": "全部",
+    "routes.filter.clear": "清除筛选",
+    "routes.filter.culture": "文化",
+    "routes.filter.duration": "时长",
+    "routes.filter.audience": "适合人群",
+    "routes.filter.emptyTitle": "暂时没有符合条件的路线。",
+    "routes.filter.emptyBody": "放宽文化、时长或人群筛选，继续探索。",
 
     "routes.cta.localVoice.eyebrow": "需要一位本地解说？",
     "routes.cta.localVoice.title": "和一位知道哪里藏着安静细节的人一起走完这条路线。",

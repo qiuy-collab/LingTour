@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
 import type { EventData } from "@/lib/api-data";
@@ -58,7 +58,7 @@ type Props = {
 };
 
 export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const isZh = locale === "zh";
   const dayNames = isZh ? DAY_NAMES_ZH : DAY_NAMES_EN;
   const monthNames = isZh ? MONTH_NAMES_ZH : MONTH_NAMES_EN;
@@ -79,6 +79,21 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(
     events[0]?.date ?? null,
   );
+
+  useEffect(() => {
+    if (!events.length) return;
+
+    const eventDates = new Set(events.map((event) => event.date));
+    const nextSelectedDate =
+      selectedDate && eventDates.has(selectedDate) ? selectedDate : events[0].date;
+
+    if (!nextSelectedDate) return;
+
+    const nextDate = new Date(`${nextSelectedDate}T00:00:00`);
+    setSelectedDate(nextSelectedDate);
+    setYear(nextDate.getFullYear());
+    setMonth(nextDate.getMonth());
+  }, [events, selectedDate]);
 
   const activeEvents = selectedDate ? (eventsByDate[selectedDate] ?? []) : [];
   const activeEvent = activeEvents[0] ?? null;
@@ -135,24 +150,24 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
   }
 
   return (
-    <section className="site-container py-24 lg:py-40">
-      <div className="grid items-start gap-20 lg:grid-cols-[1fr_420px]">
+    <section className="site-container py-20 lg:py-40">
+      <div className="grid items-start gap-12 lg:grid-cols-[1fr_420px] lg:gap-20">
         <div className="flex flex-col">
           <Reveal>
-            <div className="mb-16">
+            <div className="mb-12 sm:mb-16">
               <div className="mb-6 flex items-center gap-4">
                 <div className="h-px w-10 bg-[var(--gold)]" />
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
-                  {isZh ? "广东时令指南" : "Guangdong Seasonality"}
+                  {t("home.calendar.eyebrow")}
                 </p>
               </div>
-              <h2 className="font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-[-0.03em] text-[var(--river-deep)] md:text-7xl">
-                {isZh ? "风俗与节令。" : "Rituals & Rhythm."}
+              <h2 className="font-[family:var(--font-display)] text-4xl leading-[0.94] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:text-7xl">
+                {t("home.calendar.title")}
               </h2>
             </div>
           </Reveal>
 
-          <div className="mb-10 flex items-center gap-12 border-b border-black/5 pb-8">
+          <div className="mb-8 flex flex-col items-start gap-6 border-b border-[var(--line)] pb-6 sm:mb-10 sm:flex-row sm:items-center sm:gap-12 sm:pb-8">
             <div className="flex gap-4">
               <button
                 onClick={prevMonth}
@@ -191,13 +206,13 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                 </svg>
               </button>
             </div>
-            <h3 className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)]">
+            <h3 className="font-[family:var(--font-display)] text-[2.2rem] italic leading-none text-[var(--river-deep)] sm:text-4xl">
               {monthNames[month]}{" "}
               <span className="ml-2 not-italic text-[var(--gold)]">{year}</span>
             </h3>
           </div>
 
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {dayNames.map((name) => (
               <div
                 key={name}
@@ -251,7 +266,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
             })}
           </div>
 
-          <div className="mt-16 space-y-6">
+          <div className="mt-12 space-y-6 sm:mt-16">
             {activeEvents.length > 0 ? (
               activeEvents.map((event) => (
                 <div
@@ -260,16 +275,16 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                 >
                   <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-[var(--gold)]" />
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                    Event Registry
+                    {t("home.calendar.eventRegistry")}
                   </p>
-                  <h4 className="mb-3 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">
+                  <h4 className="mb-3 font-[family:var(--font-display)] text-xl text-[var(--river-deep)] sm:text-2xl">
                     {event.title}
                   </h4>
                   <p className="handwritten max-w-lg text-sm leading-relaxed text-[var(--muted)]">
                     {event.summary ||
                       (isZh
-                        ? "广东时令文化的一个重要节点。"
-                        : "A meaningful moment in Guangdong's seasonal rhythm.")}
+                        ? t("home.calendar.eventFallbackZh")
+                        : t("home.calendar.eventFallbackEn"))}
                   </p>
                 </div>
               ))
@@ -277,24 +292,22 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
               <div className="relative border-l border-[var(--line)]/60 pl-8">
                 <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-[var(--line)]" />
                 <p className="handwritten text-sm text-[var(--muted)]">
-                  {isZh
-                    ? "这一页暂时没有活动记录。"
-                    : "No event dispatches are pinned to this date yet."}
+                  {t("home.calendar.noEvents")}
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="sticky top-32">
+        <div className="lg:sticky lg:top-32">
           {relatedRoute ? (
             <Reveal delay={200}>
               <Link
                 href={`/routes/${relatedRoute.slug}`}
                 className="group relative block"
               >
-                <div className="-rotate-2 border border-black/5 bg-white p-6 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] group-hover:rotate-0">
-                  <div className="relative mb-8 aspect-[3/4] overflow-hidden">
+                <div className="border border-[var(--line)] bg-white p-5 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] sm:-rotate-2 sm:p-6 sm:group-hover:rotate-0">
+                  <div className="relative mb-6 aspect-[4/3] overflow-hidden sm:mb-8 sm:aspect-[3/4]">
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
                       style={{ backgroundImage: `url(${relatedRoute.image})` }}
@@ -305,13 +318,13 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="border border-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase text-[var(--gold)]">
-                        Verified Route
+                        {t("home.calendar.verifiedRoute")}
                       </span>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                         {relatedRoute.duration}
                       </span>
                     </div>
-                    <h4 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
+                    <h4 className="font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] sm:text-3xl">
                       {relatedRoute.title}
                     </h4>
                     <p className="line-clamp-2 text-sm leading-relaxed text-[var(--muted)]">
@@ -319,7 +332,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                     </p>
                     <div className="flex items-center justify-between border-t border-[var(--line)] pt-6 text-[var(--cinnabar)]">
                       <span className="text-[10px] font-bold uppercase tracking-widest">
-                        Explore Intelligence
+                        {t("home.calendar.exploreRoute")}
                       </span>
                       <svg
                         className="h-5 w-5 transition-transform group-hover:translate-x-2"
@@ -338,17 +351,15 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                   </div>
                 </div>
 
-                <div className="handwritten absolute -bottom-6 -right-6 -rotate-12 select-none text-3xl text-[var(--gold)]/30">
-                  Live Dispatch
+                <div className="handwritten absolute -bottom-4 right-2 select-none text-2xl text-[var(--gold)]/30 sm:-bottom-6 sm:-right-6 sm:-rotate-12 sm:text-3xl">
+                  {t("home.calendar.liveDispatch")}
                 </div>
               </Link>
             </Reveal>
           ) : (
-            <div className="flex aspect-[3/4] rotate-1 items-center justify-center border-2 border-dashed border-[var(--line)] p-12 text-center">
+            <div className="flex aspect-[4/3] items-center justify-center border-2 border-dashed border-[var(--line)] p-8 text-center sm:aspect-[3/4] sm:rotate-1 sm:p-12">
               <p className="handwritten text-sm text-[var(--muted)] opacity-40">
-                {isZh
-                  ? "选择一个带标记的日期，查看推荐路线。"
-                  : "Select a marked date to reveal the recommended route."}
+                {t("home.calendar.selectDate")}
               </p>
             </div>
           )}
