@@ -7,6 +7,8 @@ import { BookingSubmission } from './entities/booking-submission.entity';
 import { InterpretingService } from './interpreting.service';
 import { InterpretingController } from './interpreting.controller';
 import { OrdersModule } from '../orders/orders.module';
+import { TravelerBookingsController } from './traveler-bookings.controller';
+import { TravelerBookingsService } from './traveler-bookings.service';
 
 @Module({
   imports: [
@@ -18,8 +20,8 @@ import { OrdersModule } from '../orders/orders.module';
       BookingSubmission,
     ]),
   ],
-  controllers: [InterpretingController],
-  providers: [InterpretingService],
+  controllers: [InterpretingController, TravelerBookingsController],
+  providers: [InterpretingService, TravelerBookingsService],
   exports: [InterpretingService],
 })
 export class InterpretingModule {}

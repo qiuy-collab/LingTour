@@ -470,6 +470,19 @@ export type InterpretingDepositCheckout = {
   };
 };
 
+export type TravelerInterpretingBooking = {
+  id: string;
+  city: string;
+  serviceDate: string;
+  supportMode: string;
+  groupSize: string | null;
+  routeOrNeed: string | null;
+  status: string;
+  assignedInterpreterName: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Public API data hooks 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 export async function fetchInterpreting(
@@ -513,6 +526,16 @@ export async function confirmInterpretingDeposit(
     orderNo,
     paymentId,
   });
+}
+
+export async function fetchTravelerInterpretingBookings(): Promise<
+  TravelerInterpretingBooking[]
+> {
+  const response = await apiGet<{
+    items: TravelerInterpretingBooking[];
+    total: number;
+  }>("/account/interpreting/bookings", { page: 1, pageSize: 50 });
+  return response.items ?? [];
 }
 
 export async function fetchRoutes(locale: Locale): Promise<StoryRoute[]> {

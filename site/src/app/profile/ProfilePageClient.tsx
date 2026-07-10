@@ -14,7 +14,12 @@ import {
   type ProfileVisibility,
 } from "@/lib/auth-client";
 import { readCart, type CartItem } from "@/lib/cart";
-import { fetchSavedCommunityPosts, type CommunityFeedPost } from "@/lib/api-data";
+import {
+  fetchSavedCommunityPosts,
+  fetchTravelerInterpretingBookings,
+  type CommunityFeedPost,
+  type TravelerInterpretingBooking,
+} from "@/lib/api-data";
 import { countryName, countryOptions, normalizeCountryCode } from "@/lib/country-list";
 import { useLocale } from "@/lib/locale-context";
 
@@ -53,6 +58,17 @@ function profileCompletion(user: LocalUser) {
   return Math.round((values.filter((value) => Boolean(value?.trim())).length / values.length) * 100);
 }
 
+function formatBookingDate(value: string, locale: string) {
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }).format(date);
+}
+
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
     <div className="mx-auto max-w-2xl border border-dashed border-[var(--line)] bg-white/38 px-6 py-14 text-center sm:px-10">
@@ -78,6 +94,8 @@ export function ProfilePageClient() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedNotes, setSavedNotes] = useState<CommunityFeedPost[]>([]);
+  const [bookings, setBookings] = useState<TravelerInterpretingBooking[]>([]);
+  const [bookingsReady, setBookingsReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -132,10 +150,13 @@ export function ProfilePageClient() {
     void Promise.allSettled([
       refreshCurrentUserProfile(),
       fetchSavedCommunityPosts(locale, 24),
-    ]).then(([profileResult, notesResult]) => {
+      fetchTravelerInterpretingBookings(),
+    ]).then(([profileResult, notesResult, bookingsResult]) => {
       if (cancelled) return;
       if (profileResult.status === "fulfilled") hydrateProfile(profileResult.value);
       if (notesResult.status === "fulfilled") setSavedNotes(notesResult.value);
+      if (bookingsResult.status === "fulfilled") setBookings(bookingsResult.value);
+      setBookingsReady(true);
     });
 
     return () => {
@@ -316,7 +337,55 @@ export function ProfilePageClient() {
         ) : null}
 
         {activeTab === "bookings" ? (
-          <EmptyArchive title={t("account.profile.bookingsEmpty")} body={t("account.profile.bookingsEmptyBody")} href="/interpreting#interpreting-booking" cta={t("account.profile.bookingsCta")} />
+          !bookingsReady ? (
+            <p className="py-14 text-center text-sm text-[var(--muted)]" role="status">
+              {t("account.profile.bookingsLoading")}
+            </p>
+          ) : bookings.length ? (
+            <section aria-label={t("account.profile.bookingsLabel")}>
+              <div className="grid gap-px border border-[var(--line)] bg-[var(--line)] lg:grid-cols-2">
+                {bookings.map((booking) => (
+                  <article key={booking.id} className="bg-[var(--paper)] p-6 sm:p-8">
+                    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                          {t(`account.profile.bookingStatus.${booking.status}`)}
+                        </p>
+                        <h2 className="mt-3 font-[family:var(--font-display)] text-3xl leading-none text-[var(--river-deep)]">
+                          {booking.city}
+                        </h2>
+                      </div>
+                      <time className="text-xs text-[var(--muted)]" dateTime={booking.serviceDate}>
+                        {formatBookingDate(booking.serviceDate, locale)}
+                      </time>
+                    </div>
+                    <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingMode")}</dt>
+                        <dd className="mt-2 text-[var(--ink)]">{booking.supportMode}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingGroup")}</dt>
+                        <dd className="mt-2 text-[var(--ink)]">{booking.groupSize || t("account.profile.bookingPending")}</dd>
+                      </div>
+                      {booking.assignedInterpreterName ? (
+                        <div className="sm:col-span-2">
+                          <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingInterpreter")}</dt>
+                          <dd className="mt-2 text-[var(--ink)]">{booking.assignedInterpreterName}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                    {booking.routeOrNeed ? <p className="mt-5 border-t border-[var(--line)] pt-5 text-sm leading-6 text-[var(--muted)]">{booking.routeOrNeed}</p> : null}
+                  </article>
+                ))}
+              </div>
+              <Link href="/interpreting#interpreting-booking" className="btn-primary mt-8 inline-flex px-7 py-4 text-xs">
+                {t("account.profile.bookingsCta")}
+              </Link>
+            </section>
+          ) : (
+            <EmptyArchive title={t("account.profile.bookingsEmpty")} body={t("account.profile.bookingsEmptyBody")} href="/interpreting#interpreting-booking" cta={t("account.profile.bookingsCta")} />
+          )
         ) : null}
 
         {activeTab === "settings" ? (
