@@ -133,6 +133,7 @@ export default function RoutesPageClient({
             countLabel={t("routes.filter.count")
               .replace("{visible}", String(filteredRoutes.length))
               .replace("{total}", String(storyRoutes.length))}
+            filterLabel={t("routes.filter.open")}
             allLabel={t("routes.filter.all")}
             clearLabel={t("routes.filter.clear")}
             groups={[

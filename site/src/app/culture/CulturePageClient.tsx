@@ -126,6 +126,7 @@ export default function CulturePageClient({
             countLabel={t("culture.filter.count")
               .replace("{visible}", String(filteredCultures.length))
               .replace("{total}", String(cultures.length))}
+            filterLabel={t("culture.filter.open")}
             allLabel={t("culture.filter.all")}
             clearLabel={t("culture.filter.clear")}
             groups={[
