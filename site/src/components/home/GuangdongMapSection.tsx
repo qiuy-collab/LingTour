@@ -272,19 +272,17 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         key={city.adcode}
                         d={city.path}
                         stroke="#fff"
-                        strokeWidth={isActive ? 2 : 1}
-                        opacity={hasContent || isActive ? 1 : 0.8}
+                        strokeWidth={isActive ? (hasEvent ? 2 : 1.5) : 1}
+                        opacity={1}
                         className="transition-all duration-500"
                         style={{
                           fill: isActive
                             ? hasEvent
                               ? "#b64235"
-                              : "#14343d"
-                            : hasContent
-                              ? hasEvent
-                                ? "rgba(182, 66, 53, 0.8)"
-                                : "rgba(20, 52, 61, 0.45)"
-                              : "rgba(102, 113, 125, 0.25)",
+                              : "#c97a6e"
+                            : hasContent || hasEvent
+                              ? "rgba(182, 66, 53, 0.6)"
+                              : "rgba(182, 66, 53, 0.15)",
                           cursor: hasContent ? "pointer" : "default",
                         }}
                         onMouseEnter={() => {

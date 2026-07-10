@@ -6,6 +6,7 @@ import type { StoreProduct } from "@/data/store";
 import { ProductActions } from "@/components/store/ProductActions";
 import { Reveal } from "@/components/ui/Reveal";
 import { Price } from "@/components/ui/Price";
+import { ShopProductImage } from "@/components/store/ShopProductImage";
 
 function buildNoteWords(product: StoreProduct) {
   const source = [
@@ -144,17 +145,12 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 <div className="absolute -top-4 left-1/2 h-10 w-32 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm border border-white/20" />
 
                 <div className="relative flex h-full w-full items-center justify-center">
-                  {activeImage ? (
-                    <img
-                      src={activeImage}
-                      alt={product.name}
-                      className="max-h-full w-auto max-w-full object-contain transition-transform duration-700 hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[var(--paper)] text-center text-sm text-[var(--muted)]">
-                      Product image pending
-                    </div>
-                  )}
+                  <ShopProductImage
+                    src={activeImage}
+                    fallbackSrc={product.gallery?.find((image) => image !== activeImage)}
+                    alt={product.name}
+                    imageClassName="object-contain transition-transform duration-700 hover:scale-105"
+                  />
 
                   {/* Navigation Buttons */}
                   <button
@@ -177,7 +173,7 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
 
                 {/* Image counter */}
                 <div className="absolute bottom-6 right-6 handwritten text-xl text-[var(--gold)]">
-                  {activeIndex + 1} / {images.length}
+                  {images.length > 0 ? `${activeIndex + 1} / ${images.length}` : "—"}
                 </div>
               </div>
             </Reveal>
