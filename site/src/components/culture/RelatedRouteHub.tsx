@@ -6,16 +6,28 @@ import { motion } from "framer-motion";
 import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
 import type { StoryRoute } from "@/data/routes";
 import { Reveal } from "@/components/ui/Reveal";
+import type { CityCulture } from "@/data/culture";
+import { useLocale } from "@/lib/locale-context";
 
 type Props = {
   routes: StoryRoute[];
   cityAdcode: number;
   cityName: string;
+  cities: Pick<CityCulture, "slug" | "adcode" | "routeSlugs">[];
 };
 
-export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
+export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props) {
+  const { t } = useLocale();
   const [hoveredRouteIdx, setHoveredRouteIdx] = useState<number | null>(null);
   const features = useMemo(() => getMapFeatures(), []);
+  const activeRoute = hoveredRouteIdx === null ? null : routes[hoveredRouteIdx];
+  const highlightedAdcodes = useMemo(() => {
+    if (!activeRoute) return new Set([cityAdcode]);
+    const routeCodes = cities
+      .filter((city) => city.routeSlugs.includes(activeRoute.slug))
+      .map((city) => city.adcode);
+    return new Set(routeCodes.length ? routeCodes : [cityAdcode]);
+  }, [activeRoute, cities, cityAdcode]);
 
   const mapData = useMemo(() => {
     if (!features.length) return null;
@@ -33,7 +45,7 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
   if (routes.length === 0) {
     return (
       <p className="mt-8 text-sm text-[var(--muted)]">
-        No routes linked yet. Routes covering {cityName} will appear here.
+        {t("culture.detail.noRelatedRoutes")}
       </p>
     );
   }
@@ -49,6 +61,8 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
               className={`group relative flex flex-col gap-4 border border-[var(--line)] bg-white p-6 transition-all duration-500 scrapbook-shadow hover:border-[var(--cinnabar)] sm:flex-row sm:gap-8 ${idx % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
               onMouseEnter={() => setHoveredRouteIdx(idx)}
               onMouseLeave={() => setHoveredRouteIdx(null)}
+              onFocus={() => setHoveredRouteIdx(idx)}
+              onBlur={() => setHoveredRouteIdx(null)}
             >
               <div
                 className="image-sheen h-32 w-full shrink-0 border-4 border-white bg-cover bg-center scrapbook-shadow sm:h-28 sm:w-40"
@@ -68,7 +82,7 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
                   {route.summary}
                 </p>
                 <p className="mt-4 flex items-center gap-2 pt-3 text-sm font-bold tracking-widest text-[var(--cinnabar)] uppercase transition group-hover:translate-x-1">
-                  <span>Explore Route</span>
+                  <span>{t("culture.detail.readRoute")}</span>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -82,9 +96,9 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
       {/* Right: Micro map */}
       <div className="hidden lg:block">
         <div className="sticky top-28">
-          <p className="text-label text-[var(--cinnabar)] handwritten">Route geography</p>
+          <p className="text-label text-[var(--cinnabar)]">{t("culture.detail.routeMap")}</p>
           <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
-            Where {cityName}&apos;s routes cross
+            {activeRoute?.title || t("culture.detail.routeCoverage")}
           </h3>
           <div className="relative mt-8 overflow-hidden border-8 border-white bg-white scrapbook-shadow -rotate-1">
             <div className="absolute inset-0 bg-grain opacity-[0.05] pointer-events-none" />
@@ -94,11 +108,11 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
                   viewBox={`0 0 ${mapData.width} ${mapData.height}`}
                   className="w-full"
                   role="img"
-                  aria-label={`Guangdong map highlighting ${cityName}`}
+                  aria-label={t("culture.detail.routeMapLabel")}
                 >
-                  <title>{cityName} on Guangdong map</title>
+                  <title>{activeRoute?.title || cityName}</title>
                   {mapData.paths.map((city) => {
-                    const isHighlighted = city.adcode === cityAdcode;
+                    const isHighlighted = highlightedAdcodes.has(city.adcode);
                     return (
                       <path
                         key={city.adcode}
@@ -121,7 +135,7 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName }: Props) {
                     transition={{ duration: 0.25 }}
                     className="mx-4 mb-4 border border-[var(--line)] bg-white p-4 shadow-[var(--shadow-soft)]"
                   >
-                    <p className="text-label text-[var(--cinnabar)]">Hovered route</p>
+                    <p className="text-label text-[var(--cinnabar)]">{t("culture.detail.selectedRoute")}</p>
                     <p className="mt-2 font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
                       {routes[hoveredRouteIdx].title}
                     </p>

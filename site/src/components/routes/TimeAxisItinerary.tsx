@@ -324,12 +324,16 @@ function StopNoteButton({ onClick }: { onClick?: () => void }) {
 }
 
 function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string }) {
+  const { locale } = useLocale();
   const frames = [...(stop.images ?? []), stop.image].filter(
     (frame): frame is string => Boolean(frame?.trim()),
   );
   const uniqueFrames = Array.from(new Set(frames)).slice(0, 3);
   const leadFrame = uniqueFrames[0];
   const supportFrames = uniqueFrames.slice(1);
+  const stopMarkers = [stop.time, stop.meal, stop.transit].filter(
+    (value): value is string => Boolean(value?.trim()),
+  );
 
   return (
     <motion.section
@@ -351,32 +355,35 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
           ) : null}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.06),rgba(17,25,35,0.28))]" />
           <div className="absolute left-6 top-6 border border-white/45 bg-white/85 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-            Closing frame
+            {locale === "zh" ? "\u8def\u7ebf\u6536\u5c3e" : "Route Complete"}
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-8">
             <p className="font-mono text-[9px] uppercase tracking-[0.32em] text-white/72">
-              End of route
+              {locale === "zh" ? "\u5df2\u5b8c\u6210" : "Completed"}
             </p>
             <h3 className="mt-3 font-[family:var(--font-display)] text-4xl leading-[1.02] lg:text-5xl">
               {routeTitle}
             </h3>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-white/82">
-              The route closes where the coast, the market, and the table begin to overlap.
-            </p>
           </div>
         </div>
 
         <div className="grid gap-4 p-6 lg:p-8">
           <div>
             <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-              Final note
+              {locale === "zh" ? "\u6700\u540e\u4e00\u7ad9" : "Final Stop"}
             </p>
             <p className="mt-3 font-[family:var(--font-display)] text-2xl leading-[1.18] text-[var(--river-deep)]">
-              Last image, last meal, last look back.
+              {stop.stop}
             </p>
-            <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-              This closing spread uses the final stop imagery to keep the page visually complete all the way to the footer.
-            </p>
+            {stopMarkers.length ? (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {stopMarkers.map((marker) => (
+                  <span key={marker} className="border border-[var(--line)] bg-white/65 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                    {marker}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           {supportFrames.length ? (

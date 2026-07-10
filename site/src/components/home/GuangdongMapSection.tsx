@@ -12,6 +12,7 @@ import {
 import type { EventData } from "@/lib/api-data";
 import type { Region } from "@/types/content";
 import { Reveal } from "@/components/ui/Reveal";
+import { useLocale } from "@/lib/locale-context";
 
 const initialFeatures = getMapFeatures();
 
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export function GuangdongMapSection({ cities, events = [] }: Props) {
+  const { t } = useLocale();
   const router = useRouter();
   const showcase = useMemo(() => cities ?? [], [cities]);
   const defaultActiveCode = showcase[0]?.adcode ?? 440800;
@@ -151,11 +153,11 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
             <div className="mb-6 flex items-center gap-4">
               <div className="h-px w-10 bg-[var(--cinnabar)]" />
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                Geographical Exploration
+                {t("home.map.eyebrow")}
               </p>
             </div>
             <h2 className="max-w-4xl font-[family:var(--font-display)] text-[3.2rem] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-7xl lg:text-8xl">
-              On the Map, Preview Your Next Feast.
+              {t("home.map.heading")}
             </h2>
           </Reveal>
         </div>

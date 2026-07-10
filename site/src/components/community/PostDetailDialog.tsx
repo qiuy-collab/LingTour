@@ -114,15 +114,13 @@ export function PostDetailDialog({ post, onClose }: Props) {
               ))}
             </div>
 
-            <div className="mt-8 rounded-[1.5rem] border border-dashed border-[var(--line)] bg-white/45 px-5 py-6">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--gold)]">
-                Community replies are being rebuilt
+            <div className="mt-8 flex items-center justify-between gap-4 border-y border-[var(--line)] py-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">
+                {t("community.replies.label")}
               </p>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-                We have disabled the old local-only comment box so notes are no
-                longer lost when the dialog closes. A persistent reply desk can
-                return once the backend comment model is ready.
-              </p>
+              <span className="border border-[var(--line)] bg-white/60 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                {t("community.replies.unavailable")}
+              </span>
             </div>
           </div>
 

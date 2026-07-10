@@ -60,29 +60,29 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
         ? [
             {
               title: locale === "zh" ? "\u57fa\u7840\u4fe1\u606f" : "Your Details",
-              body: locale === "zh" ? "\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u3001\u5feb\u901f\u9884\u7ea6" : "City, contact, and a quick brief",
+              body: locale === "zh" ? "\u59d3\u540d \u00b7 \u8054\u7cfb\u65b9\u5f0f \u00b7 \u57ce\u5e02" : "Name \u00b7 Contact \u00b7 City",
             },
             {
               title: locale === "zh" ? "\u652f\u4ed8\u8ba2\u91d1" : "Pay Deposit",
-              body: locale === "zh" ? "\u4fdd\u7559\u65f6\u6bb5\u5e76\u8fdb\u5165\u5339\u914d" : "Secure the slot and enter matching",
+              body: locale === "zh" ? "\u8ba2\u91d1 \u00b7 \u5339\u914d" : "Deposit \u00b7 Matching",
             },
           ]
         : [
             {
               title: locale === "zh" ? "\u57fa\u7840\u4fe1\u606f" : "Your Details",
-              body: locale === "zh" ? "\u57ce\u5e02\u3001\u8054\u7cfb\u65b9\u5f0f\u3001\u51fa\u884c\u65e5\u671f" : "City, contact, and date",
+              body: locale === "zh" ? "\u59d3\u540d \u00b7 \u8054\u7cfb\u65b9\u5f0f \u00b7 \u57ce\u5e02 \u00b7 \u65e5\u671f" : "Name \u00b7 Contact \u00b7 City \u00b7 Date",
             },
             {
               title: locale === "zh" ? "\u670d\u52a1\u504f\u597d" : "Service Needs",
-              body: locale === "zh" ? "\u8def\u7ebf\u3001\u4eba\u6570\u3001\u53e3\u8bd1\u65b9\u5f0f" : "Mode, group size, and route",
+              body: locale === "zh" ? "\u65b9\u5f0f \u00b7 \u4eba\u6570 \u00b7 \u8def\u7ebf" : "Mode \u00b7 Group \u00b7 Route",
             },
             {
               title: locale === "zh" ? "\u6700\u7ec8\u786e\u8ba4" : "Review Brief",
-              body: locale === "zh" ? "\u63d0\u4ea4\u524d\u68c0\u67e5\u91cd\u70b9" : "Check the brief before payment",
+              body: locale === "zh" ? "\u9700\u6c42\u6458\u8981" : "Request Summary",
             },
             {
               title: locale === "zh" ? "\u652f\u4ed8\u8ba2\u91d1" : "Pay Deposit",
-              body: locale === "zh" ? "\u4fdd\u7559\u65f6\u6bb5\u5e76\u8fdb\u5165\u5339\u914d" : "Secure the slot and enter matching",
+              body: locale === "zh" ? "\u8ba2\u91d1 \u00b7 \u5339\u914d" : "Deposit \u00b7 Matching",
             },
           ],
     [bookingFastTrack, locale],
@@ -97,14 +97,14 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
               {locale === "zh" ? "\u9884\u7ea6" : "Booking"}
             </p>
             <h2 className="mt-3 max-w-[10ch] font-[family:var(--font-display)] text-[2.25rem] leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap lg:text-3xl">
-              {locale === "zh" ? "\u544a\u8bc9\u6211\u4eec\u4f60\u8981\u53bb\u54ea\u3002" : "Tell us where you are going."}
+              {locale === "zh" ? "\u9884\u7ea6\u53e3\u8bd1\u670d\u52a1" : "Interpreter Booking"}
             </h2>
           </div>
           <div className="space-y-4">
             <div className="border border-[var(--line)] bg-[var(--paper)] p-5 scrapbook-shadow rotate-[-0.5deg] sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                  {locale === "zh" ? "\u5b9e\u65f6\u7b80\u62a5" : "Live Brief"}
+                  {locale === "zh" ? "\u9700\u6c42\u8349\u7a3f" : "Request Draft"}
                 </p>
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
@@ -158,20 +158,6 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
               })}
             </div>
 
-            <div className="border border-[var(--gold)]/20 bg-[var(--gold)]/5 p-5 rotate-[0.5deg] sm:p-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-3">
-                {locale === "zh" ? "\u63d0\u793a" : "Field Manual"}
-              </p>
-              <p className="text-[14px] leading-relaxed text-[var(--muted)] handwritten">
-                {bookingFastTrack
-                  ? (locale === "zh"
-                      ? "\u5f53\u524d\u662f Fast Track \u6a21\u5f0f\uff0c\u586b\u5199\u57fa\u7840\u4fe1\u606f\u540e\u9700\u652f\u4ed8\u8ba2\u91d1\u624d\u4f1a\u9501\u5b9a\u65f6\u6bb5\u3002"
-                      : "Fast Track keeps it light. Fill the basics, then pay the deposit to secure the slot.")
-                  : (locale === "zh"
-                      ? "\u5de6\u8fb9\u6b65\u9aa4\u5361\u53ef\u76f4\u63a5\u5207\u6362\u53f3\u8fb9\u7684\u9636\u6bb5\uff0c\u63d0\u4ea4\u9700\u6c42\u540e\u8fd8\u9700\u652f\u4ed8\u8ba2\u91d1\u3002"
-                      : "Use the registry cards above to move through the brief. After the request is sent, the deposit confirms the booking.")}
-              </p>
-            </div>
           </div>
         </div>
 
@@ -180,10 +166,10 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
 
           <div className="relative z-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] mb-4">
-              {locale === "zh" ? "\u670d\u52a1\u53f0" : "Registry Desk"}
+              {locale === "zh" ? "\u53e3\u8bd1\u9884\u7ea6" : "Interpreting"}
             </p>
             <h3 className="mb-8 font-[family:var(--font-display)] text-3xl italic text-[var(--river-deep)] sm:mb-12 sm:text-5xl">
-              {locale === "zh" ? "\u63d0\u4ea4\u9884\u7ea6\u9700\u6c42" : "Build Request"}
+              {locale === "zh" ? "\u670d\u52a1\u9700\u6c42" : "Service Request"}
             </h3>
             <div className="mt-7">
               <MultiStepForm

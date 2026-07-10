@@ -3,8 +3,8 @@ const copy = {
   "interpreting.page.subtitle": "Language support for markets, meals, meetings, and travel days.",
   "interpreting.card.profilePrefix": "Profile",
   "interpreting.card.tapToFlip": "Tap to flip",
-  "interpreting.hero.title": "Let the day speak clearly.",
-  "interpreting.hero.subtitle": "For markets, meetings, routes, and meals: a local interpreter who keeps language, timing, etiquette, and place moving as one.",
+  "interpreting.hero.title": "Guangdong Interpreter Services",
+  "interpreting.hero.subtitle": "Markets · Meetings · Routes · Dining",
   "interpreting.hero.scroll": "Scroll to explore",
 
   "interpreting.metrics.0.label": "city",
@@ -119,7 +119,7 @@ const copy = {
   "interpreting.atlas.fieldCapabilities": "Field capabilities",
   "interpreting.atlas.requestDispatch": "Request dispatch",
   "interpreting.atlas.serviceScenes": "Service scenes",
-  "interpreting.atlas.chooseShape": "Choose the shape of your day.",
+  "interpreting.atlas.chooseShape": "Service Types",
 
   // Pricing matrix (was in two locales hardcoded inside the component)
   "interpreting.pricing.city": "City",
@@ -190,8 +190,8 @@ const copyZh = {
   "interpreting.page.subtitle": "为市场、餐饮、会议和出行日提供语言支持。",
   "interpreting.card.profilePrefix": "档案",
   "interpreting.card.tapToFlip": "点击翻转",
-  "interpreting.hero.title": "让每一天都清晰可述。",
-  "interpreting.hero.subtitle": "无论是市场、会议、路线还是餐饮：一位本地翻译，让语言、节奏、礼仪与空间融为一体。",
+  "interpreting.hero.title": "广东口译服务",
+  "interpreting.hero.subtitle": "市场 · 会议 · 路线 · 餐饮",
   "interpreting.hero.scroll": "向下滚动探索",
 
   "interpreting.metrics.0.label": "城市",
@@ -305,7 +305,7 @@ const copyZh = {
   "interpreting.atlas.fieldCapabilities": "现场能力",
   "interpreting.atlas.requestDispatch": "申请派遣",
   "interpreting.atlas.serviceScenes": "服务类型",
-  "interpreting.atlas.chooseShape": "先选场景。",
+  "interpreting.atlas.chooseShape": "服务类型",
 
   "interpreting.pricing.city": "城市同行",
   "interpreting.pricing.route": "路线讲解",

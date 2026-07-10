@@ -14,7 +14,7 @@ import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
 import type { CityCulture, CityCultureSection } from "@/data/culture";
 
 export function CultureDetailClient({ slug }: { slug: string }) {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, t } = useLocale();
   const { previewData, previewLocale, previewEnabled } = usePreviewBridge<CityCulture>("city");
   const activeLocale = previewLocale ?? locale;
   const [hydrated, setHydrated] = useState(false);
@@ -202,19 +202,11 @@ export function CultureDetailClient({ slug }: { slug: string }) {
           className="site-container border-t border-[var(--line)]/60 pt-10 lg:pt-14"
         >
           <Reveal>
-            <p className="mb-4 text-label text-[var(--cinnabar)] handwritten">
-              {showRoutes ? "Continue the dispatch" : "Nearby in the same archive"}
+            <p className="mb-4 text-label text-[var(--cinnabar)]">
+              {activeCity.name}
             </p>
             <h2 className="max-w-4xl font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] md:text-5xl">
-              {showRoutes ? (
-                <>
-                  Step out of <span className="italic text-[var(--gold)]">{activeCity.name}</span> and into its linked route.
-                </>
-              ) : (
-                <>
-                  Places that continue the story around <span className="italic text-[var(--gold)]">{activeCity.name}</span>.
-                </>
-              )}
+              {showRoutes ? t("culture.detail.routeLinks") : t("culture.detail.nearbyCities")}
             </h2>
           </Reveal>
 
@@ -223,6 +215,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
               routes={relatedRoutes}
               cityAdcode={activeCity.adcode}
               cityName={activeCity.name}
+              cities={cityCultures ?? []}
             />
           ) : (
             <RelatedCitiesHub allCities={cityCultures ?? []} currentCity={activeCity} />

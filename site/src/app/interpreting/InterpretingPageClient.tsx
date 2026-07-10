@@ -193,9 +193,9 @@ export default function InterpretingPageClient({
                 </div>
 
                 <h1 className="mb-6 font-[family:var(--font-display)] text-[2.95rem] leading-[0.86] tracking-[-0.04em] sm:mb-10 sm:text-7xl md:mb-12 md:text-9xl lg:text-[11rem]">
-                  {locale === "zh" ? "让这一天" : "Let the day"} <br />
+                  {locale === "zh" ? "广东" : "Guangdong"} <br />
                   <span className="italic text-[var(--cinnabar)]">
-                    {locale === "zh" ? "说清楚。" : "Speak."}
+                    {locale === "zh" ? "口译服务" : "Interpreter Services"}
                   </span>
                 </h1>
 
@@ -215,7 +215,7 @@ export default function InterpretingPageClient({
                       href="#service-types"
                       className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none sm:w-auto sm:px-10 sm:py-5"
                     >
-                      {locale === "zh" ? "查看类型" : "Choose a scene"}
+                      {locale === "zh" ? "服务类型" : "Service types"}
                     </a>
                   </div>
                 </div>
@@ -333,8 +333,8 @@ export default function InterpretingPageClient({
               </p>
               <h2 className="mt-3 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
                 {locale === "zh"
-                  ? "服务类型 x 口译等级。"
-                  : "Service type x interpreter level."}
+                  ? "按服务与等级查看价格"
+                  : "Rates by Service & Level"}
               </h2>
             </div>
 

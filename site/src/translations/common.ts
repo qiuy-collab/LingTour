@@ -125,6 +125,8 @@
     "community.post.illustratedNote": "Illustrated note",
     "community.post.photoSignal": "Photo signal",
     "community.post.textDispatch": "Text dispatch",
+    "community.replies.label": "Replies",
+    "community.replies.unavailable": "Unavailable",
   },
 
   zh: {
@@ -253,5 +255,7 @@
     "community.post.illustratedNote": "图文笔记",
     "community.post.photoSignal": "图片信号",
     "community.post.textDispatch": "文字快讯",
+    "community.replies.label": "回复",
+    "community.replies.unavailable": "暂不可用",
   },
 };

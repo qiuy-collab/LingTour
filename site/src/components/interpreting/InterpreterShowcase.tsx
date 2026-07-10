@@ -43,7 +43,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
             {locale === "zh" ? "\u53e3\u8bd1\u5458\u7b49\u7ea7" : "Interpreter Levels"}
           </p>
           <h2 className="mt-3 max-w-[13ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
-            {locale === "zh" ? "\u521d\u7ea7\u3001\u4e2d\u7ea7\u3001\u9ad8\u7ea7\u3002" : "Three levels, clearly distinct."}
+            {locale === "zh" ? "\u521d\u7ea7 \u00b7 \u4e2d\u7ea7 \u00b7 \u9ad8\u7ea7" : "Junior \u00b7 Mid-level \u00b7 Senior"}
           </h2>
         </Reveal>
       </div>
