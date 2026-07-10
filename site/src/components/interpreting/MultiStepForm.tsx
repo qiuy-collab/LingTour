@@ -9,6 +9,7 @@ import {
   type InterpretingDepositCheckout,
 } from "@/lib/api-data";
 import { formatCurrency } from "@/lib/region-currency";
+import { useLocale } from "@/lib/locale-context";
 
 type FormData = {
   name: string;
@@ -31,19 +32,13 @@ type Props = {
 };
 
 const serviceModes = [
-  "City companion support",
-  "Story-led route support",
-  "Group or study visit support",
-];
-
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  { value: "City companion support", labelKey: "interpreting.flow.mode.city" },
+  { value: "Story-led route support", labelKey: "interpreting.flow.mode.route" },
+  { value: "Group or study visit support", labelKey: "interpreting.flow.mode.group" },
 ];
 
 const inputClass =
-  "rounded-2xl border border-[var(--line)] bg-white px-4 py-3.5 text-[15px] leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)]/60 focus:bg-[var(--paper)]";
+  "rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-[15px] leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)]";
 
 function MultiStepFormInner({
   locale = "en",
@@ -54,7 +49,9 @@ function MultiStepFormInner({
   onStepChange,
   onFastTrackChange,
 }: Props) {
+  const { t } = useLocale();
   const isZh = locale === "zh";
+  const weekdays = isZh ? ["日", "一", "二", "三", "四", "五", "六"] : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const [cities, setCities] = useState<string[]>(["Zhanjiang"]);
   const [step, setStep] = useState(0);
   const [fastTrack, setFastTrack] = useState(false);
@@ -212,12 +209,30 @@ function MultiStepFormInner({
   const formatDate = (iso: string) => {
     if (!iso) return "";
     const d = new Date(`${iso}T00:00:00`);
-    return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    return new Intl.DateTimeFormat(isZh ? "zh-CN" : "en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(d);
   };
+
+  const modeLabel = (value: string) =>
+    t(serviceModes.find((mode) => mode.value === value)?.labelKey ?? "interpreting.flow.mode.route");
+  const stageLabel = fastTrack
+    ? step === 0
+      ? t("interpreting.flow.stage.quick")
+      : t("interpreting.flow.stage.deposit")
+    : step === 0
+      ? t("interpreting.flow.stage.basics")
+      : step === 1
+        ? t("interpreting.flow.stage.needs")
+        : step === 2
+          ? t("interpreting.flow.stage.review")
+          : t("interpreting.flow.stage.deposit");
 
   if (submitted) {
     return (
-      <div className="rounded-[1.75rem] border border-[var(--gold)]/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.92))] p-8 text-center shadow-[0_18px_50px_rgba(17,25,35,0.08)] sm:p-12">
+      <div className="border border-[var(--gold)]/30 bg-white/95 p-8 text-center shadow-[0_8px_8px_rgba(17,25,35,0.08)] sm:p-12">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--gold)] bg-white">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A039" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
@@ -243,9 +258,9 @@ function MultiStepFormInner({
   }
 
   return (
-    <div className="overflow-visible rounded-[1.75rem] border border-[var(--line)] bg-[rgba(255,255,255,0.92)] shadow-[0_18px_50px_rgba(17,25,35,0.08)] backdrop-blur-sm">
+    <div className="overflow-visible border border-[var(--line)] bg-white/92 shadow-[0_8px_8px_rgba(17,25,35,0.08)]">
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
-        <label className="flex cursor-pointer flex-col gap-2 rounded-2xl bg-white/72 px-4 py-3 sm:flex-row sm:items-center">
+        <label className="flex cursor-pointer flex-col gap-2 rounded-sm bg-white/72 px-4 py-3 sm:flex-row sm:items-center">
           <input
             type="checkbox"
             checked={fastTrack}
@@ -258,32 +273,34 @@ function MultiStepFormInner({
             }}
             className="h-4 w-4 accent-[var(--cinnabar)]"
           />
-          <span className="text-[15px] font-medium leading-6 text-[var(--ink)]">Fast Track</span>
-          <span className="text-[13px] leading-6 text-[var(--muted)]">Shortest version: name, contact, city</span>
+          <span className="text-[15px] font-medium leading-6 text-[var(--ink)]">{t("interpreting.flow.fastTrack")}</span>
+          <span className="text-[13px] leading-6 text-[var(--muted)]">{t("interpreting.flow.fastTrackHint")}</span>
         </label>
       </div>
 
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-label text-[var(--gold)]">Step {step + 1} of {totalSteps}</p>
+          <p className="text-label text-[var(--gold)]">
+            {t("interpreting.flow.step")
+              .replace("{current}", String(step + 1))
+              .replace("{total}", String(totalSteps))}
+          </p>
           <p className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)]">
-            {fastTrack
-              ? step === 0
-                ? "Quick booking"
-                : "Deposit"
-              : step === 0
-                ? "Basics"
-                : step === 1
-                  ? "Needs"
-                  : step === 2
-                    ? "Review"
-                    : "Deposit"}
+            {stageLabel}
           </p>
         </div>
-        <div className="mt-3 flex h-1.5 gap-1.5">
+        <div
+          className="mt-3 flex h-1.5 gap-1.5"
+          role="progressbar"
+          aria-label={t("interpreting.flow.progress")}
+          aria-valuemin={1}
+          aria-valuemax={totalSteps}
+          aria-valuenow={step + 1}
+        >
           {Array.from({ length: totalSteps }).map((_, i) => (
             <div
               key={i}
+              aria-hidden="true"
               className={`flex-1 rounded-full ${i <= step ? "bg-[var(--gold)]" : "bg-[var(--line)]"}`}
             />
           ))}
@@ -292,7 +309,7 @@ function MultiStepFormInner({
 
       <div className="px-6 py-6 sm:px-8 sm:py-8">
         {errorMessage ? (
-          <div className="mb-5 rounded-[1.25rem] border border-[rgba(182,66,53,0.18)] bg-[rgba(182,66,53,0.06)] px-4 py-3 text-sm text-[var(--cinnabar-deep)]">
+          <div role="alert" className="mb-5 rounded-sm border border-[var(--cinnabar)]/20 bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar-deep)]">
             {errorMessage}
           </div>
         ) : null}
@@ -300,15 +317,15 @@ function MultiStepFormInner({
         {fastTrack && step === 0 && (
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Name</span>
-              <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Full name" className={inputClass} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.name")}</span>
+              <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder={t("interpreting.flow.namePlaceholder")} className={inputClass} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Email / WhatsApp</span>
-              <input value={form.contact} onChange={(e) => update("contact", e.target.value)} placeholder="Best way to reach you" className={inputClass} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.contact")}</span>
+              <input value={form.contact} onChange={(e) => update("contact", e.target.value)} placeholder={t("interpreting.flow.contactPlaceholder")} className={inputClass} />
             </label>
             <label className="flex flex-col gap-1.5 md:col-span-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">City</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.city")}</span>
               <select value={form.city} onChange={(e) => update("city", e.target.value)} className={inputClass}>
                 {cities.map((c) => <option key={c}>{c}</option>)}
               </select>
@@ -319,29 +336,33 @@ function MultiStepFormInner({
         {!fastTrack && step === 0 && (
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Name</span>
-              <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Full name" className={inputClass} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.name")}</span>
+              <input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder={t("interpreting.flow.namePlaceholder")} className={inputClass} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Email / WhatsApp</span>
-              <input value={form.contact} onChange={(e) => update("contact", e.target.value)} placeholder="Best way to reach you" className={inputClass} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.contact")}</span>
+              <input value={form.contact} onChange={(e) => update("contact", e.target.value)} placeholder={t("interpreting.flow.contactPlaceholder")} className={inputClass} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">City</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.city")}</span>
               <select value={form.city} onChange={(e) => update("city", e.target.value)} className={inputClass}>
                 {cities.map((c) => <option key={c}>{c}</option>)}
               </select>
             </label>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Service date</span>
+              <span id="interpreting-service-date-label" className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.serviceDate")}</span>
               <div className="relative" ref={calendarRef}>
                 <button
                   type="button"
                   onClick={() => setShowCalendar(!showCalendar)}
-                  className="flex w-full items-center justify-between rounded-2xl border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition hover:border-[var(--gold)]/60 hover:bg-[var(--paper)]"
+                  aria-labelledby="interpreting-service-date-label"
+                  aria-haspopup="dialog"
+                  aria-expanded={showCalendar}
+                  aria-controls="interpreting-service-calendar"
+                  className="flex w-full items-center justify-between rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition hover:border-[var(--gold)] hover:bg-[var(--paper)]"
                 >
                   <span className={form.date ? "text-[var(--ink)]" : "text-[var(--muted)]"}>
-                    {form.date ? formatDate(form.date) : "Choose a date"}
+                    {form.date ? formatDate(form.date) : t("interpreting.flow.chooseDate")}
                   </span>
                   <svg className="h-4 w-4 text-[var(--muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -351,29 +372,31 @@ function MultiStepFormInner({
                 </button>
 
                 {showCalendar && (
-                  <div className="absolute left-0 right-0 top-full z-30 mt-2 rounded-[1.25rem] border border-[var(--line)] bg-white p-4 shadow-[0_18px_40px_rgba(17,25,35,0.12)] sm:left-auto sm:right-0 sm:w-72 sm:max-w-[calc(100vw-3rem)]">
+                  <div id="interpreting-service-calendar" role="dialog" aria-label={t("interpreting.flow.calendarLabel")} className="absolute left-0 right-0 top-full z-30 mt-2 rounded-lg border border-[var(--line)] bg-white p-4 shadow-[0_8px_8px_rgba(17,25,35,0.12)] sm:left-auto sm:right-0 sm:w-80 sm:max-w-[calc(100vw-3rem)]">
                     <div className="mb-3 flex items-center justify-between">
                       <button
                         type="button"
+                        aria-label={t("interpreting.flow.previousMonth")}
                         onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
-                        className="grid h-7 w-7 place-items-center text-[var(--muted)] transition hover:text-[var(--ink)]"
+                        className="grid h-11 w-11 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--paper)] hover:text-[var(--ink)]"
                       >
                         &lt;
                       </button>
                       <p className="text-sm font-medium text-[var(--ink)]">
-                        {MONTHS[calendarMonth.getMonth()]} {calendarMonth.getFullYear()}
+                        {new Intl.DateTimeFormat(isZh ? "zh-CN" : "en-US", { month: "long", year: "numeric" }).format(calendarMonth)}
                       </p>
                       <button
                         type="button"
+                        aria-label={t("interpreting.flow.nextMonth")}
                         onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
-                        className="grid h-7 w-7 place-items-center text-[var(--muted)] transition hover:text-[var(--ink)]"
+                        className="grid h-11 w-11 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--paper)] hover:text-[var(--ink)]"
                       >
                         &gt;
                       </button>
                     </div>
 
                     <div className="mb-1 grid grid-cols-7">
-                      {WEEKDAYS.map((d) => (
+                      {weekdays.map((d) => (
                         <p key={d} className="text-center text-[10px] uppercase tracking-[0.12em] text-[var(--muted)]">{d}</p>
                       ))}
                     </div>
@@ -389,8 +412,10 @@ function MultiStepFormInner({
                           <button
                             key={day}
                             type="button"
+                            aria-label={formatDate(dateStr)}
+                            aria-pressed={isSelected}
                             onClick={() => handleCalendarSelect(day)}
-                            className={`grid h-8 w-8 place-items-center rounded-full text-xs transition ${
+                            className={`grid h-10 w-10 place-items-center rounded-full text-xs transition ${
                               isSelected
                                 ? "bg-[var(--cinnabar)] text-white"
                                 : isToday
@@ -413,23 +438,23 @@ function MultiStepFormInner({
         {!fastTrack && step === 1 && (
           <div className="grid gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Support mode</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.supportMode")}</span>
               <select value={form.mode} onChange={(e) => update("mode", e.target.value)} className={inputClass}>
-                {serviceModes.map((m) => <option key={m}>{m}</option>)}
+                {serviceModes.map((mode) => <option key={mode.value} value={mode.value}>{t(mode.labelKey)}</option>)}
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Group size</span>
-              <input value={form.groupSize} onChange={(e) => update("groupSize", e.target.value)} placeholder="1-2, 3-6, or larger" className={inputClass} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.groupSize")}</span>
+              <input value={form.groupSize} onChange={(e) => update("groupSize", e.target.value)} placeholder={t("interpreting.flow.groupSizePlaceholder")} className={inputClass} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Route or support need</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.needs")}</span>
               <textarea
                 value={form.needs}
                 onChange={(e) => update("needs", e.target.value)}
                 rows={5}
-                placeholder="Share the route, timing, language, interests, or anything that will help us shape the day."
-                className="min-h-[140px] rounded-[1.5rem] border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--gold)]/60 focus:bg-[var(--paper)]"
+                placeholder={t("interpreting.flow.needsPlaceholder")}
+                className="min-h-[140px] rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)]"
               />
             </label>
           </div>
@@ -437,21 +462,21 @@ function MultiStepFormInner({
 
         {!fastTrack && step === 2 && (
           <div className="grid gap-4">
-            <div className="rounded-[1.5rem] border border-[var(--line)] bg-[rgba(248,244,236,0.72)] p-5">
-              <p className="text-label text-[var(--gold)]">Review your request</p>
+            <div className="rounded-sm border border-[var(--line)] bg-[var(--paper)]/72 p-5">
+              <p className="text-label text-[var(--gold)]">{t("interpreting.flow.reviewTitle")}</p>
               <div className="mt-4 grid gap-3 text-[15px] leading-7">
                 {[
-                  ["Name", form.name],
-                  ["Contact", form.contact],
-                  ["City", form.city],
-                  ["Date", form.date ? formatDate(form.date) : ""],
-                  ["Mode", form.mode],
-                  ["Group size", form.groupSize],
-                  ["Needs", form.needs],
+                  [t("interpreting.flow.name"), form.name],
+                  [t("interpreting.flow.contactShort"), form.contact],
+                  [t("interpreting.flow.city"), form.city],
+                  [t("interpreting.flow.dateShort"), form.date ? formatDate(form.date) : ""],
+                  [t("interpreting.flow.modeShort"), modeLabel(form.mode)],
+                  [t("interpreting.flow.groupSize"), form.groupSize],
+                  [t("interpreting.flow.needsShort"), form.needs],
                 ].map(([label, value]) => (
                   <div key={label} className="flex flex-col gap-1 border-b border-[var(--line)] pb-2 last:border-0 sm:flex-row sm:items-baseline sm:gap-3">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)] sm:w-24 sm:shrink-0">{label}</span>
-                    <span className={value ? "text-[var(--ink)]" : "italic text-[var(--muted)]"}>{value || "Not provided"}</span>
+                    <span className={value ? "text-[var(--ink)]" : "italic text-[var(--muted)]"}>{value || t("interpreting.flow.notProvided")}</span>
                   </div>
                 ))}
               </div>
@@ -462,12 +487,12 @@ function MultiStepFormInner({
         {((fastTrack && step === 1) || (!fastTrack && step === 3)) && (
           <div className="grid gap-5">
             {depositSession ? (
-              <div className="rounded-[1.5rem] border border-[var(--gold)]/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.88))] p-5 shadow-[0_18px_50px_rgba(17,25,35,0.06)]">
+              <div className="rounded-sm border border-[var(--gold)]/28 bg-white/95 p-5 shadow-[0_8px_8px_rgba(17,25,35,0.06)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-label text-[var(--gold)]">Deposit ready</p>
+                    <p className="text-label text-[var(--gold)]">{t("interpreting.flow.depositReady")}</p>
                     <h4 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
-                      Pay the deposit to secure the interpreter slot.
+                      {t("interpreting.flow.depositTitle")}
                     </h4>
                   </div>
                   <div className="rounded-full border border-[var(--gold)]/24 bg-white px-4 py-2 text-sm font-semibold text-[var(--river-deep)]">
@@ -475,29 +500,29 @@ function MultiStepFormInner({
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 rounded-[1.25rem] border border-[var(--line)] bg-white/80 p-4 text-sm text-[var(--muted)] md:grid-cols-2">
+                <div className="mt-5 grid gap-3 rounded-sm border border-[var(--line)] bg-white/80 p-4 text-sm text-[var(--muted)] md:grid-cols-2">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Deposit for</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.depositFor")}</p>
                     <p className="mt-1 text-[var(--ink)]">{depositSession.deposit.paymentLabel}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Order no.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.orderNo")}</p>
                     <p className="mt-1 text-[var(--ink)]">{depositSession.deposit.orderNo}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Contact</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.contactShort")}</p>
                     <p className="mt-1 text-[var(--ink)]">{form.contact}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">Service date</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.serviceDate")}</p>
                     <p className="mt-1 text-[var(--ink)]">{formatDate(form.date || new Date().toISOString().split("T")[0])}</p>
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-[1.25rem] border border-[var(--line)] bg-[rgba(248,244,236,0.72)] p-4">
+                <div className="mt-5 rounded-sm border border-[var(--line)] bg-[var(--paper)]/72 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">Card ending</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.cardEnding")}</p>
                       <p className="mt-1 text-[15px] text-[var(--ink)]">Visa •••• 4242</p>
                     </div>
                     <div className="flex gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -508,8 +533,8 @@ function MultiStepFormInner({
                 </div>
               </div>
             ) : (
-              <div className="rounded-[1.5rem] border border-dashed border-[var(--line)] bg-[rgba(248,244,236,0.56)] p-5 text-sm leading-7 text-[var(--muted)]">
-                Send the request first and we will open the deposit payment panel here.
+              <div className="rounded-sm border border-dashed border-[var(--line)] bg-[var(--paper)]/56 p-5 text-sm leading-7 text-[var(--muted)]">
+                {t("interpreting.flow.depositEmpty")}
               </div>
             )}
           </div>
@@ -527,7 +552,7 @@ function MultiStepFormInner({
           className={`w-full text-left text-[14px] transition sm:w-auto ${step === 0 ? "cursor-not-allowed text-[var(--muted)]/40" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
           disabled={step === 0}
         >
-          Back
+          {t("interpreting.flow.back")}
         </button>
 
         {((fastTrack && step === 1) || (!fastTrack && step === 3)) ? (
@@ -541,7 +566,7 @@ function MultiStepFormInner({
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
             }`}
           >
-            {paymentProcessing ? "Processing deposit..." : "Pay deposit now"}
+            {paymentProcessing ? t("interpreting.flow.processingDeposit") : t("interpreting.flow.payDeposit")}
           </button>
         ) : fastTrack ? (
           <button
@@ -554,7 +579,7 @@ function MultiStepFormInner({
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
             }`}
           >
-            {submitting ? "Opening deposit..." : "Send request & reserve deposit"}
+            {submitting ? t("interpreting.flow.openingDeposit") : t("interpreting.flow.reserveDeposit")}
           </button>
         ) : step < 2 ? (
           <button
@@ -571,7 +596,7 @@ function MultiStepFormInner({
                 : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
             }`}
           >
-            Continue
+            {t("interpreting.flow.continue")}
           </button>
         ) : (
           <button
@@ -584,7 +609,7 @@ function MultiStepFormInner({
                 : "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
             }`}
           >
-            {submitting ? "Opening deposit..." : "Send request & continue to deposit"}
+            {submitting ? t("interpreting.flow.openingDeposit") : t("interpreting.flow.sendAndContinue")}
           </button>
         )}
       </div>
