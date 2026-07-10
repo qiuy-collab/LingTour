@@ -14,6 +14,8 @@ import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { CultureGallery } from "@/components/home/CultureGallery";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
 import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
+import { HomeEntryFilmstrip } from "@/components/home/HomeEntryFilmstrip";
+import { ShopProductImage } from "@/components/store/ShopProductImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
@@ -83,7 +85,7 @@ export default function HomeClient({
   // Use SSR data as fallback when client fetch hasn't returned yet
   const effectiveHomeData = homeData ?? initialHomeData;
 
-  const { hero, heroStats, homeEntryCards, regionShowcase, cultureHighlights, testimonials, trustMetrics } =
+  const { hero, heroStats, homeEntryCards, regionShowcase, cultureHighlights, testimonials } =
     effectiveHomeData;
 
   const storeProducts = products ?? initialProducts;
@@ -101,12 +103,6 @@ export default function HomeClient({
     SEED_IMAGES.homeInterpreting ??
     placeholderFor("hero");
 
-  // Hero badge: prefer explicit CMS badge, then derive from trust metrics, then a sane default.
-  const heroBadge = hero.badge ??
-    (trustMetrics[0]
-      ? { value: trustMetrics[0].value, label: trustMetrics[0].label }
-      : null);
-
   // Interpreting accent label (bottom-right of the field-notes block).
   const interpretingLabel =
     hero.interpretingLabel ?? t("home.interpreting.label");
@@ -114,18 +110,49 @@ export default function HomeClient({
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
       {/* 1. HERO: THE MASTER REGISTRY */}
-      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20 lg:pt-40 lg:pb-32">
+      <section className="relative overflow-hidden border-b border-[var(--gold)]/50 pb-14 pt-8 sm:pb-20 sm:pt-12 lg:pb-24 lg:pt-16">
         <div className="site-container relative">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-            <div className="z-10 max-w-3xl lg:col-span-7">
-              <Reveal>
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+            <div className="home-hero-bleed relative lg:col-span-7">
+              <Reveal delay={100}>
+                <figure>
+                  <div className="group relative aspect-[16/11] w-full tape-effect sm:aspect-[3/2] lg:min-h-[40rem] lg:rotate-1">
+                    <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[0.8rem]">
+                      <img
+                        src={heroImage}
+                        alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
+                        fetchPriority="high"
+                        loading="eager"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/10" />
+                    </div>
+                  </div>
+                  <figcaption className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] lg:px-3">
+                    {[
+                      t("home.hero.tag.storyRoutes"),
+                      t("home.hero.tag.cultureContext"),
+                      t("home.hero.tag.languageSupport"),
+                    ].map((label, index) => (
+                      <span key={label} className="inline-flex items-center gap-4">
+                        {index > 0 ? <span className="h-1 w-1 rounded-full bg-[var(--gold)]" /> : null}
+                        {label}
+                      </span>
+                    ))}
+                  </figcaption>
+                </figure>
+              </Reveal>
+            </div>
+
+            <div className="z-10 max-w-2xl lg:col-span-5 lg:pl-2">
+              <Reveal delay={220}>
                 <div className="mb-8 flex items-center gap-4 sm:mb-10">
                   <div className="w-12 h-px bg-[var(--cinnabar)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("home.hero.eyebrow")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[2.55rem] leading-[0.88] tracking-[-0.05em] text-[var(--river-deep)] sm:text-6xl md:text-7xl lg:text-9xl xl:text-[10rem]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(3rem,6vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
                   {t("home.hero.headingLine1")} <br />
                   <span className="italic text-[var(--gold)]">{t("home.hero.headingAccent")}</span>{" "}
                   <br />
@@ -134,20 +161,6 @@ export default function HomeClient({
                 <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-10 sm:text-xl">
                   {t("home.hero.body")}
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2 sm:mt-6">
-                  {[
-                    t("home.hero.tag.storyRoutes"),
-                    t("home.hero.tag.cultureContext"),
-                    t("home.hero.tag.languageSupport"),
-                  ].map((label) => (
-                    <span
-                      key={label}
-                      className="rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
                 <div className="mt-8 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-4">
                   <Link
                     href="/interpreting"
@@ -164,55 +177,6 @@ export default function HomeClient({
                     {t("home.hero.secondaryCta")}
                   </Link>
                 </div>
-              </Reveal>
-            </div>
-
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[23rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
-              <Reveal delay={300}>
-                <div className="group relative mx-auto aspect-[6/5] w-full tape-effect sm:aspect-[4/5] sm:rotate-2 lg:ml-auto lg:rotate-3">
-                  <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[1rem]">
-                    <img
-                      src={heroImage}
-                      alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
-                      fetchPriority="high"
-                      loading="eager"
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                    />
-                    {/* Subtle ink wash, kept on both real and placeholder images */}
-                    <div className="absolute inset-0 bg-black/10" />
-                  </div>
-                </div>
-
-                {/* Optional badge: editorial highlight from CMS or trust metric */}
-                {heroBadge && heroBadge.value ? (
-                  <div className="hidden md:block absolute -top-10 -right-6 w-32 h-32 rounded-full bg-[var(--gold)] flex flex-col items-center justify-center text-[var(--night)] shadow-2xl -rotate-12 border-4 border-white z-20">
-                    <span className="font-[family:var(--font-display)] text-3xl leading-none">
-                      {heroBadge.value}
-                    </span>
-                    <span className="text-[8px] font-bold uppercase tracking-widest mt-1 px-2 text-center">
-                      {heroBadge.label}
-                    </span>
-                  </div>
-                ) : null}
-
-                {trustMetrics.length >= 2 ? (
-                  <div className="absolute -bottom-8 -left-8 bg-white p-6 scrapbook-shadow -rotate-6 hidden md:block z-20">
-                    <div className="flex gap-10">
-                      {trustMetrics
-                        .slice(0, 2)
-                        .map((item: { label: string; value: string }) => (
-                          <div key={item.label}>
-                            <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-                              {item.value}
-                            </p>
-                            <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--muted)] mt-1">
-                              {item.label}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                ) : null}
               </Reveal>
             </div>
           </div>
@@ -304,13 +268,12 @@ export default function HomeClient({
                         idx % 2 === 0 ? "sm:rotate-2" : "sm:-rotate-2"
                       }`}
                     >
-                      <img
+                      <ShopProductImage
                         src={product.image}
+                        fallbackSrc={product.gallery?.[0]}
                         alt={product.name}
-                        loading="eager"
-                        decoding="sync"
-                        fetchPriority={idx === 0 ? "high" : "auto"}
-                        className="absolute inset-0 h-full w-full object-cover object-center bg-[var(--paper)] p-0 sm:bg-transparent"
+                        className="absolute inset-0 bg-[var(--paper)]"
+                        imageClassName="object-cover object-center"
                       />
                       <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
 
@@ -394,10 +357,14 @@ export default function HomeClient({
                 <div className="mt-10 sm:mt-16">
                   <Link
                     href="/interpreting"
-                    className="inline-flex w-full items-center justify-center bg-[var(--river-deep)] px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition-transform hover:scale-105 sm:w-auto sm:px-12 sm:py-5"
+                    className="btn-primary kinetic-link inline-flex w-full items-center justify-center gap-4 px-8 py-5 text-xs sm:w-auto sm:px-12"
                   >
-                    {t("interpreting.cta.button")}
+                    <span className="relative z-10">{t("home.interpreting.cta")}</span>
+                    <span aria-hidden className="relative z-10 text-base">→</span>
                   </Link>
+                  <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+                    {t("home.interpreting.experts")}
+                  </p>
                 </div>
               </Reveal>
             </div>
@@ -447,40 +414,7 @@ export default function HomeClient({
               <div className="h-px bg-[var(--line)]" />
             </div>
             <section className="site-container py-20 lg:py-32">
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {homeEntryCards.map((card, idx) => (
-                  <Reveal key={card.id} delay={idx * 120}>
-                    <Link
-                      href={card.href}
-                      className="group block relative bg-white/70 border border-[var(--line)] scrapbook-shadow hover:border-[var(--gold)]/50 transition-all duration-500 hover:-translate-y-1"
-                    >
-                      {card.image ? (
-                        <div className="relative aspect-[16/9] overflow-hidden">
-                          <img
-                            src={card.image}
-                            alt={card.title}
-                            loading="lazy"
-                            decoding="async"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          />
-                        </div>
-                      ) : null}
-                      <div className="p-8">
-                        <h3 className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] group-hover:text-[var(--cinnabar)] transition-colors">
-                          {card.title}
-                        </h3>
-                        <p className="mt-3 text-sm text-[var(--muted)] handwritten leading-relaxed">
-                          {card.body}
-                        </p>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                          <span>{t("common.btn.explore")}</span>
-                          <div className="w-8 h-px bg-[var(--gold)] transition-all group-hover:w-12" />
-                        </div>
-                      </div>
-                    </Link>
-                  </Reveal>
-                ))}
-              </div>
+              <HomeEntryFilmstrip cards={homeEntryCards} />
             </section>
           </>
         )}

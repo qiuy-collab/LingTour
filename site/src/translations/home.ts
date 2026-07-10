@@ -46,7 +46,13 @@ export const home = {
 
     "home.interpreting.title": "Travel with someone who can explain",
     "home.interpreting.subtitle": "Live English interpreting for markets, meals, meetings — in person or remote.",
-    "home.interpreting.cta": "Learn more about interpreting",
+    "home.interpreting.cta": "Meet Your Field Interpreter",
+    "home.interpreting.experts": "60+ local experts across Guangdong, matched to your route and language needs.",
+    "home.entryCards.galleryLabel": "Explore LingTour chapters",
+    "home.entryCards.progressLabel": "Gallery position",
+    "home.entryCards.goTo": "Go to chapter {number}",
+    "home.entryCards.previous": "Previous chapter",
+    "home.entryCards.next": "Next chapter",
 
     "home.shop.title": "Objects that carry a story",
     "home.shop.subtitle": "From the Zhanjiang coast — volcanic soil pottery, maritime tools, and everyday objects shaped by the landscape.",
@@ -126,7 +132,13 @@ export const home = {
 
     "home.interpreting.title": "有人替你解释，旅途大不相同",
     "home.interpreting.subtitle": "市场、餐饮、商务——现场或远程英语口译服务。",
-    "home.interpreting.cta": "了解口译服务",
+    "home.interpreting.cta": "认识你的在地口译员",
+    "home.interpreting.experts": "广东全省 60+ 位在地专家，按路线和语言需求为你匹配。",
+    "home.entryCards.galleryLabel": "探索 LingTour 章节",
+    "home.entryCards.progressLabel": "画廊位置",
+    "home.entryCards.goTo": "前往第 {number} 章",
+    "home.entryCards.previous": "上一章",
+    "home.entryCards.next": "下一章",
 
     "home.shop.title": "承载故事的好物",
     "home.shop.subtitle": "来自湛江海岸——火山陶器、航海工具、被地貌塑造的日常器物。",
