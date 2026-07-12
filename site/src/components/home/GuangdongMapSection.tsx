@@ -99,7 +99,6 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     : defaultActiveCode;
   const activeCity =
     focusCityByCode.get(resolvedActiveCode) ?? showcase[0] ?? fallbackCity;
-  const activeEvent = eventsByCity.get(resolvedActiveCode) ?? null;
   const activeGallery =
     activeCity.gallery && activeCity.gallery.length
       ? activeCity.gallery
@@ -199,20 +198,9 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 <div className="h-px bg-[var(--line)]" />
 
                 <div className="min-h-[3.5rem] md:min-h-[4.5rem]">
-                  {activeEvent ? (
-                    <div className="animate-reveal">
-                      <p className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[var(--cinnabar)]">
-                        {activeEvent.title}
-                      </p>
-                      <p className="text-[10px] text-[var(--muted)]">
-                        {activeEvent.date}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="handwritten line-clamp-4 text-sm leading-relaxed text-[var(--muted)]">
-                      {panelLead}
-                    </p>
-                  )}
+                  <p className="handwritten line-clamp-4 text-sm leading-relaxed text-[var(--muted)]">
+                    {panelLead}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-1 md:pt-2">
