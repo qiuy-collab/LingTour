@@ -101,9 +101,9 @@ export interface FAQFormData {
 }
 
 export const InterpreterStatusMap: Record<InterpreterStatus, string> = {
-  active: 'Active',
-  inactive: 'Inactive',
-  pending_review: 'Pending review',
+  active: '已激活',
+  inactive: '已停用',
+  pending_review: '待审核',
 }
 
 export const InterpreterStatusColorMap: Record<InterpreterStatus, string> = {
@@ -113,14 +113,14 @@ export const InterpreterStatusColorMap: Record<InterpreterStatus, string> = {
 }
 
 export const BookingStatusMap: Record<BookingStatus, string> = {
-  new: 'New',
-  read: 'Read',
-  contacted: 'Contacted',
-  confirmed: 'Confirmed',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-  deposit_pending: 'Deposit pending',
-  deposit_paid: 'Deposit paid',
+  new: '新预约',
+  read: '已读',
+  contacted: '已联系',
+  confirmed: '已确认',
+  completed: '已完成',
+  cancelled: '已取消',
+  deposit_pending: '待付定金',
+  deposit_paid: '定金已付',
 }
 
 export const BookingStatusColorMap: Record<BookingStatus, string> = {
@@ -135,7 +135,7 @@ export const BookingStatusColorMap: Record<BookingStatus, string> = {
 }
 
 export const FAQCategoryMap: Record<FAQCategory, string> = {
-  interpreting: 'Interpreting',
-  general: 'General',
-  routes: 'Routes',
+  interpreting: '口译服务',
+  general: '通用问题',
+  routes: '路线相关',
 }

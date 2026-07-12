@@ -21,9 +21,9 @@ const {
   defaultFilters: { keyword: '', status: '' },
 })
 
-/** Get the English display name for messages and avatar initials. */
+/** 安全提取 I18nObject 中文，用于消息提示和头像首字符 */
 function nameZh(row: Interpreter): string {
-  return pickI18n(row.name) || 'this interpreter'
+  return pickI18n(row.name) || '该口译员'
 }
 
 function handleCreate() {
@@ -37,27 +37,27 @@ function handleEdit(id: string) {
 async function handleDelete(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `Delete "${nameZh(row)}"? This action cannot be undone.`,
-      'Confirm deletion',
-      { confirmButtonText: 'Delete', cancelButtonText: 'Cancel', type: 'warning' }
+      `确定删除口译员「${nameZh(row)}」?该操作不可恢复。`,
+      '删除确认',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
     )
     await interpretersApi.deleteInterpreter(row.id)
-    ElMessage.success(`Deleted "${nameZh(row)}"`)
+    ElMessage.success(`口译员「${nameZh(row)}」已删除`)
     fetchList()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || 'Deletion failed')
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
 async function handleApprove(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `Approve "${nameZh(row)}"? Their profile will become active.`,
-      'Confirm approval',
-      { confirmButtonText: 'Approve', cancelButtonText: 'Cancel', type: 'success' }
+      `确定审核通过「${nameZh(row)}」?通过后将变为已激活状态。`,
+      '审核确认',
+      { confirmButtonText: '通过', cancelButtonText: '取消', type: 'success' }
     )
     await interpretersApi.updateStatus(row.id, 'active')
-    ElMessage.success(`${nameZh(row)} is approved and active`)
+    ElMessage.success(`${nameZh(row)} 审核通过,已激活`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -65,12 +65,12 @@ async function handleApprove(row: Interpreter) {
 async function handleReject(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `Reject "${nameZh(row)}"? Their profile will become inactive.`,
-      'Confirm rejection',
-      { confirmButtonText: 'Reject', cancelButtonText: 'Cancel', type: 'warning' }
+      `确定拒绝「${nameZh(row)}」的申请?拒绝后将变为已禁用状态。`,
+      '拒绝确认',
+      { confirmButtonText: '拒绝', cancelButtonText: '取消', type: 'warning' }
     )
     await interpretersApi.updateStatus(row.id, 'inactive')
-    ElMessage.info(`${nameZh(row)} was rejected and is now inactive`)
+    ElMessage.info(`${nameZh(row)} 已拒绝,状态变为已禁用`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -78,12 +78,12 @@ async function handleReject(row: Interpreter) {
 async function handleDisable(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `Deactivate "${nameZh(row)}"?`,
-      'Confirm deactivation',
-      { confirmButtonText: 'Deactivate', cancelButtonText: 'Cancel', type: 'warning' }
+      `确定禁用「${nameZh(row)}」?`,
+      '禁用确认',
+      { confirmButtonText: '禁用', cancelButtonText: '取消', type: 'warning' }
     )
     await interpretersApi.updateStatus(row.id, 'inactive')
-    ElMessage.info(`${nameZh(row)} is now inactive`)
+    ElMessage.info(`${nameZh(row)} 已禁用`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -91,12 +91,12 @@ async function handleDisable(row: Interpreter) {
 async function handleEnable(row: Interpreter) {
   try {
     await ElMessageBox.confirm(
-      `Activate "${nameZh(row)}"?`,
-      'Confirm activation',
-      { confirmButtonText: 'Activate', cancelButtonText: 'Cancel', type: 'success' }
+      `确定启用「${nameZh(row)}」?`,
+      '启用确认',
+      { confirmButtonText: '启用', cancelButtonText: '取消', type: 'success' }
     )
     await interpretersApi.updateStatus(row.id, 'active')
-    ElMessage.success(`${nameZh(row)} is now active`)
+    ElMessage.success(`${nameZh(row)} 已启用`)
     fetchList()
   } catch { /* cancelled */ }
 }
@@ -105,80 +105,80 @@ async function handleEnable(row: Interpreter) {
 <template>
   <div>
     <div class="page-header">
-      <h2>Interpreters</h2>
-      <el-button type="primary" @click="handleCreate">Add interpreter</el-button>
+      <h2>口译员管理</h2>
+      <el-button type="primary" @click="handleCreate">新增口译员</el-button>
     </div>
 
     <div class="search-bar">
       <el-input
         v-model="filters.keyword"
-        placeholder="Search by name or language"
+        placeholder="搜索姓名/语种"
         clearable
         style="width: 240px"
         @keyup.enter="handleSearch"
         @clear="handleSearch"
       />
-      <el-select v-model="filters.status" placeholder="Status" clearable style="width: 160px" @change="handleSearch">
-        <el-option label="All" value="" />
-        <el-option label="Pending review" value="pending_review" />
-        <el-option label="Active" value="active" />
-        <el-option label="Inactive" value="inactive" />
+      <el-select v-model="filters.status" placeholder="状态筛选" clearable style="width: 160px" @change="handleSearch">
+        <el-option label="全部" value="" />
+        <el-option label="待审核" value="pending_review" />
+        <el-option label="已激活" value="active" />
+        <el-option label="已禁用" value="inactive" />
       </el-select>
-      <el-button type="primary" @click="handleSearch">Search</el-button>
+      <el-button type="primary" @click="handleSearch">搜索</el-button>
     </div>
 
     <el-card shadow="never" class="table-card">
-    <el-table :data="list" v-loading="loading" stripe empty-text="No interpreters found">
-      <el-table-column label="Avatar" width="70">
+    <el-table :data="list" v-loading="loading" stripe empty-text="暂无口译员数据">
+      <el-table-column label="头像" width="70">
         <template #default="{ row }">
           <el-avatar v-if="row.avatar" :src="resolveMediaUrl(row.avatar)" :size="40" />
           <el-avatar v-else :size="40">{{ nameZh(row).charAt(0) }}</el-avatar>
         </template>
       </el-table-column>
-      <el-table-column label="Name" width="140">
+      <el-table-column label="姓名" width="140">
         <template #default="{ row }">
           <div>{{ pickI18n(row.name) }}</div>
           <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="Languages" width="200" show-overflow-tooltip>
+      <el-table-column label="服务语种" width="200" show-overflow-tooltip>
         <template #default="{ row }">{{ pickI18n(row.language) }}</template>
       </el-table-column>
-      <el-table-column label="Specialties" min-width="180" show-overflow-tooltip>
+      <el-table-column label="专注领域" min-width="180" show-overflow-tooltip>
         <template #default="{ row }">
           <div>{{ pickI18n(row.focus) }}</div>
           <div class="admin-list-meta">{{ pickI18n(row.focus, 'en') }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="Capabilities" min-width="200">
+      <el-table-column label="能力标签" min-width="200">
         <template #default="{ row }">
           <el-tag v-for="(h, i) in row.helps" :key="i" size="small" style="margin: 2px 2px">{{ pickI18n(h) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Cities" width="120" align="center">
+      <el-table-column label="服务城市" width="120" align="center">
         <template #default="{ row }">{{ pickI18n(row.city) }}</template>
       </el-table-column>
-      <el-table-column label="Status" width="110" align="center">
+      <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">
           <el-tag :type="(InterpreterStatusColorMap as Record<string, string>)[row.status]" size="small">
             {{ (InterpreterStatusMap as Record<string, string>)[row.status] }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" width="270" fixed="right">
+      <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="handleEdit(row.id)">Edit</el-button>
+          <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
           <template v-if="row.status === 'pending_review'">
-            <el-button type="success" link size="small" @click="handleApprove(row)">Approve</el-button>
-            <el-button type="warning" link size="small" @click="handleReject(row)">Reject</el-button>
+            <el-button type="success" link size="small" @click="handleApprove(row)">通过</el-button>
+            <el-button type="warning" link size="small" @click="handleReject(row)">拒绝</el-button>
           </template>
           <template v-if="row.status === 'active'">
-            <el-button type="warning" link size="small" @click="handleDisable(row)">Deactivate</el-button>
+            <el-button type="warning" link size="small" @click="handleDisable(row)">禁用</el-button>
           </template>
           <template v-if="row.status === 'inactive'">
-            <el-button type="success" link size="small" @click="handleEnable(row)">Activate</el-button>
+            <el-button type="success" link size="small" @click="handleEnable(row)">启用</el-button>
           </template>
-          <el-button type="danger" link size="small" @click="handleDelete(row)">Delete</el-button>
+          <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

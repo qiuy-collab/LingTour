@@ -1,5 +1,5 @@
 // ============================================
-// Community post types
+// 社区帖子管理 TypeScript 类型定义
 // ============================================
 
 export type PostChannel = 'FieldNotes' | 'FoodMap' | 'HiddenStop' | 'CultureDesk'
@@ -31,12 +31,12 @@ export interface CommunityPost {
   deletedAt: string | null
 }
 
-// Display labels for channels and statuses
+// ─── 状态/频道显示映射 ──────────────────────────────
 export const PostChannelMap: Record<PostChannel, string> = {
-  FieldNotes: 'Field Notes',
-  FoodMap: 'Food Map',
-  HiddenStop: 'Hidden Stop',
-  CultureDesk: 'Culture Desk',
+  FieldNotes: '田野笔记',
+  FoodMap: '美食地图',
+  HiddenStop: '秘境停靠',
+  CultureDesk: '文化台',
 }
 
 export const PostChannelColorMap: Record<PostChannel, string> = {
@@ -47,9 +47,9 @@ export const PostChannelColorMap: Record<PostChannel, string> = {
 }
 
 export const PostStatusMap: Record<PostStatus, string> = {
-  published: 'Published',
-  pending_review: 'Pending review',
-  hidden: 'Hidden',
+  published: '已发布',
+  pending_review: '待审核',
+  hidden: '已隐藏',
 }
 
 export const PostStatusColorMap: Record<PostStatus, string> = {

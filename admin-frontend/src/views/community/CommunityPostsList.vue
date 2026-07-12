@@ -10,7 +10,7 @@ import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
-// List data
+// ─── 列表数据 (useListPage) ─────────────
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -21,50 +21,50 @@ const {
   defaultFilters: { keyword: '', channel: '', status: '' },
 })
 
-// Actions
+// ─── 操作 ──────────────────────────────
 function handleViewDetail(post: CommunityPost) {
   router.push(`/admin/community/${post.id}`)
 }
 
 async function handleReview(post: CommunityPost, status: PostStatus, rejectionReason?: string) {
   const isPublish = status === 'published'
-  const actionText = isPublish ? 'approve' : 'hide'
+  const actionText = isPublish ? '审核通过' : '隐藏帖子'
   try {
     await ElMessageBox.confirm(
-      `${actionText === 'approve' ? 'Approve' : 'Hide'} "${post.title || 'this post'}"?`,
-      'Confirm action',
+      `确定${actionText}「${post.title || '该帖子'}」?`,
+      `${actionText}确认`,
       { type: isPublish ? 'success' : 'warning' }
     )
     await communityApi.reviewPost(post.id, status, rejectionReason)
-    ElMessage.success(isPublish ? 'Post approved' : 'Post hidden')
+    ElMessage.success(isPublish ? '审核通过' : '已隐藏')
     handleSearch()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || 'Action failed')
+    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
   }
 }
 
 async function handleToggleFeatured(post: CommunityPost) {
   try {
     await communityApi.toggleFeatured(post.id, !post.featured)
-    ElMessage.success(post.featured ? 'Removed from featured posts' : 'Marked as featured')
+    ElMessage.success(post.featured ? '已取消精选' : '已设为精选')
     handleSearch()
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || 'Action failed')
+    ElMessage.error(err?.response?.data?.message || '操作失败')
   }
 }
 
 async function handleDelete(post: CommunityPost) {
   try {
     await ElMessageBox.confirm(
-      `Delete "${post.title || 'this post'}"? It can be restored later.`,
-      'Confirm deletion',
+      `确定删除「${post.title || '该帖子'}」?为软删除,可在后台恢复。`,
+      '删除确认',
       { type: 'warning' }
     )
     await communityApi.deletePost(post.id)
-    ElMessage.success('Post deleted')
+    ElMessage.success('帖子已删除(软删除)')
     handleSearch()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || 'Deletion failed')
+    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
   }
 }
 
@@ -89,45 +89,45 @@ function formatInteractions(post: CommunityPost): string {
 <template>
   <div>
     <div class="page-header">
-      <h2>Community posts</h2>
+      <h2>社区帖子管理</h2>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="Search by title or author"
+      search-placeholder="搜索标题/作者"
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.channel"
-        placeholder="Channel"
+        placeholder="频道筛选"
         clearable
         style="width: 150px"
         @change="handleSearch"
       >
-        <el-option label="All channels" value="" />
-        <el-option label="Field Notes" value="FieldNotes" />
-        <el-option label="Food Map" value="FoodMap" />
-        <el-option label="Hidden Stop" value="HiddenStop" />
-        <el-option label="Culture Desk" value="CultureDesk" />
+        <el-option label="全部频道" value="" />
+        <el-option label="田野笔记" value="FieldNotes" />
+        <el-option label="美食地图" value="FoodMap" />
+        <el-option label="秘境停靠" value="HiddenStop" />
+        <el-option label="文化台" value="CultureDesk" />
       </el-select>
       <el-select
         v-model="filters.status"
-        placeholder="Status"
+        placeholder="状态筛选"
         clearable
         style="width: 140px"
         @change="handleSearch"
       >
-        <el-option label="All statuses" value="" />
-        <el-option label="Published" value="published" />
-        <el-option label="Pending review" value="pending_review" />
-        <el-option label="Hidden" value="hidden" />
+        <el-option label="全部状态" value="" />
+        <el-option label="已发布" value="published" />
+        <el-option label="待审核" value="pending_review" />
+        <el-option label="已隐藏" value="hidden" />
       </el-select>
     </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column label="Image" width="90">
+        <el-table-column label="图片" width="90">
           <template #default="{ row }">
             <el-image
               v-if="row.image"
@@ -136,11 +136,11 @@ function formatInteractions(post: CommunityPost): string {
               fit="cover"
               preview-teleported
             />
-            <span v-else class="admin-list-empty">No image</span>
+            <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="Title" min-width="180" show-overflow-tooltip />
-        <el-table-column label="Author" width="150">
+        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+        <el-table-column label="用户" width="150">
           <template #default="{ row }">
             <div class="admin-list-inline">
               <el-avatar v-if="row.userAvatar" :src="row.userAvatar" :size="28" />
@@ -151,50 +151,50 @@ function formatInteractions(post: CommunityPost): string {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="Channel" width="120" align="center">
+        <el-table-column label="频道" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="getChannelType(row.channel)" size="small">
               {{ getChannelLabel(row.channel) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="date" label="Date" width="110" align="center" />
-        <el-table-column label="Engagement" width="130" align="center">
+        <el-table-column prop="date" label="日期" width="110" align="center" />
+        <el-table-column label="互动" width="130" align="center">
           <template #default="{ row }">
             <span class="admin-list-note">{{ formatInteractions(row) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="Status" width="120" align="center">
+        <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Featured" width="90" align="center">
+        <el-table-column label="精选" width="70" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.featured" type="warning" size="small">★</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="260" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleViewDetail(row)">Details</el-button>
+            <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
             <template v-if="row.status === 'pending_review'">
               <el-button type="success" link size="small" @click="handleReview(row, 'published')">
-                Approve
+                通过
               </el-button>
               <el-button type="warning" link size="small" @click="handleReview(row, 'hidden')">
-                Hide
+                隐藏
               </el-button>
             </template>
             <template v-if="row.status === 'published'">
               <el-button type="warning" link size="small" @click="handleReview(row, 'hidden')">
-                Hide
+                隐藏
               </el-button>
             </template>
             <template v-if="row.status === 'hidden'">
               <el-button type="success" link size="small" @click="handleReview(row, 'published')">
-                Restore
+                恢复
               </el-button>
             </template>
             <el-button
@@ -203,9 +203,9 @@ function formatInteractions(post: CommunityPost): string {
               size="small"
               @click="handleToggleFeatured(row)"
             >
-              {{ row.featured ? 'Unfeature' : 'Feature' }}
+              {{ row.featured ? '取消精选' : '精选' }}
             </el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">Delete</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
