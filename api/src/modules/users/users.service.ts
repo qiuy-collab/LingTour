@@ -138,7 +138,7 @@ export class UsersService {
       // that already read `avatar`. Frontend reads `avatarUrl`.
       avatar: user.avatarUrl || '',
       avatarUrl: user.avatarUrl || '',
-      locale: 'zh',
+      locale: 'en',
       createdAt: user.createdAt,
       status: user.status || 'active',
       bookingsCount: resolvedStats.bookingsCount,
