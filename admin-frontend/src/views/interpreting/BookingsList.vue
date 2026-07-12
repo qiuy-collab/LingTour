@@ -11,7 +11,7 @@ import { formatDateTime } from '@/utils/format'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 
-// ─── 列表数据 (useListPage) ─────────────
+// List data
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -69,55 +69,55 @@ async function refreshBooking() {
 async function handleConfirm() {
   if (!selectedBooking.value) return
   try {
-    await ElMessageBox.confirm('确定确认该预约?', '操作确认', { type: 'success' })
+    await ElMessageBox.confirm('Confirm this booking?', 'Confirm booking', { type: 'success' })
     await bookingsApi.confirmBooking(selectedBooking.value.id)
-    ElMessage.success('预约已确认')
+    ElMessage.success('Booking confirmed')
     await refreshBooking()
     fetchList()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
+    if (err?.response) ElMessage.error(err.response.data?.message || 'Action failed')
   }
 }
 
 async function handleAssignInterpreter() {
   if (!selectedBooking.value || !selectedInterpreterId.value) {
-    ElMessage.warning('请选择口译员')
+    ElMessage.warning('Select an interpreter first')
     return
   }
   try {
     await bookingsApi.assignInterpreter(selectedBooking.value.id, selectedInterpreterId.value)
     const interp = interpreters.value.find((i) => i.id === selectedInterpreterId.value)
-    ElMessage.success(`已分配口译员:${interp ? pickI18n(interp.name) : selectedInterpreterId.value}`)
+    ElMessage.success(`Assigned interpreter: ${interp ? pickI18n(interp.name) : selectedInterpreterId.value}`)
     await refreshBooking()
     fetchList()
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '分配失败')
+    ElMessage.error(err?.response?.data?.message || 'Assignment failed')
   }
 }
 
 async function handleComplete() {
   if (!selectedBooking.value) return
   try {
-    await ElMessageBox.confirm('确定完成该预约?该操作不可撤销。', '操作确认', { type: 'success' })
+    await ElMessageBox.confirm('Complete this booking? This action cannot be undone.', 'Confirm completion', { type: 'success' })
     await bookingsApi.completeBooking(selectedBooking.value.id)
-    ElMessage.success('预约已完成')
+    ElMessage.success('Booking completed')
     await refreshBooking()
     fetchList()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
+    if (err?.response) ElMessage.error(err.response.data?.message || 'Action failed')
   }
 }
 
 async function handleCancelBooking() {
   if (!selectedBooking.value) return
   try {
-    await ElMessageBox.confirm('确定取消该预约?', '操作确认', { type: 'warning' })
+    await ElMessageBox.confirm('Cancel this booking?', 'Confirm cancellation', { type: 'warning' })
     await bookingsApi.cancelBooking(selectedBooking.value.id)
-    ElMessage.success('预约已取消')
+    ElMessage.success('Booking cancelled')
     await refreshBooking()
     fetchList()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || '操作失败')
+    if (err?.response) ElMessage.error(err.response.data?.message || 'Action failed')
   }
 }
 
@@ -133,18 +133,18 @@ function getBookingStatusLabel(status: string): string {
 <template>
   <div>
     <div class="page-header">
-      <h2>口译预约管理</h2>
+      <h2>Interpreting bookings</h2>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="搜索预约人/联系方式"
+      search-placeholder="Search by guest or contact"
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-input
         v-model="filters.date"
-        placeholder="预约日期 (YYYY-MM-DD)"
+        placeholder="Booking date (YYYY-MM-DD)"
         clearable
         style="width: 220px"
         @keyup.enter="handleSearch"
@@ -152,55 +152,55 @@ function getBookingStatusLabel(status: string): string {
       />
       <el-select
         v-model="filters.status"
-        placeholder="状态筛选"
+        placeholder="Status"
         clearable
         style="width: 140px"
         @change="handleSearch"
       >
-        <el-option label="全部" value="" />
-        <el-option label="新预约" value="new" />
-        <el-option label="已读" value="read" />
-        <el-option label="已联系" value="contacted" />
-        <el-option label="已确认" value="confirmed" />
-        <el-option label="已完成" value="completed" />
-        <el-option label="已取消" value="cancelled" />
-        <el-option label="待付定金" value="deposit_pending" />
-        <el-option label="定金已付" value="deposit_paid" />
+        <el-option label="All" value="" />
+        <el-option label="New" value="new" />
+        <el-option label="Read" value="read" />
+        <el-option label="Contacted" value="contacted" />
+        <el-option label="Confirmed" value="confirmed" />
+        <el-option label="Completed" value="completed" />
+        <el-option label="Cancelled" value="cancelled" />
+        <el-option label="Deposit pending" value="deposit_pending" />
+        <el-option label="Deposit paid" value="deposit_paid" />
       </el-select>
     </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column prop="name" label="预约人" width="120" />
-        <el-table-column prop="contact" label="联系方式" width="180" show-overflow-tooltip />
-        <el-table-column prop="city" label="城市" width="80" align="center" />
-        <el-table-column label="日期" width="110" align="center">
+        <el-table-column prop="name" label="Guest" width="120" />
+        <el-table-column prop="contact" label="Contact" width="180" show-overflow-tooltip />
+        <el-table-column prop="city" label="City" width="100" align="center" />
+        <el-table-column label="Date" width="110" align="center">
           <template #default="{ row }">{{ row.date }}</template>
         </el-table-column>
-        <el-table-column prop="mode" label="服务模式" width="120" />
-        <el-table-column prop="groupSize" label="人数" width="80" align="center" />
-        <el-table-column label="快速通道" width="90" align="center">
+        <el-table-column prop="mode" label="Service mode" width="120" />
+        <el-table-column prop="groupSize" label="Group size" width="90" align="center" />
+        <el-table-column label="Fast track" width="90" align="center">
           <template #default="{ row }">
-            <el-tag v-if="row.fastTrack" type="danger" size="small">快速</el-tag>
-            <span v-else style="color: #c0c4cc">普通</span>
+            <el-tag v-if="row.fastTrack" type="danger" size="small">Fast</el-tag>
+            <span v-else style="color: #c0c4cc">Standard</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100" align="center">
+        <el-table-column label="Status" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getBookingStatusColor(row.status)" size="small">
               {{ getBookingStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="分配口译员" min-width="120">
+        <el-table-column label="Assigned interpreter" min-width="160">
           <template #default="{ row }">
             <span v-if="row.assignedInterpreterName">{{ row.assignedInterpreterName }}</span>
-            <span v-else style="color: #c0c4cc">未分配</span>
+            <span v-else style="color: #c0c4cc">Unassigned</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="Actions" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="openDrawer(row)">详情</el-button>
+            <el-button type="primary" link size="small" @click="openDrawer(row)">Details</el-button>
             <el-button
               v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted'"
               type="success"
@@ -208,15 +208,15 @@ function getBookingStatusLabel(status: string): string {
               size="small"
               @click="async () => { selectedBooking = row; await handleConfirm() }"
             >
-              确认
+              Confirm
             </el-button>
             <el-popconfirm
               v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted' || row.status === 'confirmed'"
-              title="确定取消该预约？"
+              title="Cancel this booking?"
               @confirm="async () => { selectedBooking = row; await handleCancelBooking() }"
             >
               <template #reference>
-                <el-button type="warning" link size="small">取消</el-button>
+                <el-button type="warning" link size="small">Cancel</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -240,38 +240,38 @@ function getBookingStatusLabel(status: string): string {
     <!-- Booking Detail Drawer -->
     <el-drawer
       v-model="drawerVisible"
-      title="预约详情"
+      title="Booking details"
       size="520px"
       @closed="selectedBooking = null"
     >
       <template v-if="selectedBooking">
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="预约人">
+          <el-descriptions-item label="Guest">
             {{ selectedBooking.name }}
           </el-descriptions-item>
-          <el-descriptions-item label="联系方式">
+          <el-descriptions-item label="Contact">
             {{ selectedBooking.contact }}
           </el-descriptions-item>
-          <el-descriptions-item label="预约城市">
+          <el-descriptions-item label="City">
             {{ selectedBooking.city }}
           </el-descriptions-item>
-          <el-descriptions-item label="预约日期">
+          <el-descriptions-item label="Booking date">
             {{ selectedBooking.date }}
           </el-descriptions-item>
-          <el-descriptions-item label="服务模式">
+          <el-descriptions-item label="Service mode">
             {{ selectedBooking.mode }}
           </el-descriptions-item>
-          <el-descriptions-item label="人数">
+          <el-descriptions-item label="Group size">
             {{ selectedBooking.groupSize }}
           </el-descriptions-item>
-          <el-descriptions-item label="快速通道">
-            <el-tag v-if="selectedBooking.fastTrack" type="danger" size="small">是</el-tag>
-            <span v-else>否</span>
+          <el-descriptions-item label="Fast track">
+            <el-tag v-if="selectedBooking.fastTrack" type="danger" size="small">Yes</el-tag>
+            <span v-else>No</span>
           </el-descriptions-item>
-          <el-descriptions-item label="创建时间">
+          <el-descriptions-item label="Created">
             {{ formatDateTime(selectedBooking.createdAt) }}
           </el-descriptions-item>
-          <el-descriptions-item label="状态">
+          <el-descriptions-item label="Status">
             <el-tag
               :type="getBookingStatusColor(selectedBooking.status)"
               size="small"
@@ -279,13 +279,13 @@ function getBookingStatusLabel(status: string): string {
               {{ getBookingStatusLabel(selectedBooking.status) }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="分配口译员">
+          <el-descriptions-item label="Assigned interpreter">
             <span v-if="selectedBooking.assignedInterpreterName">
               {{ selectedBooking.assignedInterpreterName }}
             </span>
-            <span v-else style="color: #c0c4cc">未分配</span>
+            <span v-else style="color: #c0c4cc">Unassigned</span>
           </el-descriptions-item>
-          <el-descriptions-item label="特殊需求">
+          <el-descriptions-item label="Special requests">
             <div style="white-space: pre-wrap">{{ selectedBooking.needs }}</div>
           </el-descriptions-item>
         </el-descriptions>
@@ -295,11 +295,11 @@ function getBookingStatusLabel(status: string): string {
           v-if="selectedBooking.status === 'new' || selectedBooking.status === 'read' || selectedBooking.status === 'contacted' || selectedBooking.status === 'confirmed'"
           style="margin-top: 20px"
         >
-          <el-divider content-position="left">口译员分配</el-divider>
+          <el-divider content-position="left">Interpreter assignment</el-divider>
           <div style="display: flex; gap: 10px; align-items: center">
             <el-select
               v-model="selectedInterpreterId"
-              placeholder="选择口译员"
+              placeholder="Select an interpreter"
               clearable
               style="flex: 1"
             >
@@ -315,19 +315,19 @@ function getBookingStatusLabel(status: string): string {
                 </div>
               </el-option>
             </el-select>
-            <el-button type="primary" @click="handleAssignInterpreter">分配</el-button>
+            <el-button type="primary" @click="handleAssignInterpreter">Assign</el-button>
           </div>
         </div>
 
         <!-- Action buttons -->
         <div style="margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end">
           <template v-if="selectedBooking.status === 'new' || selectedBooking.status === 'read' || selectedBooking.status === 'contacted'">
-            <el-button type="success" @click="handleConfirm">确认预约</el-button>
-            <el-button type="warning" @click="handleCancelBooking">取消预约</el-button>
+            <el-button type="success" @click="handleConfirm">Confirm booking</el-button>
+            <el-button type="warning" @click="handleCancelBooking">Cancel booking</el-button>
           </template>
           <template v-if="selectedBooking.status === 'confirmed'">
-            <el-button type="success" @click="handleComplete">完成预约</el-button>
-            <el-button type="warning" @click="handleCancelBooking">取消预约</el-button>
+            <el-button type="success" @click="handleComplete">Complete booking</el-button>
+            <el-button type="warning" @click="handleCancelBooking">Cancel booking</el-button>
           </template>
         </div>
       </template>

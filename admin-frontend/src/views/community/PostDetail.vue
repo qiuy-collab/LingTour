@@ -19,7 +19,7 @@ async function fetchPost() {
     const res = await communityApi.getPost(route.params.id as string)
     post.value = res.data.data
   } catch {
-    ElMessage.error('帖子不存在')
+    ElMessage.error('Post not found')
     router.push('/admin/community')
   } finally {
     loading.value = false
@@ -43,10 +43,10 @@ async function handleReview(status: PostStatus) {
   if (!post.value) return
   try {
     await communityApi.reviewPost(post.value.id, status)
-    ElMessage.success(status === 'published' ? '审核通过' : '已隐藏')
+    ElMessage.success(status === 'published' ? 'Post approved' : 'Post hidden')
     await fetchPost()
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error('Action failed')
   }
 }
 
@@ -54,10 +54,10 @@ async function handleDelete() {
   if (!post.value) return
   try {
     await communityApi.deletePost(post.value.id)
-    ElMessage.success('帖子已删除')
+    ElMessage.success('Post deleted')
     router.push('/admin/community')
   } catch {
-    ElMessage.error('删除失败')
+    ElMessage.error('Deletion failed')
   }
 }
 
@@ -71,14 +71,14 @@ onMounted(() => { fetchPost() })
 <template>
   <div class="detail-page" v-loading="loading">
     <div class="page-header">
-      <el-button :icon="ArrowLeft" @click="handleBack">返回列表</el-button>
-      <h2>帖子详情</h2>
+      <el-button :icon="ArrowLeft" @click="handleBack">Back to posts</el-button>
+      <h2>Post details</h2>
     </div>
 
     <template v-if="post">
-      <!-- 帖子主体 -->
+      <!-- Post content -->
       <el-card shadow="never" class="post-card">
-        <!-- 图片 -->
+        <!-- Image -->
         <div v-if="post.image" class="post-image-wrap">
           <el-image
             :src="post.image"
@@ -88,10 +88,10 @@ onMounted(() => { fetchPost() })
           />
         </div>
 
-        <!-- 标题 -->
+        <!-- Title -->
         <h1 class="post-title">{{ post.title }}</h1>
 
-        <!-- 元数据行 -->
+        <!-- Metadata -->
         <div class="post-meta">
           <div class="post-user">
             <el-avatar v-if="post.userAvatar" :src="post.userAvatar" :size="36" />
@@ -106,12 +106,12 @@ onMounted(() => { fetchPost() })
             </el-tag>
             <span class="post-meta-item">{{ post.date }}</span>
             <span class="post-meta-item">{{ post.location }}</span>
-            <span v-if="post.route" class="post-meta-item">路线: {{ post.route }}</span>
-            <span v-if="post.mood" class="post-meta-item">心情: {{ post.mood }}</span>
+            <span v-if="post.route" class="post-meta-item">Route: {{ post.route }}</span>
+            <span v-if="post.mood" class="post-meta-item">Mood: {{ post.mood }}</span>
           </div>
         </div>
 
-        <!-- 标签 -->
+        <!-- Tags -->
         <div v-if="post.tags.length" class="post-tags">
           <el-tag
             v-for="tag in post.tags"
@@ -123,50 +123,50 @@ onMounted(() => { fetchPost() })
           </el-tag>
         </div>
 
-        <!-- 摘要 -->
+        <!-- Excerpt -->
         <div class="post-excerpt">
           <em>「{{ post.excerpt }}」</em>
         </div>
 
-        <!-- 正文 -->
+        <!-- Body -->
         <div class="post-content">
           {{ post.content }}
         </div>
 
-        <!-- 互动数据 -->
+        <!-- Engagement -->
         <el-divider />
         <div class="post-interactions">
-          <div class="interaction-item">👍 点赞 {{ post.likes }}</div>
-          <div class="interaction-item">💬 评论 {{ post.comments }}</div>
-          <div class="interaction-item">⭐ 收藏 {{ post.saves }}</div>
+          <div class="interaction-item">👍 {{ post.likes }} likes</div>
+          <div class="interaction-item">💬 {{ post.comments }} comments</div>
+          <div class="interaction-item">⭐ {{ post.saves }} saves</div>
         </div>
       </el-card>
 
-      <!-- 审核操作区 -->
+      <!-- Moderation controls -->
       <el-card shadow="never" class="action-card">
         <template #header>
-          <span class="card-title">审核操作</span>
+          <span class="card-title">Moderation</span>
         </template>
         <div style="margin-bottom: 12px">
-          <span>当前状态：</span>
+          <span>Current status:</span>
           <el-tag :type="getStatusType(post.status)" size="default">
             {{ getStatusLabel(post.status) }}
           </el-tag>
         </div>
         <div class="action-buttons">
           <template v-if="post.status === 'pending_review'">
-            <el-button type="success" @click="handleReview('published')">审核通过</el-button>
-            <el-button type="warning" @click="handleReview('hidden')">隐藏帖子</el-button>
+            <el-button type="success" @click="handleReview('published')">Approve</el-button>
+            <el-button type="warning" @click="handleReview('hidden')">Hide post</el-button>
           </template>
           <template v-if="post.status === 'published'">
-            <el-button type="warning" @click="handleReview('hidden')">隐藏帖子</el-button>
+            <el-button type="warning" @click="handleReview('hidden')">Hide post</el-button>
           </template>
           <template v-if="post.status === 'hidden'">
-            <el-button type="success" @click="handleReview('published')">恢复发布</el-button>
+            <el-button type="success" @click="handleReview('published')">Restore publication</el-button>
           </template>
-          <el-popconfirm title="确定删除该帖子？此操作不可恢复" @confirm="handleDelete">
+          <el-popconfirm title="Delete this post? This action cannot be undone." @confirm="handleDelete">
             <template #reference>
-              <el-button type="danger">删除帖子</el-button>
+              <el-button type="danger">Delete post</el-button>
             </template>
           </el-popconfirm>
         </div>

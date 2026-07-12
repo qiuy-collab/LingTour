@@ -10,7 +10,7 @@ import { ListToolbar } from '@/components/list'
 
 const router = useRouter()
 
-// ─── 列表数据 (useListPage) ─────────────
+// List data
 const {
   loading, list, total, page,
   filters,
@@ -49,18 +49,18 @@ function handleEdit(id: string) {
 }
 
 async function handleDelete(row: FAQ) {
-  const question = pickI18n(row.question as any) || '该FAQ'
+  const question = pickI18n(row.question as any) || 'this FAQ'
   try {
     await ElMessageBox.confirm(
-      `确定删除FAQ「${question}」?`,
-      '删除确认',
+      `Delete "${question}"?`,
+      'Confirm deletion',
       { type: 'warning' },
     )
     await faqsApi.deleteFAQ(row.id)
-    ElMessage.success(`FAQ「${question}」已删除`)
+    ElMessage.success(`Deleted "${question}"`)
     fetchList()
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || '删除失败')
+    if (err?.response) ElMessage.error(err.response.data?.message || 'Deletion failed')
   }
 }
 
@@ -72,10 +72,10 @@ async function handleMoveUp(index: number) {
   try {
     await faqsApi.updateSort(a.id, b.sortOrder)
     await faqsApi.updateSort(b.id, tmp)
-    ElMessage.success('排序已更新')
+    ElMessage.success('Order updated')
     fetchList()
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '排序更新失败')
+    ElMessage.error(err?.response?.data?.message || 'Failed to update order')
   }
 }
 
@@ -87,10 +87,10 @@ async function handleMoveDown(index: number) {
   try {
     await faqsApi.updateSort(a.id, b.sortOrder)
     await faqsApi.updateSort(b.id, tmp)
-    ElMessage.success('排序已更新')
+    ElMessage.success('Order updated')
     fetchList()
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || '排序更新失败')
+    ElMessage.error(err?.response?.data?.message || 'Failed to update order')
   }
 }
 </script>
@@ -98,33 +98,33 @@ async function handleMoveDown(index: number) {
 <template>
   <div>
     <div class="page-header">
-      <h2>常见问题管理</h2>
-      <el-button type="primary" @click="handleCreate">新增FAQ</el-button>
+      <h2>FAQs</h2>
+      <el-button type="primary" @click="handleCreate">Add FAQ</el-button>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="搜索问题/答案"
+      search-placeholder="Search questions and answers"
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.category"
-        placeholder="分类筛选"
+        placeholder="Category"
         clearable
         style="width: 160px"
         @change="handleSearch"
       >
-        <el-option label="全部" value="" />
-        <el-option label="口译服务" value="interpreting" />
-        <el-option label="通用问题" value="general" />
-        <el-option label="路线相关" value="routes" />
+        <el-option label="All" value="" />
+        <el-option label="Interpreting" value="interpreting" />
+        <el-option label="General" value="general" />
+        <el-option label="Routes" value="routes" />
       </el-select>
     </ListToolbar>
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column label="排序" width="80" align="center">
+        <el-table-column label="Order" width="80" align="center">
           <template #default="{ row, $index }">
             <div class="sort-actions">
               <el-button size="small" text :disabled="$index === 0" @click="handleMoveUp($index)">↑</el-button>
@@ -133,34 +133,34 @@ async function handleMoveDown(index: number) {
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="问题" min-width="280">
+        <el-table-column label="Question" min-width="280">
           <template #default="{ row }">
             <div class="qa-text">{{ pickI18n(row.question) }}</div>
             <div class="qa-sub">{{ pickI18n(row.question, 'en') }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="答案" min-width="320" show-overflow-tooltip>
+        <el-table-column label="Answer" min-width="320" show-overflow-tooltip>
           <template #default="{ row }">
             <div class="qa-text">{{ pickI18n(row.answer) }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="分类" width="120" align="center">
+        <el-table-column label="Category" width="120" align="center">
           <template #default="{ row }">
             <el-tag size="small">{{ (FAQCategoryMap as Record<string, string>)[row.category] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="Actions" width="240" fixed="right">
           <template #default="{ row, $index }">
-            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
-            <el-button type="primary" link size="small" @click="handleMoveUp($index)" :disabled="$index === 0">上移</el-button>
-            <el-button type="primary" link size="small" @click="handleMoveDown($index)" :disabled="$index === list.length - 1">下移</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">Edit</el-button>
+            <el-button type="primary" link size="small" @click="handleMoveUp($index)" :disabled="$index === 0">Move up</el-button>
+            <el-button type="primary" link size="small" @click="handleMoveDown($index)" :disabled="$index === list.length - 1">Move down</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row)">Delete</el-button>
           </template>
         </el-table-column>
       </el-table>
 
       <div class="pagination-wrap" v-if="total > 0">
-        <span class="footer-info">共 {{ total }} 条 FAQ</span>
+        <span class="footer-info">{{ total }} FAQs</span>
       </div>
     </el-card>
   </div>
