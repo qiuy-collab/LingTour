@@ -12,7 +12,7 @@ function handleRetry() {
 
 onErrorCaptured((err: Error) => {
   hasError.value = true
-  errorMessage.value = err.message || 'Page rendering failed'
+  errorMessage.value = err.message || '页面渲染出错'
   console.error('[ErrorBoundary]', err)
   return false // prevent propagation
 })
@@ -22,9 +22,9 @@ onErrorCaptured((err: Error) => {
   <div v-if="hasError" class="error-boundary" role="alert" aria-live="assertive">
     <div class="error-content">
       <el-icon class="error-icon" :size="64"><Warning /></el-icon>
-      <h2 class="error-title">Something went wrong</h2>
+      <h2 class="error-title">页面出现了问题</h2>
       <p class="error-message">{{ errorMessage }}</p>
-      <el-button type="primary" @click="handleRetry">Reload</el-button>
+      <el-button type="primary" @click="handleRetry">重新加载</el-button>
     </div>
   </div>
   <slot v-else />

@@ -37,10 +37,10 @@ const activeWorkspace = ref('hero')
 
 const rules = {
   slug: [
-    { required: true, message: 'Enter a slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug must use kebab-case', trigger: 'blur' },
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: 'Enter the route title', trigger: 'blur' }],
+  'title.en': [{ required: true, message: '请输入路线英文标题', trigger: 'blur' }],
 }
 
 const form = reactive<any>({
@@ -128,11 +128,11 @@ function removeDetail(stop: any, index: number | string) {
 }
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
-  { key: 'hero', label: 'Route Summary' },
-  { key: 'story', label: 'Route Story' },
+  { key: 'hero', label: '路线导语' },
+  { key: 'story', label: '主题叙事' },
   ...form.stops.map((stop: any, index: number) => ({
     key: `stop-${index}`,
-    label: pickI18n(stop.stopName, 'en') || `Stop ${index + 1}`,
+    label: pickI18n(stop.stopName) || `站点 ${index + 1}`,
     badge: `#${index + 1}`,
   })),
 ])
@@ -150,7 +150,7 @@ const selectedCityCards = computed(() =>
 )
 
 const activeWorkspaceLabel = computed(() => {
-  return workspaceTabs.value.find((item) => item.key === activeWorkspace.value)?.label || 'Route Summary'
+  return workspaceTabs.value.find((item) => item.key === activeWorkspace.value)?.label || '路线导语'
 })
 
 function applySelectedCitiesToDisplayName() {
@@ -260,7 +260,7 @@ onMounted(async () => {
 
     resetDirty()
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Failed to load route data'))
+    ElMessage.error(extractErrorMessage(error, '加载路线数据失败'))
     router.push('/admin/routes')
   } finally {
     loading.value = false
@@ -271,7 +271,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('Complete the required fields')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
@@ -288,10 +288,10 @@ async function handleSave() {
       try {
         await ElMessageBox.confirm(
           result.warnings.join('\n'),
-          'Publish warning',
+          '发布前提示',
           {
-            confirmButtonText: 'Publish anyway',
-            cancelButtonText: 'Review changes',
+            confirmButtonText: '继续发布',
+            cancelButtonText: '返回修改',
             type: 'warning',
           },
         )
@@ -305,15 +305,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await routesApi.updateRoute(route.params.id as string, toPayload())
-      ElMessage.success('Route updated')
+      ElMessage.success('路线已更新')
     } else {
       await routesApi.createRoute(toPayload())
-      ElMessage.success('Route created')
+      ElMessage.success('路线已创建')
     }
     disableDirtyCheck()
     router.push('/admin/routes')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Save failed'))
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
@@ -323,7 +323,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? 'Edit Route' : 'Create Route'"
+      :title="isEdit ? '编辑路线' : '新增路线'"
       back-to="/admin/routes"
       :saving="saving"
       :dirty="isDirty"
@@ -333,7 +333,7 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>Basic Information</template>
+          <template #header>基础信息</template>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="Slug" prop="slug">
@@ -341,14 +341,14 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Route Title" prop="title.en">
+              <el-form-item label="路线标题" prop="title.en">
                 <I18nInput v-model="form.title" />
               </el-form-item>
             </el-col>
           </el-row>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Culture Tag">
+              <el-form-item label="文化标签">
                 <el-select v-model="form.cultureTag" style="width: 100%">
                   <el-option
                     v-for="item in ROUTE_TAG_OPTIONS"
@@ -360,7 +360,7 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Route Region">
+              <el-form-item label="路线地区">
                 <el-select v-model="form.routeRegionKey" clearable style="width: 100%">
                   <el-option
                     v-for="item in routeRegionOptions"
@@ -372,16 +372,16 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Publishing Status">
-                <el-switch v-model="form.published" active-text="Published" inactive-text="Draft" />
+              <el-form-item label="发布状态">
+                <el-switch v-model="form.published" active-text="已发布" inactive-text="草稿" />
               </el-form-item>
             </el-col>
           </el-row>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Route Assignment</template>
-          <el-form-item label="Linked Cities">
+          <template #header>关联关系与运营信息</template>
+          <el-form-item label="关联城市">
             <el-select
               v-model="form.citySlugs"
               multiple
@@ -405,19 +405,19 @@ async function handleSave() {
             </div>
           </div>
           <div class="link-row">
-            <el-button text @click="applySelectedCitiesToDisplayName">Use linked cities as display name</el-button>
+            <el-button text @click="applySelectedCitiesToDisplayName">用关联城市生成前台显示名</el-button>
           </div>
-          <el-form-item label="Display City Name">
+          <el-form-item label="前台显示城市名">
             <I18nInput v-model="form.cityName" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Duration">
+              <el-form-item label="时长">
                 <I18nInput v-model="form.duration" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Audience">
+              <el-form-item label="适合人群">
                 <I18nInput v-model="form.audience" />
               </el-form-item>
             </el-col>
@@ -425,8 +425,8 @@ async function handleSave() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Cover Image</template>
-          <el-form-item label="Route Cover">
+          <template #header>封面图</template>
+          <el-form-item label="路线封面">
             <ImageUpload v-model="form.coverImage" module="routes" />
           </el-form-item>
         </el-card>
@@ -434,105 +434,105 @@ async function handleSave() {
         <EditorWorkspace
           v-model="activeWorkspace"
           eyebrow="Route Story Workspace"
-          title="Route Content"
-          description="Edit the route summary, story, and itinerary stops."
+          title="路线内容工作台"
+          description="基础信息单独维护，真正影响前台呈现的导语、主题叙事和站点内容集中在这里编辑。"
           :active-label="activeWorkspaceLabel"
           :tabs="workspaceTabs"
         >
           <template #toolbar>
             <div class="workspace-actions" v-if="activeStop">
-              <el-button :icon="Plus" @click="addStop">Add Stop</el-button>
-              <el-button :icon="ArrowUp" @click="moveActiveStop(-1)">Move Up</el-button>
-              <el-button :icon="ArrowDown" @click="moveActiveStop(1)">Move Down</el-button>
-              <el-button type="danger" :icon="Delete" @click="removeStop(activeStopIndex)">Delete</el-button>
+              <el-button :icon="Plus" @click="addStop">新增站点</el-button>
+              <el-button :icon="ArrowUp" @click="moveActiveStop(-1)">上移</el-button>
+              <el-button :icon="ArrowDown" @click="moveActiveStop(1)">下移</el-button>
+              <el-button type="danger" :icon="Delete" @click="removeStop(activeStopIndex)">删除</el-button>
             </div>
             <div class="workspace-actions" v-else>
-              <el-button :icon="Plus" @click="addStop">Add Stop</el-button>
+              <el-button :icon="Plus" @click="addStop">新增站点</el-button>
             </div>
           </template>
 
           <div v-if="activeWorkspace === 'hero'" class="workspace-panel">
-            <div class="panel-title">Route Summary</div>
-            <el-form-item label="Summary">
+            <div class="panel-title">路线导语</div>
+            <el-form-item label="摘要">
               <I18nMarkdownEditor v-model="form.summary" :rows="6" />
             </el-form-item>
           </div>
 
           <div v-else-if="activeWorkspace === 'story'" class="workspace-panel">
-            <div class="panel-title">Route Story</div>
-            <el-form-item label="Story">
+            <div class="panel-title">主题叙事</div>
+            <el-form-item label="路线故事">
               <I18nMarkdownEditor v-model="form.story" :rows="10" />
             </el-form-item>
           </div>
 
           <div v-else-if="activeStop" class="workspace-panel">
-            <div class="panel-title">Stop {{ activeStopIndex + 1 }}</div>
+            <div class="panel-title">站点 {{ activeStopIndex + 1 }}</div>
             <el-row :gutter="16">
               <el-col :span="8">
-                <el-form-item label="Time">
+                <el-form-item label="时间">
                   <el-input v-model="activeStop.time" placeholder="08:30" />
                 </el-form-item>
               </el-col>
               <el-col :span="16">
-                <el-form-item label="Stop Name">
+                <el-form-item label="站点名称">
                   <I18nInput v-model="activeStop.stopName" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="Stop Image">
+            <el-form-item label="站点图片">
               <ImageUpload v-model="activeStop.image" module="routes" />
             </el-form-item>
-            <el-form-item label="Stop Gallery">
+            <el-form-item label="站点图片集">
               <ImageUpload v-model="activeStop.images" multiple :limit="10" module="routes" />
             </el-form-item>
             <el-row :gutter="16">
               <el-col :span="12">
-                <el-form-item label="Latitude">
+                <el-form-item label="纬度">
                   <el-input-number v-model="activeStop.lat" :precision="6" style="width: 100%" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="Longitude">
+                <el-form-item label="经度">
                   <el-input-number v-model="activeStop.lng" :precision="6" style="width: 100%" />
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="On-site Story">
+            <el-form-item label="现场故事">
               <I18nMarkdownEditor v-model="activeStop.story" :rows="6" />
             </el-form-item>
-            <el-form-item label="Cultural Context">
+            <el-form-item label="文化解读">
               <I18nMarkdownEditor v-model="activeStop.culturalStory" :rows="6" />
             </el-form-item>
-            <el-form-item label="Stop Details">
+            <el-form-item label="站点细节">
               <div class="detail-list">
                 <div v-for="(_, index) in activeStop.details" :key="index" class="detail-row">
                   <I18nInput v-model="activeStop.details[index]" />
-                  <el-button text type="danger" @click="removeDetail(activeStop, index)">Delete</el-button>
+                  <el-button text type="danger" @click="removeDetail(activeStop, index)">删除</el-button>
                 </div>
-                <el-button :icon="Plus" @click="addDetail(activeStop)">Add Detail</el-button>
+                <el-button :icon="Plus" @click="addDetail(activeStop)">新增细节</el-button>
               </div>
             </el-form-item>
-            <el-form-item label="Itinerary Plan">
+            <el-form-item label="行程规划">
               <el-input
                 v-model="activeStop.plan"
                 type="textarea"
                 :rows="2"
-                placeholder="Brief itinerary or experience notes for this stop"
+                placeholder="简要描述该站点的行程安排或体验建议"
               />
             </el-form-item>
             <el-row :gutter="16">
               <el-col :span="8">
-                <el-form-item label="Dining">
+                <el-form-item label="餐饮">
                   <I18nInput v-model="activeStop.meal" />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="Accommodation">
+                <el-form-item label="住宿">
                   <I18nInput v-model="activeStop.hotel" />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
-                <el-form-item label="Transport">
+                <el-form-item label="交通">
                   <I18nInput v-model="activeStop.transit" />
                 </el-form-item>
               </el-col>

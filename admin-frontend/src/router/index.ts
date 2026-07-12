@@ -10,7 +10,7 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),
-    meta: { title: 'Login', requiresAuth: false },
+    meta: { title: '登录', requiresAuth: false },
   },
   {
     path: '/admin',
@@ -21,246 +21,246 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/Dashboard.vue'),
-        meta: { title: 'Dashboard' },
+        meta: { title: '仪表盘' },
       },
       // 城市管理
       {
         path: 'cities',
         name: 'Cities',
         component: () => import('@/views/cities/CitiesList.vue'),
-        meta: { title: 'Cities' },
+        meta: { title: '城市管理' },
       },
       {
         path: 'cities/create',
         name: 'CityCreate',
         component: () => import('@/views/cities/CityEdit.vue'),
-        meta: { title: 'Create City' },
+        meta: { title: '新增城市' },
       },
       {
         path: 'cities/:id/edit',
         name: 'CityEdit',
         component: () => import('@/views/cities/CityEdit.vue'),
-        meta: { title: 'Edit City' },
+        meta: { title: '编辑城市' },
       },
       // 路线管理
       {
         path: 'routes',
         name: 'Routes',
         component: () => import('@/views/routes/RoutesList.vue'),
-        meta: { title: 'Routes' },
+        meta: { title: '路线管理' },
       },
       {
         path: 'routes/create',
         name: 'RouteCreate',
         component: () => import('@/views/routes/RouteEdit.vue'),
-        meta: { title: 'Create Route' },
+        meta: { title: '新增路线' },
       },
       {
         path: 'routes/:id/edit',
         name: 'RouteEdit',
         component: () => import('@/views/routes/RouteEdit.vue'),
-        meta: { title: 'Edit Route' },
+        meta: { title: '编辑路线' },
       },
       // 商城 - 系列管理
       {
         path: 'shop/collections',
         name: 'Collections',
         component: () => import('@/views/shop/CollectionsList.vue'),
-        meta: { title: 'Collections' },
+        meta: { title: '系列管理' },
       },
       {
         path: 'shop/collections/create',
         name: 'CollectionCreate',
         component: () => import('@/views/shop/CollectionEdit.vue'),
-        meta: { title: 'Create Collection' },
+        meta: { title: '新增系列' },
       },
       {
         path: 'shop/collections/:id/edit',
         name: 'CollectionEdit',
         component: () => import('@/views/shop/CollectionEdit.vue'),
-        meta: { title: 'Edit Collection' },
+        meta: { title: '编辑系列' },
       },
       // 商城 - 商品管理
       {
         path: 'shop/products',
         name: 'Products',
         component: () => import('@/views/shop/ProductsList.vue'),
-        meta: { title: 'Products' },
+        meta: { title: '商品管理' },
       },
       {
         path: 'shop/products/create',
         name: 'ProductCreate',
         component: () => import('@/views/shop/ProductEdit.vue'),
-        meta: { title: 'Create Product' },
+        meta: { title: '新增商品' },
       },
       {
         path: 'shop/products/:id/edit',
         name: 'ProductEdit',
         component: () => import('@/views/shop/ProductEdit.vue'),
-        meta: { title: 'Edit Product' },
+        meta: { title: '编辑商品' },
       },
       // 订单管理
       {
         path: 'orders',
         name: 'Orders',
         component: () => import('@/views/shop/OrdersList.vue'),
-        meta: { title: 'Orders' },
+        meta: { title: '订单管理' },
       },
       {
         path: 'orders/:id',
         name: 'OrderDetail',
         component: () => import('@/views/shop/OrderDetail.vue'),
-        meta: { title: 'Order Details' },
+        meta: { title: '订单详情' },
       },
       // 口译 - 服务模式
       {
         path: 'interpreting/modes',
         name: 'ServiceModes',
         component: () => import('@/views/interpreting/ServiceModesList.vue'),
-        meta: { title: 'Service Modes' },
+        meta: { title: '服务模式' },
       },
       {
         path: 'interpreting/modes/create',
         name: 'ServiceModeCreate',
         component: () => import('@/views/interpreting/ServiceModeEdit.vue'),
-        meta: { title: 'Create Service Mode' },
+        meta: { title: '新增模式' },
       },
       {
         path: 'interpreting/modes/:id/edit',
         name: 'ServiceModeEdit',
         component: () => import('@/views/interpreting/ServiceModeEdit.vue'),
-        meta: { title: 'Edit Service Mode' },
+        meta: { title: '编辑模式' },
       },
       // 口译 - 口译员
       {
         path: 'interpreting/profiles',
         name: 'Interpreters',
         component: () => import('@/views/interpreting/InterpretersList.vue'),
-        meta: { title: 'Interpreters' },
+        meta: { title: '口译员管理' },
       },
       {
         path: 'interpreting/profiles/create',
         name: 'InterpreterCreate',
         component: () => import('@/views/interpreting/InterpreterEdit.vue'),
-        meta: { title: 'Create Interpreter' },
+        meta: { title: '新增口译员' },
       },
       {
         path: 'interpreting/profiles/:id/edit',
         name: 'InterpreterEdit',
         component: () => import('@/views/interpreting/InterpreterEdit.vue'),
-        meta: { title: 'Edit Interpreter' },
+        meta: { title: '编辑口译员' },
       },
       // 口译 - 预约管理
       {
         path: 'interpreting/bookings',
         name: 'Bookings',
         component: () => import('@/views/interpreting/BookingsList.vue'),
-        meta: { title: 'Bookings' },
+        meta: { title: '预约管理' },
       },
       // 口译 - FAQ
       {
         path: 'interpreting/faqs',
         name: 'FAQs',
         component: () => import('@/views/interpreting/FAQsList.vue'),
-        meta: { title: 'FAQs' },
+        meta: { title: 'FAQ管理' },
       },
       {
         path: 'interpreting/faqs/create',
         name: 'FAQCreate',
         component: () => import('@/views/interpreting/FAQEdit.vue'),
-        meta: { title: 'Create FAQ' },
+        meta: { title: '新增FAQ' },
       },
       {
         path: 'interpreting/faqs/:id/edit',
         name: 'FAQEdit',
         component: () => import('@/views/interpreting/FAQEdit.vue'),
-        meta: { title: 'Edit FAQ' },
+        meta: { title: '编辑FAQ' },
       },
       // 活动管理
       {
         path: 'events',
         name: 'Events',
         component: () => import('@/views/events/EventsList.vue'),
-        meta: { title: 'Events' },
+        meta: { title: '活动管理' },
       },
       {
         path: 'events/create',
         name: 'EventCreate',
         component: () => import('@/views/events/EventEdit.vue'),
-        meta: { title: 'Create Event' },
+        meta: { title: '新增活动' },
       },
       {
         path: 'events/:id/edit',
         name: 'EventEdit',
         component: () => import('@/views/events/EventEdit.vue'),
-        meta: { title: 'Edit Event' },
+        meta: { title: '编辑活动' },
       },
       // 社区帖子
       {
         path: 'community',
         name: 'Community',
         component: () => import('@/views/community/CommunityPostsList.vue'),
-        meta: { title: 'Community Posts' },
+        meta: { title: '社区帖子' },
       },
       {
         path: 'community/:id',
         name: 'CommunityDetail',
         component: () => import('@/views/community/PostDetail.vue'),
-        meta: { title: 'Post Details' },
+        meta: { title: '帖子详情' },
       },
       // 首页配置
       {
         path: 'home',
         name: 'HomeConfig',
         component: () => import('@/views/home/HomeConfig.vue'),
-        meta: { title: 'Homepage' },
+        meta: { title: '首页配置' },
       },
       {
         path: 'operations/audit',
         name: 'ContentAudit',
         component: () => import('@/views/operations/ContentAudit.vue'),
-        meta: { title: 'Content Audit' },
+        meta: { title: '数据体检' },
       },
       // 媒体库
       {
         path: 'media',
         name: 'MediaLibrary',
         component: () => import('@/views/media/MediaLibrary.vue'),
-        meta: { title: 'Media Library' },
+        meta: { title: '媒体库' },
       },
       // 用户管理
       {
         path: 'users',
         name: 'Users',
         component: () => import('@/views/users/UsersList.vue'),
-        meta: { title: 'Users', roles: ['admin'] },
+        meta: { title: '用户管理', roles: ['admin'] },
       },
       {
         path: 'users/:id',
         name: 'UserDetail',
         component: () => import('@/views/users/UserDetail.vue'),
-        meta: { title: 'User Details', roles: ['admin'] },
+        meta: { title: '用户详情', roles: ['admin'] },
       },
       // 系统设置
       {
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/settings/Settings.vue'),
-        meta: { title: 'Settings', roles: ['admin'] },
+        meta: { title: '系统设置', roles: ['admin'] },
       },
       // 操作日志
       {
         path: 'system/audit-logs',
         name: 'AuditLogs',
         component: () => import('@/views/system/AuditLogs.vue'),
-        meta: { title: 'Audit Logs', roles: ['admin'] },
+        meta: { title: '操作日志', roles: ['admin'] },
       },
       // 通知中心
       {
         path: 'system/notifications',
         name: 'Notifications',
         component: () => import('@/views/system/Notifications.vue'),
-        meta: { title: 'Notifications' },
+        meta: { title: '通知中心' },
       },
       // 默认重定向
       {
@@ -277,7 +277,7 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),
-    meta: { title: 'Page Not Found', requiresAuth: false },
+    meta: { title: '页面不存在', requiresAuth: false },
   },
 ]
 
@@ -310,7 +310,7 @@ router.beforeEach((to, _from, next) => {
     // 角色受限路由必须有合法用户对象,否则拒绝并强制重新登录
     const role = authStore.currentUser?.role
     if (!role || !requiredRoles.includes(role)) {
-      ElMessage.warning('Insufficient permissions')
+      ElMessage.warning('权限不足')
       next('/login')
       return
     }

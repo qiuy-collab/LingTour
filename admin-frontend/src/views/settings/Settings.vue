@@ -79,8 +79,8 @@ async function fetchSettings() {
     const data = res.data.data
     seoTitle.value = data.seoTitle
     seoDescription.value = data.seoDescription
-    languages.value = data.languages || ['en', 'zh']
-    defaultLocale.value = data.defaultLocale || (data.languages?.[0] ?? 'zh')
+    languages.value = ['en']
+    defaultLocale.value = 'en'
     defaultCurrency.value = data.defaultCurrency || 'SGD'
     taxRate.value = data.taxRate ?? 7.6
     shippingTemplates.value = JSON.parse(JSON.stringify(data.shippingTemplates || []))

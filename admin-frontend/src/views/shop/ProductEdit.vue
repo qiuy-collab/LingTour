@@ -28,11 +28,11 @@ const cityOptions = ref<{ slug: string; name: string; adcode: number }[]>([])
 
 const rules = {
   slug: [
-    { required: true, message: 'Enter a slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug must use kebab-case', trigger: 'blur' },
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'name.en': [{ required: true, message: 'Enter the product name', trigger: 'blur' }],
-  price: [{ required: true, message: 'Enter a price', trigger: 'blur' }],
+  'name.en': [{ required: true, message: '请输入商品英文名称', trigger: 'blur' }],
+  price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
 }
 
 const emptyOriginTrace = () => ({
@@ -71,12 +71,12 @@ const previewMeta = computed(() => ({
 }))
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
-  { key: 'story', label: 'Product Story' },
-  { key: 'details', label: 'Product Details' },
+  { key: 'story', label: '商品故事' },
+  { key: 'details', label: '商品细节' },
 ])
 
 const activeWorkspaceLabel = computed(() => {
-  return workspaceTabs.value.find((item) => item.key === activeWorkspace.value)?.label || 'Product Story'
+  return workspaceTabs.value.find((item) => item.key === activeWorkspace.value)?.label || '商品故事'
 })
 
 async function fetchCollections() {
@@ -157,7 +157,7 @@ onMounted(async () => {
     }
     resetDirty()
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Failed to load product'))
+    ElMessage.error(extractErrorMessage(error, '加载商品失败'))
   } finally {
     loading.value = false
   }
@@ -167,7 +167,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('Complete the required fields')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
@@ -175,15 +175,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await productsApi.updateProduct(route.params.id as string, toPayload())
-      ElMessage.success('Product updated')
+      ElMessage.success('商品已更新')
     } else {
       await productsApi.createProduct(toPayload())
-      ElMessage.success('Product created')
+      ElMessage.success('商品已创建')
     }
     disableDirtyCheck()
     router.push('/admin/shop/products')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Save failed'))
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
@@ -193,7 +193,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? 'Edit Product' : 'Create Product'"
+      :title="isEdit ? '编辑商品' : '新增商品'"
       back-to="/admin/shop/products"
       :saving="saving"
       :dirty="isDirty"
@@ -203,7 +203,7 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>Basic Information</template>
+          <template #header>基础信息</template>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="Slug" prop="slug">
@@ -211,26 +211,26 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Collection">
+              <el-form-item label="所属系列">
                 <el-select v-model="form.collectionId" clearable style="width: 100%">
                   <el-option v-for="item in collectionOptions" :key="item.id" :label="item.title" :value="item.id" />
                 </el-select>
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Product Name" prop="name.en">
+          <el-form-item label="商品名称" prop="name.en">
             <I18nInput v-model="form.name" />
           </el-form-item>
-          <el-form-item label="Product Tag">
+          <el-form-item label="商品标签">
             <I18nInput v-model="form.tag" />
           </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Price, Stock & Publishing</template>
+          <template #header>价格、库存与发布</template>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Currency">
+              <el-form-item label="币种">
                 <el-select v-model="form.currency" style="width: 100%">
                   <el-option label="SGD" value="SGD" />
                   <el-option label="USD" value="USD" />
@@ -240,41 +240,41 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Price" prop="price">
+              <el-form-item label="价格" prop="price">
                 <el-input-number v-model="form.price" :min="0" :precision="2" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Stock">
+              <el-form-item label="库存">
                 <el-input-number v-model="form.stock" :min="0" style="width: 100%" />
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Publishing Status">
-            <el-switch v-model="form.published" active-text="Published" inactive-text="Draft" />
+          <el-form-item label="发布状态">
+            <el-switch v-model="form.published" active-text="已发布" inactive-text="草稿" />
           </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Images</template>
-          <el-form-item label="Primary Image">
+          <template #header>图片素材</template>
+          <el-form-item label="主图">
             <ImageUpload v-model="form.image" module="shop" />
           </el-form-item>
-          <el-form-item label="Product Gallery">
+          <el-form-item label="详情图库">
             <ImageUpload v-model="form.gallery" module="shop" mode="multiple" :limit="10" />
           </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Provenance & Origin</template>
+          <template #header>溯源与产地</template>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Origin Location">
+              <el-form-item label="产地位置">
                 <el-input v-model="form.originTrace.location" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Linked City">
+              <el-form-item label="关联城市">
                 <el-select
                   v-model="form.originTrace.citySlug"
                   filterable
@@ -292,23 +292,23 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Origin City Name">
+              <el-form-item label="产地城市名">
                 <el-input v-model="form.originTrace.cityName" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Map Adcode">
+              <el-form-item label="地图区划代码">
                 <el-input-number v-model="form.originTrace.mapAdcode" :min="0" style="width: 100%" />
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Material Source">
+          <el-form-item label="原料来源">
             <el-input v-model="form.originTrace.materialSource" type="textarea" :rows="3" />
           </el-form-item>
-          <el-form-item label="Craft Tradition">
+          <el-form-item label="工艺传统">
             <el-input v-model="form.originTrace.craftTradition" type="textarea" :rows="3" />
           </el-form-item>
-          <el-form-item label="Production Process">
+          <el-form-item label="制作过程">
             <el-input v-model="form.originTrace.process" type="textarea" :rows="3" />
           </el-form-item>
         </el-card>
@@ -316,30 +316,30 @@ async function handleSave() {
         <EditorWorkspace
           v-model="activeWorkspace"
           eyebrow="Product Story Workspace"
-          title="Product Content"
-          description="Edit the product story, material, dimensions, origin, and care instructions."
+          title="商品内容工作台"
+          description="主图、价格、库存和溯源单独维护，真正给前台展示的故事和细节集中在这里编辑。"
           :active-label="activeWorkspaceLabel"
           :tabs="workspaceTabs"
         >
           <div v-if="activeWorkspace === 'story'" class="workspace-panel">
-            <div class="panel-title">Product Story</div>
-            <el-form-item label="Story">
+            <div class="panel-title">商品故事</div>
+            <el-form-item label="故事正文">
               <I18nMarkdownEditor v-model="form.story" :rows="8" />
             </el-form-item>
           </div>
 
           <div v-else class="workspace-panel">
-            <div class="panel-title">Product Details</div>
-            <el-form-item label="Material">
+            <div class="panel-title">商品细节</div>
+            <el-form-item label="材质">
               <I18nInput v-model="form.material" />
             </el-form-item>
-            <el-form-item label="Dimensions">
+            <el-form-item label="尺寸">
               <I18nInput v-model="form.dimensions" />
             </el-form-item>
-            <el-form-item label="Origin Notes">
+            <el-form-item label="产地说明">
               <I18nInput v-model="form.origin" />
             </el-form-item>
-            <el-form-item label="Care Instructions">
+            <el-form-item label="保养说明">
               <I18nMarkdownEditor v-model="form.care" :rows="6" />
             </el-form-item>
           </div>

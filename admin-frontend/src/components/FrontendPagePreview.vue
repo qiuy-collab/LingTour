@@ -276,7 +276,7 @@ onBeforeUnmount(() => {
         <p>{{ iframePath }}</p>
       </div>
       <div class="toolbar-actions">
-        <span class="toolbar-locale-hint">English preview</span>
+        <span class="toolbar-locale-hint">跟随顶部编辑语言</span>
         <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">打开新窗口</a>
       </div>
     </div>

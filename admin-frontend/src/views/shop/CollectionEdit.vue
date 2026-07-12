@@ -36,10 +36,10 @@ const form = reactive<CollectionFormData>({
 
 const rules = {
   slug: [
-    { required: true, message: 'Enter a slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug must use kebab-case', trigger: 'blur' },
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: 'Enter the collection name', trigger: 'blur' }],
+  'title.en': [{ required: true, message: '请输入系列英文名称', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -91,7 +91,7 @@ onMounted(async () => {
 
     resetDirty()
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Failed to load collection'))
+    ElMessage.error(extractErrorMessage(error, '加载系列数据失败'))
   } finally {
     loading.value = false
   }
@@ -101,7 +101,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('Complete the required fields')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
@@ -109,15 +109,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await collectionsApi.updateCollection(route.params.id as string, form)
-      ElMessage.success('Collection updated')
+      ElMessage.success('系列已更新')
     } else {
       await collectionsApi.createCollection(form)
-      ElMessage.success('Collection created')
+      ElMessage.success('系列已创建')
     }
     disableDirtyCheck()
     router.push('/admin/shop/collections')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Save failed'))
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
@@ -127,7 +127,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? 'Edit Collection' : 'Create Collection'"
+      :title="isEdit ? '编辑系列' : '新增系列'"
       back-to="/admin/shop/collections"
       :saving="saving"
       :dirty="isDirty"
@@ -137,21 +137,21 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>Basic Information</template>
+          <template #header>基础信息</template>
           <el-form-item label="Slug" prop="slug">
             <el-input v-model="form.slug" placeholder="coastal-life-kit" />
           </el-form-item>
-          <el-form-item label="Collection Name" prop="title.en">
+          <el-form-item label="系列名称" prop="title.en">
             <I18nInput v-model="form.title" />
           </el-form-item>
-          <el-form-item label="Cover Image">
+          <el-form-item label="封面图">
             <ImageUpload v-model="form.image" module="shop" />
           </el-form-item>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Route & Publishing</template>
-          <el-form-item label="Linked Route">
+          <template #header>关联路线与发布</template>
+          <el-form-item label="关联路线">
             <el-select
               v-model="form.routeSlug"
               filterable
@@ -167,18 +167,18 @@ async function handleSave() {
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="Display Route Name">
+          <el-form-item label="前台显示路线名">
             <el-input v-model="form.routeName" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Sort Order">
+              <el-form-item label="排序权重">
                 <el-input-number v-model="form.sortOrder" :min="0" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Publishing Status">
-                <el-switch v-model="form.published" active-text="Published" inactive-text="Draft" />
+              <el-form-item label="发布状态">
+                <el-switch v-model="form.published" active-text="已发布" inactive-text="草稿" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -186,15 +186,15 @@ async function handleSave() {
 
         <EditorWorkspace
           model-value="body"
-          title="Collection Content"
+          title="系列内容工作台"
           eyebrow="Collection Content"
-          description="Edit the collection description shown on the public site."
-          active-label="Collection Copy"
-          :tabs="[{ key: 'body', label: 'Collection Copy' }]"
+          description="基础信息、路线关联和发布状态放固定区，前台展示文案在这里集中编辑。"
+          active-label="系列正文"
+          :tabs="[{ key: 'body', label: '系列正文' }]"
         >
           <div class="workspace-panel">
-            <div class="panel-title">Collection Copy</div>
-            <el-form-item label="Description">
+            <div class="panel-title">系列正文</div>
+            <el-form-item label="描述内容">
               <I18nMarkdownEditor v-model="form.body" :rows="8" />
             </el-form-item>
           </div>

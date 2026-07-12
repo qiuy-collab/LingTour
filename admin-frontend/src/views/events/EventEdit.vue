@@ -31,11 +31,11 @@ const activeWorkspace = ref('summary')
 
 const rules = {
   slug: [
-    { required: true, message: 'Enter a slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug must use kebab-case', trigger: 'blur' },
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: 'Enter the event name', trigger: 'blur' }],
-  date: [{ required: true, message: 'Select a start date', trigger: 'change' }],
+  'title.en': [{ required: true, message: '请输入活动英文名称', trigger: 'blur' }],
+  date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
 }
 
 const form = reactive<EventFormData>({
@@ -71,17 +71,17 @@ const selectedRoutes = computed(() =>
 )
 
 const checklist = computed(() => [
-  { label: 'Event name', done: Boolean(form.title.en.trim()) },
-  { label: 'Start date', done: Boolean(form.date) },
-  { label: 'Linked city', done: Boolean(form.citySlug || form.city.trim()) },
-  { label: 'Cover image', done: Boolean(form.image) },
-  { label: 'Summary', done: Boolean(form.summary.en.trim()) },
-  { label: 'Description', done: Boolean(form.description.en.trim()) },
+  { label: '活动名称', done: Boolean(form.title.en.trim()) },
+  { label: '开始日期', done: Boolean(form.date) },
+  { label: '关联城市', done: Boolean(form.citySlug || form.city.trim()) },
+  { label: '封面图片', done: Boolean(form.image) },
+  { label: '摘要', done: Boolean(form.summary.en.trim()) },
+  { label: '详情正文', done: Boolean(form.description.en.trim()) },
 ])
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
-  { key: 'summary', label: 'Summary' },
-  { key: 'description', label: 'Description' },
+  { key: 'summary', label: '摘要展示' },
+  { key: 'description', label: '正文内容' },
 ])
 
 function addTag() {
@@ -147,7 +147,7 @@ onMounted(async () => {
 
     resetDirty()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to load event data'))
+    ElMessage.error(extractErrorMessage(err, '加载活动数据失败'))
     router.push('/admin/events')
   } finally {
     loading.value = false
@@ -158,7 +158,7 @@ async function handleSave() {
   try {
     await formRef.value?.validate()
   } catch {
-    ElMessage.warning('Complete the required fields')
+    ElMessage.warning('请先补全必填项')
     return
   }
 
@@ -166,7 +166,7 @@ async function handleSave() {
     const start = new Date(form.date)
     const end = new Date(form.endDate)
     if (!Number.isNaN(end.getTime()) && end < start) {
-      ElMessage.error('End date cannot be earlier than start date')
+      ElMessage.error('结束日期不能早于开始日期')
       return
     }
   }
@@ -175,15 +175,15 @@ async function handleSave() {
   try {
     if (isEdit.value) {
       await eventsApi.updateEvent(route.params.id as string, form)
-      ElMessage.success('Event updated')
+      ElMessage.success('活动已更新')
     } else {
       await eventsApi.createEvent(form)
-      ElMessage.success('Event created')
+      ElMessage.success('活动已创建')
     }
     disableDirtyCheck()
     router.push('/admin/events')
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, 'Save failed'))
+    ElMessage.error(extractErrorMessage(error, '保存失败'))
   } finally {
     saving.value = false
   }
@@ -193,7 +193,7 @@ async function handleSave() {
 <template>
   <div class="edit-page" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? 'Edit Event' : 'Create Event'"
+      :title="isEdit ? '编辑活动' : '新增活动'"
       back-to="/admin/events"
       :saving="saving"
       :dirty="isDirty"
@@ -203,26 +203,26 @@ async function handleSave() {
     <div class="editor-shell">
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
-          <template #header>Basic Information</template>
+          <template #header>基础信息</template>
           <el-form-item label="Slug" prop="slug">
             <el-input v-model="form.slug" placeholder="dragon-boat-2026" />
           </el-form-item>
-          <el-form-item label="Event Name" prop="title.en">
+          <el-form-item label="活动名称" prop="title.en">
             <I18nInput v-model="form.title" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Start Date" prop="date">
+              <el-form-item label="开始日期" prop="date">
                 <el-date-picker v-model="form.date" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="End Date">
+              <el-form-item label="结束日期">
                 <el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Event Status">
+              <el-form-item label="活动状态">
                 <el-select v-model="form.status" style="width: 100%">
                   <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
                 </el-select>
@@ -232,10 +232,10 @@ async function handleSave() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>City & Routes</template>
+          <template #header>关联城市与路线</template>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Linked City">
+              <el-form-item label="关联城市">
                 <el-select
                   v-model="form.citySlug"
                   clearable
@@ -253,17 +253,17 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Display City">
+              <el-form-item label="前台显示城市">
                 <el-input v-model="form.city" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Map Adcode">
+              <el-form-item label="地图区划代码">
                 <el-input-number v-model="form.adcode" :min="0" :max="999999" style="width: 100%" />
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Linked Routes">
+          <el-form-item label="关联路线">
             <el-select
               v-model="form.relatedRouteSlugs"
               multiple
@@ -290,19 +290,19 @@ async function handleSave() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>Cover & Tags</template>
-          <el-form-item label="Event Cover">
+          <template #header>封面与标签</template>
+          <el-form-item label="活动封面">
             <ImageUpload v-model="form.image" module="events" />
           </el-form-item>
-          <el-form-item label="Event Tags">
+          <el-form-item label="活动标签">
             <div class="tag-list">
               <el-tag v-for="(tag, index) in form.tags" :key="tag" closable @close="removeTag(index)">
                 {{ tag }}
               </el-tag>
             </div>
             <div class="tag-input-row">
-              <el-input v-model="newTag" placeholder="Festival / Market / Heritage" @keyup.enter="addTag" />
-              <el-button :icon="Plus" @click="addTag">Add</el-button>
+              <el-input v-model="newTag" placeholder="如：节庆 / 市集 / 非遗" @keyup.enter="addTag" />
+              <el-button :icon="Plus" @click="addTag">添加</el-button>
             </div>
           </el-form-item>
         </el-card>
@@ -310,21 +310,21 @@ async function handleSave() {
         <EditorWorkspace
           v-model="activeWorkspace"
           eyebrow="Event Content Workspace"
-          title="Event Content"
-          description="Edit the English summary and event description."
-          :active-label="workspaceTabs.find((item) => item.key === activeWorkspace)?.label || 'Summary'"
+          title="活动内容工作台"
+          description="日期、关联城市、标签和封面放在固定区，前台真正展示的摘要与正文集中在这里编辑。"
+          :active-label="workspaceTabs.find((item) => item.key === activeWorkspace)?.label || '摘要展示'"
           :tabs="workspaceTabs"
         >
           <div v-if="activeWorkspace === 'summary'" class="workspace-panel">
-            <div class="panel-title">Event Summary</div>
-            <el-form-item label="Summary Copy">
+            <div class="panel-title">活动摘要</div>
+            <el-form-item label="摘要文案">
               <I18nMarkdownEditor v-model="form.summary" :rows="6" />
             </el-form-item>
           </div>
 
           <div v-else class="workspace-panel">
-            <div class="panel-title">Event Description</div>
-            <el-form-item label="Description">
+            <div class="panel-title">活动正文</div>
+            <el-form-item label="详情内容">
               <I18nMarkdownEditor v-model="form.description" :rows="10" />
             </el-form-item>
           </div>
@@ -333,44 +333,44 @@ async function handleSave() {
 
       <aside class="editor-aside">
         <el-card shadow="never" class="aside-card">
-          <template #header>Publishing Summary</template>
+          <template #header>发布摘要</template>
           <div class="info-list">
             <div class="info-row">
-              <span>Status</span>
+              <span>状态</span>
               <strong>{{ EventStatusMap[form.status] }}</strong>
             </div>
             <div class="info-row">
-              <span>Start</span>
-              <strong>{{ form.date || 'Not set' }}</strong>
+              <span>开始</span>
+              <strong>{{ form.date || '未设置' }}</strong>
             </div>
             <div class="info-row">
-              <span>End</span>
-              <strong>{{ form.endDate || 'Not set' }}</strong>
+              <span>结束</span>
+              <strong>{{ form.endDate || '未设置' }}</strong>
             </div>
             <div class="info-row">
-              <span>Tags</span>
+              <span>标签数</span>
               <strong>{{ form.tags.length }}</strong>
             </div>
           </div>
         </el-card>
 
         <el-card shadow="never" class="aside-card">
-          <template #header>Linked Content</template>
+          <template #header>关联内容</template>
           <div class="aside-stack">
             <div class="selected-card">
-              <strong>{{ selectedCity?.name || form.city || 'No city selected' }}</strong>
-              <span>{{ form.citySlug || 'No slug' }}</span>
+              <strong>{{ selectedCity?.name || form.city || '未选择城市' }}</strong>
+              <span>{{ form.citySlug || '暂无 slug' }}</span>
             </div>
-            <div class="route-count">{{ selectedRoutes.length }} linked routes</div>
+            <div class="route-count">已关联路线 {{ selectedRoutes.length }} 条</div>
           </div>
         </el-card>
 
         <el-card shadow="never" class="aside-card">
-          <template #header>Completeness</template>
+          <template #header>完整性检查</template>
           <div class="check-list">
             <div v-for="item in checklist" :key="item.label" class="check-row">
               <span>{{ item.label }}</span>
-              <strong :class="item.done ? 'done' : 'pending'">{{ item.done ? 'Complete' : 'Missing' }}</strong>
+              <strong :class="item.done ? 'done' : 'pending'">{{ item.done ? '已完成' : '待补充' }}</strong>
             </div>
           </div>
         </el-card>

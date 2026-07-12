@@ -6,9 +6,9 @@ import { Moon, Sunny, Monitor } from '@element-plus/icons-vue'
 const { themeMode, isDark, setTheme } = useTheme()
 
 const themeOptions: { value: ThemeMode; label: string; icon: any }[] = [
-  { value: 'light', label: 'Light', icon: Sunny },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
+  { value: 'light', label: '浅色', icon: Sunny },
+  { value: 'dark', label: '深色', icon: Moon },
+  { value: 'system', label: '跟随系统', icon: Monitor },
 ]
 
 function handleCommand(mode: ThemeMode) {
@@ -18,8 +18,8 @@ function handleCommand(mode: ThemeMode) {
 
 <template>
   <el-dropdown trigger="click" @command="handleCommand">
-    <el-tooltip :content="isDark ? 'Theme: Dark' : 'Theme: Light'" placement="bottom">
-      <button type="button" class="theme-toggle-btn" aria-label="Change admin theme">
+    <el-tooltip :content="isDark ? '切换主题 (当前: 深色)' : '切换主题 (当前: 浅色)'" placement="bottom">
+      <button type="button" class="theme-toggle-btn" aria-label="切换后台主题">
         <el-icon>
           <Moon v-if="isDark" />
           <Sunny v-else />
