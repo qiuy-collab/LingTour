@@ -9,7 +9,7 @@ import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
-// List data
+// ─── 列表数据 (useListPage) ─────────────
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -22,13 +22,13 @@ const {
   defaultFilters: { keyword: '' },
 })
 
-// Deletion using the localized record name
+// ─── 自定义删除（带 i18n 名称） ──────────
 function handleDeleteCollection(row: StoreCollection) {
-  const title = pickI18n(row.title as any) || 'this collection'
+  const title = pickI18n(row.title as any) || '该系列'
   handleDelete(row.id, title)
 }
 
-// Actions
+// ─── 操作 ──────────────────────────────
 function handleCreate() {
   router.push('/admin/shop/collections/create')
 }
@@ -41,20 +41,20 @@ function handleEdit(id: string) {
 <template>
   <div>
     <div class="page-header">
-      <h2>Collections</h2>
-      <el-button type="primary" @click="handleCreate">Add collection</el-button>
+      <h2>系列管理</h2>
+      <el-button type="primary" @click="handleCreate">新增系列</el-button>
     </div>
 
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="Search by collection name or slug"
+      search-placeholder="搜索系列名称 / slug"
       @search="handleSearch"
       @reset="handleReset"
     />
 
     <el-card shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column label="Cover" width="80">
+        <el-table-column label="封面" width="80">
           <template #default="{ row }">
             <el-image
               v-if="row.image"
@@ -64,33 +64,33 @@ function handleEdit(id: string) {
             />
           </template>
         </el-table-column>
-        <el-table-column label="Collection" min-width="180">
+        <el-table-column label="系列名称" min-width="180">
           <template #default="{ row }">
             <div>{{ pickI18n(row.title) }}</div>
             <div class="admin-list-meta">{{ pickI18n(row.title, 'en') }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="Linked route" width="160">
+        <el-table-column label="关联路线" width="160">
           <template #default="{ row }">
             {{ pickI18n(row.routeName) || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="productCount" label="Products" width="90" align="center">
+        <el-table-column prop="productCount" label="商品数" width="80" align="center">
           <template #default="{ row }">
             <el-badge :value="row.productCount" type="primary" />
           </template>
         </el-table-column>
-        <el-table-column prop="published" label="Status" width="100" align="center">
+        <el-table-column prop="published" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.published ? 'success' : 'info'" size="small">
-              {{ row.published ? 'Published' : 'Draft' }}
+              {{ row.published ? '已发布' : '草稿' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="200" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row.id)">Edit</el-button>
-            <el-button type="danger" link size="small" @click="handleDeleteCollection(row)">Delete</el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="handleDeleteCollection(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

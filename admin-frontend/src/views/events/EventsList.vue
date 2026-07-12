@@ -11,11 +11,11 @@ import { resolveMediaUrl } from '@/utils/media'
 
 const router = useRouter()
 
-// View mode
+// ─── 视图切换 ──────────────────────────────
 type ViewMode = 'list' | 'calendar'
 const viewMode = ref<ViewMode>('list')
 
-// List data
+// ─── 列表数据 (useListPage) ───────────────
 const {
   loading, list, total, page, pageSize,
   filters,
@@ -29,7 +29,7 @@ const {
   defaultFilters: { keyword: '', status: '', city: '', startDate: '', endDate: '' },
 })
 
-// Actions
+// ─── 操作 ──────────────────────────────
 function handleCreate() {
   router.push('/admin/events/create')
 }
@@ -41,10 +41,10 @@ function handleEdit(id: string) {
 async function handleStatusChange(event: Event, status: EventStatus) {
   try {
     await eventsApi.updateStatus(event.id, status)
-    ElMessage.success('Event status updated')
+    ElMessage.success('状态更新成功')
     fetchList()
   } catch {
-    ElMessage.error('Failed to update event status')
+    ElMessage.error('状态更新失败')
   }
 }
 
@@ -56,7 +56,7 @@ function getStatusType(status: string): string {
   return EventStatusColorMap[status as EventStatus] || 'info'
 }
 
-// Calendar view
+// ─── 日历视图 ──────────────────────────────
 const calendarYear = ref(new Date().getFullYear())
 const calendarMonth = ref(new Date().getMonth() + 1)
 
@@ -110,7 +110,7 @@ function goToday() {
   calendarMonth.value = today.getMonth() + 1
 }
 
-// City options
+// ─── 城市选项 ──────────────────────────────
 const cityOptions = computed(() => {
   const cities = new Set(list.value.map((e) => e.city))
   return Array.from(cities).sort()
@@ -120,48 +120,48 @@ const cityOptions = computed(() => {
 <template>
   <div>
     <div class="page-header">
-      <h2>Events</h2>
+      <h2>活动管理</h2>
       <div style="display: flex; gap: 12px; align-items: center">
         <el-button-group>
           <el-button :type="viewMode === 'list' ? 'primary' : ''" size="small" @click="viewMode = 'list'">
-            List
+            列表
           </el-button>
           <el-button :type="viewMode === 'calendar' ? 'primary' : ''" size="small" @click="viewMode = 'calendar'">
-            Calendar
+            日历
           </el-button>
         </el-button-group>
-        <el-button type="primary" @click="handleCreate">Add event</el-button>
+        <el-button type="primary" @click="handleCreate">新增活动</el-button>
       </div>
     </div>
 
-    <!-- Filters -->
+    <!-- 筛选栏 -->
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="Search events..."
+      search-placeholder="搜索活动..."
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.status"
-        placeholder="Status"
+        placeholder="状态筛选"
         clearable
         style="width: 140px"
         @change="handleSearch"
       >
-        <el-option label="All" value="" />
-        <el-option label="Upcoming" value="upcoming" />
-        <el-option label="Ongoing" value="ongoing" />
-        <el-option label="Ended" value="past" />
-        <el-option label="Draft" value="draft" />
+        <el-option label="全部" value="" />
+        <el-option label="即将开始" value="upcoming" />
+        <el-option label="进行中" value="ongoing" />
+        <el-option label="已结束" value="past" />
+        <el-option label="草稿" value="draft" />
       </el-select>
       <el-select
         v-model="filters.city"
-        placeholder="City"
+        placeholder="城市筛选"
         clearable
         style="width: 140px"
         @change="handleSearch"
       >
-        <el-option label="All" value="" />
+        <el-option label="全部" value="" />
         <el-option
           v-for="c in cityOptions"
           :key="c"
@@ -172,7 +172,7 @@ const cityOptions = computed(() => {
       <el-date-picker
         v-model="filters.startDate"
         type="date"
-        placeholder="Start date"
+        placeholder="开始日期"
         value-format="YYYY-MM-DD"
         style="width: 160px"
         @change="handleSearch"
@@ -180,7 +180,7 @@ const cityOptions = computed(() => {
       <el-date-picker
         v-model="filters.endDate"
         type="date"
-        placeholder="End date"
+        placeholder="结束日期"
         value-format="YYYY-MM-DD"
         style="width: 160px"
         @change="handleSearch"
@@ -188,11 +188,11 @@ const cityOptions = computed(() => {
     </ListToolbar>
 
     <!-- ============================================ -->
-    <!-- List view -->
+    <!-- 列表视图 -->
     <!-- ============================================ -->
     <el-card v-if="viewMode === 'list'" shadow="never" class="table-card">
       <el-table :data="list" v-loading="loading" stripe>
-        <el-table-column label="Cover" width="100">
+        <el-table-column label="封面" width="100">
           <template #default="{ row }">
             <el-image
               v-if="row.image"
@@ -201,16 +201,16 @@ const cityOptions = computed(() => {
               fit="cover"
               preview-teleported
             />
-            <span v-else class="admin-list-empty">No image</span>
+            <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="Event" min-width="180">
+        <el-table-column prop="title" label="活动名称" min-width="180">
           <template #default="{ row }">
             <div>{{ row.title || '' }}</div>
             <div class="admin-list-meta">{{ row.titleEn || '' }}</div>
           </template>
         </el-table-column>
-        <el-table-column label="Dates" width="200" align="center">
+        <el-table-column label="日期" width="200" align="center">
           <template #default="{ row }">
             <span v-if="row.endDate && row.endDate !== row.date">
               {{ row.date }} ~ {{ row.endDate }}
@@ -218,8 +218,8 @@ const cityOptions = computed(() => {
             <span v-else>{{ row.date }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="city" label="City" width="100" align="center" />
-        <el-table-column label="Tags" width="200">
+        <el-table-column prop="city" label="城市" width="80" align="center" />
+        <el-table-column label="标签" width="200">
           <template #default="{ row }">
             <el-tag
               v-for="tag in row.tags.slice(0, 3)"
@@ -234,52 +234,52 @@ const cityOptions = computed(() => {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Status" width="100" align="center">
+        <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Linked routes" width="120" align="center">
+        <el-table-column label="关联路线" width="120" align="center">
           <template #default="{ row }">
-            <span v-if="row.relatedRouteSlugs.length">{{ row.relatedRouteSlugs.length }}</span>
+            <span v-if="row.relatedRouteSlugs.length">{{ row.relatedRouteSlugs.length }}条</span>
             <span v-else class="admin-list-empty">—</span>
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="270" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row.id)">Edit</el-button>
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
             <template v-if="row.status === 'draft'">
               <el-button type="success" link size="small" @click="handleStatusChange(row, 'upcoming')">
-                Publish
+                发布
               </el-button>
             </template>
             <template v-if="row.status === 'upcoming'">
               <el-button type="success" link size="small" @click="handleStatusChange(row, 'ongoing')">
-                Start
+                开始
               </el-button>
             </template>
             <template v-if="row.status === 'ongoing'">
               <el-button type="info" link size="small" @click="handleStatusChange(row, 'past')">
-                End
+                结束
               </el-button>
             </template>
             <template v-if="row.status === 'past' || row.status === 'upcoming'">
               <el-button type="warning" link size="small" @click="handleStatusChange(row, 'draft')">
-                Revert to draft
+                撤回草稿
               </el-button>
             </template>
-            <el-popconfirm title="Delete this event?" @confirm="handleDelete(row.id, row.title)">
+            <el-popconfirm title="确定删除该活动？" @confirm="handleDelete(row.id, row.title)">
               <template #reference>
-                <el-button type="danger" link size="small">Delete</el-button>
+                <el-button type="danger" link size="small">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
 
-      <!-- Pagination -->
+      <!-- 分页 -->
       <div class="pagination-wrap">
         <el-pagination
           v-model:current-page="page"
@@ -295,31 +295,31 @@ const cityOptions = computed(() => {
     </el-card>
 
     <!-- ============================================ -->
-    <!-- Calendar view -->
+    <!-- 日历视图 -->
     <!-- ============================================ -->
     <div v-else class="calendar-view" v-loading="loading">
       <div class="calendar-nav">
         <el-button size="small" @click="prevMonth">◀</el-button>
-        <span class="calendar-month">{{ new Date(calendarYear, calendarMonth - 1).toLocaleString('en', { month: 'long' }) }} {{ calendarYear }}</span>
+        <span class="calendar-month">{{ calendarYear }}年{{ calendarMonth }}月</span>
         <el-button size="small" @click="nextMonth">▶</el-button>
-        <el-button size="small" @click="goToday" style="margin-left: 12px">Today</el-button>
-        <span class="calendar-event-count">{{ calendarEvents.length }} events</span>
+        <el-button size="small" @click="goToday" style="margin-left: 12px">今天</el-button>
+        <span class="calendar-event-count">{{ calendarEvents.length }}个活动</span>
       </div>
 
       <div class="calendar-grid">
         <div class="calendar-header">
-          <div v-for="d in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="d" class="calendar-header-cell">
+          <div v-for="d in ['日','一','二','三','四','五','六']" :key="d" class="calendar-header-cell">
             {{ d }}
           </div>
         </div>
         <div class="calendar-body">
-          <!-- Leading blank days -->
+          <!-- 空白填充 -->
           <div
             v-for="i in firstDayOfWeek"
             :key="'empty-' + i"
             class="calendar-cell calendar-cell-empty"
           />
-          <!-- Day cells -->
+          <!-- 日期格 -->
           <div
             v-for="day in daysInMonth"
             :key="day"
@@ -349,7 +349,7 @@ const cityOptions = computed(() => {
 </template>
 
 <style scoped>
-/* Calendar view */
+/* 日历视图 */
 .calendar-view { margin-top: 8px; }
 .calendar-nav {
   display: flex;

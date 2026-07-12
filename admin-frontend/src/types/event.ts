@@ -38,10 +38,10 @@ export interface EventFormData {
 }
 
 export const EventStatusMap: Record<EventStatus, string> = {
-  upcoming: 'Upcoming',
-  ongoing: 'Ongoing',
-  past: 'Ended',
-  draft: 'Draft',
+  upcoming: '即将开始',
+  ongoing: '进行中',
+  past: '已结束',
+  draft: '草稿',
 }
 
 export const EventStatusColorMap: Record<EventStatus, string> = {
