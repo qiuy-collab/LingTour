@@ -272,27 +272,27 @@ onBeforeUnmount(() => {
   <aside class="frontend-preview">
     <div class="preview-toolbar">
       <div>
-        <strong>Live site preview</strong>
+        <strong>真实前台预览</strong>
         <p>{{ iframePath }}</p>
       </div>
       <div class="toolbar-actions">
         <span class="toolbar-locale-hint">English preview</span>
-        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">Open in new tab</a>
+        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">打开新窗口</a>
       </div>
     </div>
 
     <div ref="frameShellRef" class="preview-frame-shell" :style="{ height: `${scaledFrameHeight}px` }">
       <div v-if="iframeLoading" class="preview-state">
         <el-skeleton :rows="6" animated />
-        <p>Loading the live preview...</p>
+        <p>前台预览加载中...</p>
       </div>
 
       <div v-else-if="iframeFailed" class="preview-state preview-state-error">
-        <strong>Preview unavailable</strong>
-        <p>Could not reach {{ previewOrigin }}. Confirm that the public site is running.</p>
+        <strong>前台预览加载失败</strong>
+        <p>当前预览地址是 {{ previewOrigin }}，请确认前台站点已经启动。</p>
         <div class="preview-state-actions">
-          <el-button size="small" type="primary" @click="reloadFrame">Retry</el-button>
-          <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">Open in new tab</a>
+          <el-button size="small" type="primary" @click="reloadFrame">重试</el-button>
+          <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">新窗口打开</a>
         </div>
       </div>
 

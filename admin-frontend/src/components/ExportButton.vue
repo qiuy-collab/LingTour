@@ -22,14 +22,14 @@ async function handleExport(format: 'csv' | 'excel', scope: 'current' | 'all') {
   try {
     let data: any[]
     if (scope === 'all' && props.fetchAllData) {
-      ElMessage.info('Loading all records...')
+      ElMessage.info('正在获取全部数据...')
       data = await props.fetchAllData()
     } else {
       data = props.currentData
     }
 
     if (data.length === 0) {
-      ElMessage.warning('There is no data to export')
+      ElMessage.warning('没有可导出的数据')
       return
     }
 
@@ -45,7 +45,7 @@ async function handleExport(format: 'csv' | 'excel', scope: 'current' | 'all') {
       exportExcel(options)
     }
   } catch (err) {
-    ElMessage.error('Export failed')
+    ElMessage.error('导出失败')
   } finally {
     exporting.value = false
   }
@@ -60,14 +60,14 @@ function handleCommand(cmd: string) {
 <template>
   <el-dropdown :disabled="exporting" @command="handleCommand">
     <el-button :icon="Download" :loading="exporting">
-      Export<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+      导出<el-icon class="el-icon--right"><ArrowDown /></el-icon>
     </el-button>
     <template #dropdown>
       <el-dropdown-menu>
-        <el-dropdown-item command="excel-current">Current page as Excel</el-dropdown-item>
-        <el-dropdown-item command="csv-current">Current page as CSV</el-dropdown-item>
-        <el-dropdown-item v-if="fetchAllData" divided command="excel-all">All records as Excel</el-dropdown-item>
-        <el-dropdown-item v-if="fetchAllData" command="csv-all">All records as CSV</el-dropdown-item>
+        <el-dropdown-item command="excel-current">导出当前页 Excel</el-dropdown-item>
+        <el-dropdown-item command="csv-current">导出当前页 CSV</el-dropdown-item>
+        <el-dropdown-item v-if="fetchAllData" divided command="excel-all">导出全部 Excel</el-dropdown-item>
+        <el-dropdown-item v-if="fetchAllData" command="csv-all">导出全部 CSV</el-dropdown-item>
       </el-dropdown-menu>
     </template>
   </el-dropdown>

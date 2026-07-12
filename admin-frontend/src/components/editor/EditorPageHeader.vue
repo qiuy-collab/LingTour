@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, View } from '@element-plus/icons-vue'
 
+// TODO(i18n): Default labels are hardcoded Chinese. Extract to i18n when multi-language admin support is added.
 const props = withDefaults(
   defineProps<{
     title: string
@@ -15,11 +16,11 @@ const props = withDefaults(
   }>(),
   {
     backTo: '',
-    backLabel: 'Back',
-    saveLabel: 'Save',
+    backLabel: '返回',
+    saveLabel: '保存',
     saving: false,
     dirty: false,
-    dirtyLabel: 'Unsaved changes',
+    dirtyLabel: '有未保存修改',
   },
 )
 
@@ -50,9 +51,10 @@ function handleBack() {
       </div>
     </div>
     <div class="header-actions">
-      <el-button class="mobile-preview-btn" :icon="View" @click="emit('preview')">Preview</el-button>
+      <el-button class="mobile-preview-btn" :icon="View" @click="emit('preview')">预览</el-button>
       <slot name="actions" />
-      <el-button @click="handleBack">Cancel</el-button>
+      <!-- TODO(i18n): Hardcoded Chinese label '取消' — extract to i18n when multi-language admin is supported -->
+      <el-button @click="handleBack">取消</el-button>
       <el-button type="primary" :loading="saving" @click="emit('save')">{{ saveLabel }}</el-button>
     </div>
   </div>

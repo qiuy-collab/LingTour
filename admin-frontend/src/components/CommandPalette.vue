@@ -25,26 +25,26 @@ interface CommandItem {
 }
 
 const allItems: CommandItem[] = [
-  { title: 'Dashboard', path: '/admin/dashboard', group: 'Overview', keywords: 'dashboard home analytics' },
-  { title: 'Cities', path: '/admin/cities', group: 'Content', keywords: 'city archive' },
-  { title: 'Add City', path: '/admin/cities/create', group: 'Content', keywords: 'city create' },
-  { title: 'Routes', path: '/admin/routes', group: 'Content', keywords: 'route itinerary' },
-  { title: 'Add Route', path: '/admin/routes/create', group: 'Content', keywords: 'route create' },
-  { title: 'Collections', path: '/admin/shop/collections', group: 'Shop', keywords: 'collection series' },
-  { title: 'Products', path: '/admin/shop/products', group: 'Shop', keywords: 'product goods' },
-  { title: 'Add Product', path: '/admin/shop/products/create', group: 'Shop', keywords: 'product create' },
-  { title: 'Orders', path: '/admin/orders', group: 'Shop', keywords: 'order purchase' },
-  { title: 'Service Modes', path: '/admin/interpreting/modes', group: 'Interpreting', keywords: 'mode service' },
-  { title: 'Interpreters', path: '/admin/interpreting/profiles', group: 'Interpreting', keywords: 'interpreter profile' },
-  { title: 'Bookings', path: '/admin/interpreting/bookings', group: 'Interpreting', keywords: 'booking request' },
-  { title: 'FAQs', path: '/admin/interpreting/faqs', group: 'Interpreting', keywords: 'faq questions' },
-  { title: 'Events', path: '/admin/events', group: 'Operations', keywords: 'event festival' },
-  { title: 'Community Posts', path: '/admin/community', group: 'Operations', keywords: 'community posts' },
-  { title: 'Home Content', path: '/admin/home', group: 'Operations', keywords: 'home content' },
-  { title: 'Content Audit', path: '/admin/operations/audit', group: 'Operations', keywords: 'audit check' },
-  { title: 'Media Library', path: '/admin/media', group: 'Operations', keywords: 'media image' },
-  { title: 'Users', path: '/admin/users', group: 'System', keywords: 'user account' },
-  { title: 'Settings', path: '/admin/settings', group: 'System', keywords: 'settings configuration' },
+  { title: '仪表盘', path: '/admin/dashboard', group: '概览', keywords: 'dashboard 首页 统计' },
+  { title: '城市管理', path: '/admin/cities', group: '内容管理', keywords: 'city 城市' },
+  { title: '新增城市', path: '/admin/cities/create', group: '内容管理', keywords: 'city create' },
+  { title: '路线管理', path: '/admin/routes', group: '内容管理', keywords: 'route 路线 线路' },
+  { title: '新增路线', path: '/admin/routes/create', group: '内容管理', keywords: 'route create' },
+  { title: '系列管理', path: '/admin/shop/collections', group: '商城管理', keywords: 'collection 系列' },
+  { title: '商品管理', path: '/admin/shop/products', group: '商城管理', keywords: 'product 商品' },
+  { title: '新增商品', path: '/admin/shop/products/create', group: '商城管理', keywords: 'product create' },
+  { title: '订单管理', path: '/admin/orders', group: '商城管理', keywords: 'order 订单' },
+  { title: '服务模式', path: '/admin/interpreting/modes', group: '口译服务', keywords: 'mode 模式 翻译' },
+  { title: '口译员管理', path: '/admin/interpreting/profiles', group: '口译服务', keywords: 'interpreter 口译 翻译' },
+  { title: '预约管理', path: '/admin/interpreting/bookings', group: '口译服务', keywords: 'booking 预约' },
+  { title: 'FAQ管理', path: '/admin/interpreting/faqs', group: '口译服务', keywords: 'faq 常见问题' },
+  { title: '活动管理', path: '/admin/events', group: '运营管理', keywords: 'event 活动 节庆' },
+  { title: '社区帖子', path: '/admin/community', group: '运营管理', keywords: 'community 社区 帖子' },
+  { title: '首页配置', path: '/admin/home', group: '运营管理', keywords: 'home 首页' },
+  { title: '数据体检', path: '/admin/operations/audit', group: '运营管理', keywords: 'audit 体检 检查' },
+  { title: '媒体库', path: '/admin/media', group: '运营管理', keywords: 'media 媒体 图片' },
+  { title: '用户管理', path: '/admin/users', group: '系统管理', keywords: 'user 用户' },
+  { title: '系统设置', path: '/admin/settings', group: '系统管理', keywords: 'settings 设置 配置' },
 ]
 
 // Fuzzy filter
@@ -123,7 +123,7 @@ function handleKeydown(e: KeyboardEvent) {
               ref="inputRef"
               v-model="searchQuery"
               class="palette-input"
-              placeholder="Search pages or actions..."
+              placeholder="搜索页面... (输入关键词快速跳转)"
               @keydown="handleKeydown"
             />
             <kbd class="palette-kbd">ESC</kbd>
@@ -141,12 +141,12 @@ function handleKeydown(e: KeyboardEvent) {
             </div>
           </div>
           <div v-else class="palette-empty">
-            No matching pages
+            没有匹配的页面
           </div>
           <div class="palette-footer">
-            <span><kbd>↑↓</kbd> Navigate</span>
-            <span><kbd>Enter</kbd> Open</span>
-            <span><kbd>Esc</kbd> Close</span>
+            <span><kbd>↑↓</kbd> 导航</span>
+            <span><kbd>Enter</kbd> 跳转</span>
+            <span><kbd>Esc</kbd> 关闭</span>
           </div>
         </div>
       </div>
