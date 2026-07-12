@@ -88,6 +88,8 @@ export async function apiClient<T = unknown>(
   const headers: Record<string, string> = {
     Accept: "application/json",
     ...(customHeaders as Record<string, string>),
+    // The public site is English-only, including client-side refreshes.
+    "Accept-Language": "en",
   };
 
   const requestBody = serializeBody(body);

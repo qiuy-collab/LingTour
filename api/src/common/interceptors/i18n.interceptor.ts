@@ -7,7 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-type SupportedLang = 'en' | 'zh';
+type SupportedLang = 'en';
 
 @Injectable()
 export class I18nInterceptor implements NestInterceptor {
@@ -24,21 +24,8 @@ export class I18nInterceptor implements NestInterceptor {
       .pipe(map((data) => this.transformResponse(data, lang)));
   }
 
-  /**
-   * Resolve target language from request.
-   * Priority: ?lang= query > Accept-Language header > default 'en'
-   */
-  private resolveLanguage(request: any): SupportedLang {
-    const queryLang = request.query?.lang;
-    if (queryLang === 'zh' || queryLang === 'en') {
-      return queryLang;
-    }
-
-    const acceptLanguage = request.headers?.['accept-language'] ?? '';
-    if (acceptLanguage.toLowerCase().startsWith('zh')) {
-      return 'zh';
-    }
-
+  /** Public responses are always flattened to English. */
+  private resolveLanguage(_request: any): SupportedLang {
     return 'en';
   }
 

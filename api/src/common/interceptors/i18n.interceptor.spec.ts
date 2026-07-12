@@ -41,26 +41,26 @@ describe('I18nInterceptor', () => {
       });
     });
 
-    it('should use ?lang= query parameter', (done) => {
+    it('should ignore a non-English query parameter', (done) => {
       const ctx = createMockContext('zh');
       const handler = createMockHandler({
         name: { en: 'Zhanjiang', zh: '湛江' },
       });
 
       interceptor.intercept(ctx, handler).subscribe((result) => {
-        expect(result).toEqual({ name: '湛江' });
+        expect(result).toEqual({ name: 'Zhanjiang' });
         done();
       });
     });
 
-    it('should use Accept-Language header', (done) => {
+    it('should ignore a non-English Accept-Language header', (done) => {
       const ctx = createMockContext(undefined, 'zh-CN,zh;q=0.9');
       const handler = createMockHandler({
         title: { en: 'Hello', zh: '你好' },
       });
 
       interceptor.intercept(ctx, handler).subscribe((result) => {
-        expect(result).toEqual({ title: '你好' });
+        expect(result).toEqual({ title: 'Hello' });
         done();
       });
     });
@@ -95,8 +95,8 @@ describe('I18nInterceptor', () => {
 
       interceptor.intercept(ctx, handler).subscribe((result) => {
         expect(result).toEqual({
-          city: { name: '广州', region: '大湾区', slug: 'guangzhou' },
-          tags: ['滨海', '海鲜'],
+          city: { name: 'Guangzhou', region: 'Bay Area', slug: 'guangzhou' },
+          tags: ['Coast', 'Seafood'],
         });
         done();
       });
