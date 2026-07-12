@@ -60,7 +60,7 @@ async function fetchUser() {
     user.value = res.data.data
     applyForm(res.data.data)
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to load user details'))
+    ElMessage.error(extractErrorMessage(err, '获取用户信息失败'))
   } finally {
     loading.value = false
   }
@@ -69,7 +69,7 @@ async function fetchUser() {
 async function saveProfile() {
   if (!user.value) return
   if (!form.name?.trim()) {
-    ElMessage.warning('Enter a display name')
+    ElMessage.warning('请输入显示名称')
     return
   }
   saving.value = true
@@ -85,9 +85,9 @@ async function saveProfile() {
     })
     user.value = res.data.data
     applyForm(res.data.data)
-    ElMessage.success('Profile updated')
+    ElMessage.success('资料已更新')
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to update profile'))
+    ElMessage.error(extractErrorMessage(err, '资料更新失败'))
   } finally {
     saving.value = false
   }
@@ -97,10 +97,10 @@ async function handleBan() {
   if (!user.value) return
   try {
     await banUser(user.value.id)
-    ElMessage.success(`Banned ${user.value.name}`)
+    ElMessage.success(`已封禁用户 ${user.value.name}`)
     fetchUser()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to ban user'))
+    ElMessage.error(extractErrorMessage(err, '封禁失败'))
   }
 }
 
@@ -108,10 +108,10 @@ async function handleUnban() {
   if (!user.value) return
   try {
     await unbanUser(user.value.id)
-    ElMessage.success(`Unbanned ${user.value.name}`)
+    ElMessage.success(`已解封用户 ${user.value.name}`)
     fetchUser()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to unban user'))
+    ElMessage.error(extractErrorMessage(err, '解封失败'))
   }
 }
 
@@ -127,20 +127,20 @@ onMounted(() => {
 <template>
   <div class="user-detail-page" v-loading="loading">
     <div class="page-nav">
-      <el-button :icon="ArrowLeft" link @click="goBack">Back to users</el-button>
+      <el-button :icon="ArrowLeft" link @click="goBack">返回用户列表</el-button>
     </div>
 
     <template v-if="user">
       <el-card shadow="never" class="info-card">
         <template #header>
           <div class="card-header">
-            <span>User overview</span>
+            <span>用户概览</span>
             <div class="header-actions">
               <el-button v-if="user.status === 'active'" type="danger" size="small" @click="handleBan">
-                Ban user
+                封禁用户
               </el-button>
               <el-button v-else type="success" size="small" @click="handleUnban">
-                Unban user
+                解封用户
               </el-button>
             </div>
           </div>
@@ -163,18 +163,18 @@ onMounted(() => {
           </el-col>
           <el-col :xs="24" :sm="18">
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="User ID">{{ user.id }}</el-descriptions-item>
-              <el-descriptions-item label="Email">{{ user.email }}</el-descriptions-item>
-              <el-descriptions-item label="Locale">
+              <el-descriptions-item label="用户 ID">{{ user.id }}</el-descriptions-item>
+              <el-descriptions-item label="邮箱">{{ user.email }}</el-descriptions-item>
+              <el-descriptions-item label="语言偏好">
                 <el-tag size="small" type="info">{{ LocaleMap[user.locale] || user.locale }}</el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="Joined">{{ formatDateTime(user.createdAt) }}</el-descriptions-item>
-              <el-descriptions-item label="Sign-in provider">{{ user.provider || 'password' }}</el-descriptions-item>
-              <el-descriptions-item label="Member since">{{ user.memberSince || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="Visibility">
+              <el-descriptions-item label="注册时间">{{ formatDateTime(user.createdAt) }}</el-descriptions-item>
+              <el-descriptions-item label="登录来源">{{ user.provider || 'password' }}</el-descriptions-item>
+              <el-descriptions-item label="成员起始">{{ user.memberSince || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="公开范围">
                 {{ VisibilityMap[user.profileVisibility || 'public'] }}
               </el-descriptions-item>
-              <el-descriptions-item label="Home base">
+              <el-descriptions-item label="主页地域">
                 {{ user.country || user.homeBase || '-' }}
               </el-descriptions-item>
             </el-descriptions>
@@ -187,9 +187,9 @@ onMounted(() => {
           <el-card shadow="never" class="section-card">
             <template #header>
               <div class="card-header">
-                <span>Personal Vault profile</span>
+                <span>Personal Vault 档案管理</span>
                 <el-button type="primary" size="small" :loading="saving" @click="saveProfile">
-                  Save profile
+                  保存资料
                 </el-button>
               </div>
             </template>
@@ -197,12 +197,12 @@ onMounted(() => {
             <el-form label-position="top" class="profile-form">
               <el-row :gutter="16">
                 <el-col :xs="24" :sm="12">
-                  <el-form-item label="Display name">
-                    <el-input v-model="form.name" placeholder="Enter a display name" />
+                  <el-form-item label="显示名称">
+                    <el-input v-model="form.name" placeholder="输入显示名称" />
                   </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12">
-                  <el-form-item label="Avatar URL">
+                  <el-form-item label="头像 URL">
                     <el-input v-model="form.avatarUrl" placeholder="https://..." />
                   </el-form-item>
                 </el-col>
@@ -210,19 +210,19 @@ onMounted(() => {
 
               <el-row :gutter="16">
                 <el-col :xs="24" :sm="12">
-                  <el-form-item label="Country / region">
-                    <el-input v-model="form.country" placeholder="For example: China or Singapore" />
+                  <el-form-item label="国家 / 地区">
+                    <el-input v-model="form.country" placeholder="例如：中国 / Singapore" />
                   </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12">
                   <el-form-item label="Home Base">
-                    <el-input v-model="form.homeBase" placeholder="For example: Guangzhou or Shanghai" />
+                    <el-input v-model="form.homeBase" placeholder="例如：广州 / 上海" />
                   </el-form-item>
                 </el-col>
               </el-row>
 
               <el-form-item label="Travel Style">
-                <el-input v-model="form.travelStyle" placeholder="For example: coastal routes and food walks" />
+                <el-input v-model="form.travelStyle" placeholder="例如：Coastal routes and food walks" />
               </el-form-item>
 
               <el-form-item label="Bio">
@@ -230,11 +230,11 @@ onMounted(() => {
                   v-model="form.bio"
                   type="textarea"
                   :rows="4"
-                  placeholder="Profile note shown in Personal Vault"
+                  placeholder="用户在 Personal Vault 中看到的个人说明"
                 />
               </el-form-item>
 
-              <el-form-item label="Profile visibility">
+              <el-form-item label="档案可见性">
                 <el-segmented v-model="form.profileVisibility" :options="visibilityOptions" block />
               </el-form-item>
             </el-form>
@@ -244,28 +244,28 @@ onMounted(() => {
         <el-col :xs="24" :lg="10">
           <el-card shadow="never" class="section-card">
             <template #header>
-              <span>Community contribution</span>
+              <span>社区贡献摘要</span>
             </template>
 
             <div class="stats-grid">
-              <el-statistic title="Dispatches" :value="user.dispatchCount || 0" />
-              <el-statistic title="Photo dispatches" :value="user.photoDispatchCount || 0" />
-              <el-statistic title="Bookings" :value="user.bookingsCount" />
-              <el-statistic title="Shop orders" :value="user.ordersCount" />
+              <el-statistic title="Dispatch 总数" :value="user.dispatchCount || 0" />
+              <el-statistic title="带图 Dispatch" :value="user.photoDispatchCount || 0" />
+              <el-statistic title="口译预约" :value="user.bookingsCount" />
+              <el-statistic title="商城订单" :value="user.ordersCount" />
             </div>
 
             <div class="latest-dispatch">
-              <div class="latest-label">Latest dispatch</div>
-              <div class="latest-title">{{ user.latestDispatchTitle || 'No community posts yet' }}</div>
+              <div class="latest-label">最近一条 Dispatch</div>
+              <div class="latest-title">{{ user.latestDispatchTitle || '暂无社区内容' }}</div>
               <div class="latest-meta">{{ latestDispatchLabel }}</div>
             </div>
           </el-card>
 
           <el-card shadow="never" class="section-card">
             <template #header>
-              <span>Saved items</span>
+              <span>收藏记录</span>
             </template>
-            <el-empty v-if="user.favorites.length === 0" description="No saved items" :image-size="80" />
+            <el-empty v-if="user.favorites.length === 0" description="暂无收藏" :image-size="80" />
             <div v-else class="favorites-grid">
               <el-tag v-for="(slug, idx) in user.favorites" :key="idx" size="large" class="favorite-tag">
                 {{ slug }}
@@ -276,7 +276,7 @@ onMounted(() => {
       </el-row>
     </template>
 
-    <el-empty v-else-if="!loading" description="User not found" :image-size="120" />
+    <el-empty v-else-if="!loading" description="用户不存在" :image-size="120" />
   </div>
 </template>
 

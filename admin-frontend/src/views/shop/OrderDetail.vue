@@ -38,49 +38,49 @@ async function handleShip() {
   if (!order.value) return
   try {
     await ElMessageBox.confirm(
-      `Mark order ${order.value.orderNo} as shipped?`,
-      'Confirm shipment',
+      `确定将订单 ${order.value.orderNo} 标记为已发货？`,
+      '确认发货',
       { type: 'info' }
     )
     await ordersApi.markShipped(order.value.id)
     order.value.status = 'shipped'
-    ElMessage.success('Order marked as shipped')
-  } catch { /* cancelled */ }
+    ElMessage.success('已发货')
+  } catch { /* 取消 */ }
 }
 
 async function handleRefund() {
   if (!order.value) return
   try {
     const { value: reason } = await ElMessageBox.prompt(
-      'Enter a refund reason',
-      'Confirm refund',
-      { inputPlaceholder: 'Refund reason (optional)' }
+      '请输入退款原因',
+      '确认退款',
+      { inputPlaceholder: '退款原因（可选）' }
     )
     await ordersApi.markRefunded(order.value.id, reason || undefined)
     order.value.paymentStatus = 'refunded'
-    ElMessage.success('Refund issued')
-  } catch { /* cancelled */ }
+    ElMessage.success('已退款')
+  } catch { /* 取消 */ }
 }
 
 async function handleCancel() {
   if (!order.value) return
   try {
     await ElMessageBox.confirm(
-      `Cancel order ${order.value.orderNo}?`,
-      'Confirm cancellation',
+      `确定取消订单 ${order.value.orderNo}？`,
+      '确认取消',
       { type: 'warning' }
     )
     await ordersApi.updateOrderStatus(order.value.id, 'cancelled')
     order.value.status = 'cancelled'
-    ElMessage.success('Order cancelled')
-  } catch { /* cancelled */ }
+    ElMessage.success('订单已取消')
+  } catch { /* 取消 */ }
 }
 
 function formatDate(d: string) {
   if (!d || (typeof d === 'object' && Object.keys(d as any).length === 0)) return '-'
   const date = new Date(d)
   if (isNaN(date.getTime())) return '-'
-  return date.toLocaleString('en-GB', {
+  return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -98,18 +98,18 @@ onMounted(() => {
 <template>
   <div class="page-container" v-loading="loading">
     <div class="page-header">
-      <h2>Order details</h2>
-      <el-button @click="goBack">← Back to orders</el-button>
+      <h2>订单详情</h2>
+      <el-button @click="goBack">← 返回列表</el-button>
     </div>
 
     <template v-if="order">
       <!-- 状态步骤条 -->
       <el-card shadow="never" class="status-card" v-if="order.status !== 'cancelled'">
         <el-steps :active="statusIndex" align-center finish-status="success">
-          <el-step title="Pending" :description="order.status === 'pending' ? 'Awaiting confirmation' : ''" />
-          <el-step title="Confirmed" :description="order.status === 'confirmed' ? 'Awaiting shipment' : ''" />
-          <el-step title="Shipped" :description="order.status === 'shipped' ? 'In transit' : ''" />
-          <el-step title="Delivered" />
+          <el-step title="待确认" :description="order.status === 'pending' ? '等待确认' : ''" />
+          <el-step title="已确认" :description="order.status === 'confirmed' ? '待发货' : ''" />
+          <el-step title="已发货" :description="order.status === 'shipped' ? '运输中' : ''" />
+          <el-step title="已签收" />
         </el-steps>
       </el-card>
 
@@ -117,15 +117,15 @@ onMounted(() => {
       <el-result
         v-if="order.status === 'cancelled'"
         icon="error"
-        title="Order cancelled"
-        :sub-title="`Order: ${order.orderNo}`"
+        title="订单已取消"
+        :sub-title="`订单号：${order.orderNo}`"
       />
 
       <!-- 基本信息 -->
       <el-card shadow="never" class="info-card">
         <template #header>
           <div class="card-header">
-            <span>Order information</span>
+            <span>订单信息</span>
             <div style="display: flex; gap: 8px">
               <el-tag :type="OrderStatusColorMap[order.status] as any" size="default">
                 {{ OrderStatusMap[order.status] }}
@@ -138,28 +138,28 @@ onMounted(() => {
         </template>
 
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="Order">{{ order.orderNo }}</el-descriptions-item>
-          <el-descriptions-item label="Currency">{{ order.currency }}</el-descriptions-item>
-          <el-descriptions-item label="Customer">{{ order.userName }}</el-descriptions-item>
-          <el-descriptions-item label="Email">{{ order.userEmail || order.guestEmail || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="Payment method">{{ order.paymentMethod || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="Paid">{{ formatDate(order.paidAt || '') }}</el-descriptions-item>
-          <el-descriptions-item label="Placed">{{ formatDate(order.createdAt) }}</el-descriptions-item>
-          <el-descriptions-item label="Last updated">{{ formatDate(order.updatedAt || '') }}</el-descriptions-item>
-          <el-descriptions-item label="Tracking number">{{ order.trackingNo || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="Refund reason">{{ order.refundReason || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="Notes">{{ order.notes || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="订单号">{{ order.orderNo }}</el-descriptions-item>
+          <el-descriptions-item label="币种">{{ order.currency }}</el-descriptions-item>
+          <el-descriptions-item label="用户">{{ order.userName }}</el-descriptions-item>
+          <el-descriptions-item label="邮箱">{{ order.userEmail || order.guestEmail || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="支付方式">{{ order.paymentMethod || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="支付时间">{{ formatDate(order.paidAt || '') }}</el-descriptions-item>
+          <el-descriptions-item label="下单时间">{{ formatDate(order.createdAt) }}</el-descriptions-item>
+          <el-descriptions-item label="最后更新">{{ formatDate(order.updatedAt || '') }}</el-descriptions-item>
+          <el-descriptions-item label="物流单号">{{ order.trackingNo || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="退款原因">{{ order.refundReason || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="备注">{{ order.notes || '-' }}</el-descriptions-item>
         </el-descriptions>
       </el-card>
 
       <!-- 商品明细 -->
       <el-card shadow="never" class="info-card">
         <template #header>
-            <span>Items</span>
+          <span>商品明细</span>
         </template>
 
         <el-table :data="order.items" stripe size="small">
-          <el-table-column label="Image" width="80">
+          <el-table-column label="图片" width="80">
             <template #default="{ row: item }">
               <el-image
                 v-if="item.productImage"
@@ -169,14 +169,14 @@ onMounted(() => {
               />
             </template>
           </el-table-column>
-          <el-table-column prop="productName" label="Product" min-width="200" />
-          <el-table-column label="Unit price" width="120" align="right">
+          <el-table-column prop="productName" label="商品名称" min-width="200" />
+          <el-table-column label="单价" width="120" align="right">
             <template #default="{ row: item }">
               {{ order.currency }} {{ item.unitPrice.toFixed(2) }}
             </template>
           </el-table-column>
-          <el-table-column prop="quantity" label="Quantity" width="80" align="center" />
-          <el-table-column label="Subtotal" width="120" align="right">
+          <el-table-column prop="quantity" label="数量" width="80" align="center" />
+          <el-table-column label="小计" width="120" align="right">
             <template #default="{ row: item }">
               {{ order.currency }} {{ (item.unitPrice * item.quantity).toFixed(2) }}
             </template>
@@ -184,40 +184,40 @@ onMounted(() => {
         </el-table>
 
         <div class="total-bar">
-          <div>Subtotal: {{ order.currency }} {{ order.subtotal.toFixed(2) }}</div>
-          <div>+ Shipping: {{ order.currency }} {{ order.shipping.toFixed(2) }}</div>
-          <div>+ Tax: {{ order.currency }} {{ order.tax.toFixed(2) }}</div>
-          <div class="total-line">Total: {{ order.currency }} <strong>{{ order.total.toFixed(2) }}</strong></div>
+          <div>小计：{{ order.currency }} {{ order.subtotal.toFixed(2) }}</div>
+          <div>+ 运费：{{ order.currency }} {{ order.shipping.toFixed(2) }}</div>
+          <div>+ 税费：{{ order.currency }} {{ order.tax.toFixed(2) }}</div>
+          <div class="total-line">合计：{{ order.currency }} <strong>{{ order.total.toFixed(2) }}</strong></div>
         </div>
       </el-card>
 
       <!-- 收货地址 -->
       <el-card shadow="never" class="info-card">
         <template #header>
-            <span>Shipping address</span>
+          <span>收货地址</span>
         </template>
 
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="Recipient">{{ order.shippingAddress.fullName }}</el-descriptions-item>
-          <el-descriptions-item label="Phone">{{ order.shippingAddress.phone }}</el-descriptions-item>
-          <el-descriptions-item label="Country">{{ order.shippingAddress.country }}</el-descriptions-item>
-          <el-descriptions-item label="City">{{ order.shippingAddress.city }}</el-descriptions-item>
-          <el-descriptions-item label="Address" :span="2">{{ order.shippingAddress.address }}</el-descriptions-item>
-          <el-descriptions-item label="Postal code">{{ order.shippingAddress.postalCode }}</el-descriptions-item>
-          <el-descriptions-item label="Contact email">{{ order.contactEmail }}</el-descriptions-item>
+          <el-descriptions-item label="收货人">{{ order.shippingAddress.fullName }}</el-descriptions-item>
+          <el-descriptions-item label="电话">{{ order.shippingAddress.phone }}</el-descriptions-item>
+          <el-descriptions-item label="国家">{{ order.shippingAddress.country }}</el-descriptions-item>
+          <el-descriptions-item label="城市">{{ order.shippingAddress.city }}</el-descriptions-item>
+          <el-descriptions-item label="详细地址" :span="2">{{ order.shippingAddress.address }}</el-descriptions-item>
+          <el-descriptions-item label="邮编">{{ order.shippingAddress.postalCode }}</el-descriptions-item>
+          <el-descriptions-item label="联系邮箱">{{ order.contactEmail }}</el-descriptions-item>
         </el-descriptions>
       </el-card>
 
       <!-- 操作按钮 -->
       <div class="action-bar">
         <template v-if="order.status === 'pending'">
-          <el-button type="danger" @click="handleCancel">Cancel order</el-button>
+          <el-button type="danger" @click="handleCancel">取消订单</el-button>
         </template>
         <template v-if="order.status === 'confirmed' && order.paymentStatus === 'paid'">
-          <el-button type="success" @click="handleShip">Confirm shipment</el-button>
+          <el-button type="success" @click="handleShip">确认发货</el-button>
         </template>
         <template v-if="order.paymentStatus === 'paid' && order.status !== 'cancelled'">
-          <el-button type="warning" @click="handleRefund">Refund</el-button>
+          <el-button type="warning" @click="handleRefund">退款</el-button>
         </template>
       </div>
     </template>

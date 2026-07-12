@@ -47,49 +47,49 @@ interface DashboardStatCard {
 const statCards: DashboardStatCard[] = [
   {
     key: 'totalUsers',
-    label: 'Users',
+    label: '用户总数',
     icon: 'User',
     color: 'var(--lt-primary)',
     softColor: 'color-mix(in srgb, var(--lt-primary) 16%, transparent)',
   },
   {
     key: 'totalCities',
-    label: 'Cities',
+    label: '覆盖城市',
     icon: 'MapLocation',
     color: 'var(--lt-success)',
     softColor: 'color-mix(in srgb, var(--lt-success) 16%, transparent)',
   },
   {
     key: 'totalRoutes',
-    label: 'Published routes',
+    label: '已发布路线',
     icon: 'Guide',
     color: 'var(--lt-warning)',
     softColor: 'color-mix(in srgb, var(--lt-warning) 16%, transparent)',
   },
   {
     key: 'totalProducts',
-    label: 'Shop products',
+    label: '商城商品',
     icon: 'Goods',
     color: 'var(--lt-danger)',
     softColor: 'color-mix(in srgb, var(--lt-danger) 16%, transparent)',
   },
   {
     key: 'totalInterpreters',
-    label: 'Interpreters',
+    label: '口译员',
     icon: 'Microphone',
     color: 'var(--lt-info)',
     softColor: 'color-mix(in srgb, var(--lt-info) 16%, transparent)',
   },
   {
     key: 'pendingBookings',
-    label: 'Open bookings',
+    label: '待处理预约',
     icon: 'Calendar',
     color: 'var(--lt-warning)',
     softColor: 'color-mix(in srgb, var(--lt-warning) 16%, transparent)',
   },
   {
     key: 'pendingOrders',
-    label: 'Open orders',
+    label: '待处理订单',
     icon: 'Tickets',
     color: 'var(--lt-route-mountain)',
     softColor: 'color-mix(in srgb, var(--lt-route-mountain) 16%, transparent)',
@@ -162,7 +162,7 @@ async function fetchData() {
     await nextTick()
     renderCharts()
   } catch (err: any) {
-    ElMessage.error(err?.response?.data?.message || 'Failed to load dashboard data')
+    ElMessage.error(err?.response?.data?.message || '获取仪表盘数据失败')
   } finally {
     loading.value = false
   }
@@ -194,7 +194,7 @@ function renderTrendChart() {
       axisPointer: { type: 'cross' },
     },
     legend: {
-      data: ['Revenue (SGD)', 'Orders'],
+      data: ['订单金额 (SGD)', '订单数'],
       bottom: 0,
     },
     grid: {
@@ -212,12 +212,12 @@ function renderTrendChart() {
     yAxis: [
       {
         type: 'value',
-        name: 'Revenue (SGD)',
+        name: '金额 (SGD)',
         axisLabel: { formatter: '${value}' },
       },
       {
         type: 'value',
-        name: 'Orders',
+        name: '订单数',
         min: 0,
         max: countMax,
         minInterval: 1,
@@ -225,7 +225,7 @@ function renderTrendChart() {
     ],
     series: [
       {
-        name: 'Revenue (SGD)',
+        name: '订单金额 (SGD)',
         type: 'line',
         data: amounts,
         smooth: true,
@@ -238,7 +238,7 @@ function renderTrendChart() {
         },
       },
       {
-        name: 'Orders',
+        name: '订单数',
         type: 'line',
         yAxisIndex: 1,
         data: counts,
@@ -317,7 +317,7 @@ function renderBarChart() {
       axisPointer: { type: 'shadow' },
     },
     legend: {
-      data: ['Linked routes', 'Bookings'],
+      data: ['关联路线', '口译预约'],
       bottom: 0,
     },
     grid: {
@@ -333,18 +333,18 @@ function renderBarChart() {
     },
     yAxis: {
       type: 'value',
-      name: 'Count',
+      name: '数量',
     },
     series: [
       {
-        name: 'Linked routes',
+        name: '关联路线',
         type: 'bar',
         data: routeCounts,
         itemStyle: { color: palette.primary, borderRadius: [palette.radiusSm, palette.radiusSm, 0, 0] },
         barMaxWidth: 30,
       },
       {
-        name: 'Bookings',
+        name: '口译预约',
         type: 'bar',
         data: bookingCounts,
         itemStyle: { color: palette.warning, borderRadius: [palette.radiusSm, palette.radiusSm, 0, 0] },
@@ -383,7 +383,7 @@ onUnmounted(() => {
 <template>
   <div class="dashboard" v-loading="loading">
     <div class="page-header">
-      <h2>Dashboard</h2>
+      <h2>仪表盘</h2>
     </div>
 
     <!-- 统计卡片 -->
@@ -413,7 +413,7 @@ onUnmounted(() => {
       <el-col :span="24" style="margin-bottom: 16px">
         <el-card shadow="hover">
           <template #header>
-            <span class="chart-title">📈 Orders in the last 30 days</span>
+            <span class="chart-title">📈 近30天订单趋势</span>
           </template>
           <div ref="trendChartRef" class="chart-container" style="height: 360px"></div>
         </el-card>
@@ -423,7 +423,7 @@ onUnmounted(() => {
       <el-col :xs="24" :md="12" style="margin-bottom: 16px">
         <el-card shadow="hover">
           <template #header>
-            <span class="chart-title">🎯 Bookings by service mode</span>
+            <span class="chart-title">🎯 口译预约按模式分布</span>
           </template>
           <div ref="pieChartRef" class="chart-container" style="height: 320px"></div>
         </el-card>
@@ -433,7 +433,7 @@ onUnmounted(() => {
       <el-col :xs="24" :md="12" style="margin-bottom: 16px">
         <el-card shadow="hover">
           <template #header>
-            <span class="chart-title">🏙️ Top five cities</span>
+            <span class="chart-title">🏙️ 热门城市 Top5</span>
           </template>
           <div ref="barChartRef" class="chart-container" style="height: 320px"></div>
         </el-card>

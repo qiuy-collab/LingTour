@@ -58,35 +58,35 @@ function handleViewDetail(id: string) {
 async function handleShip(row: Order) {
   try {
     await ElMessageBox.confirm(
-      `Mark order ${row.orderNo} as shipped?`,
-      'Confirm shipment',
+      `确定将订单 ${row.orderNo} 标记为已发货?`,
+      '确认发货',
       { type: 'info' }
     )
     await ordersApi.markShipped(row.id)
     row.status = 'shipped'
-    ElMessage.success(`Order ${row.orderNo} marked as shipped`)
+    ElMessage.success(`订单 ${row.orderNo} 已发货`)
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || 'Shipment update failed')
+    if (err?.response) ElMessage.error(err.response.data?.message || '发货失败')
   }
 }
 
 async function handleRefund(row: Order) {
   try {
     const { value: reason } = await ElMessageBox.prompt(
-      'Enter a refund reason (optional)',
-      'Confirm refund',
+      '请输入退款原因(可选)',
+      '确认退款',
       {
-        inputPlaceholder: 'Refund reason',
+        inputPlaceholder: '退款原因',
         inputType: 'textarea',
-        confirmButtonText: 'Issue refund',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: '确定退款',
+        cancelButtonText: '取消',
       }
     )
     await ordersApi.markRefunded(row.id, reason || undefined)
     row.paymentStatus = 'refunded'
-    ElMessage.success(`Refund issued for ${row.orderNo}`)
+    ElMessage.success(`订单 ${row.orderNo} 已退款`)
   } catch (err: any) {
-    if (err?.response) ElMessage.error(err.response.data?.message || 'Refund failed')
+    if (err?.response) ElMessage.error(err.response.data?.message || '退款失败')
   }
 }
 
@@ -99,19 +99,19 @@ function itemsSummary(items: Order['items']) {
 <template>
   <div>
     <div class="page-header">
-      <h2>Orders</h2>
+      <h2>订单管理</h2>
     </div>
 
     <!-- 筛选栏 -->
     <ListToolbar
       v-model="filters.keyword"
-      search-placeholder="Search by order number or email"
+      search-placeholder="搜索订单号/用户邮箱"
       @search="handleSearch"
       @reset="handleReset"
     >
       <el-select
         v-model="filters.status"
-        placeholder="Fulfilment status"
+        placeholder="履约状态"
         clearable
         style="width: 140px"
         @change="handleSearch"
@@ -126,7 +126,7 @@ function itemsSummary(items: Order['items']) {
 
       <el-select
         v-model="filters.paymentStatus"
-        placeholder="Payment status"
+        placeholder="支付状态"
         clearable
         style="width: 140px"
         @change="handleSearch"
@@ -142,9 +142,9 @@ function itemsSummary(items: Order['items']) {
       <el-date-picker
         v-model="dateRange"
         type="daterange"
-        range-separator="to"
-        start-placeholder="Start date"
-        end-placeholder="End date"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
         format="YYYY-MM-DD"
         value-format="YYYY-MM-DD"
         style="width: 260px"
@@ -154,26 +154,26 @@ function itemsSummary(items: Order['items']) {
 
     <el-card shadow="never" class="table-card">
     <el-table :data="list" v-loading="loading" stripe>
-      <el-table-column prop="orderNo" label="Order" width="180" />
-      <el-table-column label="Customer" min-width="140">
+      <el-table-column prop="orderNo" label="订单号" width="180" />
+      <el-table-column label="用户" min-width="140">
         <template #default="{ row }">
           <div>{{ row.userName }}</div>
           <div style="font-size: 12px; color: #909399">{{ row.userEmail }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="Items" min-width="220">
+      <el-table-column label="商品明细" min-width="220">
         <template #default="{ row }">
           <div class="items-summary">{{ itemsSummary(row.items) }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="Total" width="120" align="right">
+      <el-table-column label="金额" width="120" align="right">
         <template #default="{ row }">
           <div>
             <span style="font-weight: 600">{{ row.currency }} {{ row.total.toFixed(2) }}</span>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="Fulfilment" width="120" align="center">
+      <el-table-column label="履约状态" width="100" align="center">
         <template #default="{ row }">
           <el-tag
             :type="(OrderStatusColorMap as Record<string, string>)[row.status]"
@@ -183,7 +183,7 @@ function itemsSummary(items: Order['items']) {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Payment" width="110" align="center">
+      <el-table-column label="支付状态" width="100" align="center">
         <template #default="{ row }">
           <el-tag
             :type="(PaymentStatusColorMap as Record<string, string>)[row.paymentStatus]"
@@ -193,14 +193,14 @@ function itemsSummary(items: Order['items']) {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Placed" width="170">
+      <el-table-column label="下单时间" width="170">
         <template #default="{ row }">
           {{ formatDateTime(row.createdAt) }}
         </template>
       </el-table-column>
-      <el-table-column label="Actions" width="200" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="handleViewDetail(row.id)">Details</el-button>
+          <el-button type="primary" link size="small" @click="handleViewDetail(row.id)">详情</el-button>
           <el-button
             v-if="row.status === 'confirmed' && row.paymentStatus === 'paid'"
             type="success"
@@ -208,7 +208,7 @@ function itemsSummary(items: Order['items']) {
             size="small"
             @click="handleShip(row)"
           >
-            Ship
+            发货
           </el-button>
           <el-button
             v-if="row.paymentStatus === 'paid' && row.status !== 'cancelled'"
@@ -217,7 +217,7 @@ function itemsSummary(items: Order['items']) {
             size="small"
             @click="handleRefund(row)"
           >
-            Refund
+            退款
           </el-button>
         </template>
       </el-table-column>
