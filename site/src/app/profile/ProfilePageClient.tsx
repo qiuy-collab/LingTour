@@ -34,6 +34,12 @@ const PROFILE_TABS: Array<{ key: ProfileTab; labelKey: string }> = [
   { key: "settings", labelKey: "account.profile.tabs.settings" },
 ];
 
+const PROFILE_FIELD_CLASS =
+  "mt-2 min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 px-4 py-3 text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+
+const PROFILE_LABEL_CLASS =
+  "font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
+
 function readFavorites(): FavoriteItem[] {
   try {
     const raw = window.localStorage.getItem("lingtour-favorites");
@@ -71,11 +77,11 @@ function formatBookingDate(value: string, locale: string) {
 
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
-    <div className="mx-auto max-w-2xl border border-dashed border-[var(--line)] bg-white/38 px-6 py-14 text-center sm:px-10">
+    <div className="mx-auto max-w-2xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] px-6 py-14 text-center shadow-[0_18px_62px_rgba(17,25,35,0.07)] sm:px-10">
       <span className="mx-auto block h-px w-12 bg-[var(--gold)]" />
       <h2 className="mt-6 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">{title}</h2>
-      <p className="handwritten mx-auto mt-4 max-w-lg text-base leading-relaxed text-[var(--muted)]">{body}</p>
-      <Link href={href} className="btn-primary mt-8 inline-flex px-7 py-4 text-xs">
+      <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-[var(--muted)]">{body}</p>
+      <Link href={href} className="lt-action lt-action-primary mt-8">
         {cta}
       </Link>
     </div>
@@ -89,6 +95,7 @@ export function ProfilePageClient() {
   const requestedTab = searchParams.get("tab") as ProfileTab | null;
   const activeTab = PROFILE_TABS.some((tab) => tab.key === requestedTab) ? requestedTab! : "notes";
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const tabRefs = useRef<Partial<Record<ProfileTab, HTMLButtonElement | null>>>({});
   const [user, setUser] = useState<LocalUser | null>(null);
   const [ready, setReady] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
@@ -164,6 +171,15 @@ export function ProfilePageClient() {
     };
   }, [locale]);
 
+  useEffect(() => {
+    if (!ready) return;
+    tabRefs.current[activeTab]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeTab, ready]);
+
   function selectTab(tab: ProfileTab) {
     router.replace(`/profile?tab=${tab}`, { scroll: false });
   }
@@ -226,7 +242,7 @@ export function ProfilePageClient() {
 
   return (
     <div className="min-h-screen bg-[var(--paper-deep)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20">
-      <header className="border-b border-[var(--line)] py-12 sm:py-16 lg:py-20">
+      <header className="border-b border-white/10 bg-[var(--night)] py-10 text-white sm:py-12 lg:py-16">
         <div className="site-container flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
             <button type="button" onClick={() => avatarInputRef.current?.click()} className="group relative w-fit" aria-label={t("account.profile.changeAvatar")}>
@@ -235,49 +251,53 @@ export function ProfilePageClient() {
                 name={user.name}
                 seed={user.accountId}
                 size={116}
-                ringClassName="ring-4 ring-white scrapbook-shadow"
+                ringClassName="ring-4 ring-white/16 shadow-[0_18px_52px_rgba(0,0,0,0.24)]"
               />
-              <span className="absolute -bottom-2 -right-3 bg-[var(--cinnabar)] px-3 py-2 text-[8px] font-bold uppercase tracking-[0.16em] text-white transition-transform group-hover:-translate-y-1">
+              <span className="absolute -bottom-2 -right-3 rounded-full bg-[var(--gold)] px-3 py-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[var(--night)] transition-transform group-hover:-translate-y-1">
                 {uploading ? t("account.profile.uploading") : t("account.profile.editPhoto")}
               </span>
             </button>
             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
+              <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
                 {t("account.profile.passportLabel")}
               </p>
               <h1 className="mt-3 font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.04em]">
                 {user.name}
               </h1>
-              <p className="handwritten mt-4 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+              <p className="mt-4 max-w-xl text-base leading-7 text-white/58 sm:text-lg">
                 {user.bio || t("account.profile.bioFallback")}
               </p>
             </div>
           </div>
-          <div className="border-t border-[var(--line)] pt-5 text-sm text-[var(--muted)] md:w-56 md:border-t-0 md:border-l md:pl-6 md:pt-0">
+          <div className="rounded-[var(--radius-md)] border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
             <p>{countryName(user.country, locale) || t("account.profile.locationUnset")}</p>
             <p className="mt-2">{user.homeBase || user.email}</p>
-            <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+            <p className="mt-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
               {t("account.profile.completion").replace("{number}", String(profileCompletion(user)))}
             </p>
           </div>
         </div>
       </header>
 
-      <div className="sticky top-[4.55rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/95 backdrop-blur-sm">
-        <nav className="site-container flex gap-7 overflow-x-auto" aria-label={t("account.profile.tabLabel")}>
+      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/94 backdrop-blur-xl">
+        <nav className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3" aria-label={t("account.profile.tabLabel")}>
           {PROFILE_TABS.map((tab) => (
             <button
               key={tab.key}
+              ref={(node) => {
+                tabRefs.current[tab.key] = node;
+              }}
               type="button"
               onClick={() => selectTab(tab.key)}
-              className={`relative shrink-0 py-5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors ${
-                activeTab === tab.key ? "text-[var(--cinnabar)]" : "text-[var(--muted)] hover:text-[var(--river-deep)]"
+              className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
+                activeTab === tab.key
+                  ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
+                  : "border-[var(--line)] bg-white/58 text-[var(--muted)] hover:border-[var(--river-deep)] hover:text-[var(--river-deep)]"
               }`}
               aria-current={activeTab === tab.key ? "page" : undefined}
             >
               {t(tab.labelKey)}
-              {activeTab === tab.key ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-[var(--cinnabar)]" /> : null}
             </button>
           ))}
         </nav>
@@ -287,12 +307,14 @@ export function ProfilePageClient() {
         {activeTab === "notes" ? (
           savedNotes.length ? (
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {savedNotes.map((note, index) => (
-                <Link key={note.id} href={`/community?post=${note.id}`} className={`group block ${index % 2 ? "sm:translate-y-8" : ""}`}>
-                  {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full border-[0.55rem] border-white object-cover scrapbook-shadow" /> : null}
-                  <p className="mt-6 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{note.channel}</p>
-                  <h2 className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight transition-colors group-hover:text-[var(--cinnabar)]">{note.title}</h2>
-                  <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[var(--muted)]">{note.excerpt}</p>
+              {savedNotes.map((note) => (
+                <Link key={note.id} href={`/community?post=${note.id}`} className="group block overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.06)] transition hover:-translate-y-1">
+                  {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full object-cover" /> : null}
+                  <div className="p-5">
+                  <p className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{note.channel}</p>
+                  <h2 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight transition-colors group-hover:text-[var(--cinnabar)]">{note.title}</h2>
+                  <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--muted)]">{note.excerpt}</p>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -305,7 +327,7 @@ export function ProfilePageClient() {
           savedRoutes.length ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {savedRoutes.map((item) => (
-                <Link key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group border-y border-[var(--line)] py-6">
+                <Link key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] transition hover:-translate-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.type}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.title}</h2>
                   <span className="mt-6 inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">{t("account.profile.openRecord")} →</span>
@@ -321,8 +343,8 @@ export function ProfilePageClient() {
           collectionItems.length ? (
             <div className="grid gap-10 lg:grid-cols-2">
               {collectionItems.map((item, index) => (
-                <Link key={`${item.slug}-${index}`} href={`/shop/products/${item.slug}`} className="group flex gap-5 border-b border-[var(--line)] pb-6">
-                  {"image" in item && item.image ? <img src={item.image} alt="" className="h-24 w-24 shrink-0 border-4 border-white object-cover" /> : <div className="h-24 w-24 shrink-0 border border-dashed border-[var(--line)] bg-white/45" />}
+                <Link key={`${item.slug}-${index}`} href={`/shop/products/${item.slug}`} className="group flex gap-5 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_14px_46px_rgba(17,25,35,0.05)] transition hover:-translate-y-1">
+                  {"image" in item && item.image ? <img src={item.image} alt="" className="h-24 w-24 shrink-0 rounded-[var(--radius-sm)] object-cover" /> : <div className="h-24 w-24 shrink-0 rounded-[var(--radius-sm)] border border-dashed border-[var(--line)] bg-white/45" />}
                   <div className="min-w-0">
                     <h2 className="font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.name}</h2>
                     <p className="mt-2 text-sm text-[var(--muted)]">{t("account.profile.quantity")} {item.quantity}</p>
@@ -343,9 +365,9 @@ export function ProfilePageClient() {
             </p>
           ) : bookings.length ? (
             <section aria-label={t("account.profile.bookingsLabel")}>
-              <div className="grid gap-px border border-[var(--line)] bg-[var(--line)] lg:grid-cols-2">
+              <div className="grid gap-4 lg:grid-cols-2">
                 {bookings.map((booking) => (
-                  <article key={booking.id} className="bg-[var(--paper)] p-6 sm:p-8">
+                  <article key={booking.id} className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] sm:p-8">
                     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
                       <div>
                         <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
@@ -379,7 +401,7 @@ export function ProfilePageClient() {
                   </article>
                 ))}
               </div>
-              <Link href="/interpreting#interpreting-booking" className="btn-primary mt-8 inline-flex px-7 py-4 text-xs">
+              <Link href="/interpreting#interpreting-booking" className="lt-action lt-action-primary mt-8">
                 {t("account.profile.bookingsCta")}
               </Link>
             </section>
@@ -389,47 +411,47 @@ export function ProfilePageClient() {
         ) : null}
 
         {activeTab === "settings" ? (
-          <section className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-16">
-            <div className="space-y-7">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
+            <div className="grid gap-5 rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] sm:p-7">
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.name")}</span>
-                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-3 text-lg outline-none focus:border-[var(--cinnabar)]" />
+                <span className={PROFILE_LABEL_CLASS}>{t("account.profile.name")}</span>
+                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={`${PROFILE_FIELD_CLASS} text-lg`} />
               </label>
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.country")}</span>
-                <select value={form.country} onChange={(event) => setForm((current) => ({ ...current, country: event.target.value }))} className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--cinnabar)]">
+                <span className={PROFILE_LABEL_CLASS}>{t("account.profile.country")}</span>
+                <select value={form.country} onChange={(event) => setForm((current) => ({ ...current, country: event.target.value }))} className={PROFILE_FIELD_CLASS}>
                   <option value="">{t("account.profile.countryPlaceholder")}</option>
                   {countries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}
                 </select>
               </label>
               <div className="grid gap-7 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.homeBase")}</span>
-                  <input value={form.homeBase} onChange={(event) => setForm((current) => ({ ...current, homeBase: event.target.value }))} className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--cinnabar)]" />
+                  <span className={PROFILE_LABEL_CLASS}>{t("account.profile.homeBase")}</span>
+                  <input value={form.homeBase} onChange={(event) => setForm((current) => ({ ...current, homeBase: event.target.value }))} className={PROFILE_FIELD_CLASS} />
                 </label>
                 <label className="block">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.travelStyle")}</span>
-                  <input value={form.travelStyle} onChange={(event) => setForm((current) => ({ ...current, travelStyle: event.target.value }))} className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--cinnabar)]" />
+                  <span className={PROFILE_LABEL_CLASS}>{t("account.profile.travelStyle")}</span>
+                  <input value={form.travelStyle} onChange={(event) => setForm((current) => ({ ...current, travelStyle: event.target.value }))} className={PROFILE_FIELD_CLASS} />
                 </label>
               </div>
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.bio")}</span>
-                <textarea value={form.bio} onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))} rows={5} className="mt-2 w-full resize-y border border-[var(--line)] bg-white/45 p-4 leading-relaxed outline-none focus:border-[var(--cinnabar)]" />
+                <span className={PROFILE_LABEL_CLASS}>{t("account.profile.bio")}</span>
+                <textarea value={form.bio} onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))} rows={5} className={`${PROFILE_FIELD_CLASS} min-h-32 resize-y leading-relaxed`} />
               </label>
               <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("account.profile.visibility")}</span>
-                <select value={form.profileVisibility} onChange={(event) => setForm((current) => ({ ...current, profileVisibility: event.target.value as ProfileVisibility }))} className="mt-2 w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--cinnabar)]">
+                <span className={PROFILE_LABEL_CLASS}>{t("account.profile.visibility")}</span>
+                <select value={form.profileVisibility} onChange={(event) => setForm((current) => ({ ...current, profileVisibility: event.target.value as ProfileVisibility }))} className={PROFILE_FIELD_CLASS}>
                   <option value="public">{t("account.profile.visibilityPublic")}</option>
                   <option value="community">{t("account.profile.visibilityCommunity")}</option>
                   <option value="private">{t("account.profile.visibilityPrivate")}</option>
                 </select>
               </label>
               {message ? <p className="text-sm text-[var(--cinnabar)]" role="status">{message}</p> : null}
-              <button type="button" onClick={() => void saveProfile()} disabled={saving} className="btn-primary inline-flex px-8 py-4 text-xs disabled:opacity-50">
+              <button type="button" onClick={() => void saveProfile()} disabled={saving} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--river-deep)] px-8 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)] disabled:opacity-50">
                 {saving ? t("account.profile.saving") : t("account.profile.save")}
               </button>
             </div>
-            <aside className="border-t border-[var(--line)] pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <aside className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/46 p-6">
               <p className="font-[family:var(--font-display)] text-2xl italic">{t("account.profile.settingsNoteTitle")}</p>
               <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">{t("account.profile.settingsNoteBody")}</p>
               <p className="mt-7 text-xs text-[var(--muted)]">{user.email}</p>
@@ -439,7 +461,7 @@ export function ProfilePageClient() {
       </main>
 
       {activeTab !== "settings" ? (
-        <button type="button" onClick={() => selectTab("settings")} className="btn-primary fixed bottom-4 left-4 right-4 z-40 py-4 text-xs shadow-[0_6px_8px_rgba(17,25,35,0.18)] sm:hidden">
+        <button type="button" onClick={() => selectTab("settings")} className="fixed bottom-4 left-4 right-4 z-40 min-h-12 rounded-full bg-[var(--river-deep)] px-6 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_14px_38px_rgba(17,25,35,0.24)] sm:hidden">
           {t("account.profile.edit")}
         </button>
       ) : null}

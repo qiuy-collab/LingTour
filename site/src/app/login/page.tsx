@@ -5,14 +5,15 @@ import { LoginPanel } from "@/components/ui/LoginPanel";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
+    <div className="relative min-h-screen overflow-hidden bg-[var(--night)] text-[var(--river-deep)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_12%,rgba(197,160,57,0.18),transparent_30%),radial-gradient(circle_at_86%_28%,rgba(83,131,147,0.24),transparent_38%)]" />
       <section className="site-container grid min-h-[calc(100svh-73px)] items-center py-8 lg:py-10">
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="relative mx-auto w-full max-w-6xl">
           <LoginPanel />
           <div className="mt-6 text-center text-sm">
             <Link
               href="/culture"
-              className="text-[var(--muted)] transition hover:text-[var(--river-deep)] handwritten italic"
+              className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/48 transition hover:text-white"
             >
               Continue browsing
             </Link>

@@ -308,7 +308,7 @@ export function LoginPanel() {
 
   return (
     <div
-      className="group/login grid overflow-hidden border border-[var(--line)] bg-[var(--paper)] bg-grain shadow-[0_34px_90px_rgba(17,25,35,0.16)] lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)]"
+      className="group/login grid overflow-hidden rounded-[var(--radius-xl)] border border-white/12 bg-[var(--paper)] shadow-[0_34px_100px_rgba(0,0,0,0.28)] lg:grid-cols-[minmax(0,1fr)_minmax(24rem,28rem)]"
       onMouseMove={trackPointer}
       onMouseLeave={() => setPointer({ x: 0, y: 0 })}
     >
@@ -333,21 +333,21 @@ export function LoginPanel() {
         </div>
       </aside>
 
-      <div className="relative bg-[rgba(244,242,238,0.94)] px-7 py-8 sm:px-10 sm:py-9">
+      <div className="relative bg-[rgba(244,242,238,0.97)] px-6 py-7 sm:px-10 sm:py-9">
         <div className="absolute right-0 top-0 h-32 w-32 border-b border-l border-[var(--line)] opacity-40 pointer-events-none" />
 
-        <div className="mb-4 lg:hidden">
-          <p className="font-[family:var(--font-display)] text-5xl italic leading-none text-[var(--river-deep)]">
-            LingTour
+        <div className="mb-5 lg:hidden">
+          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+            Traveller account
           </p>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 border border-[var(--line)] bg-white/50">
+        <div className="mb-7 grid grid-cols-2 rounded-full border border-[var(--line)] bg-white/56 p-1">
           {(["login", "signup"] as const).map((item) => (
             <button
               key={item}
               type="button"
-              className={`px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition ${
+              className={`min-h-11 rounded-full px-5 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.18em] transition ${
                 mode === item
                   ? "bg-[var(--river-deep)] text-white"
                   : "text-[var(--muted)] hover:bg-white/70 hover:text-[var(--river-deep)]"
@@ -365,7 +365,7 @@ export function LoginPanel() {
         <p className="font-mono text-[9px] font-bold uppercase tracking-[0.32em] text-[var(--gold)]">
           Account access
         </p>
-        <h1 className="mb-2 mt-3 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)]">
+        <h1 className="mb-2 mt-3 font-[family:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.045em] text-[var(--river-deep)]">
           {t.title}
         </h1>
         <p className="mb-6 text-sm leading-6 text-[var(--muted)]">
@@ -391,22 +391,22 @@ export function LoginPanel() {
         >
           {mode === "signup" ? (
             <div className="grid gap-6 sm:grid-cols-2">
-              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+              <label className="grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
                 Full name
                 <input
                   name="name"
-                  className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
+                  className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/64 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)] placeholder:text-[var(--muted)]/40"
                   placeholder="Maya Chen"
                   onFocus={() => markField("name")}
                   onBlur={() => markField("idle")}
                 />
               </label>
-              <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+              <label className="grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
                 Country
                 <select
                   name="country"
                   defaultValue="SG"
-                  className="appearance-none border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]"
+                  className="min-h-12 appearance-none rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/64 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
                   onFocus={() => markField("country")}
                   onBlur={() => markField("idle")}
                 >
@@ -420,25 +420,25 @@ export function LoginPanel() {
             </div>
           ) : null}
 
-          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+          <label className="grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
             Email Address
             <input
               name="email"
               type="email"
-              className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
+              className="min-h-12 rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/64 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)] placeholder:text-[var(--muted)]/40"
               placeholder="you@example.com"
               onFocus={() => markField("email")}
               onBlur={() => markField("idle")}
             />
           </label>
 
-          <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+          <label className="grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
             Password
             <span className="relative block">
               <input
                 name="password"
                 type={showPassword ? "text" : "password"}
-                className="w-full border-b border-[var(--line)] bg-transparent px-1 py-3 pr-12 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] placeholder:text-[var(--muted)]/40"
+                className="min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/64 px-4 py-3 pr-12 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)] placeholder:text-[var(--muted)]/40"
                 placeholder="Enter password"
                 onFocus={() => markField("password")}
                 onBlur={() => markField("idle")}
@@ -468,11 +468,11 @@ export function LoginPanel() {
           </label>
 
           {mode === "signup" ? (
-            <label className="grid gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+            <label className="grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
               Travel style
               <select
                 name="travelStyle"
-                className="border-b border-[var(--line)] bg-transparent px-1 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+                className="min-h-12 appearance-none rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/64 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
                 onFocus={() => markField("travelStyle")}
                 onBlur={() => markField("idle")}
               >
@@ -493,7 +493,7 @@ export function LoginPanel() {
           <button
             type="button"
             disabled={loading}
-            className={`mt-4 btn-primary w-full ${
+            className={`mt-4 min-h-12 w-full rounded-full bg-[var(--river-deep)] px-7 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)] ${
               loading ? "opacity-60 cursor-not-allowed" : ""
             }`}
             onClick={handleSignIn}

@@ -51,6 +51,12 @@ const INITIAL_FORM: CheckoutForm = {
   paymentMethod: "card",
 };
 
+const CHECKOUT_FIELD_CLASS =
+  "min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+
+const CHECKOUT_PANEL_CLASS =
+  "min-w-0 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] sm:p-7";
+
 function formatStorePrice(price: number, currency = "CNY") {
   return formatCurrency(price, currency);
 }
@@ -267,7 +273,7 @@ export function CheckoutClient() {
     return (
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
         <div className="flex min-h-screen items-center justify-center">
-          <p className="handwritten text-lg text-[var(--muted)]">
+          <p className="text-base text-[var(--muted)]">
             {t("checkout.empty.loading")}
           </p>
         </div>
@@ -285,7 +291,7 @@ export function CheckoutClient() {
           <p className="text-sm text-[var(--muted)]">
             {t("checkout.empty.bagBody")}
           </p>
-          <Link href="/shop" className="btn-paper px-8 py-3 text-xs">
+          <Link href="/shop" className="lt-action lt-action-secondary">
             {t("checkout.empty.returnToStore")}
           </Link>
         </div>
@@ -296,11 +302,11 @@ export function CheckoutClient() {
   if (orderResult && !isSandboxSecret(orderResult.stripeClientSecret) && !paymentComplete) {
     return (
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-        <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
+        <div className="mx-auto max-w-xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {t("checkout.page.paymentEyebrow")}
           </p>
-          <h1 className="mt-4 font-[family:var(--font-display)] text-4xl italic">
+          <h1 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.96] tracking-[-0.04em]">
             {t("checkout.page.paymentTitle")}
           </h1>
           <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
@@ -345,11 +351,11 @@ export function CheckoutClient() {
   if (orderResult) {
     return (
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-        <div className="mx-auto max-w-3xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
+        <div className="mx-auto max-w-3xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {paymentComplete ? t("checkout.success.paymentConfirmed") : t("checkout.success.orderLogged")}
           </p>
-          <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
+          <h1 className="mt-4 font-[family:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.04em]">
             {paymentComplete ? t("checkout.success.thankYou") : t("checkout.success.registryConfirmed")}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
@@ -359,7 +365,7 @@ export function CheckoutClient() {
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <div className="border border-[var(--line)] bg-white/65 p-4">
+            <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.orderNo")}
               </p>
@@ -367,7 +373,7 @@ export function CheckoutClient() {
                 {orderResult.orderNo}
               </p>
             </div>
-            <div className="border border-[var(--line)] bg-white/65 p-4">
+            <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.status")}
               </p>
@@ -375,7 +381,7 @@ export function CheckoutClient() {
                 {formatOrderStatus(orderResult.status)}
               </p>
             </div>
-            <div className="border border-[var(--line)] bg-white/65 p-4">
+            <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.total")}
               </p>
@@ -386,10 +392,10 @@ export function CheckoutClient() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-4">
-            <Link href="/shop" className="btn-primary px-8 py-4 text-xs">
+            <Link href="/shop" className="lt-action lt-action-primary">
               {t("checkout.success.continueBrowsing")}
             </Link>
-            <Link href="/community" className="btn-paper px-8 py-4 text-xs">
+            <Link href="/community" className="lt-action lt-action-secondary">
               {t("checkout.success.visitCommunity")}
             </Link>
           </div>
@@ -400,19 +406,26 @@ export function CheckoutClient() {
 
   return (
     <main className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <div className="grid min-h-screen lg:grid-cols-[1.15fr_0.85fr]">
-        <section className="border-r border-[var(--line)]/40 px-6 py-10 lg:px-16 lg:py-20">
-          <div className="mx-auto max-w-2xl">
-            <div className="mb-12">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+      <div className="grid min-h-screen min-w-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(24rem,0.85fr)]">
+        <section className="min-w-0 border-r border-[var(--line)]/40 px-4 py-10 sm:px-6 lg:px-16 lg:py-20">
+          <div className="mx-auto min-w-0 max-w-2xl">
+            <div className="mb-10 sm:mb-12">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--cinnabar)]">
                 {t("checkout.page.eyebrow")}
               </p>
-              <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
+              <h1 className="mt-5 max-w-[11ch] font-[family:var(--font-display)] text-[clamp(3.2rem,11vw,5.4rem)] leading-[0.9] tracking-[-0.055em]">
                 {t("checkout.page.heading")}
               </h1>
               <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
                 {t("checkout.page.body")}
               </p>
+              <div className="mt-7 flex items-center gap-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                <span className="text-[var(--cinnabar)]">01 Details</span>
+                <span className="h-px flex-1 bg-[var(--line)]" />
+                <span>02 Review</span>
+                <span className="h-px flex-1 bg-[var(--line)]" />
+                <span>03 Payment</span>
+              </div>
             </div>
 
             {error ? (
@@ -421,61 +434,61 @@ export function CheckoutClient() {
               </div>
             ) : null}
 
-            <div className="space-y-10">
-              <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+            <div className="grid min-w-0 gap-5 sm:gap-6">
+              <section className={CHECKOUT_PANEL_CLASS}>
+                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.contactSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-email" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.email")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.email")}
                     </span>
                     <input
                       id="checkout-email"
                       value={form.email}
                       onChange={(event) => updateField("email", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.emailPlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-recipient-name" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.recipientName")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.recipientName")}
                     </span>
                     <input
                       id="checkout-recipient-name"
                       value={form.recipientName}
                       onChange={(event) => updateField("recipientName", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.namePlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-phone" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.phone")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.phone")}
                     </span>
                     <input
                       id="checkout-phone"
                       value={form.phone}
                       onChange={(event) => updateField("phone", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.phonePlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-payment-method" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.paymentMethod")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.paymentMethod")}
                     </span>
                     <select
                       id="checkout-payment-method"
                       value={form.paymentMethod}
                       onChange={(event) => updateField("paymentMethod", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                     >
                       <option value="card">{t("checkout.form.paymentOption.card")}</option>
                       <option value="wechat">{t("checkout.form.paymentOption.wechat")}</option>
@@ -485,81 +498,81 @@ export function CheckoutClient() {
                 </div>
               </section>
 
-              <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+              <section className={CHECKOUT_PANEL_CLASS}>
+                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.addressSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-street" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.streetAddress")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.streetAddress")}
                     </span>
                     <input
                       id="checkout-street"
                       value={form.street}
                       onChange={(event) => updateField("street", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.addressPlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-city" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.city")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.city")}
                     </span>
                     <input
                       id="checkout-city"
                       value={form.city}
                       onChange={(event) => updateField("city", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.cityPlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-state" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.state")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.state")}
                     </span>
                     <input
                       id="checkout-state"
                       value={form.state}
                       onChange={(event) => updateField("state", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.statePlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-postal-code" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.postalCode")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.postalCode")}
                     </span>
                     <input
                       id="checkout-postal-code"
                       value={form.postalCode}
                       onChange={(event) => updateField("postalCode", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.postalCodePlaceholder")}
                     />
                   </label>
                   <label htmlFor="checkout-country" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.country")}</span>
-                    <span aria-hidden="true" className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.country")}
                     </span>
                     <input
                       id="checkout-country"
                       value={form.country}
                       onChange={(event) => updateField("country", event.target.value)}
-                      className="border-b border-[var(--line)] bg-transparent py-3 text-sm outline-none focus:border-[var(--gold)]"
+                      className={CHECKOUT_FIELD_CLASS}
                       placeholder={t("checkout.form.countryPlaceholder")}
                     />
                   </label>
                 </div>
               </section>
 
-              <section className="border border-[var(--line)] bg-[var(--paper)] p-8 scrapbook-shadow">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+              <section className={CHECKOUT_PANEL_CLASS}>
+                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.handlingNote")}
                 </p>
                 <label htmlFor="checkout-note" className="mt-5 block">
@@ -568,7 +581,7 @@ export function CheckoutClient() {
                     id="checkout-note"
                     value={form.note}
                     onChange={(event) => updateField("note", event.target.value)}
-                    className="min-h-[120px] w-full border border-[var(--line)] bg-transparent p-4 text-sm leading-7 outline-none focus:border-[var(--gold)]"
+                    className="min-h-[120px] w-full resize-y rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 p-4 text-sm leading-7 outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]"
                     placeholder={t("checkout.form.notesPlaceholder")}
                   />
                 </label>
@@ -577,10 +590,10 @@ export function CheckoutClient() {
           </div>
         </section>
 
-        <aside className="bg-[var(--paper-deep)]/40 px-6 py-10 lg:px-16 lg:py-20">
+        <aside className="min-w-0 border-t border-[var(--line)] bg-[var(--paper)]/52 px-4 py-10 sm:px-6 lg:border-t-0 lg:px-12 lg:py-20">
           <div className="sticky top-24 mx-auto max-w-md">
-            <div className="border border-[var(--line)] bg-white/70 p-8 scrapbook-shadow">
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
+            <div className="rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_22px_72px_rgba(17,25,35,0.09)] sm:p-7">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
                 {t("checkout.summary.title")}
               </p>
               <div className="mt-6 space-y-4">
@@ -589,10 +602,7 @@ export function CheckoutClient() {
                     key={item.slug}
                     className="flex items-center gap-4 rounded-2xl border border-[var(--line)]/70 bg-white/60 px-4 py-4"
                   >
-                    <div
-                      className="h-16 w-16 shrink-0 rounded-2xl bg-cover bg-center"
-                      style={{ backgroundImage: `url(${item.image})` }}
-                    />
+                    <img src={item.image} alt="" className="h-16 w-16 shrink-0 rounded-[var(--radius-sm)] object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-[var(--river-deep)]">
                         {item.name}
@@ -642,7 +652,7 @@ export function CheckoutClient() {
                 type="button"
                 onClick={submitOrder}
                 disabled={!canSubmit || submitting}
-                className={`mt-8 w-full px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] transition ${
+                className={`mt-8 min-h-[3.25rem] w-full rounded-full px-8 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition ${
                   canSubmit && !submitting
                     ? "bg-[var(--river-deep)] text-white hover:bg-[var(--cinnabar)]"
                     : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"

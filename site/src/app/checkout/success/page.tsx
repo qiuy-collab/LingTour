@@ -25,20 +25,23 @@ function SuccessContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-      <div className="mx-auto max-w-3xl border border-[var(--line)] bg-[var(--paper)] p-10 scrapbook-shadow">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-4 py-12 text-[var(--river-deep)] sm:px-6 sm:py-16 lg:px-16 lg:py-24">
+      <div className="mx-auto max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_28px_90px_rgba(17,25,35,0.12)]">
+        <div className="bg-[var(--night)] px-6 py-8 text-white sm:px-10 sm:py-10">
+        <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
           {t("checkout.success.paymentConfirmed")}
         </p>
-        <h1 className="mt-4 font-[family:var(--font-display)] text-5xl italic">
+        <h1 className="mt-5 font-[family:var(--font-display)] text-5xl leading-[0.92] tracking-[-0.05em] sm:text-6xl">
           {t("checkout.success.thankYou")}
         </h1>
-        <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
+        <p className="mt-5 max-w-2xl text-base leading-8 text-white/62">
           {t("checkout.success.paymentMessage")}
         </p>
+        </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="border border-[var(--line)] bg-white/65 p-4">
+        <div className="p-6 sm:p-10">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[var(--radius-md)] border border-[var(--line)] bg-white/65 p-5">
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
               {t("checkout.success.orderNo")}
             </p>
@@ -46,7 +49,7 @@ function SuccessContent() {
               {orderNo}
             </p>
           </div>
-          <div className="border border-[var(--line)] bg-white/65 p-4">
+          <div className="rounded-[var(--radius-md)] border border-[var(--line)] bg-white/65 p-5">
             <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
               {t("checkout.success.status")}
             </p>
@@ -57,12 +60,13 @@ function SuccessContent() {
         </div>
 
         <div className="mt-10 flex flex-wrap gap-4">
-          <Link href="/shop" className="btn-primary px-8 py-4 text-xs">
+          <Link href="/shop" className="lt-action lt-action-primary">
             {t("checkout.success.continueBrowsing")}
           </Link>
-          <Link href="/community" className="btn-paper px-8 py-4 text-xs">
+          <Link href="/community" className="lt-action lt-action-secondary">
             {t("checkout.success.visitCommunity")}
           </Link>
+        </div>
         </div>
       </div>
     </main>
