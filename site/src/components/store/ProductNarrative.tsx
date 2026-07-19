@@ -23,42 +23,49 @@ export function ProductNarrative({ product }: { product: StoreProduct }) {
   const narrativeMedia = media[1] ?? media[0] ?? null;
 
   return (
-    <section className="border-y border-[var(--line)] bg-[var(--paper)] py-16 sm:py-20 lg:py-24">
+    <section className="border-y border-[var(--river-deep)]/10 bg-[var(--paper-deep)] bg-grain py-16 sm:py-20 lg:py-28 xl:py-32">
       <div className="site-container">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-16">
+        <div className="grid min-w-0 gap-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-center lg:gap-16">
           <Reveal>
-            <div className="max-w-[48rem]">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                {t("shop.detail.provenance")}
-              </p>
-              <h2 className="mt-5 max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.96] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
-                The story carried by this object.
-              </h2>
-              <p className="mt-7 max-w-[62ch] text-base leading-8 text-[var(--river-deep)]/74 lg:text-lg">
+            <div className="max-w-2xl space-y-7 sm:space-y-8">
+              <header>
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)] sm:text-[10px] sm:tracking-[0.24em]">
+                  {t("shop.detail.provenance")}
+                </p>
+                <h2 className="mt-4 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] text-[var(--river-deep)] sm:text-5xl md:text-6xl">
+                  {product.name}
+                </h2>
+              </header>
+
+              <p className="max-w-[62ch] text-base leading-8 text-[var(--river-deep)]/76 sm:text-lg">
                 {product.story}
               </p>
 
-              <dl className="mt-8 grid overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/56 sm:grid-cols-2">
-                <div className="border-b border-[var(--line)] p-5 sm:border-b-0 sm:border-r">
-                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.collection")}</dt>
-                  <dd className="mt-2 text-base text-[var(--river-deep)]">{collectionLabel}</dd>
+              <dl className="grid border-y border-[var(--line)] sm:grid-cols-2">
+                <div className="border-b border-[var(--line)] py-5 sm:border-b-0 sm:border-r sm:pr-6">
+                  <dt className="text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:text-[9px]">{t("shop.detail.collection")}</dt>
+                  <dd className="mt-2 text-[15px] text-[var(--river-deep)] sm:text-base">{collectionLabel}</dd>
                 </div>
-                <div className="border-b border-[var(--line)] p-5 sm:border-b-0">
-                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.category")}</dt>
-                  <dd className="mt-2 text-base text-[var(--river-deep)]">{product.tag}</dd>
+                <div className="border-b border-[var(--line)] py-5 sm:border-b-0 sm:pl-6">
+                  <dt className="text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:text-[9px]">{t("shop.detail.category")}</dt>
+                  <dd className="mt-2 text-[15px] text-[var(--river-deep)] sm:text-base">{product.tag}</dd>
                 </div>
-                <div className="border-t border-[var(--line)] p-5 sm:col-span-2">
-                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.material")}</dt>
-                  <dd className="mt-2 text-base leading-7 text-[var(--river-deep)]">{materialLine}</dd>
+                <div className="border-t border-[var(--line)] py-5 sm:col-span-2">
+                  <dt className="text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:text-[9px]">{t("shop.detail.material")}</dt>
+                  <dd className="mt-2 text-[15px] leading-7 text-[var(--river-deep)] sm:text-base">{materialLine}</dd>
                 </div>
               </dl>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/routes" className="lt-action lt-action-primary">{t("shop.detail.routesCta")}</Link>
-                <Link href="/culture" className="lt-action lt-action-secondary">{t("shop.detail.citiesCta")}</Link>
+              <div className="grid gap-3 pt-1 sm:flex sm:flex-wrap sm:gap-4">
+                <Link href="/routes" className="btn-paper min-h-12 w-full px-6 py-3 text-[10px] sm:w-auto sm:text-[11px]">
+                  {t("shop.detail.routesCta")}
+                </Link>
+                <Link href="/culture" className="btn-outline min-h-12 w-full px-6 py-3 text-[10px] sm:w-auto sm:text-[11px]">
+                  {t("shop.detail.citiesCta")}
+                </Link>
                 <Link
                   href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} feels worth recording because `)}`}
-                  className="lt-action lt-action-gold"
+                  className="btn-gold min-h-12 w-full px-6 py-3 text-[10px] sm:w-auto sm:text-[11px]"
                 >
                   {t("shop.detail.noteCta")}
                 </Link>
@@ -66,19 +73,26 @@ export function ProductNarrative({ product }: { product: StoreProduct }) {
             </div>
           </Reveal>
 
-          <Reveal delay={110}>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_24px_80px_rgba(17,25,35,0.12)] sm:aspect-[5/4]">
-              <MediaFrame
-                asset={narrativeMedia}
-                fallbackSrc={product.image}
-                alt={`${product.name} provenance`}
-                mode={narrativeMedia?.type === "video" ? "interactive" : "image"}
-                mediaClassName="object-cover"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_54%,rgba(7,16,22,0.72))]" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{collectionLabel}</p>
-                <p className="mt-2 max-w-[18ch] font-[family:var(--font-display)] text-2xl leading-none sm:text-3xl">{product.tag}</p>
+          <Reveal delay={120}>
+            <div className="relative mx-auto aspect-[5/4] w-full max-w-xl rotate-2 bg-white p-4 scrapbook-shadow sm:aspect-[3/4] sm:max-w-md sm:p-6 lg:max-w-none">
+              <div className="absolute -top-3 right-8 z-20 h-8 w-24 rotate-12 border border-white/20 bg-white/45 backdrop-blur-sm sm:right-12" />
+              <div className="relative h-full w-full overflow-hidden">
+                <MediaFrame
+                  asset={narrativeMedia}
+                  fallbackSrc={product.image}
+                  alt={`${product.name} provenance`}
+                  mode={narrativeMedia?.type === "video" ? "interactive" : "image"}
+                  mediaClassName="object-cover grayscale transition duration-1000 hover:scale-105 hover:grayscale-0"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_46%,rgba(17,25,35,0.48))]" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-white sm:p-8">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] sm:text-[10px]">
+                    {collectionLabel}
+                  </p>
+                  <p className="mt-2 max-w-[18ch] font-[family:var(--font-display)] text-2xl leading-tight sm:text-3xl">
+                    {product.tag}
+                  </p>
+                </div>
               </div>
             </div>
           </Reveal>
