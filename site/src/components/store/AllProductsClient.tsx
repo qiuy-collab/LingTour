@@ -35,23 +35,23 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
 
   return (
     <div>
-      <div className="bg-[var(--paper)] bg-grain p-6 lg:p-10 scrapbook-shadow border border-[var(--line)] rotate-[-0.5deg] mb-16">
+      <div className="mb-10 rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/52 p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] backdrop-blur-sm sm:mb-12 sm:p-6 lg:p-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_14rem_12rem]">
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Search Registry</span>
+            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Search registry</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Product, route, or story..."
-              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] handwritten"
+              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]"
             />
           </label>
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Collection</span>
+            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Collection</span>
             <select
               value={collection}
               onChange={(event) => setCollection(event.target.value)}
-              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
             >
               <option>All collections</option>
               {collections.map((item) => (
@@ -60,11 +60,11 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
             </select>
           </label>
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Type</span>
+            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Type</span>
             <select
               value={tag}
               onChange={(event) => setTag(event.target.value)}
-              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
+              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
             >
               <option>All types</option>
               {tags.map((item) => (
@@ -75,14 +75,14 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] mb-12">
+      <div className="mb-8 flex items-center justify-between gap-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:mb-10">
         <p>
           Showing {filteredProducts.length} <span className="text-[var(--gold)]">/</span> {products.length} Field Objects
         </p>
         {(query || collection !== "All collections" || tag !== "All types") && (
           <button
             type="button"
-            className="text-[var(--cinnabar)] hover:underline"
+            className="inline-flex min-h-10 items-center rounded-full px-3 text-[var(--cinnabar)] hover:bg-[var(--cinnabar)]/8"
             onClick={() => {
               setQuery("");
               setCollection("All collections");
@@ -94,21 +94,21 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         )}
       </div>
 
-      <div className="grid gap-x-12 gap-y-20 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {filteredProducts.map((product, index) => (
           <StoreProductCard key={product.slug} product={product} index={index} />
         ))}
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="mt-24 text-center py-20 border border-[var(--line)] bg-white/30 scrapbook-shadow rotate-1">
+        <div className="mt-16 rounded-[var(--radius-xl)] border border-[var(--line)] bg-white/44 px-6 py-16 text-center shadow-[0_18px_60px_rgba(17,25,35,0.07)]">
           <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)] italic">
             Registry empty.
           </p>
-          <p className="mt-4 text-sm text-[var(--muted)] handwritten">No matching field objects found in this archive.</p>
+          <p className="mt-4 text-sm leading-7 text-[var(--muted)]">No matching field objects found in this archive.</p>
           <button
             onClick={() => { setQuery(""); setCollection("All collections"); setTag("All types"); }}
-            className="mt-8 btn-outline px-8 py-3"
+            className="lt-action lt-action-secondary mt-8"
           >
             Clear All
           </button>
