@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import type { CityCultureSection } from "@/data/culture";
 import { MediaFrame } from "@/components/ui/MediaFrame";
+import { gsap, motionEase, ScrollTrigger, useGSAP } from "@/lib/motion";
 import type { MediaAsset } from "@/types/media";
 import {
   dedupeMedia,
@@ -516,6 +516,77 @@ function Bookmarks({
   );
 }
 
+function TurningPage({
+  flipState,
+  section,
+  cityName,
+}: {
+  flipState: FlipState;
+  section: CityCultureSection;
+  cityName: string;
+}) {
+  const pageRef = useRef<HTMLDivElement | null>(null);
+
+  useGSAP(
+    () => {
+      if (!pageRef.current) return;
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          pageRef.current,
+          { rotateY: 0, skewY: 0, x: 0, scaleY: 1, scaleX: 1 },
+          {
+            rotateY: flipState.direction === "next" ? -168 : 168,
+            skewY: flipState.direction === "next" ? -2.8 : 2.8,
+            x: flipState.direction === "next" ? -10 : 10,
+            scaleY: 0.992,
+            scaleX: 0.985,
+            duration: 0.86,
+            ease: motionEase.emphasized,
+          },
+        );
+      });
+      return () => media.revert();
+    },
+    { scope: pageRef, dependencies: [flipState.key], revertOnUpdate: true },
+  );
+
+  return (
+    <div
+      ref={pageRef}
+      className={`absolute top-0 z-20 h-full w-1/2 will-change-transform ${
+        flipState.direction === "next" ? "right-0 origin-left" : "left-0 origin-right"
+      }`}
+      style={{
+        transformStyle: "preserve-3d",
+        boxShadow:
+          flipState.direction === "next"
+            ? "-54px 0 92px rgba(17,25,35,0.22)"
+            : "54px 0 92px rgba(17,25,35,0.22)",
+        filter: "drop-shadow(0 18px 30px rgba(17,25,35,0.12))",
+      }}
+    >
+      <div className="absolute inset-0 overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
+        <TurningLeaf cityName={cityName} direction={flipState.direction} />
+      </div>
+      <div
+        className="absolute inset-0 overflow-hidden"
+        style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}
+      >
+        <PageBack section={section} index={flipState.to} />
+        <div
+          className={`pointer-events-none absolute inset-y-0 top-0 w-14 ${
+            flipState.direction === "next"
+              ? "left-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.52),transparent)]"
+              : "right-0 bg-[linear-gradient(270deg,rgba(255,255,255,0.52),transparent)]"
+          }`}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[linear-gradient(180deg,transparent,rgba(17,25,35,0.08))]" />
+      </div>
+    </div>
+  );
+}
+
 function BookSpread({
   sections,
   activeIdx,
@@ -548,6 +619,7 @@ function BookSpread({
 
   return (
     <div
+      data-city-book
       className={`relative mx-auto ${widthClass} ${heightClass}`}
       style={{
         perspective: "1500px",
@@ -601,58 +673,14 @@ function BookSpread({
           }`}
         />
 
-        <AnimatePresence>
-          {flipState ? (
-            <motion.div
-              key={flipState.key}
-              className={`absolute top-0 z-20 h-full w-1/2 ${
-                flipState.direction === "next" ? "right-0 origin-left" : "left-0 origin-right"
-              }`}
-              initial={{
-                rotateY: 0,
-                skewY: 0,
-                x: 0,
-                scaleY: 1,
-                scaleX: 1,
-              }}
-              animate={{
-                rotateY: flipState.direction === "next" ? -168 : 168,
-                skewY: flipState.direction === "next" ? -2.8 : 2.8,
-                x: flipState.direction === "next" ? -10 : 10,
-                scaleY: 0.992,
-                scaleX: 0.985,
-              }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: [0.22, 0.7, 0.2, 1] }}
-              style={{
-                transformStyle: "preserve-3d",
-                boxShadow:
-                  flipState.direction === "next"
-                    ? "-54px 0 92px rgba(17,25,35,0.22)"
-                    : "54px 0 92px rgba(17,25,35,0.22)",
-                filter: "drop-shadow(0 18px 30px rgba(17,25,35,0.12))",
-              }}
-            >
-              <div className="absolute inset-0 overflow-hidden" style={{ backfaceVisibility: "hidden" }}>
-                <TurningLeaf cityName={cityName} direction={flipState.direction} />
-              </div>
-              <div
-                className="absolute inset-0 overflow-hidden"
-                style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}
-              >
-                <PageBack section={sections[flipState.to]} index={flipState.to} />
-                <div
-                  className={`pointer-events-none absolute inset-y-0 top-0 w-14 ${
-                    flipState.direction === "next"
-                      ? "left-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.52),transparent)]"
-                      : "right-0 bg-[linear-gradient(270deg,rgba(255,255,255,0.52),transparent)]"
-                  }`}
-                />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[linear-gradient(180deg,transparent,rgba(17,25,35,0.08))]" />
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {flipState ? (
+          <TurningPage
+            key={flipState.key}
+            flipState={flipState}
+            section={sections[flipState.to]}
+            cityName={cityName}
+          />
+        ) : null}
 
         <div className="pointer-events-none absolute left-1/2 top-0 z-30 h-full w-10 -translate-x-1/2">
           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[var(--river-deep)]/35" />
@@ -663,125 +691,6 @@ function BookSpread({
 
       <Bookmarks sections={sections} activeIdx={visibleIdx} onSelect={onSelectSection} />
     </div>
-  );
-}
-
-function MobileChapter({
-  section,
-  index,
-  total,
-  fallbackImage,
-  cityName,
-  setRef,
-}: {
-  section: CityCultureSection;
-  index: number;
-  total: number;
-  fallbackImage: string;
-  cityName: string;
-  setRef: (node: HTMLElement | null) => void;
-}) {
-  const frames = useMemo(
-    () => sectionFrames(section, fallbackImage),
-    [fallbackImage, section],
-  );
-  const [activeFrame, setActiveFrame] = useState(0);
-  const activeMedia = frames[activeFrame] ?? frames[0] ?? null;
-  const paragraphs = section.body
-    .split(/\n\n+/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  useEffect(() => {
-    setActiveFrame(0);
-  }, [section.title]);
-
-  return (
-    <article
-      ref={setRef}
-      className="scroll-mt-32 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_18px_62px_rgba(17,25,35,0.08)]"
-    >
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] px-5 py-4">
-        <div className="min-w-0">
-          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-            {cityName} archive
-          </p>
-          <p className="mt-1 truncate font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
-            {section.title}
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full border border-[var(--line)] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-          {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-        </span>
-      </div>
-
-      <div className="p-4 sm:p-5">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-[var(--night)]">
-          <MediaFrame
-            asset={activeMedia}
-            fallbackSrc={mediaPoster(activeMedia, section.image || fallbackImage)}
-            alt={section.title}
-            mode={activeMedia?.type === "video" ? "interactive" : "image"}
-            eager={index === 0}
-            mediaClassName="object-cover"
-          />
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-end p-3">
-            <span className="rounded-full border border-white/24 bg-black/28 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md">
-              Frame {String(activeFrame + 1).padStart(2, "0")}
-            </span>
-          </div>
-        </div>
-
-        {frames.length > 1 ? (
-          <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto pb-1">
-            {frames.map((frame, frameIndex) => (
-              <button
-                key={`${frame.type}:${frame.url}`}
-                type="button"
-                onClick={() => setActiveFrame(frameIndex)}
-                aria-label={`Show ${section.title} media ${frameIndex + 1}`}
-                aria-pressed={activeFrame === frameIndex}
-                className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-[0.75rem] border-2 transition ${
-                  activeFrame === frameIndex
-                    ? "border-[var(--cinnabar)] opacity-100"
-                    : "border-transparent opacity-55"
-                }`}
-              >
-                <MediaFrame asset={frame} alt="" mode="image" mediaClassName="object-cover" />
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="border-t border-[var(--line)] px-5 pb-6 pt-5 sm:px-6 sm:pb-7">
-        {section.stat ? (
-          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-            {section.stat}
-          </p>
-        ) : null}
-        <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)]">
-          {section.title}
-        </h3>
-        <div className="mt-5 grid gap-4">
-          {paragraphs.map((paragraph, paragraphIndex) => (
-            <p key={`${section.title}-mobile-${paragraphIndex}`} className="text-[15px] leading-7 text-[var(--muted)]">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-        {section.breathQuote ? (
-          <blockquote className="mt-6 rounded-[var(--radius-md)] border border-[var(--gold)]/28 bg-[var(--gold)]/[0.07] p-5">
-            <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-              Field voice
-            </p>
-            <p className="mt-3 font-[family:var(--font-display)] text-xl italic leading-7 text-[var(--river-deep)]">
-              “{section.breathQuote}”
-            </p>
-          </blockquote>
-        ) : null}
-      </div>
-    </article>
   );
 }
 
@@ -802,37 +711,48 @@ function MobileStack({
 }) {
   return (
     <div className="lg:hidden">
-      <div className="sticky top-[4.5rem] z-30 border-y border-[var(--line)] bg-[var(--paper-deep)]/92 px-4 py-3 backdrop-blur-xl">
+      <div className="sticky top-[4.5rem] z-30 border-y border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain px-4 py-3 backdrop-blur-xl">
         <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
           {sections.map((section, index) => (
             <button
               key={`${index}-${section.title}-mobile-tab`}
               type="button"
               onClick={() => onSelectSection(index)}
-              className={`max-w-[13rem] shrink-0 rounded-full border px-4 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+              aria-pressed={index === activeIdx}
+              className={`max-w-[12rem] shrink-0 border px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] transition active:scale-[0.97] ${
                 index === activeIdx
                   ? "border-[var(--cinnabar)] bg-[var(--cinnabar)] text-white"
-                  : "border-[var(--line)] bg-white/72 text-[var(--river-deep)]"
+                  : "border-[var(--line)] bg-[var(--parchment-tab)] text-[var(--river-deep)]"
               }`}
             >
-              {String(index + 1).padStart(2, "0")} <span className="ml-1 truncate">{section.title}</span>
+              {String(index + 1).padStart(2, "0")} <span className="ml-1 inline-block max-w-[8rem] truncate align-bottom">{section.title}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="site-container py-8 sm:py-10">
-        <div className="grid gap-7">
+      <div className="site-container py-8 sm:py-12">
+        <div className="grid gap-8 sm:gap-12">
           {sections.map((section, index) => (
-            <MobileChapter
+            <article
+              data-city-mobile-chapter
               key={`${index}-${section.title}-mobile`}
-              section={section}
-              index={index}
-              total={sections.length}
-              fallbackImage={fallbackImage}
-              cityName={cityName}
-              setRef={(node) => setMobileRef(node, index)}
-            />
+              ref={(node) => setMobileRef(node, index)}
+              className="border border-[var(--line)] bg-[var(--parchment-page)] bg-grain shadow-[0_22px_60px_rgba(17,25,35,0.14)]"
+            >
+              <VisualPlate
+                section={section}
+                index={index}
+                fallbackImage={fallbackImage}
+                cityName={cityName}
+              />
+              <NarrativePage
+                section={section}
+                index={index}
+                total={sections.length}
+                cityName={cityName}
+              />
+            </article>
           ))}
         </div>
       </div>
@@ -847,6 +767,7 @@ export function CityArchivalBook({
   showIntro = true,
   immersive = false,
 }: Props) {
+  const rootRef = useRef<HTMLElement | null>(null);
   const mobileRefs = useRef<(HTMLElement | null)[]>([]);
   const measurementRefs = useRef<(HTMLDivElement | null)[]>([]);
   const flipTimerRef = useRef<number | null>(null);
@@ -865,6 +786,97 @@ export function CityArchivalBook({
     [fallbackImage, immersive, sections],
   );
 
+  useGSAP(
+    () => {
+      const root = rootRef.current;
+      if (!root) return;
+      const media = gsap.matchMedia();
+
+      media.add(
+        {
+          animate: "(prefers-reduced-motion: no-preference)",
+          desktop: "(min-width: 1024px)",
+        },
+        (context) => {
+          const { animate, desktop } = context.conditions ?? {};
+          const animated = root.querySelectorAll(
+            "[data-city-book-intro], [data-city-book], [data-city-mobile-chapter], [data-city-book-bloom]",
+          );
+          if (!animate) {
+            gsap.set(animated, { clearProps: "all" });
+            return;
+          }
+
+          gsap.to("[data-city-book-bloom]", {
+            yPercent: 18,
+            rotation: 5,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.9,
+            },
+          });
+
+          if (showIntro) {
+            gsap.from("[data-city-book-intro] > *", {
+              autoAlpha: 0,
+              y: 18,
+              duration: 0.65,
+              stagger: 0.1,
+              ease: motionEase.enter,
+              scrollTrigger: {
+                trigger: "[data-city-book-intro]",
+                start: "top 88%",
+                once: true,
+              },
+            });
+          }
+
+          if (desktop) {
+            gsap.from("[data-city-book]", {
+              autoAlpha: 0,
+              y: 46,
+              rotationX: 3.5,
+              transformPerspective: 1200,
+              duration: 0.95,
+              ease: motionEase.emphasized,
+              scrollTrigger: {
+                trigger: "[data-city-book]",
+                start: "top 86%",
+                once: true,
+              },
+            });
+            return;
+          }
+
+          gsap.utils.toArray<HTMLElement>("[data-city-mobile-chapter]", root).forEach((chapter) => {
+            gsap.from(chapter, {
+              autoAlpha: 0,
+              y: 30,
+              rotation: 0.45,
+              duration: 0.72,
+              ease: motionEase.enter,
+              scrollTrigger: {
+                trigger: chapter,
+                start: "top 88%",
+                once: true,
+              },
+            });
+          });
+        },
+      );
+
+      return () => media.revert();
+    },
+    {
+      scope: rootRef,
+      dependencies: [cityName, sections.length, showIntro],
+      revertOnUpdate: true,
+    },
+  );
+
   const turnDesktopPage = useCallback(
     (target: number | ((currentIndex: number) => number)) => {
       const currentIndex = desktopActiveIdxRef.current;
@@ -874,6 +886,14 @@ export function CityArchivalBook({
 
       if (flipTimerRef.current) {
         window.clearTimeout(flipTimerRef.current);
+        flipTimerRef.current = null;
+      }
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        desktopActiveIdxRef.current = safeTarget;
+        setDesktopActiveIdx(safeTarget);
+        setFlipState(null);
+        return;
       }
 
       setFlipState({
@@ -995,14 +1015,19 @@ export function CityArchivalBook({
     };
   }, []);
 
+  useEffect(() => {
+    const refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+    return () => cancelAnimationFrame(refreshFrame);
+  }, [measuredBookHeight]);
+
   if (sections.length === 0) return null;
 
   return (
-    <section className="relative overflow-hidden bg-[var(--paper-deep)] bg-grain">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(197,160,57,0.13),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(23,73,90,0.09),transparent_30%)]" />
+    <section ref={rootRef} className="relative overflow-hidden bg-[var(--paper-deep)] bg-grain">
+      <div data-city-book-bloom className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(197,160,57,0.13),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(23,73,90,0.09),transparent_30%)]" />
 
       {showIntro ? (
-        <div className="relative z-10 py-16 text-center lg:py-20">
+        <div data-city-book-intro className="relative z-10 py-16 text-center lg:py-20">
           <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
             Archival Book / {cityName}
           </p>
