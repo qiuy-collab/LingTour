@@ -274,7 +274,7 @@ export default function HomeClient({
         </section>
 
         {/* 6. CULTURE: THE GALLERY ARCHIVE */}
-        <section className="site-container pb-16 sm:pb-20 lg:pb-28">
+        <section id="home-culture" className="site-container pb-16 sm:pb-20 lg:pb-28">
           <div className="border-t border-black/5 pt-16 sm:pt-20 lg:pt-28">
             <CultureGallery highlights={cultureHighlights} />
           </div>
