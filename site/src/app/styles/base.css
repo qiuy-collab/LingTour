@@ -205,6 +205,15 @@ button {
   border-color: var(--river-deep);
 }
 
+.lt-action-gold {
+  background: var(--gold);
+  color: var(--night) !important;
+}
+
+.lt-action-gold:hover {
+  background: #fff;
+}
+
 .home-entry-track {
   scrollbar-width: none;
 }
