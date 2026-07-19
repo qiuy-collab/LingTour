@@ -139,10 +139,12 @@ export class CitiesService {
         name: this.normalizeI18nObject(dto.name),
         regionLabel: this.normalizeI18nObject(dto.regionLabel),
         heroImage: dto.heroImage,
+        heroMedia: dto.heroMedia ?? null,
         heroNarrative: this.normalizeI18nObject(dto.heroNarrative),
         tags: this.normalizeI18nArray(dto.tags),
         editorIntro: this.normalizeI18nObject(dto.editorIntro),
         galleryImages: dto.galleryImages ?? [],
+        galleryMedia: dto.galleryMedia ?? [],
         foodTitle: this.normalizeI18nObject(dto.foodTitle),
         foodDescription: this.normalizeI18nObject(dto.foodDescription),
         foodImages: dto.foodImages ?? [],
@@ -160,7 +162,9 @@ export class CitiesService {
             title: this.normalizeI18nObject(s.title),
             body: this.normalizeI18nObject(s.body),
             image: s.image,
+            primaryMedia: s.primaryMedia ?? null,
             images: s.images ?? [],
+            media: s.media ?? [],
             statLabel: s.statLabel
               ? this.normalizeI18nObject(s.statLabel)
               : null,
@@ -233,7 +237,9 @@ export class CitiesService {
               title: this.normalizeI18nObject(s.title),
               body: this.normalizeI18nObject(s.body),
               image: s.image,
+              primaryMedia: s.primaryMedia ?? null,
               images: s.images ?? [],
+              media: s.media ?? [],
               statLabel: s.statLabel
                 ? this.normalizeI18nObject(s.statLabel)
                 : null,

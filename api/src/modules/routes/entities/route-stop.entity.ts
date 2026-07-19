@@ -8,6 +8,7 @@ import {
   Index,
 } from 'typeorm';
 import { StoryRoute } from './story-route.entity';
+import type { MediaAsset } from '../../../common/types/media';
 
 @Entity('route_stops')
 @Index(['routeId', 'sortOrder'], { unique: true })
@@ -44,8 +45,14 @@ export class RouteStop {
   @Column({ type: 'varchar', length: 500 })
   image: string;
 
+  @Column({ type: 'jsonb', name: 'primary_media', nullable: true })
+  primaryMedia: MediaAsset | null;
+
   @Column({ type: 'jsonb', default: () => "'[]'" })
   images: string[];
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  media: MediaAsset[];
 
   @Column({ type: 'double precision', nullable: true })
   lat: number | null;

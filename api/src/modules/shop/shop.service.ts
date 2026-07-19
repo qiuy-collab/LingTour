@@ -13,6 +13,10 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
+import {
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from '../../common/types/media';
 
 @Injectable()
 export class ShopService {
@@ -33,6 +37,8 @@ export class ShopService {
       currency: product.currency,
       image: product.image,
       gallery: product.gallery ?? [],
+      primaryMedia: resolvePrimaryMedia(product.primaryMedia, product.image),
+      galleryMedia: resolveMediaGallery(product.galleryMedia, product.gallery),
       collection: product.collection
         ? {
             slug: product.collection.slug,
@@ -264,6 +270,8 @@ export class ShopService {
       this.productRepo.create({
         ...dto,
         gallery: dto.gallery ?? [],
+        primaryMedia: dto.primaryMedia ?? null,
+        galleryMedia: dto.galleryMedia ?? [],
         currency: dto.currency ?? 'SGD',
         stock: dto.stock ?? 0,
         published: dto.published ?? false,

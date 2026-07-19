@@ -13,6 +13,9 @@ import {
   IsObject,
 } from 'class-validator';
 import { IsI18nObject } from '../../../common/validators/i18n.validator';
+import { Type } from 'class-transformer';
+import { ValidateNested } from 'class-validator';
+import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'volcanic-soil-bowl' })
@@ -46,6 +49,12 @@ export class CreateProductDto {
   @ApiProperty({ example: 'https://oss.lingtour.cn/shop/bowl.jpg' })
   @IsString()
   image: string;
+
+  @ApiPropertyOptional({ type: MediaAssetDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaAssetDto)
+  primaryMedia?: MediaAssetDto;
 
   @ApiProperty({
     example: { en: 'A bowl fired using clay...', zh: '使用黏土烧制的碗...' },
@@ -83,6 +92,13 @@ export class CreateProductDto {
   @IsArray()
   @IsString({ each: true })
   gallery?: string[];
+
+  @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaAssetDto)
+  galleryMedia?: MediaAssetDto[];
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()

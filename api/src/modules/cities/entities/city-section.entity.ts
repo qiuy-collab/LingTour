@@ -9,6 +9,7 @@ import {
   Index,
 } from 'typeorm';
 import { City } from './city.entity';
+import type { MediaAsset } from '../../../common/types/media';
 
 @Entity('city_culture_sections')
 export class CityCultureSection {
@@ -32,8 +33,14 @@ export class CityCultureSection {
   @Column({ type: 'varchar', length: 500 })
   image: string;
 
+  @Column({ type: 'jsonb', name: 'primary_media', nullable: true })
+  primaryMedia: MediaAsset | null;
+
   @Column({ type: 'jsonb', default: () => "'[]'" })
   images: string[];
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  media: MediaAsset[];
 
   @Column({ type: 'jsonb', name: 'stat_label', nullable: true })
   statLabel: { en: string; zh: string } | null;

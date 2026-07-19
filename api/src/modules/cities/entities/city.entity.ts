@@ -9,6 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { CityCultureSection } from './city-section.entity';
+import type { MediaAsset } from '../../../common/types/media';
 
 @Entity('cities')
 export class City {
@@ -28,6 +29,9 @@ export class City {
   @Column({ type: 'varchar', length: 500, name: 'hero_image' })
   heroImage: string;
 
+  @Column({ type: 'jsonb', name: 'hero_media', nullable: true })
+  heroMedia: MediaAsset | null;
+
   @Column({ type: 'jsonb', name: 'hero_narrative' })
   heroNarrative: { en: string; zh: string };
 
@@ -39,6 +43,9 @@ export class City {
 
   @Column({ type: 'jsonb', name: 'gallery_images', default: [] })
   galleryImages: string[];
+
+  @Column({ type: 'jsonb', name: 'gallery_media', default: [] })
+  galleryMedia: MediaAsset[];
 
   @Column({ type: 'jsonb', name: 'food_title' })
   foodTitle: { en: string; zh: string };

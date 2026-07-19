@@ -17,6 +17,12 @@ import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UploadService } from './upload.service';
+import {
+  isAllowedImageUpload,
+  isAllowedVideoUpload,
+  MAX_IMAGE_FILE_SIZE,
+  MAX_VIDEO_FILE_SIZE,
+} from './upload-policy';
 
 @ApiTags('Upload')
 @Controller('api/v1/admin/upload')
@@ -64,6 +70,7 @@ export class UploadController {
     @Query('search') search?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @Query('type') type?: string,
   ) {
     return this.uploadService.queryMediaFiles({
       page: this.readPositiveInt(page, 1),
@@ -74,6 +81,7 @@ export class UploadController {
       search,
       dateFrom,
       dateTo,
+      type: type === 'image' || type === 'video' ? type : undefined,
     });
   }
 
@@ -100,7 +108,7 @@ export class UploadController {
 
   @Roles('admin', 'editor')
   @Post()
-  @ApiOperation({ summary: 'Upload file (image)' })
+  @ApiOperation({ summary: 'Upload image file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -130,15 +138,9 @@ export class UploadController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      limits: { fileSize: MAX_IMAGE_FILE_SIZE },
       fileFilter: (req, file, cb) => {
-        const allowedMimeTypes = [
-          'image/jpeg',
-          'image/png',
-          'image/webp',
-          'image/gif',
-        ];
-        if (allowedMimeTypes.includes(file.mimetype)) {
+        if (isAllowedImageUpload(file)) {
           cb(null, true);
         } else {
           cb(
@@ -157,6 +159,62 @@ export class UploadController {
     @Body('module') module?: string,
     @Body('entityType') entityType?: string,
     @Body('entityId') entityId?: string,
+  ) {
+    return this.storeFile(request, file, module, entityType, entityId);
+  }
+
+  @Roles('admin', 'editor')
+  @Post('video')
+  @ApiOperation({ summary: 'Upload video file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Video file (mp4, webm, mov, m4v, max 100MB)',
+        },
+        module: { type: 'string' },
+        entityType: { type: 'string' },
+        entityId: { type: 'string' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_VIDEO_FILE_SIZE },
+      fileFilter: (_req, file, cb) => {
+        if (isAllowedVideoUpload(file)) {
+          cb(null, true);
+        } else {
+          cb(
+            new BadRequestException(
+              'Invalid file type. Only MP4, WebM, MOV, and M4V are allowed.',
+            ),
+            false,
+          );
+        }
+      },
+    }),
+  )
+  async uploadVideo(
+    @Req() request: Request,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('module') module?: string,
+    @Body('entityType') entityType?: string,
+    @Body('entityId') entityId?: string,
+  ) {
+    return this.storeFile(request, file, module, entityType, entityId);
+  }
+
+  private async storeFile(
+    request: Request,
+    file: Express.Multer.File,
+    module?: string,
+    entityType?: string,
+    entityId?: string,
   ) {
     if (!file) {
       throw new BadRequestException('File is required');

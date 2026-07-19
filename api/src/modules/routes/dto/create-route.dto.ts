@@ -16,6 +16,7 @@ import {
   IsI18nObject,
   IsI18nArray,
 } from '../../../common/validators/i18n.validator';
+import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
 
 export class CreateStopDto {
   @ApiProperty({ example: 0 })
@@ -59,11 +60,24 @@ export class CreateStopDto {
   @IsString()
   image: string;
 
+  @ApiPropertyOptional({ type: MediaAssetDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaAssetDto)
+  primaryMedia?: MediaAssetDto;
+
   @ApiPropertyOptional({ type: [String], default: [] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaAssetDto)
+  media?: MediaAssetDto[];
 
   @ApiPropertyOptional()
   @IsOptional()

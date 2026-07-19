@@ -10,6 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { StoreCollection } from './store-collection.entity';
+import type { MediaAsset } from '../../../common/types/media';
 
 @Entity('store_products')
 export class StoreProduct {
@@ -43,6 +44,9 @@ export class StoreProduct {
   @Column({ type: 'varchar', length: 500 })
   image: string;
 
+  @Column({ type: 'jsonb', name: 'primary_media', nullable: true })
+  primaryMedia: MediaAsset | null;
+
   @Column({ type: 'jsonb' })
   story: { en: string; zh: string };
 
@@ -63,6 +67,9 @@ export class StoreProduct {
 
   @Column({ type: 'jsonb', default: [] })
   gallery: string[];
+
+  @Column({ type: 'jsonb', name: 'gallery_media', default: [] })
+  galleryMedia: MediaAsset[];
 
   @Column({ type: 'int', default: 0 })
   stock: number;

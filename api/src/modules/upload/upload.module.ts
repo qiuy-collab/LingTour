@@ -8,6 +8,7 @@ import { UploadController } from './upload.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { mkdir } from 'fs/promises';
 import { sanitizeUploadModule } from './upload-path';
+import { isAllowedImageUpload, MAX_IMAGE_FILE_SIZE } from './upload-policy';
 
 @Module({
   imports: [
@@ -58,17 +59,11 @@ import { sanitizeUploadModule } from './upload-path';
         limits: {
           fileSize: configService.get<number>(
             'MAX_FILE_SIZE',
-            10 * 1024 * 1024,
+            MAX_IMAGE_FILE_SIZE,
           ),
         },
         fileFilter: (_req, file, callback) => {
-          const allowedMimes = [
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'image/gif',
-          ];
-          if (!allowedMimes.includes(file.mimetype)) {
+          if (!isAllowedImageUpload(file)) {
             return callback(
               new Error('Unsupported file type. Allowed: jpg, png, webp, gif'),
               false,

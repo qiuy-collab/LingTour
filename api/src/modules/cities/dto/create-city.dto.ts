@@ -15,6 +15,7 @@ import {
   IsI18nObject,
   IsI18nArray,
 } from '../../../common/validators/i18n.validator';
+import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
 
 export class CreateSectionDto {
   @ApiProperty({ example: { en: 'Southern coast', zh: '南部海岸' } })
@@ -31,11 +32,24 @@ export class CreateSectionDto {
   @IsString()
   image: string;
 
+  @ApiPropertyOptional({ type: MediaAssetDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaAssetDto)
+  primaryMedia?: MediaAssetDto;
+
   @ApiPropertyOptional({ type: [String], default: [] })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaAssetDto)
+  media?: MediaAssetDto[];
 
   @ApiPropertyOptional({ example: { en: 'Coastline', zh: '海岸线长度' } })
   @IsOptional()
@@ -82,6 +96,12 @@ export class CreateCityDto {
   @IsString()
   heroImage: string;
 
+  @ApiPropertyOptional({ type: MediaAssetDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaAssetDto)
+  heroMedia?: MediaAssetDto;
+
   @ApiProperty({
     example: {
       en: 'Guangzhou, the starting point...',
@@ -112,6 +132,13 @@ export class CreateCityDto {
   @IsArray()
   @IsString({ each: true })
   galleryImages?: string[];
+
+  @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaAssetDto)
+  galleryMedia?: MediaAssetDto[];
 
   @ApiProperty({ example: { en: 'Flavours of Guangzhou', zh: '广州味道' } })
   @IsI18nObject({ message: 'Food title must be { en: string, zh: string }' })

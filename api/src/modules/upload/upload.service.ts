@@ -303,6 +303,7 @@ export class UploadService {
     search?: string;
     dateFrom?: string;
     dateTo?: string;
+    type?: 'image' | 'video';
   }): Promise<{
     data: MediaFileRecord[];
     total: number;
@@ -343,6 +344,10 @@ export class UploadService {
     if (params.dateTo) {
       conditions.push(`created_at <= $${paramIndex++}`);
       values.push(params.dateTo);
+    }
+    if (params.type) {
+      conditions.push(`mime_type LIKE $${paramIndex++}`);
+      values.push(`${params.type}/%`);
     }
 
     const where =
