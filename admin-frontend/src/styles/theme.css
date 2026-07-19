@@ -3,49 +3,51 @@
 :root,
 [data-theme='light'] {
   /* Typography */
-  --lt-font-sans: 'Trebuchet MS', 'Segoe UI', 'PingFang SC',
+  --lt-font-sans: 'Segoe UI Variable', 'Aptos', 'PingFang SC',
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
   --lt-radius-sm: 8px;
   --lt-radius-md: 12px;
-  --lt-radius-lg: 18px;
-  --lt-radius-xl: 24px;
+  --lt-radius-lg: 16px;
+  --lt-radius-xl: 22px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
-  --lt-primary: #24535e;
-  --lt-primary-light: #3f707a;
-  --lt-primary-dark: #14343d;
-  --lt-primary-soft: rgba(36, 83, 94, 0.1);
+  --lt-primary: #236554;
+  --lt-primary-light: #4c8475;
+  --lt-primary-dark: #153f35;
+  --lt-primary-soft: rgba(35, 101, 84, 0.1);
+  --lt-accent: #c48a36;
+  --lt-accent-soft: rgba(196, 138, 54, 0.13);
 
   /* Background */
-  --lt-bg-page: #f2f4f1;
-  --lt-bg-card: #ffffff;
-  --lt-bg-sidebar: #14343d;
-  --lt-sidebar-text: #c9d4d3;
+  --lt-bg-page: #f2f4ef;
+  --lt-bg-card: #fbfcf9;
+  --lt-bg-sidebar: #14261f;
+  --lt-sidebar-text: #b9c8c0;
   --lt-sidebar-active: #ffffff;
-  --lt-bg-header: #ffffff;
-  --lt-bg-hover: #f1f4f2;
+  --lt-bg-header: rgba(251, 252, 249, 0.9);
+  --lt-bg-hover: #edf1ec;
   --lt-bg-mask: rgba(0, 0, 0, 0.5);
 
   /* Text */
-  --lt-text-primary: #17202a;
-  --lt-text-regular: #4d5963;
-  --lt-text-secondary: #66717d;
-  --lt-text-placeholder: #87919a;
+  --lt-text-primary: #18231f;
+  --lt-text-regular: #48554f;
+  --lt-text-secondary: #68746e;
+  --lt-text-placeholder: #8a948f;
   --lt-text-inverse: #ffffff;
 
   /* Border */
-  --lt-border-color: rgba(23, 32, 42, 0.18);
-  --lt-border-light: rgba(23, 32, 42, 0.12);
-  --lt-border-lighter: rgba(23, 32, 42, 0.07);
+  --lt-border-color: rgba(24, 35, 31, 0.16);
+  --lt-border-light: rgba(24, 35, 31, 0.1);
+  --lt-border-lighter: rgba(24, 35, 31, 0.06);
 
   /* Shadow */
-  --lt-shadow-sm: 0 2px 8px rgba(17, 25, 35, 0.05);
-  --lt-shadow-md: 0 12px 36px rgba(17, 25, 35, 0.08);
-  --lt-shadow-lg: 0 24px 72px rgba(17, 25, 35, 0.12);
-  --lt-content-max: 1560px;
+  --lt-shadow-sm: 0 1px 2px rgba(18, 38, 31, 0.04), 0 8px 24px rgba(18, 38, 31, 0.04);
+  --lt-shadow-md: 0 16px 44px rgba(18, 38, 31, 0.09);
+  --lt-shadow-lg: 0 30px 90px rgba(18, 38, 31, 0.14);
+  --lt-content-max: 1640px;
   --lt-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Scrollbar */
@@ -68,11 +70,11 @@
 
   /* Element Plus follows the product register instead of its default blue. */
   --el-color-primary: var(--lt-primary);
-  --el-color-primary-light-3: #5c8189;
-  --el-color-primary-light-5: #8ca5aa;
-  --el-color-primary-light-7: #bdcacc;
-  --el-color-primary-light-8: #d5ddde;
-  --el-color-primary-light-9: #eaf0f0;
+  --el-color-primary-light-3: #5f8f82;
+  --el-color-primary-light-5: #91afa7;
+  --el-color-primary-light-7: #bfd0cb;
+  --el-color-primary-light-8: #d5e0dc;
+  --el-color-primary-light-9: #eaf1ef;
   --el-color-primary-dark-2: var(--lt-primary-dark);
   --el-font-family: var(--lt-font-sans);
   --el-border-radius-base: var(--lt-radius-md);
@@ -89,7 +91,7 @@
 [data-theme='dark'],
 html.dark {
   /* Typography */
-  --lt-font-sans: 'Trebuchet MS', 'Segoe UI', 'PingFang SC',
+  --lt-font-sans: 'Segoe UI Variable', 'Aptos', 'PingFang SC',
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
@@ -100,27 +102,29 @@ html.dark {
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
-  --lt-primary: #69a0ab;
-  --lt-primary-light: #8cb8c0;
-  --lt-primary-dark: #4f828d;
-  --lt-primary-soft: rgba(105, 160, 171, 0.16);
+  --lt-primary: #6faf9d;
+  --lt-primary-light: #91c3b5;
+  --lt-primary-dark: #4f8d7c;
+  --lt-primary-soft: rgba(111, 175, 157, 0.16);
+  --lt-accent: #daa85f;
+  --lt-accent-soft: rgba(218, 168, 95, 0.14);
 
   /* Background */
-  --lt-bg-page: #141414;
-  --lt-bg-card: #1d1d1d;
-  --lt-bg-sidebar: #1d1e1f;
+  --lt-bg-page: #111613;
+  --lt-bg-card: #1a211e;
+  --lt-bg-sidebar: #0d1713;
   --lt-sidebar-text: #cfd3dc;
   --lt-sidebar-active: #ffffff;
-  --lt-bg-header: #1d1d1d;
-  --lt-bg-hover: #262727;
+  --lt-bg-header: rgba(26, 33, 30, 0.9);
+  --lt-bg-hover: #242d29;
   --lt-bg-mask: rgba(0, 0, 0, 0.7);
 
   /* Text */
-  --lt-text-primary: #e5eaf3;
-  --lt-text-regular: #cfd3dc;
-  --lt-text-secondary: #a3a6ad;
-  --lt-text-placeholder: #6c6e72;
-  --lt-text-inverse: #141414;
+  --lt-text-primary: #edf2ef;
+  --lt-text-regular: #cbd5d0;
+  --lt-text-secondary: #9eaaa4;
+  --lt-text-placeholder: #6f7b75;
+  --lt-text-inverse: #f5f8f6;
 
   /* Border */
   --lt-border-color: #3e4042;

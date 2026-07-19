@@ -36,7 +36,7 @@
 
   /* Main content */
   .admin-main {
-    padding: 12px !important;
+    padding: 14px !important;
   }
 
   /* List toolbar → stack vertically */
@@ -55,8 +55,6 @@
   /* Tables → horizontal scroll on mobile */
   .el-table {
     font-size: 12px;
-    overflow-x: auto;
-    display: block;
   }
   .el-table__body-wrapper {
     overflow-x: auto;
