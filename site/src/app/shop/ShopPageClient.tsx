@@ -9,6 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { StoreCollection, StoreProduct } from "@/data/store";
+import { ShopGalleryHero } from "@/components/store/ShopGalleryHero";
 
 interface ShopPageClientProps {
   initialCollections: StoreCollection[];
@@ -62,47 +63,18 @@ export default function ShopPageClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
-      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20">
-        <div className="site-container">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-            <div className="max-w-3xl lg:col-span-8">
-              <Reveal>
-                <div className="flex items-center gap-4 mb-8">
-                  <span className="w-10 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    {t("shop.atlas.eyebrow")}
-                  </p>
-                </div>
-                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] sm:text-6xl md:text-8xl lg:text-9xl">
-                  {t("shop.atlas.titlePrimary")} <br />
-                  <span className="italic text-[var(--gold)]">
-                    {t("shop.atlas.titleItalic")}
-                  </span>
-                </h1>
-                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
-                  {t("shop.atlas.lede")}
-                </p>
-              </Reveal>
-            </div>
+      <ShopGalleryHero
+        image={heroImage}
+        eyebrow={t("shop.atlas.eyebrow")}
+        title={t("shop.atlas.titlePrimary")}
+        accent={t("shop.atlas.titleItalic")}
+        lede={t("shop.atlas.lede")}
+        craftedLabel={t("shop.atlas.crafted")}
+        collectionCount={collections.length}
+        featured={products[0]}
+      />
 
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
-              <Reveal delay={200}>
-                <div className="relative mx-auto aspect-[6/5] w-full bg-white p-2 scrapbook-shadow sm:aspect-square sm:p-4 sm:rotate-6 lg:ml-auto">
-                  <div
-                    className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
-                    style={{ backgroundImage: `url(${heroImage})` }}
-                  />
-                  <div className="absolute -top-3 -left-3 flex h-9 w-16 items-center justify-center bg-[var(--gold)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--night)] shadow-lg sm:-top-4 sm:-left-4 sm:h-10 sm:w-20 sm:text-xs sm:-rotate-12 sm:tracking-widest">
-                    {t("shop.atlas.crafted")}
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="site-container py-10 lg:py-20">
+      <section id="shop-collections" className="site-container py-14 sm:py-20 lg:py-24">
         <Reveal>
           <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
             {t("shop.atlas.collectionsEyebrow")}
@@ -125,36 +97,40 @@ export default function ShopPageClient({
             </p>
           </div>
         ) : (
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {collections.map((collection, i) => {
               const cardImage = collection.image || placeholderFor("portrait");
               return (
-                <Reveal key={collection.title} delay={i * 100}>
-                  <Link href={collection.href} className="group block">
-                    <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
-                      <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.9rem]">
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-105"
-                          style={{ backgroundImage: `url(${cardImage})` }}
+                <Reveal key={collection.title} delay={i * 80} className="h-full">
+                  <Link href={collection.href} className="group block h-full">
+                    <article className="flex h-full min-h-[31rem] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_50px_rgba(17,25,35,0.07)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_26px_75px_rgba(17,25,35,0.13)]">
+                      <div className="relative aspect-[16/11] overflow-hidden bg-[var(--paper)] sm:aspect-[4/3]">
+                        <img
+                          src={cardImage}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover transition duration-1000 group-hover:scale-[1.045]"
                         />
-                        <div className="absolute inset-0 bg-black/5" />
-                        <div className="absolute left-4 top-4 bg-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgba(8,18,24,0.36))]" />
+                        <span className="absolute left-4 top-4 rounded-full border border-white/42 bg-black/22 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
                           {collection.route}
-                        </div>
+                        </span>
                       </div>
-                      <div className="mt-6 border border-[var(--line)] bg-white/72 p-6 scrapbook-shadow">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                          {t("shop.atlas.collectionsEyebrow")}
+                      <div className="flex flex-1 flex-col p-6 sm:p-7">
+                        <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                          Collection {String(i + 1).padStart(2, "0")}
                         </p>
-                        <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+                        <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                           {collection.title}
                         </h3>
-                        <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)]">
+                        <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--muted)]">
                           {collection.body}
                         </p>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-                          <span>{t("common.btn.enter")}</span>
-                          <div className="h-px w-8 bg-[var(--gold)] transition-all duration-300 group-hover:w-12" />
+                        <div className="mt-auto flex items-center justify-between border-t border-[var(--line)] pt-5">
+                          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]">
+                            {t("common.btn.enter")}
+                          </span>
+                          <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--river-deep)] text-white transition group-hover:translate-x-1 group-hover:bg-[var(--cinnabar)]">→</span>
                         </div>
                       </div>
                     </article>
@@ -166,7 +142,7 @@ export default function ShopPageClient({
         )}
       </section>
 
-      <section className="site-container py-10 lg:py-20">
+      <section className="site-container py-14 sm:py-20 lg:py-24">
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
@@ -205,9 +181,9 @@ export default function ShopPageClient({
         )}
       </section>
 
-      <section className="pb-20 lg:pb-24">
+      <section className="pb-16 sm:pb-20 lg:pb-24">
         <div className="site-container">
-          <div className="relative overflow-hidden bg-[var(--night)] px-8 py-16 text-center text-white scrapbook-shadow lg:px-20 lg:py-24">
+          <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--night)] px-8 py-16 text-center text-white shadow-[0_28px_90px_rgba(17,25,35,0.2)] lg:px-20 lg:py-24">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.08),transparent_60%)]" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>

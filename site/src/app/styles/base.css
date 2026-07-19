@@ -186,6 +186,25 @@ button {
   transform: translateY(-2px);
 }
 
+.lt-action-primary {
+  background: var(--river-deep);
+  color: #fff !important;
+}
+
+.lt-action-primary:hover {
+  background: var(--cinnabar);
+}
+
+.lt-action-secondary {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--river-deep) !important;
+}
+
+.lt-action-secondary:hover {
+  border-color: var(--river-deep);
+}
+
 .home-entry-track {
   scrollbar-width: none;
 }
