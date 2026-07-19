@@ -1,4 +1,5 @@
 import type { I18nObject } from './common'
+import type { MediaAsset } from './media'
 
 export interface OriginTrace {
   location: string
@@ -23,6 +24,7 @@ export interface Product {
   tag: any
   tagEn?: string
   image: string
+  primaryMedia?: MediaAsset | null
   story: any
   storyEn?: string
   material?: any
@@ -34,6 +36,7 @@ export interface Product {
   care?: any
   careEn?: string
   gallery: string[]
+  galleryMedia?: MediaAsset[]
   stock: number
   published: boolean
   originTrace?: OriginTrace
@@ -51,12 +54,14 @@ export interface ProductFormData {
   currency: string
   tag: I18nObject
   image: string
+  primaryMedia?: MediaAsset | null
   story: I18nObject
   material?: I18nObject
   dimensions?: I18nObject
   origin?: I18nObject
   care?: I18nObject
   gallery: string[]
+  galleryMedia?: MediaAsset[]
   stock: number
   published: boolean
   originTrace?: OriginTrace

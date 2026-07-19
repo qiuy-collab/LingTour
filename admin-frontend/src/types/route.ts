@@ -1,6 +1,14 @@
 import type { I18nObject } from './common'
+import type { MediaAsset } from './media'
 
-export type CultureTag = 'Bay Area' | 'Chaoshan' | 'Hakka' | 'Coastal' | 'Mountain' | 'Guangfu' | 'BayArea'
+export type CultureTag =
+  | 'Bay Area'
+  | 'Chaoshan'
+  | 'Hakka'
+  | 'Coastal'
+  | 'Mountain'
+  | 'Guangfu'
+  | 'BayArea'
 
 export interface RouteStop {
   id?: string
@@ -11,6 +19,9 @@ export interface RouteStop {
   culturalStory: any
   details?: any[]
   image: string
+  primaryMedia?: MediaAsset | null
+  images?: string[]
+  media?: MediaAsset[]
   lat?: number
   lng?: number
   meal?: any

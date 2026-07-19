@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, Delete, Picture, ZoomIn } from '@element-plus/icons-vue'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Delete,
+  Picture,
+  VideoCamera,
+  ZoomIn,
+} from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { resolveMediaUrl } from '@/utils/media'
 import MediaPickerDialog from '@/components/media/MediaPickerDialog.vue'
@@ -10,6 +17,7 @@ type UploadItem = {
   name: string
   url: string
   rawUrl: string
+  kind: 'image' | 'video'
 }
 
 const props = withDefaults(
@@ -19,6 +27,7 @@ const props = withDefaults(
     multiple?: boolean
     limit?: number
     accept?: string
+    mediaKind?: 'image' | 'video' | 'mixed'
     module?: string
     sortable?: boolean
     entityType?: string
@@ -28,7 +37,8 @@ const props = withDefaults(
     mode: 'single',
     multiple: false,
     limit: 1,
-    accept: 'image/*',
+    accept: '',
+    mediaKind: 'image',
     module: '',
     sortable: true,
     entityType: '',
@@ -47,17 +57,33 @@ const uploadLimit = computed(() => (isMultiple.value ? props.limit : 1))
 const hasReachedLimit = computed(
   () => isMultiple.value && fileList.value.length >= uploadLimit.value,
 )
+const effectiveAccept = computed(() => {
+  if (props.accept) return props.accept
+  if (props.mediaKind === 'video') return 'video/mp4,video/webm,video/quicktime,video/x-m4v'
+  if (props.mediaKind === 'mixed')
+    return 'image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-m4v'
+  return 'image/jpeg,image/png,image/webp,image/gif'
+})
+const mediaNoun = computed(() => (props.mediaKind === 'video' ? 'video' : 'image'))
+
+function isVideoSource(url: string) {
+  if (props.mediaKind === 'video') return true
+  return /\.(mp4|webm|mov|m4v)(?:$|[?#])/i.test(url)
+}
+
 const triggerLabel = computed(() => {
   if (!fileList.value.length) return 'Choose media'
-  if (!isMultiple.value) return 'Replace image'
+  if (!isMultiple.value) return `Replace ${mediaNoun.value}`
   if (hasReachedLimit.value) return 'Manage selection'
   return 'Add more media'
 })
 const helperCopy = computed(() => {
   if (isMultiple.value) {
-    return `${fileList.value.length} of ${uploadLimit.value} image slots used`
+    return `${fileList.value.length} of ${uploadLimit.value} media slots used`
   }
-  return fileList.value.length ? '1 image selected' : 'No image selected yet'
+  return fileList.value.length
+    ? `1 ${mediaNoun.value} selected`
+    : `No ${mediaNoun.value} selected yet`
 })
 
 watch(
@@ -80,6 +106,7 @@ watch(
       name: `image-${index + 1}`,
       url: resolveMediaUrl(url),
       rawUrl: url,
+      kind: isVideoSource(url) ? 'video' : 'image',
     }))
   },
   { immediate: true },
@@ -118,7 +145,7 @@ function handlePickerConfirm(urls: string[]) {
     const nextUrls = existing.concat(deduped.slice(0, remainingSlots))
 
     if (deduped.length > remainingSlots) {
-      ElMessage.warning(`At most ${uploadLimit.value} images can be selected`)
+      ElMessage.warning(`At most ${uploadLimit.value} media files can be selected`)
     }
 
     syncValue(nextUrls)
@@ -140,7 +167,6 @@ function moveItem(index: number, delta: -1 | 1) {
   const target = index + delta
   const urls = readUrls()
   if (target < 0 || target >= urls.length) return
-
   ;[urls[index], urls[target]] = [urls[target], urls[index]]
   syncValue(urls)
 }
@@ -149,12 +175,17 @@ function moveItem(index: number, delta: -1 | 1) {
 <template>
   <div class="image-upload">
     <div class="image-preview-list">
-      <div
-        v-for="(item, index) in fileList"
-        :key="item.uid"
-        class="image-preview-item"
-      >
+      <div v-for="(item, index) in fileList" :key="item.uid" class="image-preview-item">
+        <video
+          v-if="item.kind === 'video'"
+          :src="item.url"
+          class="preview-image preview-video"
+          muted
+          playsinline
+          preload="metadata"
+        />
         <el-image
+          v-else
           :src="item.url"
           fit="cover"
           class="preview-image"
@@ -187,20 +218,21 @@ function moveItem(index: number, delta: -1 | 1) {
         </div>
       </div>
 
-      <button
-        type="button"
-        class="upload-trigger"
-        @click="openMediaPicker"
-      >
-        <el-icon class="upload-icon"><Picture /></el-icon>
+      <button type="button" class="upload-trigger" @click="openMediaPicker">
+        <el-icon class="upload-icon">
+          <VideoCamera v-if="mediaKind === 'video'" />
+          <Picture v-else />
+        </el-icon>
         <span class="upload-trigger-text">{{ triggerLabel }}</span>
       </button>
     </div>
 
     <div class="upload-meta">
       <span>{{ helperCopy }}</span>
-      <span>{{ isMultiple ? `Up to ${uploadLimit} images` : 'Single image selection' }}</span>
-      <span>Select from the media library or upload a local image inside the dialog.</span>
+      <span>{{
+        isMultiple ? `Up to ${uploadLimit} media files` : `Single ${mediaNoun} selection`
+      }}</span>
+      <span>Select from the media library or upload a local file inside the dialog.</span>
       <span v-if="module">Folder: {{ module }}</span>
     </div>
 
@@ -208,7 +240,8 @@ function moveItem(index: number, delta: -1 | 1) {
       v-model="pickerVisible"
       :multiple="isMultiple"
       :limit="uploadLimit"
-      :accept="accept"
+      :accept="effectiveAccept"
+      :media-type="mediaKind === 'mixed' ? undefined : mediaKind"
       :module="module"
       :entity-type="entityType || undefined"
       :entity-id="entityId || undefined"
@@ -242,6 +275,12 @@ function moveItem(index: number, delta: -1 | 1) {
 .preview-image {
   width: 100%;
   height: 100%;
+}
+
+.preview-video {
+  display: block;
+  object-fit: cover;
+  background: var(--lt-text-primary);
 }
 
 .image-overlay {

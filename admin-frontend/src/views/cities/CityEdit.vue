@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -13,13 +13,17 @@ import type { CityFormData } from '@/types/city'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
+import MediaAssetInput from '@/components/media/MediaAssetInput.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import { GUANGDONG_ADCODE_OPTIONS, formatAdcodeLabel } from '@/constants/guangdongRegions'
 import {
-  GUANGDONG_ADCODE_OPTIONS,
-  formatAdcodeLabel,
-} from '@/constants/guangdongRegions'
+  isIncompleteVideoMedia,
+  legacyImageForMedia,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from '@/types/media'
 
 const router = useRouter()
 const route = useRoute()
@@ -34,7 +38,11 @@ const routeOptions = ref<Array<{ id: string; slug: string; title: string; cityNa
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case 格式', trigger: 'blur' },
+    {
+      pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/,
+      message: 'Slug 必须是 kebab-case 格式',
+      trigger: 'blur',
+    },
   ],
   'name.en': [{ required: true, message: '请输入城市英文名称', trigger: 'blur' }],
 }
@@ -45,10 +53,12 @@ const form = reactive<any>({
   regionLabel: { zh: '', en: '' },
   adcode: undefined,
   heroImage: '',
+  heroMedia: null,
   heroNarrative: { zh: '', en: '' },
   tags: [],
   editorIntro: { zh: '', en: '' },
   galleryImages: [],
+  galleryMedia: [],
   foodTitle: { zh: '', en: '' },
   foodDescription: { zh: '', en: '' },
   foodImages: [],
@@ -79,7 +89,9 @@ function normalizeSection(section: any, index: number) {
     title: normalizeI18nValue(section.title),
     body: normalizeI18nValue(section.body),
     image: section.image || '',
+    primaryMedia: resolvePrimaryMedia(section.primaryMedia, section.image || ''),
     images: Array.isArray(section.images) ? section.images : [],
+    media: resolveMediaGallery(section.media, section.images || []),
     statLabel: normalizeI18nValue(section.statLabel),
     statValue: normalizeI18nValue(section.statValue),
     breathImage: section.breathImage || '',
@@ -104,7 +116,9 @@ function addSection() {
     title: { zh: '', en: '' },
     body: { zh: '', en: '' },
     image: '',
+    primaryMedia: null,
     images: [],
+    media: [],
     statLabel: { zh: '', en: '' },
     statValue: { zh: '', en: '' },
     breathImage: '',
@@ -186,14 +200,18 @@ function fillFromApi(data: any) {
     regionLabel: toI18n(data.regionLabel),
     adcode: data.adcode ?? undefined,
     heroImage: data.heroImage || '',
+    heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ''),
     heroNarrative: toI18n(data.heroNarrative),
     tags: normalizeTagList(data.tags),
     editorIntro: toI18n(data.editorIntro),
     galleryImages: data.galleryImages || [],
+    galleryMedia: resolveMediaGallery(data.galleryMedia, data.galleryImages || []),
     foodTitle: toI18n(data.foodTitle),
     foodDescription: toI18n(data.foodDescription),
     foodImages: data.foodImages || [],
-    sections: (data.sections || []).map((section: any, index: number) => normalizeSection(section, index)),
+    sections: (data.sections || []).map((section: any, index: number) =>
+      normalizeSection(section, index),
+    ),
     status: data.published ? 'published' : 'draft',
     routeSlugs: data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
@@ -201,16 +219,19 @@ function fillFromApi(data: any) {
 }
 
 function toPayload() {
+  const heroMedia = resolvePrimaryMedia(form.heroMedia, form.heroImage)
   return {
     slug: form.slug,
     name: form.name,
     regionLabel: form.regionLabel,
     adcode: form.adcode,
-    heroImage: form.heroImage,
+    heroImage: legacyImageForMedia(heroMedia, form.heroImage),
+    heroMedia,
     heroNarrative: form.heroNarrative,
     tags: normalizeTagList(form.tags),
     editorIntro: form.editorIntro,
     galleryImages: form.galleryImages,
+    galleryMedia: resolveMediaGallery(form.galleryMedia, form.galleryImages),
     foodTitle: form.foodTitle,
     foodDescription: form.foodDescription,
     foodImages: form.foodImages,
@@ -220,8 +241,10 @@ function toPayload() {
     sections: form.sections.map((section: any, index: number) => ({
       title: normalizeI18nValue(section.title),
       body: normalizeI18nValue(section.body),
-      image: section.image || '',
+      image: legacyImageForMedia(section.primaryMedia, section.image || ''),
+      primaryMedia: resolvePrimaryMedia(section.primaryMedia, section.image || ''),
       images: section.images || [],
+      media: resolveMediaGallery(section.media, section.images || []),
       statLabel: normalizeI18nValue(section.statLabel),
       statValue: normalizeI18nValue(section.statValue),
       breathImage: section.breathImage || '',
@@ -230,6 +253,32 @@ function toPayload() {
     })),
   }
 }
+
+watch(
+  () => form.heroMedia,
+  (value) => {
+    if (!value) return
+    const nextLegacyImage = legacyImageForMedia(value, '')
+    if (nextLegacyImage !== form.heroImage) {
+      form.heroImage = nextLegacyImage
+    }
+  },
+  { deep: true },
+)
+
+watch(
+  () => form.sections,
+  (sections) => {
+    sections.forEach((section: any) => {
+      if (!section.primaryMedia) return
+      const nextLegacyImage = legacyImageForMedia(section.primaryMedia, '')
+      if (nextLegacyImage !== section.image) {
+        section.image = nextLegacyImage
+      }
+    })
+  },
+  { deep: true },
+)
 
 onMounted(async () => {
   loading.value = true
@@ -253,6 +302,15 @@ async function handleSave() {
     await formRef.value?.validate()
   } catch {
     ElMessage.warning('请检查必填项')
+    return
+  }
+
+  if (
+    form.status === 'published' &&
+    (isIncompleteVideoMedia(form.heroMedia) ||
+      form.sections.some((section: any) => isIncompleteVideoMedia(section.primaryMedia)))
+  ) {
+    ElMessage.warning('发布城市内容前，请补全所有视频文件和封面图')
     return
   }
 
@@ -329,7 +387,12 @@ const selectedRouteCards = computed(() =>
           </el-form-item>
           <el-form-item label="标签">
             <div class="tag-list">
-              <el-tag v-for="(tag, index) in form.tags" :key="index" closable @close="removeTag(Number(index))">
+              <el-tag
+                v-for="(tag, index) in form.tags"
+                :key="index"
+                closable
+                @close="removeTag(Number(index))"
+              >
                 {{ tag.en || tag.zh }}
               </el-tag>
             </div>
@@ -345,12 +408,16 @@ const selectedRouteCards = computed(() =>
           eyebrow="City Story Workspace"
           title="章节工作台"
           description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
-          :active-label="chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview'"
+          :active-label="
+            chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview'
+          "
           :tabs="chapterTabs"
         >
           <template #toolbar>
             <div class="chapter-actions">
-              <el-button size="small" type="primary" :icon="Plus" @click="addSection">新增 Section</el-button>
+              <el-button size="small" type="primary" :icon="Plus" @click="addSection"
+                >新增 Section</el-button
+              >
               <el-button
                 size="small"
                 :icon="ArrowUp"
@@ -381,8 +448,13 @@ const selectedRouteCards = computed(() =>
 
           <div v-if="activeChapter === 'overview'" class="workspace-panel">
             <div class="panel-title">Overview（图文）</div>
-            <el-form-item label="Overview 主图">
-              <ImageUpload v-model="form.heroImage" module="cities" />
+            <el-form-item label="Overview 主媒体">
+              <MediaAssetInput
+                v-model="form.heroMedia"
+                :legacy-image="form.heroImage"
+                module="cities"
+                entity-type="city"
+              />
             </el-form-item>
             <el-form-item label="Overview 文案">
               <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
@@ -401,10 +473,19 @@ const selectedRouteCards = computed(() =>
 
           <div v-else-if="isSectionChapter && activeSection" class="workspace-panel">
             <div class="panel-title">
-              {{ activeSection.title?.zh?.trim() || activeSection.title?.en?.trim() || `Section ${activeSectionIndex + 1}` }}
+              {{
+                activeSection.title?.zh?.trim() ||
+                activeSection.title?.en?.trim() ||
+                `Section ${activeSectionIndex + 1}`
+              }}
             </div>
-            <el-form-item label="Section 图片">
-              <ImageUpload v-model="activeSection.image" module="cities" />
+            <el-form-item label="Section 主媒体">
+              <MediaAssetInput
+                v-model="activeSection.primaryMedia"
+                :legacy-image="activeSection.image"
+                module="cities"
+                entity-type="city-section"
+              />
             </el-form-item>
             <el-form-item label="Section 图片集">
               <ImageUpload v-model="activeSection.images" multiple :limit="10" module="cities" />
@@ -468,10 +549,16 @@ const selectedRouteCards = computed(() =>
                 :value="routeItem.slug"
               />
             </el-select>
-            <div class="form-hint-text">这里决定城市页下方关联路线，以及路线和城市之间的互相联动。</div>
+            <div class="form-hint-text">
+              这里决定城市页下方关联路线，以及路线和城市之间的互相联动。
+            </div>
           </el-form-item>
           <div v-if="selectedRouteCards.length" class="selected-grid">
-            <div v-for="routeItem in selectedRouteCards" :key="routeItem.slug" class="selected-card">
+            <div
+              v-for="routeItem in selectedRouteCards"
+              :key="routeItem.slug"
+              class="selected-card"
+            >
               <strong>{{ routeItem.title }}</strong>
               <span>{{ routeItem.cityName || routeItem.slug }}</span>
             </div>
@@ -534,7 +621,11 @@ const selectedRouteCards = computed(() =>
 }
 
 @media (max-width: 1100px) {
-  .chapter-actions { justify-content: flex-start; }
-  .inline-row { grid-template-columns: 1fr; }
+  .chapter-actions {
+    justify-content: flex-start;
+  }
+  .inline-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -12,6 +12,7 @@ const props = withDefaults(
     multiple?: boolean
     limit?: number
     accept?: string
+    mediaType?: '' | 'image' | 'video'
     defaultModule?: string
     entityType?: string
     entityId?: string
@@ -23,6 +24,7 @@ const props = withDefaults(
     multiple: false,
     limit: 1,
     accept: 'image/jpeg,image/png,image/webp,image/gif',
+    mediaType: '',
     defaultModule: '',
     entityType: '',
     entityId: '',
@@ -42,6 +44,7 @@ const total = ref(0)
 const page = ref(1)
 const limit = ref(30)
 const moduleFilter = ref(props.defaultModule)
+const mediaTypeFilter = ref(props.mediaType)
 const searchQuery = ref('')
 const uploading = ref(false)
 const uploadProgress = ref(0)
@@ -51,9 +54,29 @@ const showOrphans = ref(false)
 const orphanCount = ref(0)
 const uploadInputRef = ref<HTMLInputElement | null>(null)
 
-const modules = ['', 'cities', 'routes', 'shop', 'community', 'events', 'home', 'avatars', 'interpreting', 'seed']
+const modules = [
+  '',
+  'cities',
+  'routes',
+  'shop',
+  'community',
+  'events',
+  'home',
+  'avatars',
+  'interpreting',
+  'seed',
+]
 const isPickerMode = computed(() => props.mode === 'picker')
-const canSelectMore = computed(() => (props.multiple ? selectedFilenames.value.length < props.limit : true))
+const mediaNoun = computed(() =>
+  mediaTypeFilter.value === 'video'
+    ? 'video'
+    : mediaTypeFilter.value === 'image'
+      ? 'image'
+      : 'media file',
+)
+const canSelectMore = computed(() =>
+  props.multiple ? selectedFilenames.value.length < props.limit : true,
+)
 const selectionSummary = computed(() => {
   if (!isPickerMode.value) {
     return `${selectedFilenames.value.length} selected`
@@ -63,7 +86,9 @@ const selectionSummary = computed(() => {
     return `${selectedFilenames.value.length} / ${props.limit} selected`
   }
 
-  return selectedFilenames.value.length ? '1 image selected' : 'No image selected'
+  return selectedFilenames.value.length
+    ? `1 ${mediaNoun.value} selected`
+    : `No ${mediaNoun.value} selected`
 })
 
 function unwrapListPayload<T>(payload: unknown): { data: T[]; total: number } {
@@ -153,6 +178,15 @@ watch(
   },
 )
 
+watch(
+  () => props.mediaType,
+  (value) => {
+    mediaTypeFilter.value = value
+    page.value = 1
+    void fetchFiles()
+  },
+)
+
 watch(selectedMediaFiles, (value) => {
   emit('selectionChange', value)
 })
@@ -184,6 +218,7 @@ async function fetchFiles() {
         search: searchQuery.value || undefined,
         entityType: props.entityType || undefined,
         entityId: props.entityId || undefined,
+        type: mediaTypeFilter.value || undefined,
       })
       const listPayload = unwrapListPayload<MediaFile>(res.data?.data ?? res.data)
       files.value = listPayload.data
@@ -215,6 +250,11 @@ function getFullUrl(file: MediaFile): string {
   return resolveMediaUrl(file.url)
 }
 
+function isVideoFile(file: MediaFile): boolean {
+  if (file.mime_type?.startsWith('video/')) return true
+  return /\.(mp4|webm|mov|m4v)(?:$|[?#])/i.test(file.url)
+}
+
 function formatTimestamp(value?: string) {
   if (!value) return ''
   const date = new Date(value)
@@ -222,9 +262,20 @@ function formatTimestamp(value?: string) {
   return date.toLocaleDateString()
 }
 
+function handleMediaTypeFilterChange() {
+  page.value = 1
+  void fetchFiles()
+}
+
+function toggleOrphanView() {
+  showOrphans.value = !showOrphans.value
+  page.value = 1
+  void fetchFiles()
+}
+
 function copyUrl(file: MediaFile) {
   navigator.clipboard.writeText(getFullUrl(file))
-  ElMessage.success('Image URL copied')
+  ElMessage.success('Media URL copied')
 }
 
 async function handleDelete(file: MediaFile) {
@@ -256,11 +307,9 @@ async function handleBatchDelete() {
   }
 
   try {
-    await ElMessageBox.confirm(
-      `Delete ${deletable.length} selected files?`,
-      'Batch delete',
-      { type: 'warning' },
-    )
+    await ElMessageBox.confirm(`Delete ${deletable.length} selected files?`, 'Batch delete', {
+      type: 'warning',
+    })
     const promises = deletable.map((filename) => deleteMediaFile(filename))
     await Promise.allSettled(promises)
     selectedFilenames.value = selectedFilenames.value.filter((item) => item.startsWith('seed:'))
@@ -345,6 +394,7 @@ async function handleUpload(event: Event) {
           entity_type: payload?.entityType || props.entityType || null,
           entity_id: payload?.entityId || props.entityId || null,
           original_name: payload?.originalName || payload?.originalname || file.name,
+          mime_type: payload?.mimetype || file.type || null,
         }
         uploadedFiles.push(mediaFile)
         return mediaFile
@@ -419,9 +469,28 @@ onMounted(() => {
   <div class="media-library" v-loading="loading">
     <div class="toolbar">
       <div class="toolbar-left">
-        <el-select v-model="moduleFilter" placeholder="All modules" clearable @change="fetchFiles" style="width: 140px">
+        <el-select
+          v-model="moduleFilter"
+          placeholder="All modules"
+          clearable
+          @change="fetchFiles"
+          style="width: 140px"
+        >
           <el-option label="All" value="" />
           <el-option v-for="m in modules.filter(Boolean)" :key="m" :label="m" :value="m" />
+        </el-select>
+
+        <el-select
+          v-if="!props.mediaType"
+          v-model="mediaTypeFilter"
+          placeholder="All media"
+          clearable
+          style="width: 132px"
+          @change="handleMediaTypeFilterChange"
+        >
+          <el-option label="All media" value="" />
+          <el-option label="Images" value="image" />
+          <el-option label="Videos" value="video" />
         </el-select>
 
         <el-input
@@ -441,7 +510,7 @@ onMounted(() => {
           v-if="orphanCount > 0"
           :type="showOrphans ? 'warning' : 'default'"
           size="small"
-          @click="showOrphans = !showOrphans; page = 1; fetchFiles()"
+          @click="toggleOrphanView"
         >
           <el-icon style="margin-right: 4px"><Warning /></el-icon>
           {{ showOrphans ? 'Back to library' : `Orphans (${orphanCount})` }}
@@ -461,15 +530,11 @@ onMounted(() => {
 
       <div class="toolbar-right">
         <span class="file-count">Total {{ total }} file(s)</span>
-        <el-button
-          v-if="isPickerMode && selectedFilenames.length > 0"
-          text
-          @click="clearSelection"
-        >
+        <el-button v-if="isPickerMode && selectedFilenames.length > 0" text @click="clearSelection">
           Clear selection
         </el-button>
         <el-button type="primary" :loading="uploading" @click="triggerUploadPicker">
-          {{ uploading ? 'Uploading...' : (isPickerMode ? 'Upload to library' : 'Upload file') }}
+          {{ uploading ? 'Uploading...' : isPickerMode ? 'Upload to library' : 'Upload file' }}
         </el-button>
         <input
           ref="uploadInputRef"
@@ -492,7 +557,8 @@ onMounted(() => {
     </div>
 
     <div class="picker-hint" v-if="isPickerMode">
-      Click cards to add or remove them from the selection. Referenced images stay available here even when they were not uploaded through the media library.
+      Click cards to add or remove them from the selection. Referenced images stay available here
+      even when they were not uploaded through the media library.
     </div>
 
     <div class="media-grid" v-if="displayFiles.length > 0">
@@ -500,11 +566,22 @@ onMounted(() => {
         v-for="file in displayFiles"
         :key="file.filename"
         class="media-card"
-        :class="{ selected: selectedFilenames.includes(file.filename), orphan: showOrphans }"
+        :class="{
+          selected: selectedFilenames.includes(file.filename),
+          orphan: showOrphans,
+        }"
         @click="toggleSelect(file)"
       >
         <div class="media-thumb">
-          <img :src="getFullUrl(file)" :alt="file.filename" loading="lazy" />
+          <video
+            v-if="isVideoFile(file)"
+            :src="getFullUrl(file)"
+            muted
+            playsinline
+            preload="metadata"
+          />
+          <img v-else :src="getFullUrl(file)" :alt="file.filename" loading="lazy" />
+          <span class="media-kind-badge">{{ isVideoFile(file) ? 'Video' : 'Image' }}</span>
           <div class="media-overlay">
             <el-button size="small" circle @click.stop="copyUrl(file)">
               <el-icon><CopyDocument /></el-icon>
@@ -521,12 +598,25 @@ onMounted(() => {
           </div>
         </div>
         <div class="media-info">
-          <p class="media-name" :title="file.filename">{{ (file.original_name || file.filename).split('/').pop() }}</p>
-          <p class="media-meta">{{ file.size_bytes || file.size ? formatSize(file.size_bytes ?? file.size) : 'Referenced image' }}</p>
-          <p class="media-meta" v-if="formatTimestamp(file.createdAt)">{{ formatTimestamp(file.createdAt) }}</p>
+          <p class="media-name" :title="file.filename">
+            {{ (file.original_name || file.filename).split('/').pop() }}
+          </p>
+          <p class="media-meta">
+            {{
+              file.size_bytes || file.size
+                ? formatSize(file.size_bytes ?? file.size)
+                : 'Referenced media'
+            }}
+          </p>
+          <p class="media-meta" v-if="formatTimestamp(file.createdAt)">
+            {{ formatTimestamp(file.createdAt) }}
+          </p>
           <p class="media-detail" v-if="file.module || file.entity_type">
             <span v-if="file.module" class="tag">{{ file.module }}</span>
-            <span v-if="file.entity_type" class="tag entity">{{ file.entity_type }}{{ file.entity_id ? ':' + file.entity_id.slice(0, 8) : '' }}</span>
+            <span v-if="file.entity_type" class="tag entity"
+              >{{ file.entity_type
+              }}{{ file.entity_id ? ':' + file.entity_id.slice(0, 8) : '' }}</span
+            >
           </p>
         </div>
       </div>
@@ -635,12 +725,28 @@ onMounted(() => {
   background: var(--lt-bg-hover);
 }
 
-.media-thumb img {
+.media-thumb img,
+.media-thumb video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.media-kind-badge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 1;
+  padding: 3px 7px;
+  border-radius: var(--lt-radius-sm);
+  background: color-mix(in srgb, var(--lt-text-primary) 76%, transparent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .media-overlay {

@@ -14,6 +14,7 @@ const props = withDefaults(
     multiple?: boolean
     limit?: number
     accept?: string
+    mediaType?: '' | 'image' | 'video'
     module?: string
     entityType?: string
     entityId?: string
@@ -23,6 +24,7 @@ const props = withDefaults(
     multiple: false,
     limit: 1,
     accept: 'image/jpeg,image/png,image/webp,image/gif',
+    mediaType: '',
     module: '',
     entityType: '',
     entityId: '',
@@ -41,19 +43,22 @@ const visible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 })
+const mediaNoun = computed(() =>
+  props.mediaType === 'video' ? 'video' : props.mediaType === 'image' ? 'image' : 'media file',
+)
 const dialogTitle = computed(() =>
-  props.multiple ? 'Select media files' : 'Select an image',
+  props.multiple ? 'Select media files' : `Select a ${mediaNoun.value}`,
 )
 const selectionLabel = computed(() => {
   if (!selectionCount.value) {
-    return props.multiple ? 'No media selected yet' : 'No image selected yet'
+    return props.multiple ? 'No media selected yet' : `No ${mediaNoun.value} selected yet`
   }
 
   if (props.multiple) {
     return `${selectionCount.value} of ${props.limit} selected`
   }
 
-  return '1 image selected'
+  return `1 ${mediaNoun.value} selected`
 })
 
 watch(
@@ -69,7 +74,7 @@ watch(
 function handleConfirm() {
   const urls = browserRef.value?.getSelectedUrls() || []
   if (!urls.length) {
-    ElMessage.warning('Please select at least one image first')
+    ElMessage.warning(`Please select at least one ${mediaNoun.value} first`)
     return
   }
   emit('confirm', urls)
@@ -93,7 +98,7 @@ function handleSelectionChange(files: Array<{ url: string }>) {
     <div class="dialog-intro">
       <p class="dialog-summary">{{ selectionLabel }}</p>
       <p class="dialog-meta">
-        <span>{{ multiple ? `Select up to ${limit}` : 'Choose one image' }}</span>
+        <span>{{ multiple ? `Select up to ${limit}` : `Choose one ${mediaNoun}` }}</span>
         <span v-if="module">Folder: {{ module }}</span>
       </p>
     </div>
@@ -104,6 +109,7 @@ function handleSelectionChange(files: Array<{ url: string }>) {
       :multiple="multiple"
       :limit="limit"
       :accept="accept"
+      :media-type="mediaType"
       :default-module="module"
       :entity-type="entityType"
       :entity-id="entityId"

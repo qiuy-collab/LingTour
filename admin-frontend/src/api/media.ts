@@ -34,6 +34,7 @@ export interface MediaQueryParams {
   search?: string
   dateFrom?: string
   dateTo?: string
+  type?: 'image' | 'video'
 }
 
 /** 获取媒体文件列表 (disk scan, backward compatible) */
@@ -69,7 +70,8 @@ export function uploadMediaFile(
   if (entityType) formData.append('entityType', entityType)
   if (entityId) formData.append('entityId', entityId)
   formData.append('file', file)
-  return api.post('/upload', formData, {
+  const endpoint = file.type.startsWith('video/') ? '/upload/video' : '/upload'
+  return api.post(endpoint, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: onProgress
       ? (e) => {

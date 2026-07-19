@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -15,6 +15,13 @@ import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
+import MediaAssetInput from '@/components/media/MediaAssetInput.vue'
+import {
+  isIncompleteVideoMedia,
+  legacyImageForMedia,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from '@/types/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,7 +36,11 @@ const cityOptions = ref<{ slug: string; name: string; adcode: number }[]>([])
 const rules = {
   slug: [
     { required: true, message: '请输入 Slug', trigger: 'blur' },
-    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
+    {
+      pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/,
+      message: 'Slug 必须是 kebab-case',
+      trigger: 'blur',
+    },
   ],
   'name.en': [{ required: true, message: '请输入商品英文名称', trigger: 'blur' }],
   price: [{ required: true, message: '请输入价格', trigger: 'blur' }],
@@ -53,12 +64,14 @@ const form = reactive<any>({
   currency: 'SGD',
   tag: { zh: '', en: '' },
   image: '',
+  primaryMedia: null,
   story: { zh: '', en: '' },
   material: { zh: '', en: '' },
   dimensions: { zh: '', en: '' },
   origin: { zh: '', en: '' },
   care: { zh: '', en: '' },
   gallery: [],
+  galleryMedia: [],
   stock: 0,
   published: false,
   originTrace: emptyOriginTrace(),
@@ -67,7 +80,8 @@ const form = reactive<any>({
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 
 const previewMeta = computed(() => ({
-  collectionTitle: collectionOptions.value.find((item) => item.id === form.collectionId)?.title || '',
+  collectionTitle:
+    collectionOptions.value.find((item) => item.id === form.collectionId)?.title || '',
 }))
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
@@ -113,12 +127,14 @@ function fillFromApi(data: any) {
     currency: data.currency || 'SGD',
     tag: toI18n(data.tag),
     image: data.image || '',
+    primaryMedia: resolvePrimaryMedia(data.primaryMedia, data.image || ''),
     story: toI18n(data.story),
     material: toI18n(data.material),
     dimensions: toI18n(data.dimensions),
     origin: toI18n(data.origin),
     care: toI18n(data.care),
     gallery: data.gallery || [],
+    galleryMedia: resolveMediaGallery(data.galleryMedia, data.gallery || []),
     stock: data.stock ?? 0,
     published: data.published ?? false,
     originTrace: { ...emptyOriginTrace(), ...(data.originTrace || {}) },
@@ -126,6 +142,7 @@ function fillFromApi(data: any) {
 }
 
 function toPayload() {
+  const primaryMedia = resolvePrimaryMedia(form.primaryMedia, form.image)
   return {
     slug: form.slug,
     name: form.name,
@@ -133,18 +150,32 @@ function toPayload() {
     price: Number(form.price || 0),
     currency: form.currency,
     tag: form.tag,
-    image: form.image,
+    image: legacyImageForMedia(primaryMedia, form.image),
+    primaryMedia,
     story: form.story,
     material: optionalI18n(form.material),
     dimensions: optionalI18n(form.dimensions),
     origin: optionalI18n(form.origin),
     care: optionalI18n(form.care),
     gallery: form.gallery,
+    galleryMedia: resolveMediaGallery(form.galleryMedia, form.gallery),
     stock: Number(form.stock || 0),
     published: form.published,
     originTrace: form.originTrace,
   }
 }
+
+watch(
+  () => form.primaryMedia,
+  (value) => {
+    if (!value) return
+    const nextLegacyImage = legacyImageForMedia(value, '')
+    if (nextLegacyImage !== form.image) {
+      form.image = nextLegacyImage
+    }
+  },
+  { deep: true },
+)
 
 onMounted(async () => {
   loading.value = true
@@ -168,6 +199,11 @@ async function handleSave() {
     await formRef.value?.validate()
   } catch {
     ElMessage.warning('请先补全必填项')
+    return
+  }
+
+  if (form.published && isIncompleteVideoMedia(form.primaryMedia)) {
+    ElMessage.warning('发布视频商品前，请补全视频文件和封面图')
     return
   }
 
@@ -213,7 +249,12 @@ async function handleSave() {
             <el-col :span="12">
               <el-form-item label="所属系列">
                 <el-select v-model="form.collectionId" clearable style="width: 100%">
-                  <el-option v-for="item in collectionOptions" :key="item.id" :label="item.title" :value="item.id" />
+                  <el-option
+                    v-for="item in collectionOptions"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item.id"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -256,9 +297,14 @@ async function handleSave() {
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header>图片素材</template>
-          <el-form-item label="主图">
-            <ImageUpload v-model="form.image" module="shop" />
+          <template #header>主媒体</template>
+          <el-form-item label="商品首屏媒体">
+            <MediaAssetInput
+              v-model="form.primaryMedia"
+              :legacy-image="form.image"
+              module="shop"
+              entity-type="product"
+            />
           </el-form-item>
           <el-form-item label="详情图库">
             <ImageUpload v-model="form.gallery" module="shop" mode="multiple" :limit="10" />
@@ -298,7 +344,11 @@ async function handleSave() {
             </el-col>
             <el-col :span="12">
               <el-form-item label="地图区划代码">
-                <el-input-number v-model="form.originTrace.mapAdcode" :min="0" style="width: 100%" />
+                <el-input-number
+                  v-model="form.originTrace.mapAdcode"
+                  :min="0"
+                  style="width: 100%"
+                />
               </el-form-item>
             </el-col>
           </el-row>
