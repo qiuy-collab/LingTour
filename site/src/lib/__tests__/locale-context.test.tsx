@@ -26,14 +26,14 @@ describe("LocaleProvider", () => {
     expect(result.current.locale).toBe("en");
   });
 
-  it("uses initialLocale when provided", () => {
+  it("keeps the public storefront in English when an initial locale is provided", () => {
     const { result } = renderHook(() => useLocale(), {
       wrapper: createWrapper("zh"),
     });
-    expect(result.current.locale).toBe("zh");
+    expect(result.current.locale).toBe("en");
   });
 
-  it("setLocale updates locale state", () => {
+  it("keeps the public storefront in English when another locale is requested", () => {
     const { result } = renderHook(() => useLocale(), {
       wrapper: createWrapper(),
     });
@@ -42,7 +42,8 @@ describe("LocaleProvider", () => {
       result.current.setLocale("zh");
     });
 
-    expect(result.current.locale).toBe("zh");
+    expect(result.current.locale).toBe("en");
+    expect(localStorage.getItem("lingtour-locale")).toBe("en");
   });
 
   it("t() returns translated string", () => {
