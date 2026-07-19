@@ -3,156 +3,135 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import type { StoryRoute } from "@/data/routes";
+import { MediaFrame } from "@/components/ui/MediaFrame";
+import { resolvePrimaryMedia } from "@/types/media";
 
 type Props = { route: StoryRoute };
 
-function truncate(value: string, max = 150): string {
+function truncate(value: string, max = 168): string {
   const clean = value.trim();
   if (clean.length <= max) return clean;
-  return `${clean.slice(0, max - 1).trim()}...`;
+  return `${clean.slice(0, max - 1).trim()}…`;
 }
 
 function splitAudience(value: string): string[] {
   return value
     .split(/,|\/|&|\band\b/gi)
     .map((token) => token.trim())
-    .filter(Boolean);
-}
-
-type ChipVariant = "paper" | "muted";
-
-const CHIP_STYLES: Record<ChipVariant, string> = {
-  paper:
-    "border-[var(--line)] bg-white/50 text-[var(--river-deep)]/80 backdrop-blur-[1px]",
-  muted:
-    "border-[var(--line)] bg-[var(--paper)] text-[var(--river-deep)]/72",
-};
-
-function TagGroup({
-  label,
-  chips,
-  variant,
-}: {
-  label: string;
-  chips: string[];
-  variant: ChipVariant;
-}) {
-  if (chips.length === 0) return null;
-  const chipClass = CHIP_STYLES[variant];
-
-  return (
-    <section>
-      <p className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]/80">
-        {label}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {chips.map((chip) => (
-          <span
-            key={chip}
-            className={`inline-flex items-center rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] ${chipClass}`}
-          >
-            {chip}
-          </span>
-        ))}
-      </div>
-    </section>
-  );
+    .filter(Boolean)
+    .slice(0, 4);
 }
 
 export function RouteBrief({ route }: Props) {
-  const promiseTitle = useMemo(() => {
-    return route.title.trim() || "Route Promise";
-  }, [route.title]);
-
-  const promiseBody = useMemo(() => {
-    return truncate(route.summary || route.story || route.title, 180);
-  }, [route.story, route.summary, route.title]);
-
-  const stopNameChips = route.itinerary
-    .slice(0, 4)
-    .map((stop) => stop.stop)
-    .filter(Boolean);
-
+  const leadStop = route.itinerary[0];
+  const leadMedia = resolvePrimaryMedia(leadStop?.primaryMedia, leadStop?.image || route.image);
+  const promiseBody = truncate(route.summary || route.story || route.title);
+  const audience = splitAudience(route.audience);
+  const metrics = [
+    { label: "Duration", value: route.duration },
+    { label: "Stops", value: String(route.itinerary.length).padStart(2, "0") },
+    { label: "Culture", value: route.culture },
+  ];
   const bestMoment = useMemo(() => {
     const selected =
       route.itinerary.find((stop) => stop.meal)?.story ||
-      route.itinerary.find((stop) => stop.culturalStory)?.plan ||
-      route.itinerary.find((stop) => stop.story)?.story ||
+      route.itinerary.find((stop) => stop.culturalStory)?.culturalStory ||
       route.itinerary[0]?.plan ||
-      route.itinerary[0]?.stop ||
-      route.title;
-    return truncate(selected, 90);
-  }, [route.itinerary, route.title]);
-
-  const bestForChips = splitAudience(route.audience);
-  const experienceChips = stopNameChips.length > 0 ? stopNameChips : [route.culture];
-  const paceChips = [route.duration, `${route.itinerary.length} stops`, route.culture].filter(
-    Boolean,
-  );
+      route.story;
+    return truncate(selected || route.title, 112);
+  }, [route.itinerary, route.story, route.title]);
 
   return (
-    <section className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
-      <div className="site-container py-10 lg:py-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:gap-14">
-          <div className="max-w-4xl">
-            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--cinnabar)]/80">
-              Route Promise
-            </p>
-            <h1 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.95] tracking-tight text-[var(--river-deep)] md:text-6xl xl:text-7xl">
-              {promiseTitle}
+    <section className="relative isolate overflow-hidden border-b border-white/10 bg-[var(--night)] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(197,160,57,0.16),transparent_30%),radial-gradient(circle_at_86%_26%,rgba(83,131,147,0.18),transparent_34%)]" />
+      <div className="site-container relative pb-10 pt-28 sm:pb-12 lg:pb-14 lg:pt-20">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-14">
+          <div className="max-w-[44rem]">
+            <div className="flex flex-wrap items-center gap-3 font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-white/52">
+              <span className="text-[var(--gold)]">Route file</span>
+              <span aria-hidden>/</span>
+              <span>{route.city}</span>
+              <span aria-hidden>/</span>
+              <span>{route.culture}</span>
+            </div>
+
+            <h1 className="mt-6 max-w-[11ch] font-[family:var(--font-display)] text-[clamp(3.4rem,7vw,7.2rem)] leading-[0.86] tracking-[-0.06em]">
+              {route.title}
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)] lg:text-lg">
+            <p className="mt-7 max-w-[39rem] text-base leading-8 text-white/68 lg:text-lg">
               {promiseBody}
             </p>
 
-            <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--river-deep)]/55">
-              {route.city} / {route.culture} / {route.duration}
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-4">
-              <Link
-                href="/interpreting#booking"
-                className="group inline-flex items-center gap-3 bg-[var(--cinnabar)] px-7 py-3.5 font-mono text-[11px] font-bold uppercase tracking-[0.26em] text-white transition-all hover:bg-[var(--river-deep)]"
-              >
-                <span>Book this route</span>
-                <span aria-hidden className="transition-transform group-hover:translate-x-1">
-                  -&gt;
-                </span>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/interpreting#booking" className="lt-action lt-action-gold">
+                Book this route <span aria-hidden>→</span>
               </Link>
               <Link
                 href="#itinerary"
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/26 px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:border-white hover:bg-white hover:text-[var(--night)]"
               >
                 Read the day
-              </Link>
-              <Link
-                href={route.citySlugs[0] ? `/culture/${route.citySlugs[0]}` : "/culture"}
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
-              >
-                Open city file
               </Link>
             </div>
           </div>
 
-          <div className="grid gap-8 self-start lg:pt-3">
-            <div className="grid gap-6">
-              <TagGroup label="Best for" chips={bestForChips} variant="paper" />
-              <TagGroup
-                label="You will experience"
-                chips={experienceChips}
-                variant="paper"
+          <div className="min-w-0">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-white/14 bg-white/5 shadow-[0_30px_100px_rgba(0,0,0,0.28)] sm:aspect-[16/11]">
+              <MediaFrame
+                asset={leadMedia}
+                fallbackSrc={route.image}
+                alt={`${route.title} route preview`}
+                mode={leadMedia?.type === "video" ? "interactive" : "image"}
+                eager
+                mediaClassName="object-cover"
               />
-              <TagGroup label="Pace" chips={paceChips} variant="muted" />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_56%,rgba(7,16,22,0.72))]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-5 p-5 sm:p-7">
+                <div>
+                  <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-white/54">
+                    First coordinate
+                  </p>
+                  <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-none sm:text-3xl">
+                    {leadStop?.stop || route.city}
+                  </p>
+                </div>
+                <p className="shrink-0 font-mono text-sm font-bold text-[var(--gold)]">
+                  {leadStop?.time || route.duration}
+                </p>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <section className="border-l-2 border-[var(--gold)] pl-5">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-                Best moment
-              </p>
-              <p className="mt-3 max-w-[28rem] text-lg italic leading-[1.8] text-[var(--river-deep)]/82 handwritten lg:text-[20px]">
-                {bestMoment}
-              </p>
-            </section>
+        <div className="mt-10 grid gap-6 border-t border-white/12 pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div>
+            <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-white/38">
+              Best for
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(audience.length ? audience : [route.audience]).map((item) => (
+                <span key={item} className="rounded-full border border-white/14 bg-white/[0.06] px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/66">
+                  {item}
+                </span>
+              ))}
+            </div>
+            <p className="mt-5 max-w-[46rem] text-sm leading-6 text-white/52">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Best moment · </span>
+              {bestMoment}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-5 sm:gap-8">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="min-w-0">
+                <p className="font-[family:var(--font-display)] text-2xl leading-none text-white sm:text-3xl">
+                  {metric.value}
+                </p>
+                <p className="mt-2 font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-white/36">
+                  {metric.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
