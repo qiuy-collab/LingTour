@@ -41,16 +41,17 @@ const show = computed(() => {
 <style scoped>
 .batch-action-bar {
   position: sticky;
-  bottom: 0;
+  bottom: 12px;
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 20px;
-  background: var(--lt-bg-card);
-  border-radius: var(--lt-radius-md);
-  box-shadow: 0 -4px 12px rgba(17, 25, 35, 0.1);
+  padding: 12px 14px 12px 18px;
+  background: color-mix(in srgb, var(--lt-bg-card) 90%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  border-radius: var(--lt-radius-lg);
+  box-shadow: var(--lt-shadow-lg);
   z-index: 100;
   border: 1px solid var(--lt-border-light);
   margin-top: 16px;
@@ -86,11 +87,14 @@ const show = computed(() => {
 
 @media (max-width: 767px) {
   .batch-action-bar {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr auto;
     gap: 8px;
     padding: 10px 12px;
   }
   .batch-action-bar__actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
     flex-wrap: wrap;
     width: 100%;
   }

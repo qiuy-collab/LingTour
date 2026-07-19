@@ -43,8 +43,8 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="list-toolbar">
-    <div class="list-toolbar__left">
+  <section class="list-toolbar" role="search" aria-label="列表筛选">
+    <div class="list-toolbar__query">
       <el-input
         v-model="keyword"
         :placeholder="searchPlaceholder"
@@ -54,36 +54,63 @@ function handleReset() {
         @keyup="handleKeyEnter"
         @clear="handleClear"
       />
-      <!-- Slot for additional filter controls (el-select, el-date-picker, etc.) -->
+      <el-button type="primary" :icon="Search" aria-label="执行搜索" @click="$emit('search')">
+        <span class="button-label">搜索</span>
+      </el-button>
+      <el-button
+        v-if="showReset"
+        :icon="RefreshRight"
+        aria-label="重置筛选"
+        @click="handleReset"
+      >
+        <span class="button-label">重置</span>
+      </el-button>
+    </div>
+    <div v-if="$slots.default" class="list-toolbar__filters">
       <slot />
-      <el-button type="primary" :icon="Search" @click="$emit('search')">搜索</el-button>
-      <el-button v-if="showReset" :icon="RefreshRight" @click="handleReset">重置</el-button>
     </div>
     <div class="list-toolbar__right">
       <slot name="right" />
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
 .list-toolbar {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  margin-bottom: 16px;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 11px;
+  border: 1px solid var(--lt-border-light);
+  border-radius: var(--lt-radius-lg);
+  background: color-mix(in srgb, var(--lt-bg-card) 88%, transparent);
+  box-shadow: var(--lt-shadow-sm);
 }
 
-.list-toolbar__left {
-  display: flex;
-  gap: 12px;
+.list-toolbar__query {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) auto auto;
+  gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .list-toolbar__search {
-  width: 260px;
+  width: 100%;
+}
+
+.list-toolbar__filters {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.list-toolbar__filters::-webkit-scrollbar {
+  display: none;
 }
 
 .list-toolbar__right {
@@ -92,27 +119,63 @@ function handleReset() {
   align-items: center;
 }
 
+@media (max-width: 1180px) {
+  .list-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .list-toolbar__filters {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 @media (max-width: 767px) {
   .list-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+    grid-template-columns: 1fr;
+    padding: 10px;
   }
-  .list-toolbar__search {
-    width: 100% !important;
+
+  .list-toolbar__query {
+    grid-template-columns: minmax(0, 1fr) 42px 42px;
+    gap: 6px;
   }
-  .list-toolbar__left {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+
+  .list-toolbar__query :deep(.el-button) {
+    width: 42px;
+    min-height: 40px;
+    margin: 0;
+    padding: 0;
   }
-  .list-toolbar__left .el-select {
-    width: 100% !important;
+
+  .button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
+
+  .list-toolbar__filters {
+    grid-column: 1;
+    grid-row: auto;
+    margin-inline: -10px;
+    padding: 2px 10px 3px;
+    scroll-snap-type: x proximity;
+  }
+
+  .list-toolbar__filters :deep(> *) {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
   .list-toolbar__right {
     display: flex;
+    width: 100%;
     gap: 8px;
   }
+
   .list-toolbar__right .el-button {
     flex: 1;
   }
