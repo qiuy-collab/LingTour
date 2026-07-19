@@ -50,12 +50,22 @@ export function MediaFrame({
   controls,
   overlay,
 }: MediaFrameProps) {
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { reduceMotion, saveData } = useMediaPreferences();
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setFailed(false);
+    setLoaded(false);
+    const frame = window.requestAnimationFrame(() => {
+      const image = imageRef.current;
+      if (image?.complete && image.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [asset?.type, asset?.url, fallbackSrc]);
 
   const poster = mediaPoster(asset, fallbackSrc);
@@ -89,6 +99,9 @@ export function MediaFrame({
     if (videoRef.current) videoRef.current.currentTime = 0;
   };
 
+  const hasLoadableMedia =
+    (showPosterOnly && Boolean(resolvedImage)) || (!showPosterOnly && isVideo);
+
   return (
     <div
       className={`relative h-full w-full overflow-hidden ${className}`}
@@ -97,13 +110,33 @@ export function MediaFrame({
       onFocusCapture={playPreview}
       onBlurCapture={pausePreview}
     >
+      {hasLoadableMedia ? (
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(135deg,var(--paper),var(--paper-deep),var(--paper))] px-5 text-center transition-opacity duration-500 ${
+            loaded ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <div className="grid justify-items-center gap-3">
+            <span className="h-px w-14 animate-pulse bg-[var(--gold)]/55" />
+            {eager ? (
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]/70">
+                Opening field media
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {showPosterOnly ? (
         resolvedImage ? (
           <img
+            ref={imageRef}
             src={resolvedImage}
             alt={alt}
             loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : "auto"}
             decoding="async"
+            onLoad={() => setLoaded(true)}
             onError={() => setFailed(true)}
             className={`h-full w-full ${mediaClassName}`}
           />
@@ -128,6 +161,7 @@ export function MediaFrame({
           loop={mode === "ambient" || mode === "preview"}
           playsInline
           preload={shouldAutoplay ? "auto" : "metadata"}
+          onLoadedData={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={`h-full w-full ${mediaClassName}`}
         />
