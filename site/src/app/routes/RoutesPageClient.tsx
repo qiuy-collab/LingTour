@@ -83,18 +83,16 @@ export default function RoutesPageClient({
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
             <div className="max-w-3xl lg:col-span-8">
               <Reveal>
-                <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
+                <div data-pastoral-kicker className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
                   {t("routes.atlas.eyebrow")}
                 </div>
                 <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply">
-                  {t("routes.atlas.titlePrimary")} <br />
-                  <span className="text-[var(--gold)] italic">
-                    {t("routes.atlas.titleItalic")}
-                  </span>
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("routes.atlas.titlePrimary")}</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("routes.atlas.titleItalic")}</span></span>
                 </h1>
                 <div className="mt-8 flex flex-col items-start gap-4 md:mt-16 md:flex-row md:gap-8">
                   <div className="hidden h-24 w-px bg-[var(--line)] md:block" />
-                  <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                  <p data-pastoral-subtitle className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-xl">
                     {t("routes.atlas.lede")}
                   </p>
                 </div>

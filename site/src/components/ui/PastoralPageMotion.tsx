@@ -29,12 +29,41 @@ export function PastoralPageMotion({
           desktop: "(min-width: 768px)",
         },
         (context) => {
-          const heroMedia = gsap.utils.toArray<HTMLElement>("[data-pastoral-hero-media]");
-          const cards = gsap.utils.toArray<HTMLElement>("[data-pastoral-card]");
+          const heroMedia = gsap.utils.toArray<HTMLElement>("[data-pastoral-hero-media]", scope.current);
+          const cards = gsap.utils.toArray<HTMLElement>("[data-pastoral-card]", scope.current);
+          const introElements = gsap.utils.toArray<HTMLElement>(
+            "[data-pastoral-kicker], [data-pastoral-title], [data-pastoral-subtitle], [data-pastoral-stamp]",
+            scope.current,
+          );
 
           if (!context.conditions?.animate) {
-            gsap.set([...heroMedia, ...cards], { clearProps: "all" });
+            gsap.set([...heroMedia, ...cards, ...introElements], { clearProps: "all" });
             return;
+          }
+
+          const kicker = scope.current?.querySelector<HTMLElement>("[data-pastoral-kicker]");
+          const titleLines = gsap.utils.toArray<HTMLElement>("[data-pastoral-title]", scope.current);
+          const subtitle = scope.current?.querySelector<HTMLElement>("[data-pastoral-subtitle]");
+          const stamp = scope.current?.querySelector<HTMLElement>("[data-pastoral-stamp]");
+
+          if (kicker || titleLines.length > 0 || subtitle || stamp) {
+            const intro = gsap.timeline({ defaults: { ease: motionEase.emphasized } });
+            if (kicker) {
+              intro.from(kicker, { autoAlpha: 0, y: 14, duration: 0.55 });
+            }
+            if (titleLines.length > 0) {
+              intro.from(
+                titleLines,
+                { autoAlpha: 0, yPercent: 115, rotation: 2.5, duration: 1.05, stagger: 0.12 },
+                kicker ? "-=0.25" : 0,
+              );
+            }
+            if (subtitle) {
+              intro.from(subtitle, { autoAlpha: 0, y: 22, duration: 0.7 }, "-=0.52");
+            }
+            if (stamp) {
+              intro.from(stamp, { autoAlpha: 0, scale: 0.72, rotation: -16, duration: 0.9 }, "-=0.72");
+            }
           }
 
           cards.forEach((card, index) => {

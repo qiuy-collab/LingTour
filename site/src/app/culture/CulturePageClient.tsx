@@ -79,17 +79,15 @@ export default function CulturePageClient({
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="h-px w-12 bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                  <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("culture.atlas.eyebrow")}
                   </p>
                 </div>
                 <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
-                  {t("culture.atlas.titlePrimary")} <br />
-                  <span className="italic text-[var(--gold)]">
-                    {t("culture.atlas.titleItalic")}
-                  </span>
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("culture.atlas.titlePrimary")}</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("culture.atlas.titleItalic")}</span></span>
                 </h1>
-                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
+                <p data-pastoral-subtitle className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
                   {t("culture.atlas.lede")}
                 </p>
               </Reveal>

@@ -75,17 +75,15 @@ export default function ShopPageClient({
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <span className="w-10 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                  <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("shop.atlas.eyebrow")}
                   </p>
                 </div>
                 <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] sm:text-6xl md:text-8xl lg:text-9xl">
-                  {t("shop.atlas.titlePrimary")} <br />
-                  <span className="italic text-[var(--gold)]">
-                    {t("shop.atlas.titleItalic")}
-                  </span>
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("shop.atlas.titlePrimary")}</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("shop.atlas.titleItalic")}</span></span>
                 </h1>
-                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
+                <p data-pastoral-subtitle className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
                   {t("shop.atlas.lede")}
                 </p>
               </Reveal>

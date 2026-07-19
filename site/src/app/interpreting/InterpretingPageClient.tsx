@@ -191,7 +191,7 @@ export default function InterpretingPageClient({
                   <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
                     L
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
+                  <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
                     {locale === "zh"
                       ? "LingTour 口译 / 现场协作"
                       : "LingTour Interpreting / Field Coordination"}
@@ -199,14 +199,12 @@ export default function InterpretingPageClient({
                 </div>
 
                 <h1 className="mb-6 font-[family:var(--font-display)] text-[2.95rem] leading-[0.86] tracking-[-0.04em] sm:mb-10 sm:text-7xl md:mb-12 md:text-9xl lg:text-[11rem]">
-                  {locale === "zh" ? "广东" : "Guangdong"} <br />
-                  <span className="italic text-[var(--cinnabar)]">
-                    {locale === "zh" ? "口译服务" : "Interpreter Services"}
-                  </span>
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{locale === "zh" ? "广东" : "Guangdong"}</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">{locale === "zh" ? "口译服务" : "Interpreter Services"}</span></span>
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-6 md:grid-cols-2 md:gap-12">
-                  <p className="handwritten text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                  <p data-pastoral-subtitle className="handwritten text-base leading-relaxed text-[var(--muted)] sm:text-xl">
                     {t("interpreting.hero.subtitle")}
                   </p>
 
