@@ -175,34 +175,25 @@ export function FieldKit<TChannel extends string>({
 
       <Reveal delay={0}>
         <div
-          className={`relative w-full overflow-hidden journal-paper scrapbook-shadow ${
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="field-kit-title"
+          className={`relative w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_36px_100px_rgba(17,25,35,0.24)] ${
             compact ? "max-w-2xl" : "max-w-[42rem]"
           }`}
           style={{
-            borderRadius: compact ? "24px" : "12px 44px 18px 36px",
             maxHeight: compact ? "min(80vh, 740px)" : "min(84vh, 820px)",
           }}
         >
-          {!compact ? (
-            <div className="pointer-events-none absolute bottom-0 left-6 top-0 flex w-8 flex-col justify-around py-8 opacity-20">
-              {Array.from({ length: 12 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-3 w-8 rounded-full border-2 border-[var(--river-deep)]"
-                />
-              ))}
-            </div>
-          ) : null}
-
           <div
             className={`scrollbar-hide overflow-y-auto ${
               compact
                 ? "max-h-[80vh] p-6 sm:p-7"
-                : "max-h-[84vh] p-8 pl-16 sm:p-10 sm:pl-20"
+                : "max-h-[84vh] p-6 sm:p-9"
             }`}
           >
             <div
-              className={`flex items-center justify-between border-b-2 border-[var(--line)] ${
+              className={`flex items-center justify-between border-b border-[var(--line)] ${
                 compact ? "mb-5 pb-4" : "mb-8 pb-6"
               }`}
             >
@@ -211,6 +202,7 @@ export function FieldKit<TChannel extends string>({
                   Dispatch Mission
                 </p>
                 <h2
+                  id="field-kit-title"
                   className={`font-[family:var(--font-display)] text-[var(--river-deep)] ${
                     compact ? "text-2xl" : "text-3xl"
                   }`}
@@ -238,7 +230,7 @@ export function FieldKit<TChannel extends string>({
             {initialBrief ? (
               <div
                 className={`border border-[var(--gold)]/20 bg-[var(--gold)]/10 ${
-                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-xl p-5 rotate-[-1deg]"
+                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-[var(--radius-md)] p-5"
                 }`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
@@ -294,7 +286,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder={t("community.fieldKit.titlePlaceholder")}
-                  className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
+                  className={`min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/58 px-4 py-3 font-[family:var(--font-display)] outline-none transition focus:border-[var(--river-deep)] placeholder:opacity-30 ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-xl" : "text-2xl"}`}
                 />
@@ -310,7 +302,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder={t("community.fieldKit.notePlaceholder")}
-                  className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
+                  className={`w-full resize-none rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/58 p-4 leading-relaxed outline-none transition focus:border-[var(--river-deep)] placeholder:opacity-30 ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-base" : "text-lg"}`}
                 />
@@ -380,7 +372,7 @@ export function FieldKit<TChannel extends string>({
                 <button
                   onClick={handlePublish}
                   disabled={locked || !canPublish || submitting}
-                  className={`w-full rounded-full bg-[var(--night)] font-bold tracking-widest text-white shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
+                  className={`w-full rounded-full bg-[var(--night)] font-mono font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_42px_rgba(17,25,35,0.18)] transition active:scale-[0.98] disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >

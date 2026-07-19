@@ -477,62 +477,110 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <section className="relative overflow-hidden border-b border-[var(--line)] py-20 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_14%_16%,rgba(182,66,53,0.08),transparent_24rem),radial-gradient(circle_at_88%_18%,rgba(124,155,134,0.12),transparent_28rem)]" />
-        <div className="site-container relative text-center">
+      <section className="relative isolate overflow-hidden bg-[var(--night)] py-14 text-white sm:py-16 lg:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(197,160,57,0.16),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(83,131,147,0.2),transparent_36%)]" />
+        <div className="site-container relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:gap-16">
           <Reveal>
-            <p className="text-label tracking-[0.3em] text-[var(--cinnabar)]">
-              {t("community.badge")}
-            </p>
-            <h1 className="mt-6 font-[family:var(--font-display)] text-5xl leading-[0.85] tracking-tight md:text-8xl lg:text-[8rem]">
-              {t("community.hero.title")} <br />
-              <span className="italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span>
-            </h1>
-            <p className="handwritten mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
-              {t("community.hero.subtitle")}
-            </p>
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{t("community.badge")}</p>
+              <h1 className="mt-6 max-w-[10ch] font-[family:var(--font-display)] text-5xl leading-[0.86] tracking-[-0.055em] sm:text-6xl lg:text-8xl">
+                {t("community.hero.title")} <span className="italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span>
+              </h1>
+              <p className="mt-7 max-w-[42rem] text-base leading-8 text-white/62 lg:text-lg">{t("community.hero.subtitle")}</p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div className="rounded-[var(--radius-xl)] border border-white/12 bg-white/[0.05] p-5 backdrop-blur-sm sm:p-6">
+              <div className="flex items-center justify-between gap-4 border-b border-white/12 pb-5">
+                <div>
+                  <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Signal desk</p>
+                  <p className="mt-2 text-sm text-white/48">Live field intelligence</p>
+                </div>
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-40 motion-reduce:animate-none" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-300" />
+                </span>
+              </div>
+              <div className="mt-5 grid grid-cols-3 gap-4">
+                {[
+                  { label: "Signals", value: allPosts.length },
+                  { label: "Briefs", value: fieldBriefs.length },
+                  { label: "Stamps", value: stampCount },
+                ].map((metric) => (
+                  <div key={metric.label}>
+                    <p className="font-[family:var(--font-display)] text-3xl">{String(metric.value).padStart(2, "0")}</p>
+                    <p className="mt-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-white/34">{metric.label}</p>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={isLoggedIn ? openFieldKit : handleGoogleLogin}
+                className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[var(--gold)] px-5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--night)] transition hover:bg-white"
+              >
+                {isLoggedIn ? "Open field kit" : "Connect to publish"}
+              </button>
+            </div>
           </Reveal>
         </div>
       </section>
 
-      <section className="sticky top-[4.6rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain backdrop-blur-xl py-4">
-        <div className="site-container flex flex-wrap items-center justify-between gap-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <section className="sticky top-[4.5rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/94 py-3 backdrop-blur-xl">
+        <div className="site-container grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
             {channels.map((channel) => (
               <button
                 key={channel}
                 type="button"
                 onClick={() => setActiveChannel(channel)}
-                className={`shrink-0 rounded-full px-5 py-1.5 text-xs font-bold uppercase tracking-widest transition-all ${
+                aria-pressed={activeChannel === channel}
+                className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.15em] transition ${
                   activeChannel === channel
-                    ? "bg-[var(--river-deep)] text-white shadow-md"
-                    : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
+                    ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
+                    : "border-[var(--line)] bg-white/62 text-[var(--muted)] hover:border-[var(--river-deep)] hover:text-[var(--river-deep)]"
                 }`}
               >
                 {t(CHANNEL_I18N[channel])}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 lg:flex lg:items-center">
+            <label className="relative min-w-0 lg:w-56">
+              <span className="sr-only">{t("community.search.placeholder")}</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("community.search.placeholder")}
-                className="h-10 w-48 rounded-full border border-[var(--line)] bg-white/60 pl-9 pr-4 text-sm outline-none focus:border-[var(--cinnabar)] focus:bg-white transition-colors"
+                className="h-11 w-full rounded-full border border-[var(--line)] bg-white/72 pl-9 pr-4 text-sm outline-none transition focus:border-[var(--river-deep)] focus:bg-white"
               />
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+            </label>
+            <div className="flex rounded-full border border-[var(--line)] bg-white/62 p-1">
+              {(["Live", "Loved", "Saved"] as SortMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setSortMode(mode)}
+                  aria-pressed={sortMode === mode}
+                  className={`min-h-9 rounded-full px-3 font-mono text-[7px] font-bold uppercase tracking-[0.13em] transition ${
+                    sortMode === mode ? "bg-[var(--river-deep)] text-white" : "text-[var(--muted)] hover:text-[var(--river-deep)]"
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="site-container py-12 lg:py-16">
+      <section className="site-container py-8 sm:py-10 lg:py-14">
         {loading && !masonryItems.length ? (
           <div className="py-20 text-center">
-            <p className="handwritten text-lg text-[var(--muted)]">
+            <p className="text-base text-[var(--muted)]">
               {t("community.loading")}
             </p>
           </div>
@@ -545,13 +593,13 @@ export default function CommunityPage() {
             <button
               type="button"
               onClick={refetch}
-              className="mt-6 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)] transition hover:bg-[var(--river-deep)] hover:text-white"
+              className="lt-action lt-action-secondary mt-6"
             >
               {t("common.btn.retry")}
             </button>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-20">
+          <div className="columns-1 gap-5 space-y-5 pb-20 sm:columns-2 lg:columns-3 xl:columns-4">
             {masonryItems.length ? (
               masonryItems.map((item, index) => {
                 if (item.type === "dispatch") {
@@ -575,7 +623,6 @@ export default function CommunityPage() {
                       <Reveal delay={index * 40}>
                         <BriefCard
                           brief={item.data}
-                          index={index}
                           onSelect={(brief) => {
                             selectBrief(brief);
                             openFieldKit();
@@ -592,7 +639,6 @@ export default function CommunityPage() {
                       <Reveal delay={index * 40}>
                         <PostCard
                           post={item.data}
-                          index={index}
                           variant={resolveVariant(item.data)}
                           onOpen={setSelectedPost}
                           isLoggedIn={isLoggedIn}

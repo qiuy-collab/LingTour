@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
 import {
   toggleCommunityPostLike,
@@ -10,7 +10,6 @@ import { Avatar } from "@/components/ui/Avatar";
 
 type PostCardProps = {
   post: CommunityFeedPost;
-  index: number;
   variant?: "image" | "feature" | "text";
   onOpen?: (post: CommunityFeedPost) => void;
   isLoggedIn?: boolean;
@@ -20,7 +19,6 @@ type PostCardProps = {
 
 export function PostCard({
   post,
-  index,
   variant = "image",
   onOpen,
   isLoggedIn = false,
@@ -31,7 +29,6 @@ export function PostCard({
   const [saved, setSaved] = useState(Boolean(post.saved));
   const [likeCount, setLikeCount] = useState(post.likes);
   const [saveCount, setSaveCount] = useState(post.saves);
-
   const hasImage = Boolean(post.image);
   const hasText = Boolean(post.excerpt.trim());
 
@@ -41,19 +38,6 @@ export function PostCard({
     setLikeCount(post.likes);
     setSaveCount(post.saves);
   }, [post.id, post.liked, post.likes, post.saved, post.saves]);
-
-  const variantClasses = useMemo(() => {
-    if (variant === "text") {
-      return "border border-[var(--line)] bg-[var(--paper)]/95 rotate-[-0.8deg]";
-    }
-    if (variant === "feature") {
-      return "overflow-hidden border border-[var(--line)] bg-[linear-gradient(180deg,rgba(250,248,242,0.98),rgba(244,240,232,0.92))]";
-    }
-    return "journal-paper";
-  }, [variant]);
-
-  const openPost = () => onOpen?.(post);
-  const requireLogin = () => onRequireLogin?.();
 
   const publishEngagement = (changes: Partial<CommunityFeedPost>) => {
     onEngagementChange?.({
@@ -66,249 +50,144 @@ export function PostCard({
     });
   };
 
+  const handleLike = async () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
+    const nextLiked = !liked;
+    const optimisticLikes = Math.max(0, likeCount + (nextLiked ? 1 : -1));
+    setLiked(nextLiked);
+    setLikeCount(optimisticLikes);
+    publishEngagement({ liked: nextLiked, likes: optimisticLikes });
+    try {
+      const result = await toggleCommunityPostLike(post.id);
+      setLiked(result.liked);
+      setLikeCount(result.likes);
+      publishEngagement({ liked: result.liked, likes: result.likes });
+    } catch (error) {
+      setLiked(liked);
+      setLikeCount(likeCount);
+      publishEngagement({ liked, likes: likeCount });
+      console.error("Failed to toggle community post like", error);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
+    const nextSaved = !saved;
+    const optimisticSaves = Math.max(0, saveCount + (nextSaved ? 1 : -1));
+    setSaved(nextSaved);
+    setSaveCount(optimisticSaves);
+    publishEngagement({ saved: nextSaved, saves: optimisticSaves });
+    try {
+      const result = await toggleCommunityPostSave(post.id);
+      setSaved(result.saved);
+      setSaveCount(result.saves);
+      publishEngagement({ saved: result.saved, saves: result.saves });
+    } catch (error) {
+      setSaved(saved);
+      setSaveCount(saveCount);
+      publishEngagement({ saved, saves: saveCount });
+      console.error("Failed to toggle community post save", error);
+    }
+  };
+
   return (
-    <article
-      className={`group relative scrapbook-shadow transition-all duration-500 hover:-translate-y-1 ${variantClasses}`}
-      style={{
-        borderRadius:
-          variant === "image"
-            ? "2px 40px 5px 35px"
-            : variant === "feature"
-              ? "1.9rem"
-              : "1.6rem 1.6rem 1.2rem 1.8rem",
-        animationDelay: `${index * 60}ms`,
-      }}
-    >
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={openPost}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openPost();
-          }
-        }}
-        className="block w-full cursor-pointer text-left"
-      >
+    <article className="group overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.07)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_26px_76px_rgba(17,25,35,0.13)]">
+      <button type="button" onClick={() => onOpen?.(post)} className="block w-full text-left">
         {hasImage ? (
-          <div
-            className={`relative overflow-hidden ${
-              variant === "feature"
-                ? "aspect-[1.12] border-b border-[var(--line)]"
-                : variant === "image"
-                  ? "tape-effect aspect-[1.1] rounded-[4px]"
-                  : "aspect-[1.18] rounded-t-[1.5rem]"
-            }`}
-          >
-            <div
-              className={`absolute inset-0 bg-cover bg-center transition duration-700 group-hover:scale-105 ${
-                variant === "image" ? "grayscale-[0.12]" : "grayscale-[0.04]"
-              }`}
-              style={{ backgroundImage: `url(${post.image})` }}
+          <div className={`relative overflow-hidden ${variant === "feature" ? "aspect-[5/4]" : "aspect-[4/3]"}`}>
+            <img
+              src={post.image}
+              alt={post.title}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.045]"
             />
-            <div
-              className={`absolute inset-0 ${
-                variant === "feature"
-                  ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(17,25,35,0.18))]"
-                  : "bg-gradient-to-t from-black/36 to-transparent"
-              }`}
-            />
-            <div
-              className={`absolute right-3 top-3 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-                variant === "feature"
-                  ? "rounded-full border border-[var(--line)] bg-[var(--paper)]/88 text-[var(--cinnabar)] backdrop-blur-md"
-                  : "handwritten rotate-[2deg] bg-white/80 text-[var(--river-deep)] shadow-sm backdrop-blur-sm"
-              }`}
-            >
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_54%,rgba(7,16,22,0.66))]" />
+            <span className="absolute left-4 top-4 rounded-full border border-white/28 bg-black/26 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
               {post.channel}
-            </div>
+            </span>
             {variant === "feature" ? (
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="font-[family:var(--font-display)] text-3xl leading-[0.95] text-white [text-shadow:0_2px_16px_rgba(17,25,35,0.45)]">
-                  {post.title}
-                </p>
-              </div>
+              <h2 className="absolute inset-x-0 bottom-0 p-5 font-[family:var(--font-display)] text-3xl leading-[0.95] text-white">
+                {post.title}
+              </h2>
             ) : null}
           </div>
         ) : (
-          <div className="relative overflow-hidden px-6 pb-2 pt-8 sm:px-7">
-            <div className="absolute right-6 top-4 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--gold)]">
-              Text Dispatch
+          <div className="border-b border-[var(--line)] bg-[linear-gradient(135deg,var(--river-deep),var(--night))] p-6 text-white">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Text signal</span>
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/44">{post.channel}</span>
             </div>
-            <div className="max-w-[13rem] border-l-2 border-[var(--gold)] pl-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                {post.channel}
-              </p>
-              <p className="mt-3 handwritten text-[var(--muted)]">
-                No image attached. Filed as a pure note.
-              </p>
-            </div>
+            <p className="mt-8 max-w-[17rem] font-[family:var(--font-display)] text-2xl leading-[1.05]">Filed without an image, kept for the detail.</p>
           </div>
         )}
 
-        <div
-          className={`${
-            variant === "feature"
-              ? "p-5"
-              : variant === "text"
-                ? "p-6 sm:p-7"
-                : "p-5"
-          }`}
-        >
-          <div className="flex items-center gap-2">
+        <div className="p-5 sm:p-6">
+          <div className="flex items-center gap-3">
             <Avatar
               src={post.user.avatar}
               name={post.user.name}
               seed={post.user.handle ?? post.user.name}
               size={32}
-              ringClassName={
-                variant === "feature"
-                  ? "border border-[var(--paper)]/70 ring-2 ring-white/50"
-                  : "border border-white/40 ring-2 ring-[var(--paper-deep)]"
-              }
+              ringClassName="border border-white/50 ring-2 ring-[var(--paper-deep)]"
             />
-            <span
-              className={`text-sm ${
-                variant === "image" ? "handwritten" : "font-medium"
-              } text-[var(--river-deep)]`}
-            >
-              {post.user.name}
-            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-[var(--river-deep)]">{post.user.name}</p>
+              <p className="mt-0.5 font-mono text-[7px] uppercase tracking-[0.16em] text-[var(--muted)]">{post.user.handle}</p>
+            </div>
           </div>
 
           {variant !== "feature" ? (
-            <h2
-              className={`mt-4 font-[family:var(--font-display)] leading-tight ${
-                variant === "text"
-                  ? "text-3xl text-[var(--river-deep)]"
-                  : "text-2xl text-[var(--river-deep)] underline decoration-[var(--gold)]/30 decoration-2 underline-offset-4"
-              }`}
-            >
+            <h2 className="mt-5 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)]">
               {post.title}
             </h2>
           ) : null}
+          <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--muted)]">
+            {hasText ? post.excerpt : "Photo-only signal. Open it to read the full field context."}
+          </p>
 
-          {hasText ? (
-            <p
-              className={`mt-4 ${
-                variant === "feature"
-                  ? "text-sm leading-7 text-[var(--river-deep)]/76"
-                  : variant === "text"
-                    ? "text-base leading-8 text-[var(--river-deep)]/80 handwritten"
-                    : "text-sm italic leading-relaxed text-[var(--muted)] line-clamp-3"
-              }`}
-            >
-              {post.excerpt}
-            </p>
-          ) : (
-            <p className="mt-4 text-sm italic text-[var(--muted)]">
-              Photo-only signal. Open to read the full field context.
-            </p>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">
-              #{post.route}
-            </span>
-            <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
-              @{post.location}
-            </span>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between border-t border-black/5 pt-4 text-[var(--river-deep)]">
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={async (event) => {
-                  event.stopPropagation();
-                  if (!isLoggedIn) {
-                    requireLogin();
-                    return;
-                  }
-                  const nextLiked = !liked;
-                  const optimisticLikes = Math.max(
-                    0,
-                    likeCount + (nextLiked ? 1 : -1),
-                  );
-                  setLiked(nextLiked);
-                  setLikeCount(optimisticLikes);
-                  publishEngagement({
-                    liked: nextLiked,
-                    likes: optimisticLikes,
-                  });
-                  try {
-                    const result = await toggleCommunityPostLike(post.id);
-                    setLiked(result.liked);
-                    setLikeCount(result.likes);
-                    publishEngagement({
-                      liked: result.liked,
-                      likes: result.likes,
-                    });
-                  } catch (error) {
-                    setLiked(liked);
-                    setLikeCount(likeCount);
-                    publishEngagement({ liked, likes: likeCount });
-                    console.error("Failed to toggle community post like", error);
-                  }
-                }}
-                className={`text-xs transition-colors ${
-                  !isLoggedIn
-                    ? "cursor-not-allowed text-[var(--muted)] opacity-60"
-                    : liked
-                      ? "text-[var(--cinnabar)]"
-                      : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
-                }`}
-              >
-                Like {likeCount}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={async (event) => {
-                event.stopPropagation();
-                if (!isLoggedIn) {
-                  requireLogin();
-                  return;
-                }
-                const nextSaved = !saved;
-                const optimisticSaves = Math.max(
-                  0,
-                  saveCount + (nextSaved ? 1 : -1),
-                );
-                setSaved(nextSaved);
-                setSaveCount(optimisticSaves);
-                publishEngagement({
-                  saved: nextSaved,
-                  saves: optimisticSaves,
-                });
-                try {
-                  const result = await toggleCommunityPostSave(post.id);
-                  setSaved(result.saved);
-                  setSaveCount(result.saves);
-                  publishEngagement({
-                    saved: result.saved,
-                    saves: result.saves,
-                  });
-                } catch (error) {
-                  setSaved(saved);
-                  setSaveCount(saveCount);
-                  publishEngagement({ saved, saves: saveCount });
-                  console.error("Failed to toggle community post save", error);
-                }
-              }}
-              className={`text-xs transition-colors ${
-                !isLoggedIn
-                  ? "cursor-not-allowed text-[var(--muted)] opacity-60"
-                  : saved
-                    ? "text-[var(--gold)]"
-                    : "text-[var(--muted)] hover:text-[var(--gold)]"
-              }`}
-            >
-              Save {saveCount}
-            </button>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {post.route ? <span className="rounded-full bg-[var(--paper)] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--cinnabar)]">#{post.route}</span> : null}
+            {post.location ? <span className="rounded-full bg-[var(--paper)] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--gold)]">@{post.location}</span> : null}
           </div>
         </div>
+      </button>
+
+      <div className="flex items-center justify-between border-t border-[var(--line)] px-5 py-4 sm:px-6">
+        <button
+          type="button"
+          onClick={handleLike}
+          aria-pressed={liked}
+          className={`inline-flex min-h-10 items-center rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
+            !isLoggedIn
+              ? "text-[var(--muted)] opacity-55"
+              : liked
+                ? "bg-[var(--cinnabar)]/10 text-[var(--cinnabar)]"
+                : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
+          }`}
+        >
+          Like · {likeCount}
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          aria-pressed={saved}
+          className={`inline-flex min-h-10 items-center rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
+            !isLoggedIn
+              ? "text-[var(--muted)] opacity-55"
+              : saved
+                ? "bg-[var(--gold)]/12 text-[var(--gold)]"
+                : "text-[var(--muted)] hover:text-[var(--gold)]"
+          }`}
+        >
+          Save · {saveCount}
+        </button>
       </div>
     </article>
   );

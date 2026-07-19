@@ -49,7 +49,12 @@ export function PostDetailDialog({ post, onClose }: Props) {
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-[0_36px_100px_rgba(17,25,35,0.22)]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-post-title"
+        className="relative z-10 flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] shadow-[0_36px_100px_rgba(17,25,35,0.22)]"
+      >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4 sm:px-8">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--cinnabar)]">
@@ -70,7 +75,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
         <div className="scrollbar-hide grid flex-1 overflow-y-auto lg:grid-cols-[minmax(0,1.1fr)_22rem]">
           <div className="px-5 py-5 sm:px-8 sm:py-7">
             {hasImage ? (
-              <div className="overflow-hidden rounded-[1.5rem] border-[10px] border-white bg-white scrapbook-shadow">
+              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-white shadow-[0_18px_58px_rgba(17,25,35,0.1)]">
                 <img
                   src={post.image}
                   alt={post.title}
@@ -89,11 +94,11 @@ export function PostDetailDialog({ post, onClose }: Props) {
                     ? t("community.post.photoSignal")
                     : t("community.post.textDispatch")}
               </p>
-              <h2 className="mt-3 font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] sm:text-5xl">
+              <h2 id="community-post-title" className="mt-3 font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] sm:text-5xl">
                 {post.title}
               </h2>
               {hasText ? (
-                <p className="mt-5 max-w-3xl text-[16px] leading-8 text-[var(--river-deep)]/82 handwritten sm:text-[18px]">
+                <p className="mt-5 max-w-3xl text-[16px] leading-8 text-[var(--river-deep)]/82 sm:text-[18px]">
                   {post.excerpt}
                 </p>
               ) : (

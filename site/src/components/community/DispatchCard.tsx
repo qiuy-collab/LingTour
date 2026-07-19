@@ -9,50 +9,28 @@ type DispatchCardProps = {
 
 export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: DispatchCardProps) {
   return (
-    <div className="group w-full bg-[var(--night)] p-6 sm:p-8 scrapbook-shadow text-white rotate-1 transition-transform hover:rotate-0">
-      <div className="flex items-center justify-between border-b border-white/20 pb-4 mb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--gold)]">
-          Field Dispatch
-        </p>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-6 h-6 rounded-full border border-[var(--gold)] text-[var(--gold)]">
-            <span className="text-[10px] font-bold">{stampCount}</span>
-          </div>
-          <span className="text-[9px] uppercase tracking-widest text-white/70">Stamps</span>
+    <div className="group w-full overflow-hidden rounded-[var(--radius-lg)] bg-[var(--night)] p-6 text-white shadow-[0_22px_70px_rgba(17,25,35,0.2)] sm:p-7">
+      <div className="flex items-center justify-between gap-5 border-b border-white/12 pb-5">
+        <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">Field dispatch</p>
+        <div className="flex items-center gap-2 rounded-full border border-white/12 px-3 py-1.5">
+          <span className="font-[family:var(--font-display)] text-lg text-[var(--gold)]">{stampCount}</span>
+          <span className="font-mono text-[7px] uppercase tracking-[0.16em] text-white/42">Stamps</span>
         </div>
       </div>
-
-      <h3 className="font-[family:var(--font-display)] text-3xl italic text-white">
-        Share a Signal
-      </h3>
-
-      <p className="mt-4 text-sm leading-relaxed text-white/70 handwritten">
-        Field work is about the unseen. Capture a detail, trade intelligence, and earn field stamps.
-      </p>
-
-      <div className="mt-8 flex flex-col gap-4">
-        {isLoggedIn ? (
-          <button
-            onClick={onDispatch}
-            className="w-full rounded-full bg-white py-4 text-sm font-bold text-[var(--night)] transition-all hover:scale-105 active:scale-95 shadow-lg"
-          >
-            Open Field Kit
-          </button>
-        ) : (
-          <button
-            onClick={onLogin}
-            className="w-full rounded-full bg-[var(--cinnabar)] py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-          >
-            Sign in to Publish
-          </button>
-        )}
-      </div>
-
-      <div className="mt-6 pt-4 border-t border-white/10 text-center">
-        <p className="font-mono text-[9px] text-white/40 uppercase tracking-[0.2em]">
-          LingTour Archival Desk
-        </p>
-      </div>
+      <h3 className="mt-7 font-[family:var(--font-display)] text-4xl leading-[0.92]">Share a signal.</h3>
+      <p className="mt-5 text-sm leading-7 text-white/60">Capture a useful detail, trade field intelligence, and keep the route open for the next traveller.</p>
+      <button
+        type="button"
+        onClick={isLoggedIn ? onDispatch : onLogin}
+        className={`mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-full px-6 font-mono text-[9px] font-bold uppercase tracking-[0.18em] transition active:scale-[0.98] ${
+          isLoggedIn
+            ? "bg-[var(--gold)] text-[var(--night)] hover:bg-white"
+            : "bg-[var(--cinnabar)] text-white hover:bg-white hover:text-[var(--night)]"
+        }`}
+      >
+        {isLoggedIn ? "Open field kit" : "Sign in to publish"}
+      </button>
+      <p className="mt-5 text-center font-mono text-[7px] uppercase tracking-[0.18em] text-white/28">LingTour signal desk</p>
     </div>
   );
 }
