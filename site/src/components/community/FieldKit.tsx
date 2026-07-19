@@ -166,7 +166,9 @@ export function FieldKit<TChannel extends string>({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
-      <div
+      <button
+        type="button"
+        aria-label="Close field note kit"
         className="absolute inset-0 bg-[var(--night)]/50 backdrop-blur-[2px]"
         onClick={() => {
           if (!submitting) onClose();
@@ -178,22 +180,34 @@ export function FieldKit<TChannel extends string>({
           role="dialog"
           aria-modal="true"
           aria-labelledby="field-kit-title"
-          className={`relative w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_36px_100px_rgba(17,25,35,0.24)] ${
+          className={`relative w-full overflow-hidden journal-paper scrapbook-shadow ${
             compact ? "max-w-2xl" : "max-w-[42rem]"
           }`}
           style={{
+            borderRadius: compact ? "24px" : "12px 44px 18px 36px",
             maxHeight: compact ? "min(80vh, 740px)" : "min(84vh, 820px)",
           }}
         >
+          {!compact ? (
+            <div className="pointer-events-none absolute bottom-0 left-6 top-0 hidden w-8 flex-col justify-around py-8 opacity-20 sm:flex">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-3 w-8 rounded-full border-2 border-[var(--river-deep)]"
+                />
+              ))}
+            </div>
+          ) : null}
+
           <div
             className={`scrollbar-hide overflow-y-auto ${
               compact
                 ? "max-h-[80vh] p-6 sm:p-7"
-                : "max-h-[84vh] p-6 sm:p-9"
+                : "max-h-[84vh] p-5 sm:p-10 sm:pl-20"
             }`}
           >
             <div
-              className={`flex items-center justify-between border-b border-[var(--line)] ${
+              className={`flex items-center justify-between border-b-2 border-[var(--line)] ${
                 compact ? "mb-5 pb-4" : "mb-8 pb-6"
               }`}
             >
@@ -211,8 +225,10 @@ export function FieldKit<TChannel extends string>({
                 </h2>
               </div>
               <button
+                type="button"
                 onClick={onClose}
                 disabled={submitting}
+                aria-label="Close field note kit"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)] disabled:opacity-40"
               >
                 ×
@@ -230,7 +246,7 @@ export function FieldKit<TChannel extends string>({
             {initialBrief ? (
               <div
                 className={`border border-[var(--gold)]/20 bg-[var(--gold)]/10 ${
-                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-[var(--radius-md)] p-5"
+                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-xl p-5 rotate-[-1deg]"
                 }`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
@@ -259,9 +275,11 @@ export function FieldKit<TChannel extends string>({
                     .filter((channel): channel is TChannel => channel !== "All")
                     .map((channel) => (
                   <button
+                        type="button"
                         disabled={locked}
                         key={channel}
                         onClick={() => setActiveChannel(channel)}
+                        aria-pressed={activeChannel === channel}
                         className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
                           locked
                             ? "cursor-not-allowed bg-white/30 text-[var(--muted)] opacity-50"
@@ -286,7 +304,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder={t("community.fieldKit.titlePlaceholder")}
-                  className={`min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/58 px-4 py-3 font-[family:var(--font-display)] outline-none transition focus:border-[var(--river-deep)] placeholder:opacity-30 ${
+                  className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-xl" : "text-2xl"}`}
                 />
@@ -302,7 +320,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder={t("community.fieldKit.notePlaceholder")}
-                  className={`w-full resize-none rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/58 p-4 leading-relaxed outline-none transition focus:border-[var(--river-deep)] placeholder:opacity-30 ${
+                  className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-base" : "text-lg"}`}
                 />
@@ -351,6 +369,7 @@ export function FieldKit<TChannel extends string>({
                   </label>
                   {image ? (
                     <button
+                      type="button"
                       onClick={() => setImage(null)}
                       className="h-8 self-end rounded-full border border-[var(--line)] px-3 text-[10px] font-bold uppercase text-[var(--muted)] transition-all hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
                     >
@@ -370,9 +389,10 @@ export function FieldKit<TChannel extends string>({
 
               <div className={compact ? "pt-2" : "pt-6"}>
                 <button
+                  type="button"
                   onClick={handlePublish}
                   disabled={locked || !canPublish || submitting}
-                  className={`w-full rounded-full bg-[var(--night)] font-mono font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_42px_rgba(17,25,35,0.18)] transition active:scale-[0.98] disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
+                  className={`w-full rounded-full bg-[var(--night)] font-bold tracking-widest text-white shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >

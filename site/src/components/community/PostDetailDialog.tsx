@@ -22,11 +22,16 @@ export function PostDetailDialog({ post, onClose }: Props) {
   useEffect(() => {
     if (!post) return;
     const previous = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
     document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       document.body.style.overflow = previous;
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [post]);
+  }, [onClose, post]);
 
   const metaLine = useMemo(() => {
     if (!post) return "";
@@ -53,7 +58,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="community-post-title"
-        className="relative z-10 flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] shadow-[0_36px_100px_rgba(17,25,35,0.22)]"
+        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-[0_36px_100px_rgba(17,25,35,0.22)] sm:max-h-[88vh]"
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4 sm:px-8">
           <div>
@@ -75,7 +80,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
         <div className="scrollbar-hide grid flex-1 overflow-y-auto lg:grid-cols-[minmax(0,1.1fr)_22rem]">
           <div className="px-5 py-5 sm:px-8 sm:py-7">
             {hasImage ? (
-              <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-white shadow-[0_18px_58px_rgba(17,25,35,0.1)]">
+              <div className="overflow-hidden rounded-[1.5rem] border-[10px] border-white bg-white scrapbook-shadow">
                 <img
                   src={post.image}
                   alt={post.title}
@@ -98,7 +103,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
                 {post.title}
               </h2>
               {hasText ? (
-                <p className="mt-5 max-w-3xl text-[16px] leading-8 text-[var(--river-deep)]/82 sm:text-[18px]">
+                <p className="mt-5 max-w-3xl text-[16px] leading-8 text-[var(--river-deep)]/82 handwritten sm:text-[18px]">
                   {post.excerpt}
                 </p>
               ) : (

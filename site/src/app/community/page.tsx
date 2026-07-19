@@ -21,6 +21,7 @@ import { PostCard } from "@/components/community/PostCard";
 import { PostDetailDialog } from "@/components/community/PostDetailDialog";
 import { BriefCard } from "@/components/community/BriefCard";
 import { DispatchCard } from "@/components/community/DispatchCard";
+import { CommunityJournalMotion } from "@/components/community/CommunityJournalMotion";
 import { Reveal } from "@/components/ui/Reveal";
 import { FieldKit } from "@/components/community/FieldKit";
 import { useLocale } from "@/lib/locale-context";
@@ -476,97 +477,89 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <section className="relative isolate overflow-hidden bg-[var(--night)] py-14 text-white sm:py-16 lg:py-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(197,160,57,0.16),transparent_30%),radial-gradient(circle_at_88%_22%,rgba(83,131,147,0.2),transparent_36%)]" />
-        <div className="site-container relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end lg:gap-16">
-          <Reveal>
-            <div>
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--gold)]">{t("community.badge")}</p>
-              <h1 className="mt-6 max-w-[10ch] font-[family:var(--font-display)] text-5xl leading-[0.86] tracking-[-0.055em] sm:text-6xl lg:text-8xl">
-                {t("community.hero.title")} <span className="italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span>
-              </h1>
-              <p className="mt-7 max-w-[42rem] text-base leading-8 text-white/62 lg:text-lg">{t("community.hero.subtitle")}</p>
+    <CommunityJournalMotion
+      motionKey={`${activeChannel}:${sortMode}:${query}:${masonryItems
+        .map((item) => (item.type === "dispatch" ? item.id : item.data.id))
+        .join("|")}`}
+    >
+    <div className="min-h-screen overflow-clip bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
+      <section data-community-hero className="relative overflow-hidden border-b border-[var(--line)] py-16 sm:py-20 lg:py-32">
+        <div
+          data-community-ink="left"
+          className="pointer-events-none absolute -left-24 top-5 h-72 w-72 rounded-[42%_58%_65%_35%] bg-[var(--cinnabar)]/[0.075] blur-2xl sm:h-96 sm:w-96"
+        />
+        <div
+          data-community-ink="right"
+          className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-[61%_39%_42%_58%] bg-[var(--field)]/[0.13] blur-2xl sm:h-[30rem] sm:w-[30rem]"
+        />
+        <div className="site-container relative text-center">
+          <div>
+            <p data-community-kicker className="text-label tracking-[0.3em] text-[var(--cinnabar)]">
+              {t("community.badge")}
+            </p>
+            <h1 className="mt-6 font-[family:var(--font-display)] text-[clamp(3.25rem,15vw,5rem)] leading-[0.86] tracking-tight md:text-8xl lg:text-[8rem]">
+              <span className="block overflow-hidden pb-1"><span data-community-title className="block">{t("community.hero.title")}</span></span>
+              <span className="block overflow-hidden pb-3"><span data-community-title className="block italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span></span>
+            </h1>
+            <p data-community-subtitle className="handwritten mx-auto mt-6 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:mt-8 sm:text-lg">
+              {t("community.hero.subtitle")}
+            </p>
+          </div>
+          <div
+            data-community-stamp
+            aria-hidden="true"
+            className="absolute -right-5 -top-8 hidden aspect-square w-28 rotate-12 place-items-center rounded-full border border-[var(--cinnabar)]/45 p-2 text-[var(--cinnabar)] lg:grid xl:right-8 xl:top-0"
+          >
+            <div className="grid h-full w-full place-items-center rounded-full border border-dashed border-current text-center font-mono text-[8px] font-bold uppercase leading-4 tracking-[0.2em]">
+              Live field<br />Guangdong<br />Archive
             </div>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <div className="rounded-[var(--radius-xl)] border border-white/12 bg-white/[0.05] p-5 backdrop-blur-sm sm:p-6">
-              <div className="flex items-center justify-between gap-4 border-b border-white/12 pb-5">
-                <div>
-                  <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">Signal desk</p>
-                  <p className="mt-2 text-sm text-white/48">Live field intelligence</p>
-                </div>
-                <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-40 motion-reduce:animate-none" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-300" />
-                </span>
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-4">
-                {[
-                  { label: "Signals", value: allPosts.length },
-                  { label: "Briefs", value: fieldBriefs.length },
-                  { label: "Stamps", value: stampCount },
-                ].map((metric) => (
-                  <div key={metric.label}>
-                    <p className="font-[family:var(--font-display)] text-3xl">{String(metric.value).padStart(2, "0")}</p>
-                    <p className="mt-2 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-white/34">{metric.label}</p>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={isLoggedIn ? openFieldKit : handleGoogleLogin}
-                className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[var(--gold)] px-5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--night)] transition hover:bg-white"
-              >
-                {isLoggedIn ? "Open field kit" : "Connect to publish"}
-              </button>
-            </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
-      <section className="sticky top-[4.5rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/94 py-3 backdrop-blur-xl">
+      <section data-community-toolbar className="sticky top-[4.5rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
         <div className="site-container grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+          <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             {channels.map((channel) => (
               <button
                 key={channel}
                 type="button"
                 onClick={() => setActiveChannel(channel)}
                 aria-pressed={activeChannel === channel}
-                className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.15em] transition ${
+                className={`min-h-10 shrink-0 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all sm:px-5 sm:text-xs ${
                   activeChannel === channel
-                    ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
-                    : "border-[var(--line)] bg-white/62 text-[var(--muted)] hover:border-[var(--river-deep)] hover:text-[var(--river-deep)]"
+                    ? "bg-[var(--river-deep)] text-white shadow-md"
+                    : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
                 }`}
               >
                 {t(CHANNEL_I18N[channel])}
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 lg:flex lg:items-center">
-            <label className="relative min-w-0 lg:w-56">
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:flex lg:items-center">
+            <label className="relative min-w-0 lg:w-52">
               <span className="sr-only">{t("community.search.placeholder")}</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("community.search.placeholder")}
-                className="h-11 w-full rounded-full border border-[var(--line)] bg-white/72 pl-9 pr-4 text-sm outline-none transition focus:border-[var(--river-deep)] focus:bg-white"
+                className="h-11 w-full rounded-full border border-[var(--line)] bg-white/60 pl-9 pr-4 text-sm outline-none transition-colors focus:border-[var(--cinnabar)] focus:bg-white"
               />
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </label>
-            <div className="flex rounded-full border border-[var(--line)] bg-white/62 p-1">
+            <div className="scrollbar-hide flex min-w-0 overflow-x-auto rounded-full border border-[var(--line)] bg-white/50 p-1">
               {(["Live", "Loved", "Saved"] as SortMode[]).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setSortMode(mode)}
                   aria-pressed={sortMode === mode}
-                  className={`min-h-9 rounded-full px-3 font-mono text-[7px] font-bold uppercase tracking-[0.13em] transition ${
-                    sortMode === mode ? "bg-[var(--river-deep)] text-white" : "text-[var(--muted)] hover:text-[var(--river-deep)]"
+                  className={`min-h-9 shrink-0 rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition active:scale-[0.97] ${
+                    sortMode === mode
+                      ? "bg-[var(--river-deep)] text-white"
+                      : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
                   }`}
                 >
                   {mode}
@@ -577,10 +570,10 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section className="site-container py-8 sm:py-10 lg:py-14">
+      <section className="site-container py-12 lg:py-16">
         {loading && !masonryItems.length ? (
           <div className="py-20 text-center">
-            <p className="text-base text-[var(--muted)]">
+            <p className="handwritten text-lg text-[var(--muted)]">
               {t("community.loading")}
             </p>
           </div>
@@ -593,18 +586,18 @@ export default function CommunityPage() {
             <button
               type="button"
               onClick={refetch}
-              className="lt-action lt-action-secondary mt-6"
+              className="mt-6 border border-[var(--line)] px-6 py-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)] transition hover:bg-[var(--river-deep)] hover:text-white"
             >
               {t("common.btn.retry")}
             </button>
           </div>
         ) : (
-          <div className="columns-1 gap-5 space-y-5 pb-20 sm:columns-2 lg:columns-3 xl:columns-4">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-20">
             {masonryItems.length ? (
               masonryItems.map((item, index) => {
                 if (item.type === "dispatch") {
                   return (
-                    <div key={item.id} className="break-inside-avoid">
+                    <div key={item.id} data-community-card className="break-inside-avoid">
                       <Reveal delay={index * 40}>
                         <DispatchCard
                           stampCount={stampCount}
@@ -619,10 +612,11 @@ export default function CommunityPage() {
 
                 if (item.type === "brief") {
                   return (
-                    <div key={item.data.id} className="break-inside-avoid">
+                    <div key={item.data.id} data-community-card className="break-inside-avoid">
                       <Reveal delay={index * 40}>
                         <BriefCard
                           brief={item.data}
+                          index={index}
                           onSelect={(brief) => {
                             selectBrief(brief);
                             openFieldKit();
@@ -635,10 +629,11 @@ export default function CommunityPage() {
 
                 if (item.type === "post") {
                   return (
-                    <div key={item.data.id} className="break-inside-avoid">
+                    <div key={item.data.id} data-community-card className="break-inside-avoid">
                       <Reveal delay={index * 40}>
                         <PostCard
                           post={item.data}
+                          index={index}
                           variant={resolveVariant(item.data)}
                           onOpen={setSelectedPost}
                           isLoggedIn={isLoggedIn}
@@ -716,5 +711,6 @@ export default function CommunityPage() {
         </div>
       ) : null}
     </div>
+    </CommunityJournalMotion>
   );
 }
