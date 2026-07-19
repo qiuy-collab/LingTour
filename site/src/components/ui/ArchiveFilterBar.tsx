@@ -45,9 +45,9 @@ export function ArchiveFilterBar({
   const activeFilterCount = groups.filter((group) => group.value).length;
 
   return (
-    <div className="mb-12 border-y border-[var(--line)] py-6 sm:mb-16 sm:py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-        <label className="flex min-w-0 flex-1 items-center gap-3 border-b border-[var(--line)] pb-3 transition-colors focus-within:border-[var(--river-deep)]">
+    <div className="mb-12 rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/48 p-4 shadow-[0_14px_48px_rgba(17,25,35,0.05)] backdrop-blur-sm sm:mb-16 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 transition-colors focus-within:border-[var(--river-deep)] focus-within:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]">
             <span className="sr-only">{searchLabel}</span>
             <svg aria-hidden width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="shrink-0 text-[var(--muted)]">
               <circle cx="11" cy="11" r="7" />
@@ -63,14 +63,14 @@ export function ArchiveFilterBar({
         </label>
 
         <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
-          <p className="whitespace-nowrap font-[family:var(--font-display)] text-base italic text-[var(--river-deep)] sm:text-lg">
+          <p aria-live="polite" className="whitespace-nowrap font-[family:var(--font-display)] text-base italic text-[var(--river-deep)] sm:text-lg">
             {countLabel}
           </p>
           {hasFilters ? (
             <button
               type="button"
               onClick={onClear}
-              className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
+              className="inline-flex min-h-10 items-center rounded-full px-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
             >
               {clearLabel}
             </button>
@@ -80,7 +80,7 @@ export function ArchiveFilterBar({
             onClick={() => setFiltersExpanded((current) => !current)}
             aria-expanded={filtersExpanded}
             aria-controls={filterPanelId}
-            className="inline-flex min-h-11 items-center gap-2 border border-[var(--river-deep)] bg-[var(--river-deep)] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-[var(--cinnabar)]"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--river-deep)] bg-[var(--river-deep)] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)]"
           >
             <svg aria-hidden width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M4 7h16M7 12h10M10 17h4" strokeLinecap="round" />
@@ -108,18 +108,18 @@ export function ArchiveFilterBar({
       </div>
 
       {filtersExpanded ? (
-        <div id={filterPanelId} className="mt-6 space-y-5 border-t border-[var(--line)] pt-6">
+        <div id={filterPanelId} className="mt-5 space-y-5 rounded-[var(--radius-md)] border border-[var(--line)] bg-[var(--paper)]/62 p-4 sm:p-5">
           {groups.map((group) => (
             <div key={group.label} className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <p className="w-24 shrink-0 pt-3 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+              <p className="w-24 shrink-0 pt-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
                 {group.label}
               </p>
-              <div className="flex min-w-0 flex-wrap gap-2">
+              <div className="scrollbar-hide flex min-w-0 gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
                 <button
                   type="button"
                   onClick={() => group.onChange("")}
                   aria-pressed={!group.value}
-                  className={`min-h-10 rounded-full border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                  className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
                     !group.value
                       ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                       : "border-[var(--line)] bg-white/55 text-[var(--river-deep)] hover:border-[var(--river-deep)]"
@@ -133,7 +133,7 @@ export function ArchiveFilterBar({
                     type="button"
                     onClick={() => group.onChange(option.value)}
                     aria-pressed={group.value === option.value}
-                    className={`min-h-10 rounded-full border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                    className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
                       group.value === option.value
                         ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                         : "border-[var(--line)] bg-white/55 text-[var(--river-deep)] hover:border-[var(--river-deep)]"
