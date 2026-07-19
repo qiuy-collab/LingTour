@@ -16,23 +16,19 @@ import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
 import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
 import { HomeEntryFilmstrip } from "@/components/home/HomeEntryFilmstrip";
 import { HomeVideoChapter } from "@/components/home/HomeVideoChapter";
-import { ShopProductImage } from "@/components/store/ShopProductImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
-import { formatCurrency } from "@/lib/region-currency";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreProduct } from "@/data/store";
+import { HomeAtlasHero } from "@/components/home/HomeAtlasHero";
+import { StoreProductCard } from "@/components/store/StoreProductCard";
 
 interface HomeClientProps {
   initialHomeData: HomeData;
   initialProducts: StoreProduct[];
   initialRoutes: StoryRoute[];
   initialEvents: EventData[];
-}
-
-function formatStorePrice(price: number, currency: string) {
-  return formatCurrency(price, currency);
 }
 
 export default function HomeClient({
@@ -110,102 +106,24 @@ export default function HomeClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
-      {/* 1. HERO: THE MASTER REGISTRY */}
-      <section className="relative overflow-hidden border-b border-[var(--gold)]/50 pb-14 pt-8 sm:pb-20 sm:pt-12 lg:pb-24 lg:pt-16">
-        <div className="site-container relative">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
-            <div className="home-hero-bleed relative lg:col-span-7">
-              <Reveal delay={100}>
-                <figure>
-                  <div className="group relative aspect-[16/11] w-full tape-effect sm:aspect-[3/2] lg:min-h-[40rem] lg:rotate-1">
-                    <div className="absolute inset-0 overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:border-[0.8rem]">
-                      <img
-                        src={heroImage}
-                        alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
-                        fetchPriority="high"
-                        loading="eager"
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/10" />
-                    </div>
-                  </div>
-                  <figcaption className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] lg:px-3">
-                    {[
-                      t("home.hero.tag.storyRoutes"),
-                      t("home.hero.tag.cultureContext"),
-                      t("home.hero.tag.languageSupport"),
-                    ].map((label, index) => (
-                      <span key={label} className="inline-flex items-center gap-4">
-                        {index > 0 ? <span className="h-1 w-1 rounded-full bg-[var(--gold)]" /> : null}
-                        {label}
-                      </span>
-                    ))}
-                  </figcaption>
-                </figure>
-              </Reveal>
-            </div>
-
-            <div className="z-10 max-w-2xl lg:col-span-5 lg:pl-2">
-              <Reveal delay={220}>
-                <div className="mb-8 flex items-center gap-4 sm:mb-10">
-                  <div className="w-12 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    {t("home.hero.eyebrow")}
-                  </p>
-                </div>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(3rem,6vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
-                  {t("home.hero.headingLine1")} <br />
-                  <span className="italic text-[var(--gold)]">{t("home.hero.headingAccent")}</span>{" "}
-                  <br />
-                  {t("home.hero.headingLine3")}
-                </h1>
-                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-10 sm:text-xl">
-                  {t("home.hero.body")}
-                </p>
-                <div className="mt-8 flex flex-col gap-3 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-4">
-                  <Link
-                    href="/interpreting"
-                    className="btn-primary kinetic-link inline-flex min-w-0 w-full items-center justify-center px-6 py-4 text-xs shadow-[0_18px_40px_rgba(20,52,61,0.22)] sm:w-auto sm:min-w-[15rem] sm:px-10 sm:py-5"
-                  >
-                    <span className="relative z-10 text-white">
-                      {t("home.hero.primaryCta")}
-                    </span>
-                  </Link>
-                  <Link
-                    href="/routes"
-                    className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs sm:w-auto sm:px-10 sm:py-5"
-                  >
-                    {t("home.hero.secondaryCta")}
-                  </Link>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeAtlasHero
+        image={heroImage}
+        eyebrow={t("home.hero.eyebrow")}
+        titleLine1={t("home.hero.headingLine1")}
+        accent={t("home.hero.headingAccent")}
+        titleLine3={t("home.hero.headingLine3")}
+        body={t("home.hero.body")}
+        primaryLabel={t("home.hero.primaryCta")}
+        secondaryLabel={t("home.hero.secondaryCta")}
+        tags={[
+          t("home.hero.tag.storyRoutes"),
+          t("home.hero.tag.cultureContext"),
+          t("home.hero.tag.languageSupport"),
+        ]}
+        stats={heroStats}
+      />
 
       <div className="relative z-10">
-        {/* 1b. HERO STATS BAR — field-journal index, not SaaS metrics */}
-        {heroStats.length > 0 && (
-          <section className="site-container py-12 sm:py-16 lg:py-20">
-            <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-3 lg:grid-cols-4">
-              {heroStats.map((stat, idx) => (
-                <Reveal key={idx} delay={idx * 100}>
-                  <div className="group relative text-center lg:text-left">
-                    <div className="mb-4 mx-auto w-8 h-px bg-[var(--gold)]/40 lg:mx-0" />
-                    <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] sm:text-4xl lg:text-5xl">
-                      {stat.title}
-                    </p>
-                    <p className="mt-3 text-sm text-[var(--muted)] handwritten">
-                      {stat.body}
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </section>
-        )}
-
         {hero.video?.url ? (
           <HomeVideoChapter video={hero.video} fallbackPoster={heroImage} />
         ) : null}
@@ -227,7 +145,7 @@ export default function HomeClient({
         </div>
 
         {/* 4. SHOP: THE COLLECTOR'S SHELF */}
-        <section className="site-container py-16 sm:py-20 lg:py-40">
+        <section className="site-container py-16 sm:py-20 lg:py-28">
           <div className="mb-10 flex flex-col justify-between gap-6 md:mb-20 md:flex-row md:items-end md:gap-12">
             <div className="max-w-2xl">
               <Reveal>
@@ -252,70 +170,20 @@ export default function HomeClient({
           </div>
 
           {storeProducts.length > 0 ? (
-            <div className="grid grid-cols-1 gap-y-10 md:grid-cols-12 md:gap-y-0">
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {storeProducts.slice(0, 3).map((product, idx) => (
-                <Reveal
-                  key={product.slug}
-                  delay={idx * 150}
-                  className={`
-                md:col-span-4
-                ${idx === 0 ? "md:pr-12" : ""}
-                ${idx === 1 ? "md:px-6 md:pt-24" : ""}
-                ${idx === 2 ? "md:pl-12 md:pt-12" : ""}
-              `}
-                >
-                  <Link
-                    href={`/shop/products/${product.slug}`}
-                    className="group block relative"
-                  >
-                    <div
-                      className={`relative aspect-[16/11] scrapbook-shadow transition-all duration-700 group-hover:scale-[1.03] sm:aspect-[3/4] ${
-                        idx % 2 === 0 ? "sm:rotate-2" : "sm:-rotate-2"
-                      }`}
-                    >
-                      <ShopProductImage
-                        src={product.image}
-                        fallbackSrc={product.gallery?.[0]}
-                        alt={product.name}
-                        className="absolute inset-0 bg-[var(--paper)]"
-                        imageClassName="object-cover object-center"
-                      />
-                      <div className="absolute inset-0 border-[0.75rem] border-white shadow-inner" />
-
-                      {/* Price Tag Overlay */}
-                      <div className="absolute bottom-3 right-3 z-20 bg-[var(--gold)] px-3 py-2 text-white shadow-lg sm:-bottom-4 sm:-right-4 sm:rotate-12 sm:px-4">
-                        <p className="text-[10px] font-bold tracking-widest">
-                          {formatStorePrice(product.price, product.currency)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-8 space-y-2.5 sm:mt-10 sm:space-y-3">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                        {product.tag ??
-                          product.collection ??
-                          t("home.shop.handpicked")}
-                      </p>
-                      <h3 className="font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
-                        {product.name}
-                      </h3>
-                        <p className="max-w-[20ch] text-sm text-[var(--muted)] handwritten">
-                          {product.collection ?? t("home.shop.localArchive")}
-                        </p>
-                    </div>
-                  </Link>
-                </Reveal>
+                <StoreProductCard key={product.slug} product={product} index={idx} />
               ))}
             </div>
           ) : (
-            <div className="scrapbook-shadow max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
+            <div className="max-w-2xl rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-8 shadow-[0_16px_52px_rgba(17,25,35,0.07)] sm:p-10">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
                 {t("shop.page.title")}
               </p>
               <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
                 {t("home.shop.empty.title")}
               </h3>
-              <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
+              <p className="mt-4 text-base leading-7 text-[var(--muted)]">
                 {t("home.shop.empty.body")}
               </p>
             </div>
@@ -328,8 +196,8 @@ export default function HomeClient({
         </div>
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
-        <section className="site-container py-16 sm:py-20 lg:py-40">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-20">
+        <section className="site-container py-16 sm:py-20 lg:py-28">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
             <div className="max-w-2xl lg:col-span-5">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
@@ -341,18 +209,15 @@ export default function HomeClient({
                 <h2 className="mb-6 font-[family:var(--font-display)] text-[3.3rem] leading-[0.92] text-[var(--river-deep)] sm:mb-10 sm:text-6xl md:mb-12 md:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
-                <div className="space-y-6 sm:space-y-12">
+                <div className="space-y-5 sm:space-y-7">
                   {testimonials
                     .slice(0, 2)
                     .map((item: { name: string; quote: string }) => (
-                        <div key={item.name} className="relative pl-12">
-                          <div className="absolute left-0 top-0 font-[family:var(--font-display)] text-6xl text-[var(--gold)] opacity-20 italic">
-                            “
-                          </div>
-                          <p className="handwritten mb-4 text-lg leading-relaxed text-[var(--muted)] italic sm:text-xl">
+                        <div key={item.name} className="rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6">
+                          <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
                             {item.quote}
                           </p>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--river-deep)]">
+                          <p className="mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
                             — {item.name}
                           </p>
                         </div>
@@ -374,31 +239,31 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[24rem] self-center lg:col-span-7 lg:max-w-none">
+            <div className="relative mx-auto w-full max-w-[32rem] self-center lg:col-span-7 lg:max-w-none">
               <Reveal delay={300}>
-                <div className="group relative aspect-[6/5] overflow-hidden border-[0.5rem] border-white scrapbook-shadow sm:aspect-[16/10] sm:border-8 sm:rotate-1">
+                <div className="group relative aspect-[6/5] overflow-hidden rounded-[var(--radius-xl)] border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] sm:aspect-[16/10]">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
                     loading="eager"
                     decoding="sync"
                     fetchPriority="high"
-                    className="absolute inset-0 h-full w-full object-cover grayscale opacity-60 transition-all duration-1000 group-hover:grayscale-0 group-hover:opacity-100 sm:scale-105"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.035]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--river-deep)]/20 to-transparent" />
-
-                  {/* Tape decoration */}
-                  <div className="absolute top-0 right-1/4 w-12 h-24 bg-white/20 backdrop-blur-sm -rotate-6 z-20" />
-                </div>
-
-                {/* Floating Meta Tag */}
-                <div className="hidden md:block absolute -bottom-10 right-10 bg-[var(--gold)] p-8 shadow-2xl -rotate-3 z-30">
-                  <p className="text-white text-xs font-bold uppercase tracking-widest leading-none">
-                    {interpretingLabel}
-                  </p>
-                  <p className="mt-3 font-[family:var(--font-display)] text-2xl text-white leading-tight">
-                    {t("home.interpreting.registry")}
-                  </p>
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.04),rgba(8,18,24,0.62))]" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-5 p-6 text-white sm:p-8">
+                    <div>
+                      <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-white/60">
+                        {interpretingLabel}
+                      </p>
+                      <p className="mt-2 max-w-[16ch] font-[family:var(--font-display)] text-2xl leading-none sm:text-3xl">
+                        {t("home.interpreting.registry")}
+                      </p>
+                    </div>
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/30 bg-white/10 text-lg backdrop-blur-md" aria-hidden>
+                      →
+                    </span>
+                  </div>
                 </div>
               </Reveal>
             </div>
@@ -406,8 +271,8 @@ export default function HomeClient({
         </section>
 
         {/* 6. CULTURE: THE GALLERY ARCHIVE */}
-        <section className="site-container pb-16 sm:pb-20 lg:pb-40">
-          <div className="border-t border-black/5 pt-16 sm:pt-20 lg:pt-40">
+        <section className="site-container pb-16 sm:pb-20 lg:pb-28">
+          <div className="border-t border-black/5 pt-16 sm:pt-20 lg:pt-28">
             <CultureGallery highlights={cultureHighlights} />
           </div>
         </section>
@@ -425,12 +290,13 @@ export default function HomeClient({
         )}
 
         {/* FINAL CTA: THE DEPARTURE LOG */}
-        <section className="site-container pb-20 lg:pb-40">
-          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-24 lg:py-32">
+        <section className="site-container pb-20 lg:pb-28">
+          <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--river-deep)] px-6 py-16 text-white shadow-[0_28px_90px_rgba(17,25,35,0.2)] sm:px-8 sm:py-20 lg:px-24 lg:py-28">
             <div
-              className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
+              className="absolute inset-0 bg-cover bg-center opacity-15 grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
             />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,18,24,0.96),rgba(8,18,24,0.7)_58%,rgba(8,18,24,0.28))]" />
             <div className="relative z-10 max-w-4xl">
               <Reveal>
                 <div className="mb-10 opacity-60">
