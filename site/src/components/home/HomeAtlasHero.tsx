@@ -42,23 +42,31 @@ export function HomeAtlasHero({
         },
         (context) => {
           if (!context.conditions?.animate) return;
+          const root = scope.current;
+          if (!root) return;
+          const copyItems = gsap.utils.toArray<HTMLElement>("[data-home-copy] > *", root);
+          const statItems = gsap.utils.toArray<HTMLElement>("[data-home-stat]", root);
+          const heroMedia = root.querySelector<HTMLElement>("[data-home-media]");
           const timeline = gsap.timeline({ defaults: { ease: motionEase.enter } });
-          timeline
-            .fromTo(
-              "[data-home-copy] > *",
+          if (copyItems.length > 0) {
+            timeline.fromTo(
+              copyItems,
               { autoAlpha: 0, y: 26 },
               { autoAlpha: 1, y: 0, duration: 0.76, stagger: 0.07 },
-            )
-            .fromTo(
-              "[data-home-stat]",
+            );
+          }
+          if (statItems.length > 0) {
+            timeline.fromTo(
+              statItems,
               { autoAlpha: 0, y: 14 },
               { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.055 },
               "-=0.35",
             );
+          }
 
-          if (context.conditions?.desktop) {
+          if (context.conditions?.desktop && heroMedia) {
             gsap.fromTo(
-              "[data-home-media]",
+              heroMedia,
               { scale: 1.04, xPercent: 0 },
               {
                 scale: 1.1,
