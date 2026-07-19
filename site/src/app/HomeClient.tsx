@@ -143,7 +143,7 @@ export default function HomeClient({
         </div>
 
         {/* 4. SHOP: THE COLLECTOR'S SHELF */}
-        <section className="site-container py-16 sm:py-20 lg:py-28">
+        <section id="home-shop" className="site-container py-16 sm:py-20 lg:py-28">
           <div className="mb-10 flex flex-col justify-between gap-6 md:mb-20 md:flex-row md:items-end md:gap-12">
             <div className="max-w-2xl">
               <Reveal>
@@ -168,9 +168,14 @@ export default function HomeClient({
           </div>
 
           {storeProducts.length > 0 ? (
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {storeProducts.slice(0, 3).map((product, idx) => (
-                <StoreProductCard key={product.slug} product={product} index={idx} />
+            <div className="mx-auto grid max-w-[69rem] grid-cols-1 gap-x-16 gap-y-16 pb-2 md:grid-cols-2 md:gap-x-20 md:gap-y-20 md:pb-10 lg:gap-x-28 lg:pb-16">
+              {storeProducts.slice(0, 2).map((product, idx) => (
+                <div
+                  key={product.slug}
+                  className={`min-w-0 pb-2 sm:pb-10 ${idx === 1 ? "md:pt-20 lg:pt-28" : ""}`}
+                >
+                  <StoreProductCard product={product} index={idx} />
+                </div>
               ))}
             </div>
           ) : (
