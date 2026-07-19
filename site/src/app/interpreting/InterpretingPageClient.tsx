@@ -13,7 +13,7 @@ import { BookingSection } from "@/components/interpreting/BookingSection";
 import { MobileStickyActions } from "@/components/layout/MobileStickyActions";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import { placeholderFor } from "@/lib/placeholders";
-import { InterpretingCommandHero } from "@/components/interpreting/InterpretingCommandHero";
+import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
 
 type ServiceType = {
   id: string;
@@ -174,81 +174,148 @@ export default function InterpretingPageClient({
     SEED_IMAGES.interpretingShowcase ?? placeholderFor("portrait");
 
   return (
-    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
-      <InterpretingCommandHero
-        image={cinematicImage}
-        eyebrow={
-          locale === "zh"
-            ? "LingTour 口译 / 现场协作"
-            : "LingTour Interpreting / Field Coordination"
-        }
-        title={locale === "zh" ? "广东" : "Guangdong"}
-        accent={locale === "zh" ? "口译服务" : "Interpreter Services"}
-        subtitle={t("interpreting.hero.subtitle")}
-        primaryLabel={locale === "zh" ? "预约口译" : "Plan support"}
-        secondaryLabel={locale === "zh" ? "服务类型" : "Service types"}
-        serviceCount={serviceTypes.length}
-        interpreterCount={showcaseProfiles.length}
-        locale={locale}
-      />
+    <PastoralPageMotion
+      className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]"
+      motionKey={`${serviceTypes.map((service) => service.id).join("|")}:${showcaseProfiles
+        .map((profile) => profile.id)
+        .join("|")}`}
+    >
+      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:min-h-[70vh] lg:pt-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
-      <section id="service-types" className="site-container py-16 sm:py-20 lg:py-28">
-        <div className="mb-8">
+        <div className="site-container relative w-full">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+            <div className="max-w-3xl lg:col-span-8">
+              <Reveal>
+                <div className="mb-8 flex items-center gap-4 sm:mb-12 sm:gap-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
+                    L
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
+                    {locale === "zh"
+                      ? "LingTour 口译 / 现场协作"
+                      : "LingTour Interpreting / Field Coordination"}
+                  </p>
+                </div>
+
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[2.95rem] leading-[0.86] tracking-[-0.04em] sm:mb-10 sm:text-7xl md:mb-12 md:text-9xl lg:text-[11rem]">
+                  {locale === "zh" ? "广东" : "Guangdong"} <br />
+                  <span className="italic text-[var(--cinnabar)]">
+                    {locale === "zh" ? "口译服务" : "Interpreter Services"}
+                  </span>
+                </h1>
+
+                <div className="grid grid-cols-1 items-end gap-6 md:grid-cols-2 md:gap-12">
+                  <p className="handwritten text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                    {t("interpreting.hero.subtitle")}
+                  </p>
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                    <a
+                      href="#interpreting-booking"
+                      className="btn-primary inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none active:scale-95 sm:w-auto sm:px-10 sm:py-5"
+                    >
+                      {locale === "zh" ? "预约口译" : "Plan support"}
+                    </a>
+                    <a
+                      href="#service-types"
+                      className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none sm:w-auto sm:px-10 sm:py-5"
+                    >
+                      {locale === "zh" ? "服务类型" : "Service types"}
+                    </a>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            <div className="mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[20rem] lg:col-span-4 lg:max-w-none lg:self-center">
+              <Reveal delay={240}>
+                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[20rem] lg:border-[12px]">
+                  <div
+                    data-pastoral-hero-media
+                    className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
+                    style={{ backgroundImage: `url(${cinematicImage})` }}
+                  />
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="service-types" className="site-container py-16 lg:py-24">
+        <div className="mb-8 opacity-60">
           <Reveal>
-            <p className="lt-kicker">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
               {t("interpreting.atlas.serviceScenes")}
             </p>
-            <h2 className="mt-4 max-w-[16ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
+            <h2 className="mt-3 max-w-[12ch] font-[family:var(--font-display)] text-3xl leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
               {t("interpreting.atlas.chooseShape")}
             </h2>
           </Reveal>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {serviceTypes.map((item, index) => (
-            <Reveal key={item.id} delay={index * 80} className="h-full">
-              <article className="group flex h-full min-h-[34rem] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.07)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(17,25,35,0.14)]">
-                <div className="relative aspect-[16/10] overflow-hidden bg-[var(--night)]">
-                  <img
-                    src={item.image}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-1000 group-hover:scale-[1.045]"
-                  />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(8,18,24,0.68))]" />
-                  <span className="absolute left-4 top-4 rounded-full border border-white/42 bg-black/22 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
-                    Mode {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
-                    <div>
-                      <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-white/52">{t("interpreting.atlas.baseRate")}</p>
-                      <p className="mt-1 font-[family:var(--font-display)] text-3xl">{item.duration}</p>
-                    </div>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-white/52">{t("interpreting.atlas.perDispatch")}</span>
-                  </div>
+            <Reveal key={item.id} delay={index * 100} className="h-full">
+              <article
+                className={`group relative flex h-full min-h-[380px] flex-col bg-white p-6 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 sm:min-h-[420px] sm:p-8 ${
+                  index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
+                }`}
+              >
+                <div className="absolute top-4 right-6 font-[family:var(--font-display)] text-8xl text-[var(--gold)]/10 select-none group-hover:text-[var(--gold)]/20 transition-colors">
+                  0{index + 1}
                 </div>
 
-                <div className="flex flex-1 flex-col p-6 sm:p-7">
-                  <h3 className="font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)] sm:text-4xl">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{item.subtitle}</p>
-                  <p className="mt-5 line-clamp-4 text-sm leading-7 text-[var(--muted)]">{item.body}</p>
-
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {item.tags.map((serviceTag) => (
-                      <span
-                        key={serviceTag}
-                        className="rounded-full border border-[var(--line)] bg-[var(--paper-deep)]/45 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)]"
-                      >
-                        {serviceTag}
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="mb-6 border-b border-[var(--line)] pb-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                      {t("interpreting.atlas.baseRate")}
+                    </p>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
+                        {item.duration}
                       </span>
-                    ))}
+                      <span className="text-[10px] font-bold uppercase text-[var(--muted)]">
+                        {t("interpreting.atlas.perDispatch")}
+                      </span>
+                    </div>
                   </div>
 
-                  <a href="#interpreting-booking" className="lt-action lt-action-secondary mt-auto w-full">
-                    {t("interpreting.atlas.requestDispatch")} <span aria-hidden>→</span>
-                  </a>
+                  <div className="flex-1">
+                    <h3 className="mb-2 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
+                      {item.title}
+                    </h3>
+                    <p className="mb-6 text-xs font-bold uppercase tracking-widest text-[var(--gold)] italic">
+                      {item.subtitle}
+                    </p>
+                    <p className="mb-8 handwritten text-sm leading-relaxed text-[var(--muted)]">
+                      {item.body}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">
+                      {t("interpreting.atlas.fieldCapabilities")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-sm border border-[var(--line)] bg-[var(--paper-deep)]/30 px-3 py-1 text-[10px] font-bold uppercase text-[var(--river-deep)]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <a
+                      href="#interpreting-booking"
+                      className="btn-outline mt-6 block w-full py-4 text-center text-[10px] leading-none"
+                    >
+                      {t("interpreting.atlas.requestDispatch")}
+                    </a>
+                  </div>
                 </div>
               </article>
             </Reveal>
@@ -364,6 +431,6 @@ export default function InterpretingPageClient({
           },
         ]}
       />
-    </div>
+    </PastoralPageMotion>
   );
 }
