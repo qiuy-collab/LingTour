@@ -145,7 +145,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     .replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
 
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 lg:py-40">
+    <section className="relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-14 lg:pb-40 lg:pt-24">
       <div className="site-container relative z-10">
         <div className="mb-8 sm:mb-12 lg:mb-20">
           <Reveal>
