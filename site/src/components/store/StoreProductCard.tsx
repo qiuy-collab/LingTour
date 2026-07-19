@@ -17,57 +17,69 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
   const { t } = useLocale();
   const fallbackImage = product.gallery?.find((image) => image?.trim());
   return (
-    <Reveal delay={index * 70} className="h-full">
-      <article className="group flex h-full min-h-[31rem] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.07)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_80px_rgba(17,25,35,0.14)]">
-        <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper)] sm:aspect-[5/4]">
-          <Link href={`/shop/products/${product.slug}`} className="absolute inset-0">
+    <Reveal delay={index * 80}>
+      <article
+        className={[
+          "group relative overflow-hidden bg-white shadow-2xl transition-all duration-700 sm:aspect-[4/5] sm:overflow-visible",
+          index % 2 === 0 ? "sm:rotate-[-1deg]" : "sm:rotate-[1deg]",
+          "sm:hover:-translate-y-4 sm:hover:rotate-0"
+        ].join(" ")}
+      >
+        {/* Physical Tag Attachment */}
+        <div className="absolute -top-6 left-1/2 z-0 hidden h-12 w-px -translate-x-1/2 bg-[var(--river-deep)]/20 sm:block" />
+        <div className="absolute -top-8 left-1/2 z-0 hidden h-3 w-3 -translate-x-1/2 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] sm:block" />
+
+        <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden">
+          <div className="relative aspect-[16/11] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent sm:aspect-auto">
             <MediaFrame
               asset={product.primaryMedia}
               fallbackSrc={product.image || fallbackImage}
               alt={product.name}
               mode="preview"
-              className="absolute inset-0"
-              mediaClassName="object-cover object-center transition-transform duration-1000 group-hover:scale-[1.045]"
+              className="absolute inset-0 bg-[var(--paper)]"
+              mediaClassName="object-cover object-center transition-transform duration-1000 group-hover:scale-105 sm:group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgba(8,18,24,0.28))]" />
-          </Link>
-          <div className="absolute left-4 top-4 rounded-full border border-white/48 bg-black/24 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-md">
-            {product.tag || t("shop.card.curatedObject")}
+            {/* Subtle Glass Overlay for depth */}
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] transition-opacity group-hover:opacity-0" />
           </div>
-          <div className="absolute right-3 top-3">
-            <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
-          </div>
-        </div>
+        </Link>
 
-        <div className="flex flex-1 flex-col p-6 sm:p-7">
-          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
-            {product.collection || t("shop.card.curatedObject")}
-          </p>
-          <Link href={`/shop/products/${product.slug}`}>
-            <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+        {/* The Interactive "Specimen Tag" */}
+        <div className="relative z-20 border-t border-[var(--line)] bg-[var(--paper)] p-3 shadow-xl transition-transform duration-500 sm:absolute sm:bottom-3 sm:left-3 sm:right-3 sm:border sm:shadow-none md:bottom-4 md:left-4 md:right-4 lg:-bottom-10 lg:-right-4 lg:left-auto lg:w-40 lg:origin-bottom-right lg:rotate-3 lg:p-4 lg:shadow-xl lg:group-hover:rotate-0">
+          {/* String loop hole */}
+          <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-[var(--paper-deep)] border border-[var(--line)]" />
+
+          <div className="space-y-3 pt-2">
+            <div className="flex justify-between items-start">
+              <p className="text-[10px] font-mono text-[var(--muted)] tracking-[0.18em] uppercase">
+                {t("shop.card.curatedObject")}
+              </p>
+              <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
+            </div>
+
+            <h3 className="font-[family:var(--font-display)] text-base leading-tight text-[var(--river-deep)] sm:text-lg">
               {product.name}
             </h3>
-          </Link>
-          <p className="mt-4 line-clamp-2 text-sm leading-6 text-[var(--muted)]">
-            {product.story}
-          </p>
 
-          <div className="mt-auto flex items-end justify-between gap-4 border-t border-[var(--line)] pt-5">
-            <div>
-              <p className="font-mono text-[8px] uppercase tracking-[0.18em] text-[var(--muted)]">Collector price</p>
-              <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">
-                <Price amount={product.price} currency={product.currency} />
-              </p>
+            <div className="h-px bg-[var(--line)] w-full" />
+
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">{product.tag}</p>
+                <p className="text-[10px] font-bold text-[var(--river-deep)]">
+                  <Price amount={product.price} currency={product.currency} />
+                </p>
+              </div>
+
+              <Link href={`/shop/products/${product.slug}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--river-deep)] text-white transition-transform sm:h-11 sm:w-11 sm:group-hover:scale-110">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </Link>
             </div>
-            <Link
-              href={`/shop/products/${product.slug}`}
-              aria-label={`Open ${product.name}`}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--river-deep)] text-white transition group-hover:translate-x-1 group-hover:bg-[var(--cinnabar)]"
-            >
-              <span aria-hidden>→</span>
-            </Link>
           </div>
         </div>
+
+        {/* Hover Highlight (Light Leak) */}
+        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_top_right,rgba(185,138,70,0.1),transparent_70%)]" />
       </article>
     </Reveal>
   );
