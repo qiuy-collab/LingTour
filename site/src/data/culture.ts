@@ -13,7 +13,9 @@ export type CityCultureSection = {
   title: string;
   body: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   images?: string[];
+  media?: MediaAsset[];
   stat?: string;
   breathImage?: string;
   breathQuote?: string;
@@ -27,7 +29,9 @@ export type CityCulture = {
   summary: string;
   narrative: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   gallery: string[];
+  galleryMedia?: MediaAsset[];
   tags: string[];
   food: string;
   foodDescription: string;
@@ -36,3 +40,4 @@ export type CityCulture = {
   foodImages: string[];
   sections: CityCultureSection[];
 };
+import type { MediaAsset } from "@/types/media";

@@ -24,6 +24,12 @@ import type {
 } from "@/types/content";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
+import type { MediaAsset } from "@/types/media";
+import {
+  mediaPoster,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 import { SEED_IMAGES } from "./seed-images";
 import { placeholderFor } from "./placeholders";
 import {
@@ -69,6 +75,7 @@ interface ApiRouteStop {
   culturalStory: string;
   details: string[];
   image: string;
+  primaryMedia?: MediaAsset | null;
   lat: number | null;
   lng: number | null;
   meal: string | null;
@@ -76,6 +83,7 @@ interface ApiRouteStop {
   transit: string | null;
   placeDetail?: string;
   images?: string[];
+  media?: MediaAsset[];
 }
 
 interface ApiStoryRoute {
@@ -99,7 +107,9 @@ interface ApiCitySection {
   title: string;
   body: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   images?: string[];
+  media?: MediaAsset[];
   statLabel: string | null;
   statValue: string | null;
   breathImage: string | null;
@@ -113,10 +123,12 @@ interface ApiCity {
   name: string;
   regionLabel: string;
   heroImage: string;
+  heroMedia?: MediaAsset | null;
   heroNarrative: string;
   tags: string[];
   editorIntro: string;
   galleryImages: string[];
+  galleryMedia?: MediaAsset[];
   foodTitle: string;
   foodDescription: string;
   foodImages: string[];
@@ -178,7 +190,9 @@ interface ApiStoreProduct {
   price: number;
   currency: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   gallery: string[];
+  galleryMedia?: MediaAsset[];
   collection: { slug: string; title: string } | null;
   product: { name: string; tag: string };
   materialNotes: string | null;
@@ -236,38 +250,54 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     mapViewBox: "0 0 900 600",
     itinerary: (apiRoute.stops ?? [])
       .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((s) => ({
-        time: s.time,
-        stop: s.stopName,
-        plan: s.plan ?? "",
-        story: s.story,
-        culturalStory: s.culturalStory,
-        details: s.details ?? [],
-        image: s.image || routeFallbackImage,
-        images: [
-          ...(s.images ?? []),
-          s.image,
+      .map((s) => {
+        const primaryMedia = resolvePrimaryMedia(
+          s.primaryMedia,
+          s.image || routeFallbackImage,
+        );
+        const media = resolveMediaGallery(s.media, s.images ?? []);
+        const images = [
+          mediaPoster(primaryMedia),
+          ...media.map((asset) => mediaPoster(asset)),
           routeFallbackImage,
-        ].filter((image): image is string => Boolean(image?.trim())),
-        lat: s.lat ?? 0,
-        lng: s.lng ?? 0,
-        meal: s.meal ?? undefined,
-        hotel: s.hotel ?? undefined,
-        transit: s.transit ?? undefined,
-        placeDetail: s.placeDetail ?? undefined,
-      })),
+        ].filter((image): image is string => Boolean(image?.trim()));
+
+        return {
+          time: s.time,
+          stop: s.stopName,
+          plan: s.plan ?? "",
+          story: s.story,
+          culturalStory: s.culturalStory,
+          details: s.details ?? [],
+          image: mediaPoster(primaryMedia, images[0] || routeFallbackImage),
+          primaryMedia,
+          images,
+          media,
+          lat: s.lat ?? 0,
+          lng: s.lng ?? 0,
+          meal: s.meal ?? undefined,
+          hotel: s.hotel ?? undefined,
+          transit: s.transit ?? undefined,
+          placeDetail: s.placeDetail ?? undefined,
+        };
+      }),
   };
 }
 
 function mapProduct(p: ApiStoreProduct): StoreProduct {
+  const primaryMedia = resolvePrimaryMedia(p.primaryMedia, p.image);
+  const galleryMedia = resolveMediaGallery(p.galleryMedia, p.gallery ?? []);
   return {
+    id: p.id,
     slug: p.slug,
     name: p.product.name,
     tag: p.product.tag,
     price: p.price,
     currency: (p.currency as StoreProduct["currency"]) ?? "CNY",
-    image: p.image,
-    gallery: p.gallery ?? [],
+    image: mediaPoster(primaryMedia, p.image),
+    primaryMedia,
+    gallery: galleryMedia.map((asset) => mediaPoster(asset)).filter(Boolean),
+    galleryMedia,
     collection: p.collection?.title ?? "",
     materialNotes: p.materialNotes ?? undefined,
     story: p.story,
@@ -351,9 +381,11 @@ export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
           : c.slug === "zhanjiang"
             ? "/editorial/guangdong-coast-boat.jpg"
             : "/editorial/guangdong-coast-rocky.jpg";
+      const primaryMedia = resolvePrimaryMedia(c.heroMedia, c.heroImage);
+      const galleryMedia = resolveMediaGallery(c.galleryMedia, c.galleryImages ?? []);
       const gallery = [
-        ...(c.galleryImages ?? []),
-        c.heroImage,
+        ...galleryMedia.map((asset) => mediaPoster(asset)),
+        mediaPoster(primaryMedia),
         cityFallbackImage,
       ].filter((image): image is string => Boolean(image?.trim()));
 
@@ -367,7 +399,7 @@ export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
         tags: c.tags,
         food: c.foodDescription ?? "",
         routeSlugs: c.routes?.map((r) => r.slug) ?? [],
-        image: c.heroImage || gallery[0] || cityFallbackImage,
+        image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
         gallery,
         serviceLabel: "",
         serviceHref: "/interpreting",
@@ -393,9 +425,11 @@ export async function fetchCityCulturesServer(
           : c.slug === "zhanjiang"
             ? "/editorial/guangdong-coast-boat.jpg"
             : "/editorial/guangdong-coast-rocky.jpg";
+      const primaryMedia = resolvePrimaryMedia(c.heroMedia, c.heroImage);
+      const galleryMedia = resolveMediaGallery(c.galleryMedia, c.galleryImages ?? []);
       const gallery = [
-        ...(c.galleryImages ?? []),
-        c.heroImage,
+        ...galleryMedia.map((asset) => mediaPoster(asset)),
+        mediaPoster(primaryMedia),
         cityFallbackImage,
       ].filter((image): image is string => Boolean(image?.trim()));
 
@@ -406,8 +440,10 @@ export async function fetchCityCulturesServer(
         label: c.regionLabel,
         summary: c.editorIntro ?? "",
         narrative: c.heroNarrative,
-        image: c.heroImage || gallery[0] || cityFallbackImage,
+        image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
+        primaryMedia,
         gallery,
+        galleryMedia,
         tags: c.tags ?? [],
         food: c.foodTitle,
         foodDescription: c.foodDescription ?? "",
@@ -415,23 +451,30 @@ export async function fetchCityCulturesServer(
         relatedCitySlugs: c.relatedCitySlugs ?? [],
         foodImages: c.foodImages ?? [],
         sections:
-          c.sections?.map((s) => ({
-            title: s.title,
-            body: s.body,
-            image: s.image || cityFallbackImage,
-            images:
-              [
-                ...(s.images ?? []),
-                s.image,
-                s.breathImage,
-                cityFallbackImage,
-              ].filter((image): image is string => Boolean(image?.trim())),
-            stat:
-              [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
-              undefined,
-            breathImage: s.breathImage ?? s.image ?? cityFallbackImage,
-            breathQuote: s.breathQuote ?? undefined,
-          })) ?? [],
+          c.sections?.map((s) => {
+            const sectionMedia = resolvePrimaryMedia(s.primaryMedia, s.image);
+            const media = resolveMediaGallery(s.media, s.images ?? []);
+            const images = [
+              ...media.map((asset) => mediaPoster(asset)),
+              mediaPoster(sectionMedia),
+              s.breathImage,
+              cityFallbackImage,
+            ].filter((image): image is string => Boolean(image?.trim()));
+
+            return {
+              title: s.title,
+              body: s.body,
+              image: mediaPoster(sectionMedia, images[0] || cityFallbackImage),
+              primaryMedia: sectionMedia,
+              images,
+              media,
+              stat:
+                [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
+                undefined,
+              breathImage: s.breathImage ?? mediaPoster(sectionMedia, cityFallbackImage),
+              breathQuote: s.breathQuote ?? undefined,
+            };
+          }) ?? [],
       });
     })
     .filter(hasVisibleCityContent);

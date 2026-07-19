@@ -6,7 +6,7 @@ import { FavoriteButton } from "@/components/ui/FavoriteButton";
 import { Price } from "@/components/ui/Price";
 import type { StoreProduct } from "@/data/store";
 import { Reveal } from "@/components/ui/Reveal";
-import { ShopProductImage } from "@/components/store/ShopProductImage";
+import { MediaFrame } from "@/components/ui/MediaFrame";
 
 type StoreProductCardProps = {
   product: StoreProduct;
@@ -31,12 +31,13 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
 
         <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden">
           <div className="relative aspect-[16/11] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent sm:aspect-auto">
-            <ShopProductImage
-              src={product.image}
-              fallbackSrc={fallbackImage}
+            <MediaFrame
+              asset={product.primaryMedia}
+              fallbackSrc={product.image || fallbackImage}
               alt={product.name}
+              mode="preview"
               className="absolute inset-0 bg-[var(--paper)]"
-              imageClassName="object-cover object-center transition-transform duration-1000 group-hover:scale-105 sm:group-hover:scale-110"
+              mediaClassName="object-cover object-center transition-transform duration-1000 group-hover:scale-105 sm:group-hover:scale-110"
             />
             {/* Subtle Glass Overlay for depth */}
             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent)] transition-opacity group-hover:opacity-0" />

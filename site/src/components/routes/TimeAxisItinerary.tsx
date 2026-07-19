@@ -3,6 +3,14 @@
 import { AnimatePresence, motion, useSpring } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
+import { MediaFrame } from "@/components/ui/MediaFrame";
+import type { MediaAsset } from "@/types/media";
+import {
+  dedupeMedia,
+  mediaPoster,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 
 type Stop = {
   time: string;
@@ -12,7 +20,9 @@ type Stop = {
   details: string[];
   culturalStory: string;
   image?: string;
+  primaryMedia?: MediaAsset | null;
   images?: string[];
+  media?: MediaAsset[];
   meal?: string;
   hotel?: string;
   transit?: string;
@@ -36,13 +46,12 @@ function captionFor(stop: Stop): string {
   );
 }
 
-function imageStackFor(stop: Stop): string[] {
-  const frames = [...(stop.images ?? []), stop.image]
-    .filter((frame): frame is string => Boolean(frame?.trim()))
-    .filter((frame, index, all) => all.indexOf(frame) === index)
-    .slice(0, 3);
-
-  return frames;
+function imageStackFor(stop: Stop): MediaAsset[] {
+  const primary = resolvePrimaryMedia(stop.primaryMedia, stop.image);
+  return dedupeMedia([
+    ...(primary ? [primary] : []),
+    ...resolveMediaGallery(stop.media, stop.images ?? []),
+  ]).slice(0, 3);
 }
 
 function cultureLead(story: string) {
@@ -233,40 +242,30 @@ function ImagePlate({ stop }: { stop: Stop }) {
 
       {stackedFrames.map((frame, index) => (
         <div
-          key={`${frame}-stack-${index}`}
+          key={`${frame.type}:${frame.url}-stack-${index}`}
           className="pointer-events-none absolute right-[10px] top-[10px] h-[86%] w-[84%] overflow-hidden border-[8px] border-white bg-white scrapbook-shadow transition-transform duration-500"
           style={{
             transform: `translate(${16 + index * 10}px, ${6 + index * 8}px) rotate(${index % 2 === 0 ? 3.5 : 2.2}deg)`,
             zIndex: index + 1,
           }}
         >
-          <img
-            src={frame}
+          <MediaFrame
+            asset={frame}
             alt=""
-            aria-hidden="true"
-            className="h-full w-full object-cover opacity-55 saturate-[0.82] sepia-[0.12]"
-            loading="lazy"
+            mode="image"
+            mediaClassName="object-cover opacity-55 saturate-[0.82] sepia-[0.12]"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.24),rgba(17,25,35,0.16))]" />
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={showNextFrame}
+      <div
         className="relative z-10 block w-full overflow-hidden border-[10px] border-white bg-white text-left scrapbook-shadow transition-all duration-500 group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:-rotate-[1.2deg] group-hover:shadow-[0_12px_36px_rgba(0,0,0,0.16)]"
-        aria-label={
-          frameCount > 1
-            ? `Show next photo for ${stop.stop}`
-            : `Photo for ${stop.stop}`
-        }
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden">
           <AnimatePresence mode="wait" initial={false}>
-            <motion.img
-              key={`${leadFrame}-${activeIndex}`}
-              src={leadFrame}
-              alt={stop.stop}
+            <motion.div
+              key={`${leadFrame.type}:${leadFrame.url}-${activeIndex}`}
               initial={{
                 opacity: 0,
                 scale: 1.035,
@@ -281,9 +280,16 @@ function ImagePlate({ stop }: { stop: Stop }) {
                 rotate: direction > 0 ? -0.8 : 0.8,
               }}
               transition={{ duration: 0.34, ease: [0.22, 0.7, 0.2, 1] }}
-              className="absolute inset-0 h-full w-full object-cover filter saturate-[0.86] sepia-[0.08] contrast-[0.98] brightness-[0.92] transition-all duration-700 lg:grayscale lg:saturate-[0.35] lg:contrast-[1.05] lg:brightness-[0.82] lg:group-hover:scale-[1.05] lg:group-hover:grayscale-0 lg:group-hover:saturate-[1.02] lg:group-hover:sepia-0 lg:group-hover:contrast-100 lg:group-hover:brightness-100"
-              loading="lazy"
-            />
+              className="absolute inset-0 h-full w-full"
+            >
+              <MediaFrame
+                asset={leadFrame}
+                fallbackSrc={mediaPoster(leadFrame, stop.image ?? "")}
+                alt={stop.stop}
+                mode={leadFrame.type === "video" ? "interactive" : "image"}
+                mediaClassName="object-cover filter saturate-[0.86] sepia-[0.08] contrast-[0.98] brightness-[0.92] transition-all duration-700 lg:grayscale lg:saturate-[0.35] lg:contrast-[1.05] lg:brightness-[0.82] lg:group-hover:scale-[1.05] lg:group-hover:grayscale-0 lg:group-hover:saturate-[1.02] lg:group-hover:sepia-0 lg:group-hover:contrast-100 lg:group-hover:brightness-100"
+              />
+            </motion.div>
           </AnimatePresence>
         </div>
         <div className="pointer-events-none absolute inset-[10px] bg-gradient-to-t from-black/28 via-black/8 to-white/5 transition-opacity duration-500 lg:group-hover:opacity-0" />
@@ -294,11 +300,16 @@ function ImagePlate({ stop }: { stop: Stop }) {
 
         <div className="pointer-events-none absolute -top-3 left-1/2 h-5 w-16 -translate-x-1/2 -rotate-[3deg] border border-black/5 bg-[rgba(244,236,220,0.72)] backdrop-blur-[2px]" />
         {frameCount > 1 ? (
-          <div className="pointer-events-none absolute bottom-3 right-3 border border-black/5 bg-[var(--paper)]/88 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/65 backdrop-blur-[1px]">
+          <button
+            type="button"
+            onClick={showNextFrame}
+            className="absolute bottom-3 right-3 z-20 border border-black/5 bg-[var(--paper)]/92 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/65 backdrop-blur-[1px] transition hover:bg-white hover:text-[var(--cinnabar)]"
+            aria-label={`Show next media for ${stop.stop}`}
+          >
             {t("interpreting.card.tapToFlip")}
-          </div>
+          </button>
         ) : null}
-      </button>
+      </div>
 
       <figcaption className="mt-3 font-mono text-[10px] uppercase leading-5 tracking-[0.18em] text-[var(--muted)]">
         {captionFor(stop)}

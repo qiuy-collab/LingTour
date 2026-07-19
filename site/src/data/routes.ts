@@ -44,6 +44,9 @@ export type StoryRoute = {
     hotel?: string;
     transit?: string;
     image?: string;
+    primaryMedia?: MediaAsset | null;
     images?: string[];
+    media?: MediaAsset[];
   }[];
 };
+import type { MediaAsset } from "@/types/media";

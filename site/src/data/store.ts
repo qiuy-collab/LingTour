@@ -23,7 +23,10 @@ export type StoreProduct = {
   currency: "CNY";
   tag: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   materialNotes?: string;
   story: string;
   gallery?: string[];
+  galleryMedia?: MediaAsset[];
 };
+import type { MediaAsset } from "@/types/media";

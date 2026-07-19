@@ -26,6 +26,12 @@ import type {
 import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
+import type { MediaAsset } from "@/types/media";
+import {
+  mediaPoster,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import { placeholderFor } from "@/lib/placeholders";
 import {
@@ -73,6 +79,7 @@ interface ApiRouteStop {
   culturalStory: string;
   details: string[];
   image: string;
+  primaryMedia?: MediaAsset | null;
   lat: number | null;
   lng: number | null;
   meal: string | null;
@@ -80,6 +87,7 @@ interface ApiRouteStop {
   transit: string | null;
   placeDetail?: string;
   images?: string[];
+  media?: MediaAsset[];
 }
 
 interface ApiStoryRoute {
@@ -103,7 +111,9 @@ interface ApiCitySection {
   title: string;
   body: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   images?: string[];
+  media?: MediaAsset[];
   statLabel: string | null;
   statValue: string | null;
   breathImage: string | null;
@@ -117,10 +127,12 @@ interface ApiCity {
   name: string;
   regionLabel: string;
   heroImage: string;
+  heroMedia?: MediaAsset | null;
   heroNarrative: string;
   tags: string[];
   editorIntro: string;
   galleryImages: string[];
+  galleryMedia?: MediaAsset[];
   foodTitle: string;
   foodDescription: string;
   foodImages: string[];
@@ -147,7 +159,9 @@ interface ApiStoreProduct {
   price: number;
   currency: string;
   image: string;
+  primaryMedia?: MediaAsset | null;
   gallery: string[];
+  galleryMedia?: MediaAsset[];
   collection: {
     slug: string;
     title: string;
@@ -261,9 +275,14 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
     mapViewBox: "0 0 900 600",
     itinerary: (apiRoute.stops ?? []).map((s, index) => {
       const fallbackImages = southernSeaTableStopImages[index] ?? [];
+      const primaryMedia = resolvePrimaryMedia(
+        s.primaryMedia,
+        s.image || fallbackImages[0] || routeFallbackImage,
+      );
+      const media = resolveMediaGallery(s.media, s.images ?? []);
       const images = [
-        ...(s.images ?? []),
-        s.image,
+        mediaPoster(primaryMedia),
+        ...media.map((asset) => mediaPoster(asset)),
         ...fallbackImages,
         routeFallbackImage,
       ].filter((frame): frame is string => Boolean(frame?.trim()));
@@ -282,8 +301,10 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
         meal: s.meal ?? undefined,
         hotel: s.hotel ?? undefined,
         transit: s.transit ?? undefined,
-        image: uniqueImages[0] ?? routeFallbackImage,
+        image: mediaPoster(primaryMedia, uniqueImages[0] ?? routeFallbackImage),
+        primaryMedia,
         images: uniqueImages.length > 1 ? uniqueImages : undefined,
+        media,
       };
     }),
   };
@@ -296,9 +317,14 @@ function mapCity(apiCity: ApiCity): CityCulture {
       : apiCity.slug === "zhanjiang"
         ? "/editorial/guangdong-coast-boat.jpg"
         : "/editorial/guangdong-coast-rocky.jpg";
+  const primaryMedia = resolvePrimaryMedia(apiCity.heroMedia, apiCity.heroImage);
+  const galleryMedia = resolveMediaGallery(
+    apiCity.galleryMedia,
+    apiCity.galleryImages ?? [],
+  );
   const gallery = [
-    ...(apiCity.galleryImages ?? []),
-    apiCity.heroImage,
+    ...galleryMedia.map((asset) => mediaPoster(asset)),
+    mediaPoster(primaryMedia),
     cityFallbackImage,
   ].filter((image): image is string => Boolean(image?.trim()));
 
@@ -309,8 +335,10 @@ function mapCity(apiCity: ApiCity): CityCulture {
     label: apiCity.regionLabel,
     summary: apiCity.editorIntro ?? "",
     narrative: apiCity.heroNarrative,
-    image: apiCity.heroImage || gallery[0] || cityFallbackImage,
+    image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
+    primaryMedia,
     gallery,
+    galleryMedia,
     tags: apiCity.tags ?? [],
     food: apiCity.foodTitle,
     foodDescription: apiCity.foodDescription ?? "",
@@ -318,26 +346,38 @@ function mapCity(apiCity: ApiCity): CityCulture {
     relatedCitySlugs: apiCity.relatedCitySlugs ?? [],
     foodImages: apiCity.foodImages ?? [],
     sections:
-      apiCity.sections?.map((s) => ({
-        title: s.title,
-        body: s.body,
-        image: s.image || cityFallbackImage,
-        images:
-          [
-            ...(s.images ?? []),
-            s.image,
-            s.breathImage,
-            cityFallbackImage,
-          ].filter((image): image is string => Boolean(image?.trim())),
-        stat:
-          [s.statLabel, s.statValue].filter(Boolean).join(" / ") || undefined,
-        breathImage: s.breathImage ?? s.image ?? cityFallbackImage,
-        breathQuote: s.breathQuote ?? undefined,
-      })) ?? [],
+      apiCity.sections?.map((s) => {
+        const sectionMedia = resolvePrimaryMedia(s.primaryMedia, s.image);
+        const media = resolveMediaGallery(s.media, s.images ?? []);
+        const images = [
+          ...media.map((asset) => mediaPoster(asset)),
+          mediaPoster(sectionMedia),
+          s.breathImage,
+          cityFallbackImage,
+        ].filter((image): image is string => Boolean(image?.trim()));
+
+        return {
+          title: s.title,
+          body: s.body,
+          image: mediaPoster(sectionMedia, images[0] || cityFallbackImage),
+          primaryMedia: sectionMedia,
+          images,
+          media,
+          stat:
+            [s.statLabel, s.statValue].filter(Boolean).join(" / ") || undefined,
+          breathImage: s.breathImage ?? mediaPoster(sectionMedia, cityFallbackImage),
+          breathQuote: s.breathQuote ?? undefined,
+        };
+      }) ?? [],
   });
 }
 
 function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
+  const primaryMedia = resolvePrimaryMedia(apiProduct.primaryMedia, apiProduct.image);
+  const galleryMedia = resolveMediaGallery(
+    apiProduct.galleryMedia,
+    apiProduct.gallery ?? [],
+  );
   return {
     id: apiProduct.id,
     slug: apiProduct.slug,
@@ -346,10 +386,12 @@ function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
     price: Number(apiProduct.price),
     currency: (apiProduct.currency as StoreProduct["currency"]) ?? "CNY",
     tag: apiProduct.product.tag,
-    image: apiProduct.image,
+    image: mediaPoster(primaryMedia, apiProduct.image),
+    primaryMedia,
     materialNotes: apiProduct.materialNotes ?? undefined,
     story: apiProduct.story,
-    gallery: apiProduct.gallery ?? undefined,
+    gallery: galleryMedia.map((asset) => mediaPoster(asset)).filter(Boolean),
+    galleryMedia,
   };
 }
 

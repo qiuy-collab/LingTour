@@ -6,7 +6,12 @@ import type { StoreProduct } from "@/data/store";
 import { ProductActions } from "@/components/store/ProductActions";
 import { Reveal } from "@/components/ui/Reveal";
 import { Price } from "@/components/ui/Price";
-import { ShopProductImage } from "@/components/store/ShopProductImage";
+import { MediaFrame } from "@/components/ui/MediaFrame";
+import {
+  dedupeMedia,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 
 function buildNoteWords(product: StoreProduct) {
   const source = [
@@ -41,19 +46,22 @@ type ProductDetailHeroProps = {
 };
 
 export function ProductDetailHero({ product }: ProductDetailHeroProps) {
-  const images = useMemo(
-    () =>
-      Array.from(new Set([product.image, ...(product.gallery || [])])).filter(
-        (image): image is string => Boolean(image?.trim()),
-      ),
-    [product.gallery, product.image],
+  const media = useMemo(
+    () => {
+      const primary = resolvePrimaryMedia(product.primaryMedia, product.image);
+      return dedupeMedia([
+        ...(primary ? [primary] : []),
+        ...resolveMediaGallery(product.galleryMedia, product.gallery ?? []),
+      ]);
+    },
+    [product.gallery, product.galleryMedia, product.image, product.primaryMedia],
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [finish, setFinish] = useState("Collector finish");
   const [edition, setEdition] = useState("Single object");
   const noteWords = buildNoteWords(product);
   const shortStory = buildShortStory(product.story);
-  const activeImage = images[activeIndex] || product.image;
+  const activeMedia = media[activeIndex] ?? media[0] ?? null;
   const collectionLabel =
     typeof product.collection === "string"
       ? product.collection
@@ -145,27 +153,29 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
                 <div className="absolute -top-4 left-1/2 h-10 w-32 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm border border-white/20" />
 
                 <div className="relative flex h-full w-full items-center justify-center">
-                  <ShopProductImage
-                    src={activeImage}
-                    fallbackSrc={product.gallery?.find((image) => image !== activeImage)}
+                  <MediaFrame
+                    asset={activeMedia}
+                    fallbackSrc={product.image}
                     alt={product.name}
-                    imageClassName="object-contain transition-transform duration-700 hover:scale-105"
+                    mode={activeMedia?.type === "video" ? "interactive" : "image"}
+                    eager
+                    mediaClassName="object-contain transition-transform duration-700 hover:scale-105"
                   />
 
                   {/* Navigation Buttons */}
                   <button
                     type="button"
-                    onClick={() => setActiveIndex((c) => (c === 0 ? images.length - 1 : c - 1))}
+                    onClick={() => setActiveIndex((c) => (c === 0 ? media.length - 1 : c - 1))}
                     className="absolute -left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
-                    disabled={images.length <= 1}
+                    disabled={media.length <= 1}
                   >
                     <span className="text-2xl mt-[-2px] pr-[2px]">&#8249;</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveIndex((c) => (c + 1) % Math.max(images.length, 1))}
+                    onClick={() => setActiveIndex((c) => (c + 1) % Math.max(media.length, 1))}
                     className="absolute -right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
-                    disabled={images.length <= 1}
+                    disabled={media.length <= 1}
                   >
                     <span className="text-2xl mt-[-2px] pl-[2px]">&#8250;</span>
                   </button>
@@ -173,24 +183,31 @@ export function ProductDetailHero({ product }: ProductDetailHeroProps) {
 
                 {/* Image counter */}
                 <div className="absolute bottom-6 right-6 handwritten text-xl text-[var(--gold)]">
-                  {images.length > 0 ? `${activeIndex + 1} / ${images.length}` : "—"}
+                  {media.length > 0 ? `${activeIndex + 1} / ${media.length}` : "—"}
                 </div>
               </div>
             </Reveal>
 
             {/* Gallery Thumbs */}
             <div className="mt-12 flex justify-center gap-4">
-              {images.map((image, index) => (
+              {media.map((asset, index) => (
                 <button
-                  key={index}
+                  key={`${asset.type}:${asset.url}`}
+                  type="button"
                   onClick={() => setActiveIndex(index)}
+                  aria-label={`Show ${asset.type} ${index + 1} of ${media.length}`}
                   className={`relative h-20 w-20 overflow-hidden border-4 transition-all ${
                     activeIndex === index
                       ? "border-[var(--gold)] rotate-2 scale-110 z-10 scrapbook-shadow"
                       : "border-white rotate-[-2deg] opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img src={image} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <MediaFrame
+                    asset={asset}
+                    alt=""
+                    mode="image"
+                    mediaClassName="object-cover"
+                  />
                 </button>
               ))}
             </div>

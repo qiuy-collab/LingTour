@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { CityCultureSection } from "@/data/culture";
+import { MediaFrame } from "@/components/ui/MediaFrame";
+import type { MediaAsset } from "@/types/media";
+import {
+  dedupeMedia,
+  mediaPoster,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 
 type Props = {
   cityName: string;
@@ -51,14 +59,16 @@ function useDesktopLayout() {
 function sectionFrames(
   section: CityCultureSection,
   fallbackImage: string,
-): string[] {
-  return Array.from(
-    new Set(
-      [section.image, ...(section.images ?? []), section.breathImage, fallbackImage].filter(
-        (value): value is string => Boolean(value),
-      ),
-    ),
-  );
+): MediaAsset[] {
+  const primary = resolvePrimaryMedia(section.primaryMedia, section.image);
+  return dedupeMedia([
+    ...(primary ? [primary] : []),
+    ...resolveMediaGallery(section.media, section.images ?? []),
+    ...(section.breathImage
+      ? [{ type: "image" as const, url: section.breathImage }]
+      : []),
+    ...(fallbackImage ? [{ type: "image" as const, url: fallbackImage }] : []),
+  ]);
 }
 
 function splitLeadParagraph(paragraph: string) {
@@ -146,7 +156,9 @@ function VisualPlate({
     setActiveFrame(0);
   }, [section.title]);
 
-  const image = frames[activeFrame] || section.image || fallbackImage;
+  const activeMedia =
+    frames[activeFrame] || resolvePrimaryMedia(section.primaryMedia, section.image || fallbackImage);
+  const image = mediaPoster(activeMedia, section.image || fallbackImage);
   const frameCount = frames.length;
   const usesContactSheet = frameCount >= 4;
   const detailImage =
@@ -179,12 +191,13 @@ function VisualPlate({
           <div className="min-w-0">
             <div className="relative w-full max-w-[31rem] rotate-[-1.2deg] border-[6px] lg:border-[12px] border-white bg-white scrapbook-shadow transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1.8deg]">
               <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={image}
+                <MediaFrame
+                  asset={activeMedia}
+                  fallbackSrc={image}
                   alt={section.title}
-                  className="h-full w-full object-cover saturate-[0.88] contrast-[0.98]"
-                  loading="eager"
-                  decoding="async"
+                  mode={activeMedia?.type === "video" ? "interactive" : "image"}
+                  eager
+                  mediaClassName="object-cover saturate-[0.88] contrast-[0.98]"
                 />
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.24),transparent)]" />
               </div>
@@ -234,7 +247,7 @@ function VisualPlate({
                 const isActive = frameIndex === activeFrame;
                 return (
                   <button
-                    key={`${section.title}-frame-${frameIndex}`}
+                    key={`${section.title}-${frame.type}-${frame.url}`}
                     type="button"
                     onClick={() => setActiveFrame(frameIndex)}
                     className={`group relative overflow-hidden border-[6px] bg-white text-left scrapbook-shadow transition ${
@@ -256,16 +269,15 @@ function VisualPlate({
                     }`}
                   >
                     <div className="aspect-[4/5] overflow-hidden">
-                      <img
-                        src={frame}
+                      <MediaFrame
+                        asset={frame}
                         alt={`${section.title} frame ${frameIndex + 1}`}
-                        className={`h-full w-full object-cover transition duration-500 ${
+                        mode="image"
+                        mediaClassName={`object-cover transition duration-500 ${
                           isActive
                             ? "saturate-100 contrast-100"
                             : "saturate-[0.72] contrast-[0.96] group-hover:saturate-[0.9]"
                         }`}
-                        loading="lazy"
-                        decoding="async"
                       />
                     </div>
                     <div
