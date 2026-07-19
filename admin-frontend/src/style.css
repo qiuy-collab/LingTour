@@ -22,6 +22,9 @@ body {
   background-color: var(--lt-bg-page);
   color: var(--lt-text-primary);
   transition: background-color 0.3s, color 0.3s;
+  background-image:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--lt-primary) 7%, transparent), transparent 26rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--lt-bg-page) 96%, white), var(--lt-bg-page));
 }
 
 button,
@@ -79,6 +82,38 @@ select {
 .el-input__wrapper,
 .el-select__wrapper {
   min-height: 40px;
+}
+
+.el-button {
+  border-radius: var(--lt-radius-md);
+  font-weight: 600;
+  transition:
+    transform 220ms var(--lt-ease-out),
+    box-shadow 220ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.el-button:not(.is-disabled):hover {
+  transform: translateY(-1px);
+}
+
+.el-card {
+  border-radius: var(--lt-radius-lg);
+  box-shadow: var(--lt-shadow-sm);
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  border-radius: var(--lt-radius-md);
+}
+
+.admin-page-stage {
+  width: min(100%, var(--lt-content-max));
+  min-width: 0;
+  margin-inline: auto;
 }
 
 .el-pagination {
@@ -199,7 +234,8 @@ select {
 }
 
 .table-card {
-  border-radius: var(--lt-radius-md);
+  overflow: hidden;
+  border-radius: var(--lt-radius-lg);
   border-color: var(--lt-border-light);
 }
 
@@ -208,7 +244,7 @@ select {
 }
 
 .table-card .el-table {
-  border-radius: var(--lt-radius-md) var(--lt-radius-md) 0 0;
+  border-radius: var(--lt-radius-lg) var(--lt-radius-lg) 0 0;
 }
 
 .table-card .pagination-wrap {

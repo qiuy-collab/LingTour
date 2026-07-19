@@ -9,6 +9,7 @@ import NotificationBell from '@/components/NotificationBell.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useEditorLocale } from '@/composables/useEditorLocale'
+import { animateRouteEnter, animateRouteLeave } from '@/utils/motion'
 import {
   DataAnalysis,
   MapLocation,
@@ -298,8 +299,13 @@ useKeyboardShortcuts([
         <AppBreadcrumb />
         <ErrorBoundary>
           <router-view v-slot="{ Component }">
-            <Transition name="page-fade" mode="out-in">
-              <component :is="Component" />
+            <Transition
+              :css="false"
+              mode="out-in"
+              @enter="animateRouteEnter"
+              @leave="animateRouteLeave"
+            >
+              <component :is="Component" :key="route.fullPath" class="admin-page-stage" />
             </Transition>
           </router-view>
         </ErrorBoundary>
@@ -442,17 +448,6 @@ useKeyboardShortcuts([
 
 .header-icon-button:hover {
   background: var(--lt-bg-hover);
-}
-
-/* Page transition */
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.page-fade-enter-from,
-.page-fade-leave-to {
-  opacity: 0;
 }
 
 /* 覆盖 Element Plus 菜单样式 */

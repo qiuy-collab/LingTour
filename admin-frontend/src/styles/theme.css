@@ -7,9 +7,10 @@
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
-  --lt-radius-sm: 4px;
-  --lt-radius-md: 6px;
-  --lt-radius-lg: 8px;
+  --lt-radius-sm: 8px;
+  --lt-radius-md: 12px;
+  --lt-radius-lg: 18px;
+  --lt-radius-xl: 24px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
@@ -19,7 +20,7 @@
   --lt-primary-soft: rgba(36, 83, 94, 0.1);
 
   /* Background */
-  --lt-bg-page: #eef0ed;
+  --lt-bg-page: #f2f4f1;
   --lt-bg-card: #ffffff;
   --lt-bg-sidebar: #14343d;
   --lt-sidebar-text: #c9d4d3;
@@ -41,9 +42,11 @@
   --lt-border-lighter: rgba(23, 32, 42, 0.07);
 
   /* Shadow */
-  --lt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --lt-shadow-md: 0 4px 12px rgba(17, 25, 35, 0.08);
-  --lt-shadow-lg: 0 10px 28px rgba(17, 25, 35, 0.12);
+  --lt-shadow-sm: 0 2px 8px rgba(17, 25, 35, 0.05);
+  --lt-shadow-md: 0 12px 36px rgba(17, 25, 35, 0.08);
+  --lt-shadow-lg: 0 24px 72px rgba(17, 25, 35, 0.12);
+  --lt-content-max: 1560px;
+  --lt-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Scrollbar */
   --lt-scrollbar-track: #f1f1f1;
@@ -90,9 +93,10 @@ html.dark {
     'Microsoft YaHei', sans-serif;
 
   /* Radius */
-  --lt-radius-sm: 4px;
-  --lt-radius-md: 6px;
-  --lt-radius-lg: 8px;
+  --lt-radius-sm: 8px;
+  --lt-radius-md: 12px;
+  --lt-radius-lg: 18px;
+  --lt-radius-xl: 24px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
 
   /* Brand */
@@ -127,6 +131,8 @@ html.dark {
   --lt-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --lt-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
   --lt-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --lt-content-max: 1560px;
+  --lt-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Scrollbar */
   --lt-scrollbar-track: #1d1d1d;
