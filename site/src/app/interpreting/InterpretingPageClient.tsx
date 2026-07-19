@@ -180,14 +180,14 @@ export default function InterpretingPageClient({
         .map((profile) => profile.id)
         .join("|")}`}
     >
-      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:min-h-[70vh] lg:pt-32">
+      <section className="relative overflow-hidden pb-16 pt-20 sm:pb-20 sm:pt-24 lg:min-h-[72vh] lg:pt-28">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
-            <div className="max-w-3xl lg:col-span-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center lg:gap-10 xl:gap-16">
+            <div className="max-w-4xl lg:col-span-7">
               <Reveal>
-                <div className="mb-8 flex items-center gap-4 sm:mb-12 sm:gap-6">
+                <div className="mb-8 flex items-center gap-4 sm:mb-10 sm:gap-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
                     L
                   </div>
@@ -198,13 +198,20 @@ export default function InterpretingPageClient({
                   </p>
                 </div>
 
-                <h1 className="mb-6 font-[family:var(--font-display)] text-[2.95rem] leading-[0.86] tracking-[-0.04em] sm:mb-10 sm:text-7xl md:mb-12 md:text-9xl lg:text-[11rem]">
+                <h1 className="mb-8 font-[family:var(--font-display)] text-[3.35rem] leading-[0.88] tracking-[-0.045em] sm:text-7xl md:text-8xl lg:text-[7rem] xl:text-[8.25rem]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{locale === "zh" ? "广东" : "Guangdong"}</span></span>
-                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">{locale === "zh" ? "口译服务" : "Interpreter Services"}</span></span>
+                  {locale === "zh" ? (
+                    <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">口译服务</span></span>
+                  ) : (
+                    <>
+                      <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Interpreter</span></span>
+                      <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Services</span></span>
+                    </>
+                  )}
                 </h1>
 
-                <div className="grid grid-cols-1 items-end gap-6 md:grid-cols-2 md:gap-12">
-                  <p data-pastoral-subtitle className="handwritten text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                <div className="grid grid-cols-1 items-end gap-7 border-t border-[var(--line)] pt-7 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-8">
+                  <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-base leading-relaxed text-[var(--river-deep)]/70 sm:text-lg">
                     {t("interpreting.hero.subtitle")}
                   </p>
 
@@ -226,9 +233,9 @@ export default function InterpretingPageClient({
               </Reveal>
             </div>
 
-            <div className="mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[20rem] lg:col-span-4 lg:max-w-none lg:self-center">
+            <div className="mx-auto w-full max-w-[22rem] self-center sm:max-w-[25rem] lg:col-span-5 lg:max-w-none lg:self-center">
               <Reveal delay={240}>
-                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rotate-2 border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[20rem] lg:border-[12px]">
+                <div className="relative mx-auto aspect-[5/4] w-full overflow-hidden rotate-[1.5deg] border-[0.55rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[25rem] lg:border-[12px]">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
@@ -329,53 +336,56 @@ export default function InterpretingPageClient({
         />
       ) : null}
 
-      <section className="site-container py-16 pb-28 lg:py-24">
+      <section id="interpreting-pricing" className="site-container scroll-mt-24 py-16 pb-28 lg:py-24 lg:pb-32">
         <Reveal>
           <div>
-            <div className="mb-8 opacity-60">
+            <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
                 {locale === "zh" ? "组合参考价" : "Budget guide"}
               </p>
-              <h2 className="mt-3 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
+              <h2 className="mt-4 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:max-w-none">
                 {locale === "zh"
                   ? "按服务与等级查看价格"
                   : "Rates by Service & Level"}
               </h2>
+              <p className="max-w-xs handwritten text-sm leading-6 text-[var(--muted)] sm:text-right">
+                {locale === "zh" ? "现场场景为主线，按经验等级选择。" : "Choose the field format first, then the experience level that fits the day."}
+              </p>
             </div>
 
-            <div className="overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.98))] shadow-[0_20px_60px_rgba(17,25,35,0.08)]">
-              <div>
-                <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] bg-[var(--paper-deep)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
+            <div>
+              <div className="space-y-4">
+                <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] px-5 pb-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
                   <div className="p-4">{locale === "zh" ? "类型" : "Type"}</div>
-                  <div className="p-4 text-center">
+                  <div className="text-center">
                     {t("interpreting.levels.junior")}
                   </div>
-                  <div className="p-4 text-center">
+                  <div className="text-center">
                     {t("interpreting.levels.mid")}
                   </div>
-                  <div className="p-4 text-center">
+                  <div className="text-center">
                     {t("interpreting.levels.senior")}
                   </div>
                 </div>
-                {matrix.map((row) => (
+                {matrix.map((row, rowIndex) => (
                   <div
                     key={row.service}
-                    className="grid grid-cols-1 border-t border-[var(--line)] text-sm text-[var(--muted)] transition hover:bg-white/60 md:grid-cols-[1.2fr_repeat(3,1fr)]"
+                    className={`group grid grid-cols-1 border border-[var(--line)] bg-white/88 text-sm text-[var(--muted)] scrapbook-shadow transition-transform duration-500 hover:-translate-y-1 md:grid-cols-[1.2fr_repeat(3,1fr)] ${rowIndex === 1 ? "md:translate-x-3" : rowIndex === 2 ? "md:-translate-x-2" : ""}`}
                   >
-                    <div className="flex items-center gap-3 p-4">
-                      <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--gold)]/15 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)]">
+                    <div className="flex items-center gap-4 p-5 sm:p-6">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center border border-[var(--gold)]/35 bg-[var(--paper)] text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)] transition-colors group-hover:bg-[var(--gold)] group-hover:text-white">
                         {row.icon}
                       </span>
                       <div>
-                        <p className="font-bold text-[var(--river-deep)]">
+                        <p className="font-[family:var(--font-display)] text-2xl leading-none text-[var(--river-deep)]">
                           {row.service}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                        <p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">
                           {row.note}
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 px-4 pb-4 md:hidden">
+                    <div className="mx-5 grid grid-cols-3 gap-2 border-t border-[var(--line)] pb-5 pt-5 md:hidden">
                       {[
                         {
                           label: t("interpreting.levels.junior"),
@@ -391,7 +401,7 @@ export default function InterpretingPageClient({
                           <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">
                             {tier.label}
                           </p>
-                          <p className="mt-1 font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
+                          <p className="mt-2 font-[family:var(--font-display)] text-[1.3rem] leading-none text-[var(--river-deep)]">
                             {tier.value}
                           </p>
                         </div>
@@ -400,7 +410,7 @@ export default function InterpretingPageClient({
                     {[row.junior, row.mid, row.senior].map((price, i) => (
                       <div
                         key={`${row.service}-${i}`}
-                        className="hidden place-items-center p-4 font-[family:var(--font-display)] text-xl text-[var(--river-deep)] md:grid"
+                        className="hidden place-items-center border-l border-[var(--line)] p-4 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] md:grid"
                       >
                         {price}
                       </div>
@@ -424,7 +434,7 @@ export default function InterpretingPageClient({
           },
           {
             label: locale === "zh" ? "价格" : "Pricing",
-            href: "#service-types",
+            href: "#interpreting-pricing",
             variant: "secondary",
           },
         ]}

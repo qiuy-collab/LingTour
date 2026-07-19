@@ -258,9 +258,9 @@ function MultiStepFormInner({
   }
 
   return (
-    <div className="overflow-visible border border-[var(--line)] bg-white/92 shadow-[0_8px_8px_rgba(17,25,35,0.08)]">
-      <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
-        <label className="flex cursor-pointer flex-col gap-2 rounded-sm bg-white/72 px-4 py-3 sm:flex-row sm:items-center">
+    <div className="overflow-visible border-y border-[var(--line)] bg-white/92 sm:border-x">
+      <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-4 sm:px-7">
+        <label className="flex cursor-pointer flex-col gap-2 border-l-2 border-transparent bg-white/62 px-4 py-3 transition-colors hover:border-[var(--gold)] sm:flex-row sm:items-center">
           <input
             type="checkbox"
             checked={fastTrack}
@@ -278,7 +278,7 @@ function MultiStepFormInner({
         </label>
       </div>
 
-      <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-4 sm:px-8 sm:py-5">
+      <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-4 sm:px-7">
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-label text-[var(--gold)]">
             {t("interpreting.flow.step")
@@ -307,7 +307,7 @@ function MultiStepFormInner({
         </div>
       </div>
 
-      <div className="px-6 py-6 sm:px-8 sm:py-8">
+      <div className="px-5 py-6 sm:px-7 sm:py-8">
         {errorMessage ? (
           <div role="alert" className="mb-5 rounded-sm border border-[var(--cinnabar)]/20 bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar-deep)]">
             {errorMessage}
@@ -541,7 +541,7 @@ function MultiStepFormInner({
         )}
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-[var(--line)] bg-[rgba(248,244,236,0.72)] px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <div className="flex flex-col-reverse gap-3 border-t border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <button
           type="button"
           onClick={() => {
