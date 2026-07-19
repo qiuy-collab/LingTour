@@ -11,8 +11,7 @@ import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { CityCulture } from "@/data/culture";
 import { ArchiveFilterBar } from "@/components/ui/ArchiveFilterBar";
-import { CultureIndexHero } from "@/components/culture/CultureIndexHero";
-import { MediaFrame } from "@/components/ui/MediaFrame";
+import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
 
 function uniqueValues(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
@@ -69,20 +68,60 @@ export default function CulturePageClient({
   const ctaImage = SEED_IMAGES.cultureCta ?? placeholderFor("hero");
 
   return (
-    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
-      <CultureIndexHero
-        image={heroImage}
-        eyebrow={t("culture.atlas.eyebrow")}
-        title={t("culture.atlas.titlePrimary")}
-        accent={t("culture.atlas.titleItalic")}
-        lede={t("culture.atlas.lede")}
-        cityCount={cultures.length}
-        regionCount={regionOptions.length}
-        archiveLabel={t("culture.atlas.archiveLabel")}
-        archiveCode={t("culture.atlas.archiveCode")}
-      />
+    <PastoralPageMotion
+      className="min-h-screen bg-[var(--paper-deep)] bg-grain"
+      motionKey={filteredCultures.map((city) => city.slug).join("|")}
+    >
+      <section className="relative overflow-hidden pt-20 pb-12 sm:pb-16 lg:pt-32 lg:pb-24">
+        <div className="site-container">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
+            <div className="z-10 max-w-3xl lg:col-span-7">
+              <Reveal>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-px w-12 bg-[var(--cinnabar)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                    {t("culture.atlas.eyebrow")}
+                  </p>
+                </div>
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
+                  {t("culture.atlas.titlePrimary")} <br />
+                  <span className="italic text-[var(--gold)]">
+                    {t("culture.atlas.titleItalic")}
+                  </span>
+                </h1>
+                <p className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
+                  {t("culture.atlas.lede")}
+                </p>
+              </Reveal>
+            </div>
 
-      <section id="city-index" className="site-container py-12 sm:py-16 lg:py-24">
+            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
+              <Reveal delay={200}>
+                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-8 sm:rotate-2 lg:ml-auto">
+                  <div
+                    data-pastoral-hero-media
+                    className="absolute inset-0 bg-contain bg-center bg-no-repeat sm:bg-cover"
+                    style={{ backgroundImage: `url(${heroImage})` }}
+                  />
+                  <div className="absolute inset-0 bg-black/10" />
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-24 h-8 bg-white/40 backdrop-blur-sm -rotate-2 z-20" />
+                </div>
+
+                <div className="absolute -bottom-6 -left-6 bg-white p-6 scrapbook-shadow -rotate-3 hidden md:block">
+                  <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-widest">
+                    {t("culture.atlas.archiveLabel")}
+                  </p>
+                  <p className="font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] mt-1">
+                    {t("culture.atlas.archiveCode")}
+                  </p>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="site-container py-10 lg:py-20">
         {cultures.length > 0 ? (
           <ArchiveFilterBar
             searchValue={search}
@@ -149,94 +188,111 @@ export default function CulturePageClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
+          <div className="grid gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-y-24">
             <AnimatePresence initial={false} mode="popLayout">
-              {filteredCultures.map((city, index) => {
-                const cardImage = city.image || placeholderFor("square");
-                const mosaicClass =
-                  index % 5 === 0
-                    ? "lg:col-span-7 lg:min-h-[34rem]"
-                    : index % 5 === 1
-                      ? "lg:col-span-5 lg:min-h-[34rem]"
-                      : "lg:col-span-4 lg:min-h-[27rem]";
-                return (
-                  <motion.div
-                    key={city.slug}
-                    layout
-                    initial={false}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className={`min-h-[26rem] ${mosaicClass}`}
+            {filteredCultures.map((city, index) => {
+              const cardImage = city.image || placeholderFor("square");
+              return (
+                <motion.div
+                  key={city.slug}
+                  layout
+                  initial={false}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Link
+                    href={`/culture/${city.slug}`}
+                    className="group block"
+                    data-pastoral-card
                   >
-                    <Reveal className="h-full">
-                      <Link href={`/culture/${city.slug}`} className="group block h-full">
-                        <article className="relative isolate h-full min-h-[26rem] overflow-hidden rounded-[var(--radius-lg)] bg-[var(--night)] shadow-[0_18px_58px_rgba(17,25,35,0.1)] transition duration-500 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(17,25,35,0.18)]">
-                          <MediaFrame
-                            asset={city.primaryMedia}
-                            fallbackSrc={cardImage}
-                            alt={city.name}
-                            mode="preview"
-                            className="absolute inset-0"
-                            mediaClassName="object-cover transition duration-1000 group-hover:scale-[1.045]"
-                          />
-                          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.05)_15%,rgba(8,18,24,0.2)_46%,rgba(8,18,24,0.9)_100%)]" />
+                    <article
+                      className={`relative flex h-full flex-col transition-all duration-500 hover:-translate-y-3 ${
+                        index % 3 === 0
+                          ? "sm:-rotate-1"
+                          : index % 3 === 1
+                            ? "sm:rotate-1"
+                            : "rotate-0"
+                      }`}
+                    >
+                      <div className="relative aspect-[16/10] scrapbook-shadow overflow-hidden border-[0.55rem] border-white bg-white sm:aspect-[4/3] sm:border-[0.75rem]">
+                        <div
+                          className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.95] sepia-[0.1] sm:bg-cover"
+                          style={{ backgroundImage: `url(${cardImage})` }}
+                        />
+                        <div className="absolute inset-0 bg-black/5" />
 
-                          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 sm:p-6">
-                            <span className="rounded-full border border-white/42 bg-black/18 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-md">
-                              {city.label}
-                            </span>
-                            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/62">
-                              REG-{String(index + 20).padStart(3, "0")}
-                            </span>
+                        <div className="absolute top-3 right-3 z-10">
+                          <div className="bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono uppercase tracking-tighter text-[var(--river-deep)] border border-black/5 shadow-sm">
+                            REG-0{index + 20}
                           </div>
+                        </div>
 
-                          <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-                            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
-                              City file {String(index + 1).padStart(2, "0")}
-                            </p>
-                            <h2 className="mt-3 max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-[-0.04em] sm:text-5xl">
-                              {city.name}
-                            </h2>
-                            <p className="mt-4 line-clamp-2 max-w-[42rem] text-sm leading-6 text-white/68 sm:text-base">
-                              {city.narrative || city.summary}
-                            </p>
-                            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/20 pt-5">
-                              <div className="flex flex-wrap gap-2">
-                                {city.tags.slice(0, 3).map((cityTag) => (
-                                  <span
-                                    key={cityTag}
-                                    className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white/58"
-                                  >
-                                    #{cityTag}
-                                  </span>
-                                ))}
-                              </div>
-                              <span className="inline-flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white transition group-hover:text-[var(--gold)]">
-                                {t("culture.atlas.openArchive")}
-                                <span aria-hidden className="transition group-hover:translate-x-1">→</span>
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-20 h-10 bg-white/25 backdrop-blur-sm -rotate-3 z-20 border-x border-black/5" />
+                      </div>
+
+                      <div className="relative mt-6 px-1 sm:mt-8 sm:px-4">
+                        <div className="absolute -top-12 -left-2 bg-[var(--gold)] text-white px-3 py-1 text-[9px] font-bold uppercase tracking-widest shadow-lg -rotate-3 z-20">
+                          {city.label}
+                        </div>
+
+                        <h2 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
+                          {city.name}
+                        </h2>
+
+                        <p className="mt-3 line-clamp-2 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] handwritten sm:max-w-[25ch]">
+                          {city.narrative}
+                        </p>
+
+                        <div className="pt-6 flex items-center justify-between border-t border-[var(--line)]/50 mt-4">
+                          <div className="flex gap-3">
+                            {city.tags.slice(0, 2).map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[10px] uppercase tracking-widest text-[var(--muted)]/40 font-bold"
+                              >
+                                #{tag}
                               </span>
-                            </div>
+                            ))}
                           </div>
-                        </article>
-                      </Link>
-                    </Reveal>
-                  </motion.div>
-                );
-              })}
+
+                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
+                            <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-[var(--cinnabar)] after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:origin-left">
+                              {t("culture.atlas.openArchive")}
+                            </span>
+                            <svg
+                              className="h-3 w-3 transition-transform group-hover:translate-x-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                            >
+                              <path
+                                d="M5 12h14M12 5l7 7-7 7"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  </Link>
+                </motion.div>
+              );
+            })}
             </AnimatePresence>
           </div>
         )}
       </section>
 
-      <section className="pb-16 sm:pb-20 lg:pb-28">
+      <section className="pb-20 lg:pb-32">
         <div className="site-container">
-          <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--river-deep)] px-6 py-16 text-center text-white shadow-[0_28px_90px_rgba(17,25,35,0.18)] sm:px-8 sm:py-20 lg:px-20 lg:py-24">
+          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-center text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-20 lg:py-28">
             <div
-              className="absolute inset-0 bg-cover bg-center opacity-18 grayscale"
+              className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
             />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,52,61,0.95),rgba(20,52,61,0.72))]" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
@@ -258,6 +314,6 @@ export default function CulturePageClient({
           </div>
         </div>
       </section>
-    </div>
+    </PastoralPageMotion>
   );
 }
