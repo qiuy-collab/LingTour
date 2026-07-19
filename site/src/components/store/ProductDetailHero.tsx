@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { StoreProduct } from "@/data/store";
 import { ProductActions } from "@/components/store/ProductActions";
-import { Reveal } from "@/components/ui/Reveal";
 import { Price } from "@/components/ui/Price";
 import { MediaFrame } from "@/components/ui/MediaFrame";
+import { Reveal } from "@/components/ui/Reveal";
 import {
   dedupeMedia,
   resolveMediaGallery,
@@ -14,281 +14,238 @@ import {
 } from "@/types/media";
 
 function buildNoteWords(product: StoreProduct) {
-  const source = [
-    product.tag,
-    product.materialNotes,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const words = Array.from(
+  return Array.from(
     new Set(
-      source
+      [product.tag, product.materialNotes]
+        .filter(Boolean)
+        .join(" ")
         .replace(/[^a-zA-Z\s]/g, " ")
         .split(/\s+/)
         .filter((word) => word.length > 3),
     ),
-  );
-
-  return words.slice(0, 3);
+  ).slice(0, 4);
 }
 
 function buildShortStory(story: string) {
   const trimmed = story.trim();
   const firstSentence = trimmed.split(/(?<=[.!?])\s+/)[0] || trimmed;
-  return firstSentence.length > 140
-    ? `${firstSentence.slice(0, 137).trim()}...`
+  return firstSentence.length > 180
+    ? `${firstSentence.slice(0, 177).trim()}…`
     : firstSentence;
 }
 
-type ProductDetailHeroProps = {
-  product: StoreProduct;
-};
-
-export function ProductDetailHero({ product }: ProductDetailHeroProps) {
-  const media = useMemo(
-    () => {
-      const primary = resolvePrimaryMedia(product.primaryMedia, product.image);
-      return dedupeMedia([
-        ...(primary ? [primary] : []),
-        ...resolveMediaGallery(product.galleryMedia, product.gallery ?? []),
-      ]);
-    },
-    [product.gallery, product.galleryMedia, product.image, product.primaryMedia],
-  );
+export function ProductDetailHero({ product }: { product: StoreProduct }) {
+  const media = useMemo(() => {
+    const primary = resolvePrimaryMedia(product.primaryMedia, product.image);
+    return dedupeMedia([
+      ...(primary ? [primary] : []),
+      ...resolveMediaGallery(product.galleryMedia, product.gallery ?? []),
+    ]);
+  }, [product.gallery, product.galleryMedia, product.image, product.primaryMedia]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [finish, setFinish] = useState("Collector finish");
   const [edition, setEdition] = useState("Single object");
-  const noteWords = buildNoteWords(product);
-  const shortStory = buildShortStory(product.story);
   const activeMedia = media[activeIndex] ?? media[0] ?? null;
-  const collectionLabel =
-    typeof product.collection === "string"
-      ? product.collection
-      : (product.collection as { title?: string })?.title || "LingTour Goods";
+  const noteWords = buildNoteWords(product);
+  const collectionLabel = product.collection || "LingTour Goods";
+
+  const showPrevious = () => {
+    if (media.length <= 1) return;
+    setActiveIndex((current) => (current === 0 ? media.length - 1 : current - 1));
+  };
+  const showNext = () => {
+    if (media.length <= 1) return;
+    setActiveIndex((current) => (current + 1) % media.length);
+  };
 
   return (
-    <section className="overflow-hidden bg-[var(--paper-deep)] bg-grain pb-12 pt-8 lg:pb-20 lg:pt-12">
-      <div className="border-y border-[rgba(20,33,47,0.1)] bg-[var(--paper-deep)] bg-grain py-4">
-        <div className="site-container">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="handwritten text-lg text-[var(--gold)]">
-                Studio dispatch
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/60">
-                Free route-linked packing for this object.
-              </span>
-            </div>
-            <nav aria-label="Product breadcrumb" className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">
-              <Link href="/" className="hover:text-[var(--river-deep)] transition-colors">Home</Link>
-              <span>/</span>
-              <Link href="/shop" className="hover:text-[var(--river-deep)] transition-colors">Store</Link>
-              <span>/</span>
-              <span className="text-[var(--river-deep)]/80">{product.name}</span>
-            </nav>
-          </div>
+    <section className="overflow-hidden bg-[var(--paper-deep)] bg-grain pb-14 pt-7 sm:pb-16 lg:pb-24 lg:pt-10">
+      <div className="site-container">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
+          <nav aria-label="Product breadcrumb" className="flex min-w-0 items-center gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+            <Link href="/shop" className="transition hover:text-[var(--cinnabar)]">Store</Link>
+            <span aria-hidden>/</span>
+            <span className="truncate text-[var(--river-deep)]">{product.name}</span>
+          </nav>
+          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+            Studio dispatch · Route-linked packing
+          </p>
         </div>
-      </div>
 
-      <div className="site-container mt-12">
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
-          {/* Left Column: Details & Story */}
-          <div className="lg:col-span-3 space-y-10">
-            <Reveal>
-              <div className="relative inline-block bg-[var(--river-deep)] p-6 scrapbook-shadow -rotate-2">
-                <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
-                <p className="mt-2 font-[family:var(--font-display)] text-2xl text-white leading-tight">
+        <div className="mt-8 grid min-w-0 gap-8 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-8">
+          <Reveal className="min-w-0 lg:col-start-8 lg:col-span-5 lg:row-start-1">
+            <header>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[var(--river-deep)] px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white">
                   {collectionLabel}
-                </p>
-                {/* Stamp effect */}
-                <div className="absolute -right-4 -top-4 h-16 w-16 rotate-12 rounded-full border-2 border-dashed border-[var(--gold)]/30 flex items-center justify-center">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]/40 text-center">Authentic<br/>Object</span>
-                </div>
+                </span>
+                {product.tag ? (
+                  <span className="rounded-full border border-[var(--line)] bg-white/62 px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    {product.tag}
+                  </span>
+                ) : null}
               </div>
-            </Reveal>
-
-            <Reveal delay={100}>
-              <div className="space-y-4">
-                <h1 className="font-[family:var(--font-display)] text-5xl leading-[0.9] tracking-tight text-[var(--river-deep)] lg:text-6xl">
-                  {product.name}
-                </h1>
-                <p className="handwritten text-2xl text-[var(--gold)]">
-                  {product.tag}
-                </p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={200}>
-              <div className="space-y-4 border-t border-dashed border-[var(--river-deep)]/20 pt-8">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">Story Summary</p>
-                <p className="text-base leading-relaxed text-[var(--river-deep)]/80 italic">
-                  &ldquo;{shortStory}&rdquo;
-                </p>
-              </div>
-            </Reveal>
-
-            <Reveal delay={300}>
-              <div className="space-y-4 border-t border-dashed border-[var(--river-deep)]/20 pt-8">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40">Material Logic</p>
-                <div className="flex flex-wrap gap-2">
+              <h1 className="mt-6 font-[family:var(--font-display)] text-[clamp(3.35rem,6.2vw,6.4rem)] leading-[0.86] tracking-[-0.06em] text-[var(--river-deep)]">
+                {product.name}
+              </h1>
+              <p className="mt-6 max-w-[36rem] text-base leading-7 text-[var(--muted)]">
+                {buildShortStory(product.story)}
+              </p>
+              {noteWords.length ? (
+                <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2">
                   {noteWords.map((word) => (
-                    <span
-                      key={word}
-                      className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]"
-                    >
+                    <span key={word} className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                       {word}
                     </span>
                   ))}
                 </div>
-              </div>
-            </Reveal>
-          </div>
+              ) : null}
+            </header>
+          </Reveal>
 
-          {/* Center Column: Main Image */}
-          <div className="lg:col-span-5 relative">
-            <Reveal delay={150}>
-              <div className="relative aspect-[4/5] w-full bg-white p-12 scrapbook-shadow rotate-1">
-                {/* Tape effect */}
-                <div className="absolute -top-4 left-1/2 h-10 w-32 -translate-x-1/2 rotate-2 bg-white/40 backdrop-blur-sm border border-white/20" />
+          <Reveal delay={80} className="min-w-0 lg:col-span-7 lg:row-span-2 lg:row-start-1">
+            <div className="min-w-0">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:aspect-[5/4]">
+                <MediaFrame
+                  asset={activeMedia}
+                  fallbackSrc={product.image}
+                  alt={product.name}
+                  mode={activeMedia?.type === "video" ? "interactive" : "image"}
+                  eager
+                  mediaClassName="object-contain p-7 transition-transform duration-700 sm:p-12 lg:p-14"
+                />
 
-                <div className="relative flex h-full w-full items-center justify-center">
-                  <MediaFrame
-                    asset={activeMedia}
-                    fallbackSrc={product.image}
-                    alt={product.name}
-                    mode={activeMedia?.type === "video" ? "interactive" : "image"}
-                    eager
-                    mediaClassName="object-contain transition-transform duration-700 hover:scale-105"
-                  />
-
-                  {/* Navigation Buttons */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveIndex((c) => (c === 0 ? media.length - 1 : c - 1))}
-                    className="absolute -left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
-                    disabled={media.length <= 1}
-                  >
-                    <span className="text-2xl mt-[-2px] pr-[2px]">&#8249;</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveIndex((c) => (c + 1) % Math.max(media.length, 1))}
-                    className="absolute -right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-[var(--river-deep)] text-white flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-20"
-                    disabled={media.length <= 1}
-                  >
-                    <span className="text-2xl mt-[-2px] pl-[2px]">&#8250;</span>
-                  </button>
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-4 p-4 sm:p-5">
+                  <span className="rounded-full border border-[var(--line)] bg-white/76 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--river-deep)] backdrop-blur-md">
+                    Object view
+                  </span>
+                  <span className="rounded-full border border-[var(--line)] bg-white/76 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)] backdrop-blur-md">
+                    {media.length ? `${String(activeIndex + 1).padStart(2, "0")} / ${String(media.length).padStart(2, "0")}` : "01 / 01"}
+                  </span>
                 </div>
 
-                {/* Image counter */}
-                <div className="absolute bottom-6 right-6 handwritten text-xl text-[var(--gold)]">
-                  {media.length > 0 ? `${activeIndex + 1} / ${media.length}` : "—"}
-                </div>
+                {media.length > 1 ? (
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4 sm:p-5">
+                    <button
+                      type="button"
+                      onClick={showPrevious}
+                      aria-label="Show previous product media"
+                      className="grid h-11 w-11 place-items-center rounded-full border border-[var(--line)] bg-white/86 text-lg text-[var(--river-deep)] shadow-lg backdrop-blur-md transition hover:bg-[var(--river-deep)] hover:text-white"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      onClick={showNext}
+                      aria-label="Show next product media"
+                      className="grid h-11 w-11 place-items-center rounded-full border border-[var(--line)] bg-white/86 text-lg text-[var(--river-deep)] shadow-lg backdrop-blur-md transition hover:bg-[var(--river-deep)] hover:text-white"
+                    >
+                      →
+                    </button>
+                  </div>
+                ) : null}
               </div>
-            </Reveal>
 
-            {/* Gallery Thumbs */}
-            <div className="mt-12 flex justify-center gap-4">
-              {media.map((asset, index) => (
-                <button
-                  key={`${asset.type}:${asset.url}`}
-                  type="button"
-                  onClick={() => setActiveIndex(index)}
-                  aria-label={`Show ${asset.type} ${index + 1} of ${media.length}`}
-                  className={`relative h-20 w-20 overflow-hidden border-4 transition-all ${
-                    activeIndex === index
-                      ? "border-[var(--gold)] rotate-2 scale-110 z-10 scrapbook-shadow"
-                      : "border-white rotate-[-2deg] opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <MediaFrame
-                    asset={asset}
-                    alt=""
-                    mode="image"
-                    mediaClassName="object-cover"
-                  />
-                </button>
-              ))}
+              {media.length > 1 ? (
+                <div className="scrollbar-hide mt-4 flex gap-3 overflow-x-auto pb-1">
+                  {media.map((asset, index) => (
+                    <button
+                      key={`${asset.type}:${asset.url}`}
+                      type="button"
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`Show ${asset.type} ${index + 1} of ${media.length}`}
+                      aria-pressed={activeIndex === index}
+                      className={`relative h-20 w-24 shrink-0 overflow-hidden rounded-[var(--radius-sm)] border-2 bg-white transition ${
+                        activeIndex === index
+                          ? "border-[var(--cinnabar)] opacity-100"
+                          : "border-transparent opacity-55 hover:opacity-100"
+                      }`}
+                    >
+                      <MediaFrame asset={asset} alt="" mode="image" mediaClassName="object-cover" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          </div>
+          </Reveal>
 
-          {/* Right Column: Buying Options */}
-          <div className="lg:col-span-4 lg:pl-8">
-            <Reveal delay={250}>
-              <div className="bg-white p-8 scrapbook-shadow rotate-[-1deg] space-y-8">
-                <div className="space-y-2">
-                  <p className="font-[family:var(--font-display)] text-6xl tracking-tight text-[var(--river-deep)]">
+          <Reveal delay={140} className="min-w-0 lg:col-start-8 lg:col-span-5 lg:row-start-2">
+            <aside className="rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_20px_70px_rgba(17,25,35,0.08)] sm:p-7">
+              <div className="flex items-end justify-between gap-5 border-b border-[var(--line)] pb-5">
+                <div>
+                  <p className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">Collector price</p>
+                  <p className="mt-2 font-[family:var(--font-display)] text-4xl leading-none text-[var(--river-deep)] sm:text-5xl">
                     <Price amount={product.price} currency={product.currency} />
                   </p>
                 </div>
+                <span className="rounded-full bg-[var(--gold)]/12 px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">In archive</span>
+              </div>
 
-                <div className="space-y-4">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)]/40 italic">Select Finish</p>
-                  <div className="grid gap-2">
+              <div className="mt-6 grid gap-6">
+                <fieldset>
+                  <legend className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Select finish</legend>
+                  <div className="mt-3 grid gap-2">
                     {["Collector finish", "Daily use finish"].map((option) => (
                       <button
                         key={option}
+                        type="button"
                         onClick={() => setFinish(option)}
-                        className={`group flex items-center justify-between border-2 px-5 py-3 transition-all ${
+                        aria-pressed={finish === option}
+                        className={`flex min-h-12 items-center justify-between rounded-[var(--radius-sm)] border px-4 py-3 text-left font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition ${
                           finish === option
                             ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
-                            : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/60 hover:border-[var(--river-deep)]/30"
+                            : "border-[var(--line)] text-[var(--river-deep)] hover:border-[var(--river-deep)]"
                         }`}
                       >
-                        <span className="text-sm font-bold uppercase tracking-widest">{option}</span>
-                        {finish === option && <span className="handwritten text-lg text-[var(--gold)]">Picked</span>}
+                        {option}
+                        <span className={`h-2 w-2 rounded-full ${finish === option ? "bg-[var(--gold)]" : "bg-[var(--line)]"}`} />
                       </button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
-                <div className="space-y-4 pt-2">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)]/40 italic">Choose Edition</p>
-                  <div className="grid grid-cols-2 gap-3">
+                <fieldset>
+                  <legend className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Choose edition</legend>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     {["Single object", "Gift set"].map((option) => (
                       <button
                         key={option}
+                        type="button"
                         onClick={() => setEdition(option)}
-                        className={`border-2 py-3 transition-all text-xs font-bold uppercase tracking-widest ${
+                        aria-pressed={edition === option}
+                        className={`min-h-12 rounded-[var(--radius-sm)] border px-3 py-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition ${
                           edition === option
-                            ? "border-[var(--gold)] bg-[var(--gold)] text-[var(--river-deep)]"
-                            : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/60 hover:border-[var(--river-deep)]/30"
+                            ? "border-[var(--gold)] bg-[var(--gold)] text-[var(--night)]"
+                            : "border-[var(--line)] text-[var(--river-deep)] hover:border-[var(--river-deep)]"
                         }`}
                       >
                         {option}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                <div className="pt-4">
-                  <ProductActions product={product} variant="editorial" />
-                </div>
-
-                <div className="grid gap-3 border-t border-dashed border-[var(--river-deep)]/18 pt-5">
-                  <Link
-                    href="/routes"
-                    className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline"
-                  >
-                    Trace the route behind this object
-                  </Link>
-                  <Link
-                    href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} belongs in the field archive because `)}`}
-                    className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline"
-                  >
-                    Send this object to the community desk
-                  </Link>
-                </div>
-
-                <div className="flex items-center gap-4 pt-4 text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]/30 italic">
-                  <div className="h-[1px] flex-1 bg-[var(--river-deep)]/10" />
-                  <span>Registry #LT-{product.slug.slice(0, 4).toUpperCase()}</span>
-                  <div className="h-[1px] flex-1 bg-[var(--river-deep)]/10" />
-                </div>
+                </fieldset>
               </div>
-            </Reveal>
-          </div>
+
+              <div className="mt-6">
+                <ProductActions product={product} variant="editorial" />
+              </div>
+
+              <div className="mt-6 grid gap-3 border-t border-[var(--line)] pt-5">
+                <Link href="/routes" className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition hover:text-[var(--cinnabar)]">
+                  Trace the route behind this object →
+                </Link>
+                <Link
+                  href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} belongs in the field archive because `)}`}
+                  className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] transition hover:text-[var(--cinnabar)]"
+                >
+                  Send to the community desk →
+                </Link>
+              </div>
+              <p className="mt-5 border-t border-[var(--line)] pt-4 text-center font-mono text-[7px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
+                Registry #LT-{product.slug.slice(0, 4).toUpperCase()}
+              </p>
+            </aside>
+          </Reveal>
         </div>
       </div>
     </section>

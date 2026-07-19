@@ -30,7 +30,7 @@ export function ProductActions({ product, variant = "dark" }: ProductActionsProp
     }
   }
 
-  const baseBtn = "px-8 py-4 text-sm font-medium transition-all duration-300 active:scale-95";
+  const baseBtn = "min-h-12 rounded-full px-8 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] transition-all duration-300 active:scale-[0.98]";
   const darkClasses = {
     secondary: "btn-ghost-dark",
     primary: "bg-[var(--cinnabar)] text-white hover:bg-[var(--cinnabar-deep)]",

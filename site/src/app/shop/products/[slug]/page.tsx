@@ -1,8 +1,14 @@
 import { Suspense } from "react";
 import { fetchStoreProducts } from "@/lib/api-data";
+import {
+  fetchStoreProductBySlugServer,
+  fetchStoreProductsServer,
+} from "@/lib/server-data";
 import type { Locale } from "@/lib/locale";
 
 const SEEDED_PRODUCT_SLUGS = ["volcanic-soil-bowl"];
+
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const locales: Locale[] = ["en", "zh"];
@@ -28,10 +34,18 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const [initialProduct, initialProducts] = await Promise.all([
+    fetchStoreProductBySlugServer(slug, "en"),
+    fetchStoreProductsServer("en"),
+  ]);
   const { ProductDetailClient } = await import("./ProductDetailClient");
   return (
     <Suspense fallback={null}>
-      <ProductDetailClient slug={slug} />
+      <ProductDetailClient
+        slug={slug}
+        initialProduct={initialProduct}
+        initialProducts={initialProducts}
+      />
     </Suspense>
   );
 }

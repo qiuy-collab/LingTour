@@ -1,72 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { type StoreProduct } from "@/data/store";
+import type { StoreProduct } from "@/data/store";
 import { Reveal } from "@/components/ui/Reveal";
+import { MediaFrame } from "@/components/ui/MediaFrame";
 import { useLocale } from "@/lib/locale-context";
+import {
+  dedupeMedia,
+  resolveMediaGallery,
+  resolvePrimaryMedia,
+} from "@/types/media";
 
-type ProductNarrativeProps = {
-  product: StoreProduct;
-};
-
-export function ProductNarrative({ product }: ProductNarrativeProps) {
+export function ProductNarrative({ product }: { product: StoreProduct }) {
   const { t } = useLocale();
-  const collectionLabel =
-    typeof product.collection === "string"
-      ? product.collection
-      : t("shop.detail.collectionFallback");
+  const collectionLabel = product.collection || t("shop.detail.collectionFallback");
   const materialLine = product.materialNotes || t("shop.detail.materialPending");
+  const primary = resolvePrimaryMedia(product.primaryMedia, product.image);
+  const media = dedupeMedia([
+    ...(primary ? [primary] : []),
+    ...resolveMediaGallery(product.galleryMedia, product.gallery ?? []),
+  ]);
+  const narrativeMedia = media[1] ?? media[0] ?? null;
 
   return (
-    <section className="bg-[var(--paper-deep)] bg-grain py-24 lg:py-32 border-y border-[var(--river-deep)]/10">
+    <section className="border-y border-[var(--line)] bg-[var(--paper)] py-16 sm:py-20 lg:py-24">
       <div className="site-container">
-        <div className="grid gap-16 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)] lg:items-center lg:gap-16">
           <Reveal>
-            <div className="max-w-2xl space-y-8">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
-                  {t("shop.detail.provenance")}
-                </p>
-                <h2 className="mt-4 font-[family:var(--font-display)] text-5xl leading-tight text-[var(--river-deep)] md:text-6xl">
-                  {product.name}
-                </h2>
-              </div>
-
-              <p className="max-w-[62ch] text-lg leading-8 text-[var(--river-deep)]/76">
+            <div className="max-w-[48rem]">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+                {t("shop.detail.provenance")}
+              </p>
+              <h2 className="mt-5 max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.96] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
+                The story carried by this object.
+              </h2>
+              <p className="mt-7 max-w-[62ch] text-base leading-8 text-[var(--river-deep)]/74 lg:text-lg">
                 {product.story}
               </p>
 
-              <dl className="grid border-y border-[var(--line)] sm:grid-cols-2">
-                <div className="border-b border-[var(--line)] py-5 sm:border-b-0 sm:border-r sm:pr-6">
-                  <dt className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.collection")}</dt>
+              <dl className="mt-8 grid overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/56 sm:grid-cols-2">
+                <div className="border-b border-[var(--line)] p-5 sm:border-b-0 sm:border-r">
+                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.collection")}</dt>
                   <dd className="mt-2 text-base text-[var(--river-deep)]">{collectionLabel}</dd>
                 </div>
-                <div className="py-5 sm:pl-6">
-                  <dt className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.category")}</dt>
+                <div className="border-b border-[var(--line)] p-5 sm:border-b-0">
+                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.category")}</dt>
                   <dd className="mt-2 text-base text-[var(--river-deep)]">{product.tag}</dd>
                 </div>
-                <div className="border-t border-[var(--line)] py-5 sm:col-span-2">
-                  <dt className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.material")}</dt>
+                <div className="border-t border-[var(--line)] p-5 sm:col-span-2">
+                  <dt className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">{t("shop.detail.material")}</dt>
                   <dd className="mt-2 text-base leading-7 text-[var(--river-deep)]">{materialLine}</dd>
                 </div>
               </dl>
 
-              <div className="flex flex-wrap gap-4 pt-2">
-                <Link
-                  href="/routes"
-                  className="btn-paper px-6 py-3 text-[11px]"
-                >
-                  {t("shop.detail.routesCta")}
-                </Link>
-                <Link
-                  href="/culture"
-                  className="btn-outline px-6 py-3 text-[11px]"
-                >
-                  {t("shop.detail.citiesCta")}
-                </Link>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/routes" className="lt-action lt-action-primary">{t("shop.detail.routesCta")}</Link>
+                <Link href="/culture" className="lt-action lt-action-secondary">{t("shop.detail.citiesCta")}</Link>
                 <Link
                   href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} feels worth recording because `)}`}
-                  className="btn-gold px-6 py-3 text-[11px]"
+                  className="lt-action lt-action-gold"
                 >
                   {t("shop.detail.noteCta")}
                 </Link>
@@ -74,25 +66,19 @@ export function ProductNarrative({ product }: ProductNarrativeProps) {
             </div>
           </Reveal>
 
-          <Reveal delay={150}>
-            <div className="relative aspect-[3/4] w-full bg-white p-6 scrapbook-shadow rotate-2">
-              {/* Tape effect */}
-              <div className="absolute -top-3 right-12 h-8 w-24 rotate-12 bg-white/40 backdrop-blur-sm border border-white/20 z-10" />
-
-              <div className="relative h-full w-full overflow-hidden">
-                <div
-                  className="absolute inset-0 bg-cover bg-center grayscale transition duration-1000 hover:scale-105 hover:grayscale-0"
-                  style={{ backgroundImage: `url(${product.image})` }}
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(17,25,35,0.4))] " />
-                <div className="absolute inset-x-0 bottom-0 p-8 text-white">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                    {collectionLabel}
-                  </p>
-                  <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight">
-                    {product.tag}
-                  </p>
-                </div>
+          <Reveal delay={110}>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_24px_80px_rgba(17,25,35,0.12)] sm:aspect-[5/4]">
+              <MediaFrame
+                asset={narrativeMedia}
+                fallbackSrc={product.image}
+                alt={`${product.name} provenance`}
+                mode={narrativeMedia?.type === "video" ? "interactive" : "image"}
+                mediaClassName="object-cover"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_54%,rgba(7,16,22,0.72))]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
+                <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{collectionLabel}</p>
+                <p className="mt-2 max-w-[18ch] font-[family:var(--font-display)] text-2xl leading-none sm:text-3xl">{product.tag}</p>
               </div>
             </div>
           </Reveal>

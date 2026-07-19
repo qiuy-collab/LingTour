@@ -650,6 +650,22 @@ export async function fetchStoreProductsServer(
   }
 }
 
+export async function fetchStoreProductBySlugServer(
+  slug: string,
+  locale: Locale,
+): Promise<StoreProduct | null> {
+  try {
+    const res = await serverGet<{ product: ApiStoreProduct }>(
+      `/public/shop/products/${slug}`,
+      { lang: locale },
+      locale,
+    );
+    return res.product ? mapProduct(res.product) : null;
+  } catch {
+    return null;
+  }
+}
+
 
 export async function fetchStoreCollectionsServer(
   locale: Locale,
