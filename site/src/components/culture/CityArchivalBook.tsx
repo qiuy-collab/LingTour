@@ -666,6 +666,125 @@ function BookSpread({
   );
 }
 
+function MobileChapter({
+  section,
+  index,
+  total,
+  fallbackImage,
+  cityName,
+  setRef,
+}: {
+  section: CityCultureSection;
+  index: number;
+  total: number;
+  fallbackImage: string;
+  cityName: string;
+  setRef: (node: HTMLElement | null) => void;
+}) {
+  const frames = useMemo(
+    () => sectionFrames(section, fallbackImage),
+    [fallbackImage, section],
+  );
+  const [activeFrame, setActiveFrame] = useState(0);
+  const activeMedia = frames[activeFrame] ?? frames[0] ?? null;
+  const paragraphs = section.body
+    .split(/\n\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  useEffect(() => {
+    setActiveFrame(0);
+  }, [section.title]);
+
+  return (
+    <article
+      ref={setRef}
+      className="scroll-mt-32 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_18px_62px_rgba(17,25,35,0.08)]"
+    >
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] px-5 py-4">
+        <div className="min-w-0">
+          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+            {cityName} archive
+          </p>
+          <p className="mt-1 truncate font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
+            {section.title}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full border border-[var(--line)] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+          {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+        </span>
+      </div>
+
+      <div className="p-4 sm:p-5">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-lg)] bg-[var(--night)]">
+          <MediaFrame
+            asset={activeMedia}
+            fallbackSrc={mediaPoster(activeMedia, section.image || fallbackImage)}
+            alt={section.title}
+            mode={activeMedia?.type === "video" ? "interactive" : "image"}
+            eager={index === 0}
+            mediaClassName="object-cover"
+          />
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-end p-3">
+            <span className="rounded-full border border-white/24 bg-black/28 px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md">
+              Frame {String(activeFrame + 1).padStart(2, "0")}
+            </span>
+          </div>
+        </div>
+
+        {frames.length > 1 ? (
+          <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto pb-1">
+            {frames.map((frame, frameIndex) => (
+              <button
+                key={`${frame.type}:${frame.url}`}
+                type="button"
+                onClick={() => setActiveFrame(frameIndex)}
+                aria-label={`Show ${section.title} media ${frameIndex + 1}`}
+                aria-pressed={activeFrame === frameIndex}
+                className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-[0.75rem] border-2 transition ${
+                  activeFrame === frameIndex
+                    ? "border-[var(--cinnabar)] opacity-100"
+                    : "border-transparent opacity-55"
+                }`}
+              >
+                <MediaFrame asset={frame} alt="" mode="image" mediaClassName="object-cover" />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="border-t border-[var(--line)] px-5 pb-6 pt-5 sm:px-6 sm:pb-7">
+        {section.stat ? (
+          <p className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+            {section.stat}
+          </p>
+        ) : null}
+        <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)]">
+          {section.title}
+        </h3>
+        <div className="mt-5 grid gap-4">
+          {paragraphs.map((paragraph, paragraphIndex) => (
+            <p key={`${section.title}-mobile-${paragraphIndex}`} className="text-[15px] leading-7 text-[var(--muted)]">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+        {section.breathQuote ? (
+          <blockquote className="mt-6 rounded-[var(--radius-md)] border border-[var(--gold)]/28 bg-[var(--gold)]/[0.07] p-5">
+            <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+              Field voice
+            </p>
+            <p className="mt-3 font-[family:var(--font-display)] text-xl italic leading-7 text-[var(--river-deep)]">
+              “{section.breathQuote}”
+            </p>
+          </blockquote>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
 function MobileStack({
   sections,
   activeIdx,
@@ -683,46 +802,37 @@ function MobileStack({
 }) {
   return (
     <div className="lg:hidden">
-      <div className="sticky top-16 z-30 border-y border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain px-4 py-3 backdrop-blur">
+      <div className="sticky top-[4.5rem] z-30 border-y border-[var(--line)] bg-[var(--paper-deep)]/92 px-4 py-3 backdrop-blur-xl">
         <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
           {sections.map((section, index) => (
             <button
               key={`${index}-${section.title}-mobile-tab`}
               type="button"
               onClick={() => onSelectSection(index)}
-              className={`shrink-0 border px-4 py-2 font-mono text-xs font-bold uppercase tracking-[0.18em] transition ${
+              className={`max-w-[13rem] shrink-0 rounded-full border px-4 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] transition ${
                 index === activeIdx
                   ? "border-[var(--cinnabar)] bg-[var(--cinnabar)] text-white"
-                  : "border-[var(--line)] bg-[var(--parchment-tab)] text-[var(--river-deep)]"
+                  : "border-[var(--line)] bg-white/72 text-[var(--river-deep)]"
               }`}
             >
-              {String(index + 1).padStart(2, "0")} <span className="ml-1 hidden sm:inline">{section.title}</span>
+              {String(index + 1).padStart(2, "0")} <span className="ml-1 truncate">{section.title}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="site-container py-12">
-        <div className="grid gap-12">
+      <div className="site-container py-8 sm:py-10">
+        <div className="grid gap-7">
           {sections.map((section, index) => (
-            <article
+            <MobileChapter
               key={`${index}-${section.title}-mobile`}
-              ref={(node) => setMobileRef(node, index)}
-              className="border border-[var(--line)] bg-[var(--parchment-page)] bg-grain shadow-[0_22px_60px_rgba(17,25,35,0.14)]"
-            >
-              <VisualPlate
-                section={section}
-                index={index}
-                fallbackImage={fallbackImage}
-                cityName={cityName}
-              />
-              <NarrativePage
-                section={section}
-                index={index}
-                total={sections.length}
-                cityName={cityName}
-              />
-            </article>
+              section={section}
+              index={index}
+              total={sections.length}
+              fallbackImage={fallbackImage}
+              cityName={cityName}
+              setRef={(node) => setMobileRef(node, index)}
+            />
           ))}
         </div>
       </div>
