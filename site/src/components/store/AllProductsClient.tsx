@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { StoreProductCard } from "@/components/store/StoreProductCard";
 import type { StoreProduct } from "@/data/store";
+import { gsap, motionEase, useGSAP } from "@/lib/motion";
 
 type AllProductsClientProps = {
   products: StoreProduct[];
@@ -11,6 +12,7 @@ type AllProductsClientProps = {
 };
 
 export function AllProductsClient({ products, collections, tags }: AllProductsClientProps) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [query, setQuery] = useState("");
   const [collection, setCollection] = useState("All collections");
   const [tag, setTag] = useState("All types");
@@ -33,25 +35,69 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
     });
   }, [collection, products, query, tag]);
 
+  const filteredKey = filteredProducts.map((product) => product.slug).join("|");
+
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        const timeline = gsap.timeline({ defaults: { ease: motionEase.enter } });
+        timeline
+          .from("[data-registry-board]", { autoAlpha: 0, y: 24, rotation: -1.4, duration: 0.72 })
+          .from("[data-registry-summary]", { autoAlpha: 0, y: 12, duration: 0.45 }, "-=0.32");
+      });
+      return () => media.revert();
+    },
+    { scope: rootRef },
+  );
+
+  useGSAP(
+    () => {
+      const root = rootRef.current;
+      if (!root) return;
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        const cards = gsap.utils.toArray<HTMLElement>("[data-registry-card]", root);
+        cards.forEach((card, index) => {
+          gsap.from(card, {
+            autoAlpha: 0,
+            y: 26,
+            rotation: index % 2 === 0 ? -0.55 : 0.55,
+            duration: 0.62,
+            delay: Math.min(index, 5) * 0.04,
+            ease: motionEase.enter,
+            scrollTrigger: {
+              trigger: card,
+              start: "top 91%",
+              once: true,
+            },
+          });
+        });
+      });
+      return () => media.revert();
+    },
+    { scope: rootRef, dependencies: [filteredKey], revertOnUpdate: true },
+  );
+
   return (
-    <div>
-      <div className="mb-10 rounded-[var(--radius-lg)] border border-[var(--line)] bg-white/52 p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] backdrop-blur-sm sm:mb-12 sm:p-6 lg:p-8">
+    <div ref={rootRef}>
+      <div data-registry-board className="mb-12 rotate-[-0.5deg] border border-[var(--line)] bg-[var(--paper)] bg-grain p-5 scrapbook-shadow sm:mb-16 sm:p-6 lg:p-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_14rem_12rem]">
           <label className="block">
-            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Search registry</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Search Registry</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Product, route, or story..."
-              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]"
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] handwritten"
             />
           </label>
           <label className="block">
-            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Collection</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Collection</span>
             <select
               value={collection}
               onChange={(event) => setCollection(event.target.value)}
-              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
             >
               <option>All collections</option>
               {collections.map((item) => (
@@ -60,11 +106,11 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
             </select>
           </label>
           <label className="block">
-            <span className="mb-2 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">Type</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Type</span>
             <select
               value={tag}
               onChange={(event) => setTag(event.target.value)}
-              className="min-h-12 w-full rounded-full border border-[var(--line)] bg-[var(--surface-strong)] px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)]"
+              className="w-full border-b border-[var(--line)] bg-transparent py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] appearance-none"
             >
               <option>All types</option>
               {tags.map((item) => (
@@ -75,14 +121,14 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         </div>
       </div>
 
-      <div className="mb-8 flex items-center justify-between gap-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:mb-10">
+      <div data-registry-summary className="mb-10 flex flex-wrap items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] sm:mb-12">
         <p>
           Showing {filteredProducts.length} <span className="text-[var(--gold)]">/</span> {products.length} Field Objects
         </p>
         {(query || collection !== "All collections" || tag !== "All types") && (
           <button
             type="button"
-            className="inline-flex min-h-10 items-center rounded-full px-3 text-[var(--cinnabar)] hover:bg-[var(--cinnabar)]/8"
+            className="text-[var(--cinnabar)] hover:underline"
             onClick={() => {
               setQuery("");
               setCollection("All collections");
@@ -94,21 +140,24 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         )}
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-x-12 gap-y-20 md:grid-cols-2 lg:grid-cols-3">
         {filteredProducts.map((product, index) => (
-          <StoreProductCard key={product.slug} product={product} index={index} />
+          <div key={product.slug} data-registry-card>
+            <StoreProductCard product={product} index={index} />
+          </div>
         ))}
       </div>
 
       {filteredProducts.length === 0 && (
-        <div className="mt-16 rounded-[var(--radius-xl)] border border-[var(--line)] bg-white/44 px-6 py-16 text-center shadow-[0_18px_60px_rgba(17,25,35,0.07)]">
+        <div className="mt-24 text-center py-20 border border-[var(--line)] bg-white/30 scrapbook-shadow rotate-1">
           <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)] italic">
             Registry empty.
           </p>
-          <p className="mt-4 text-sm leading-7 text-[var(--muted)]">No matching field objects found in this archive.</p>
+          <p className="mt-4 text-sm text-[var(--muted)] handwritten">No matching field objects found in this archive.</p>
           <button
+            type="button"
             onClick={() => { setQuery(""); setCollection("All collections"); setTag("All types"); }}
-            className="lt-action lt-action-secondary mt-8"
+            className="mt-8 btn-outline px-8 py-3"
           >
             Clear All
           </button>

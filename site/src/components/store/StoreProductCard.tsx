@@ -29,14 +29,14 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
         <div className="absolute -top-6 left-1/2 z-0 hidden h-12 w-px -translate-x-1/2 bg-[var(--river-deep)]/20 sm:block" />
         <div className="absolute -top-8 left-1/2 z-0 hidden h-3 w-3 -translate-x-1/2 rounded-full border border-[var(--river-deep)]/20 bg-[var(--paper-deep)] sm:block" />
 
-        <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden">
-          <div className="relative aspect-[16/11] bg-[var(--paper)] sm:absolute sm:inset-0 sm:h-full sm:w-full sm:bg-transparent sm:aspect-auto">
+        <Link href={`/shop/products/${product.slug}`} className="relative z-10 block overflow-hidden sm:absolute sm:inset-0 sm:h-full sm:w-full">
+          <div className="relative aspect-[16/11] bg-[var(--paper)] sm:h-full sm:w-full sm:bg-transparent sm:aspect-auto">
             <MediaFrame
               asset={product.primaryMedia}
               fallbackSrc={product.image || fallbackImage}
               alt={product.name}
               mode="preview"
-              className="absolute inset-0 bg-[var(--paper)]"
+              className="bg-[var(--paper)]"
               mediaClassName="object-cover object-center transition-transform duration-1000 group-hover:scale-105 sm:group-hover:scale-110"
             />
             {/* Subtle Glass Overlay for depth */}
