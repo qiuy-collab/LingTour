@@ -11,6 +11,7 @@ import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { StoryRoute } from "@/data/routes";
 import { ArchiveFilterBar } from "@/components/ui/ArchiveFilterBar";
+import { RouteIndexHero } from "@/components/routes/RouteIndexHero";
 
 function uniqueValues(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
@@ -72,58 +73,17 @@ export default function RoutesPageClient({
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen">
-      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pt-40 lg:pb-32">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
+      <RouteIndexHero
+        image={heroImage}
+        eyebrow={t("routes.atlas.eyebrow")}
+        title={t("routes.atlas.titlePrimary")}
+        accent={t("routes.atlas.titleItalic")}
+        lede={t("routes.atlas.lede")}
+        routeCount={storyRoutes.length}
+        regionCount={uniqueValues(storyRoutes.map((route) => route.city)).length}
+      />
 
-        <div className="site-container relative">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
-            <div className="max-w-3xl lg:col-span-8">
-              <Reveal>
-                <div className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
-                  {t("routes.atlas.eyebrow")}
-                </div>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply">
-                  {t("routes.atlas.titlePrimary")} <br />
-                  <span className="text-[var(--gold)] italic">
-                    {t("routes.atlas.titleItalic")}
-                  </span>
-                </h1>
-                <div className="mt-8 flex flex-col items-start gap-4 md:mt-16 md:flex-row md:gap-8">
-                  <div className="hidden h-24 w-px bg-[var(--line)] md:block" />
-                  <p className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-xl">
-                    {t("routes.atlas.lede")}
-                  </p>
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
-              <Reveal delay={300}>
-                <div className="group relative mx-auto aspect-[6/5] w-full scrapbook-shadow sm:aspect-[3/4] sm:-rotate-3 lg:ml-auto">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
-                    style={{ backgroundImage: `url(${heroImage})` }}
-                  />
-                  <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
-
-                  <div className="absolute -bottom-4 right-2 hidden h-32 w-32 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]/45 animate-spin-slow sm:grid sm:h-40 sm:w-40 sm:text-[10px] sm:tracking-[0.35em] lg:-bottom-8 lg:-right-4">
-                    <span className="leading-relaxed">
-                      Field
-                      <br />
-                      Dispatch
-                    </span>
-                  </div>
-                  <div className="handwritten absolute bottom-3 left-4 text-lg text-[var(--gold)] sm:bottom-auto sm:left-auto sm:top-1/2 sm:-right-12 sm:origin-bottom-right sm:-rotate-90 sm:text-2xl sm:whitespace-nowrap">
-                    {t("routes.atlas.archiveBadge")}
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="site-container py-10 sm:py-12 lg:py-20">
+      <section id="route-index" className="site-container py-12 sm:py-16 lg:py-24">
         {storyRoutes.length > 0 ? (
           <ArchiveFilterBar
             searchValue={search}
@@ -198,115 +158,103 @@ export default function RoutesPageClient({
             </button>
           </div>
         ) : (
-          <div className="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:gap-x-20 lg:gap-y-20">
+          <div className="grid gap-6 lg:gap-8">
             <AnimatePresence initial={false} mode="popLayout">
-            {filteredRoutes.map((route, i) => {
-              const cardImage = route.image || placeholderFor("hero");
-              return (
-                <motion.div
-                  key={route.slug}
-                  layout
-                  initial={false}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Link href={`/routes/${route.slug}`} className="group block">
-                    <article
-                      className={`relative flex flex-col transition-all duration-500 hover:-translate-y-3 ${
-                        i % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
-                      }`}
-                    >
-                      <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[16/10] sm:border-[0.85rem]">
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.9] saturate-[0.85]"
-                          style={{ backgroundImage: `url(${cardImage})` }}
-                        />
-                        <div className="absolute inset-0 bg-black/5" />
-
-                        <div className="absolute top-4 right-4 z-10 flex flex-col items-center">
-                          <div className="bg-[var(--cinnabar)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg -rotate-6">
-                            {route.duration}
-                          </div>
-                          <div className="w-px h-6 bg-white/40 mt-1" />
-                        </div>
-
-                      </div>
-
-                      <div className="relative mt-6 space-y-3 px-1 sm:mt-8 sm:space-y-4 sm:px-4">
-                        <div className="handwritten pointer-events-none absolute -top-12 left-0 hidden select-none text-3xl text-[var(--gold)]/40 sm:block sm:-left-2 sm:-top-16 sm:-rotate-12 sm:text-4xl">
-                          #{i + 1}
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                            {route.culture}
-                          </p>
-                          <div className="h-px flex-1 bg-[var(--line)]/50" />
-                        </div>
-
-                        <h2 className="font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
-                          {route.title}
-                        </h2>
-
-                        <p className="handwritten line-clamp-3 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] sm:max-w-[32ch] sm:text-base">
-                          {route.summary}
-                        </p>
-
-                        <div className="flex items-center justify-between border-t border-[var(--line)]/30 pt-4">
-                          <div className="flex items-center gap-2">
-                            <div className="handwritten text-xs text-[var(--muted)]">
-                              {t("routes.atlas.waypoints")}
-                            </div>
-                            <div className="flex -space-x-2">
-                              {route.itinerary.slice(0, 3).map((_, idx) => (
-                                <div
-                                  key={idx}
-                                  className="w-6 h-6 rounded-full border-2 border-white bg-[var(--paper-deep)] flex items-center justify-center text-[10px] font-bold text-[var(--river-deep)] shadow-sm"
-                                >
-                                  {idx + 1}
-                                </div>
+              {filteredRoutes.map((route, i) => {
+                const cardImage = route.image || placeholderFor("hero");
+                const reverse = i % 2 === 1;
+                return (
+                  <motion.div
+                    key={route.slug}
+                    layout
+                    initial={false}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <Reveal>
+                      <Link href={`/routes/${route.slug}`} className="group block">
+                        <article className="grid min-h-[25rem] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_18px_60px_rgba(17,25,35,0.07)] transition duration-500 hover:-translate-y-1 hover:border-[var(--river)]/35 hover:shadow-[0_28px_90px_rgba(17,25,35,0.13)] md:grid-cols-12">
+                          <div
+                            className={`relative min-h-[17rem] overflow-hidden md:col-span-7 md:min-h-full ${
+                              reverse ? "md:order-2" : ""
+                            }`}
+                          >
+                            <img
+                              src={cardImage}
+                              alt=""
+                              loading="lazy"
+                              className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.045]"
+                            />
+                            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_54%,rgba(8,18,24,0.52))]" />
+                            <span className="absolute left-5 top-5 rounded-full border border-white/45 bg-black/28 px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                              Route {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 text-white/82">
+                              {route.itinerary.slice(0, 5).map((stop, index) => (
+                                <span key={`${stop.stop}-${index}`} className="contents">
+                                  {index > 0 ? <span className="h-px flex-1 bg-white/36" /> : null}
+                                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/55 bg-black/25 font-mono text-[9px] backdrop-blur-sm">
+                                    {index + 1}
+                                  </span>
+                                </span>
                               ))}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                            <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-[var(--cinnabar)] after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:origin-left">
-                              {t("routes.atlas.dispatchInfo")}
-                            </span>
-                            <svg
-                              className="h-3 w-3 transition-transform group-hover:translate-x-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                            >
-                              <path
-                                d="M5 12h14M12 5l7 7-7 7"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
+                          <div
+                            className={`flex min-w-0 flex-col justify-between p-6 sm:p-8 md:col-span-5 lg:p-10 ${
+                              reverse ? "md:order-1" : ""
+                            }`}
+                          >
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                                <span>{route.culture}</span>
+                                <span className="text-[var(--line)]">/</span>
+                                <span className="text-[var(--muted)]">{route.duration}</span>
+                              </div>
+                              <h2 className="mt-5 font-[family:var(--font-display)] text-3xl leading-[0.98] tracking-[-0.035em] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl lg:text-5xl">
+                                {route.title}
+                              </h2>
+                              <p className="mt-5 line-clamp-4 text-sm leading-7 text-[var(--muted)] sm:text-base">
+                                {route.summary}
+                              </p>
+                            </div>
+
+                            <div className="mt-8 flex items-center justify-between gap-4 border-t border-[var(--line)] pt-5">
+                              <div>
+                                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                                  {t("routes.atlas.waypoints")}
+                                </p>
+                                <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">
+                                  {route.itinerary.length}
+                                </p>
+                              </div>
+                              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--river-deep)] text-white transition duration-300 group-hover:translate-x-1 group-hover:bg-[var(--cinnabar)]">
+                                <span aria-hidden>→</span>
+                                <span className="sr-only">{t("routes.atlas.dispatchInfo")}</span>
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </article>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                        </article>
+                      </Link>
+                    </Reveal>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
         )}
       </section>
 
-      <section className="pb-20 lg:pb-32">
+      <section className="pb-16 sm:pb-20 lg:pb-28">
         <div className="site-container">
-          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-center text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-20 lg:py-28">
+          <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--river-deep)] px-6 py-16 text-center text-white shadow-[0_28px_90px_rgba(17,25,35,0.18)] sm:px-8 sm:py-20 lg:px-20 lg:py-24">
             <div
-              className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
+              className="absolute inset-0 bg-cover bg-center opacity-16 grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
             />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,52,61,0.96),rgba(20,52,61,0.74))]" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
