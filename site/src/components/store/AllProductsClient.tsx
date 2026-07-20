@@ -140,7 +140,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         )}
       </div>
 
-      <div className="grid gap-x-12 gap-y-20 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-x-6 gap-y-14 min-[560px]:grid-cols-2 md:gap-x-12 md:gap-y-20 lg:grid-cols-3">
         {filteredProducts.map((product, index) => (
           <div key={product.slug} data-registry-card>
             <StoreProductCard product={product} index={index} />

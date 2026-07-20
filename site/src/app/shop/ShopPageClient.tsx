@@ -68,30 +68,30 @@ export default function ShopPageClient({
         .map((product) => product.slug)
         .join("|")}`}
     >
-      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-24 sm:pb-20">
+      <section className="relative overflow-hidden pb-16 pt-16 sm:pb-20 sm:pt-20">
         <div className="site-container">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-            <div className="max-w-3xl lg:col-span-8">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-16">
+            <div className="min-w-0 max-w-3xl lg:col-span-8">
               <Reveal>
-                <div className="flex items-center gap-4 mb-8">
-                  <span className="w-10 h-px bg-[var(--cinnabar)]" />
+                <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
+                  <span className="h-px w-8 shrink-0 bg-[var(--cinnabar)] sm:w-10" />
                   <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("shop.atlas.eyebrow")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[2.6rem] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] sm:text-6xl md:text-8xl lg:text-9xl">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] lg:text-9xl">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("shop.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("shop.atlas.titleItalic")}</span></span>
                 </h1>
-                <p data-pastoral-subtitle className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
+                <p data-pastoral-subtitle className="handwritten mt-5 max-w-xl text-[13px] leading-6 text-[var(--muted)] sm:mt-8 sm:text-base sm:leading-relaxed lg:mt-12 lg:text-lg">
                   {t("shop.atlas.lede")}
                 </p>
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
+            <div className="relative w-full min-w-0 self-end lg:col-span-4 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
-                <div className="relative mx-auto aspect-[6/5] w-full bg-white p-2 scrapbook-shadow sm:aspect-square sm:p-4 sm:rotate-6 lg:ml-auto">
+                <div className="relative ml-auto aspect-[3/4] w-full rotate-2 bg-white p-1.5 scrapbook-shadow sm:p-3 lg:aspect-square lg:rotate-6 lg:p-4">
                   <div
                     data-pastoral-hero-media
                     className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
@@ -130,11 +130,11 @@ export default function ShopPageClient({
             </p>
           </div>
         ) : (
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-3">
             {collections.map((collection, i) => {
               const cardImage = collection.image || placeholderFor("portrait");
               return (
-                <Reveal key={collection.title} delay={i * 100}>
+                <Reveal key={collection.title} delay={i * 100} className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none">
                   <Link href={collection.href} className="group block">
                     <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
                       <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.9rem]">
@@ -202,9 +202,11 @@ export default function ShopPageClient({
             </p>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:px-0 lg:grid-cols-3">
             {products.slice(0, 3).map((product, i) => (
-              <StoreProductCard key={product.slug} product={product} index={i} />
+              <div key={product.slug} className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none">
+                <StoreProductCard product={product} index={i} />
+              </div>
             ))}
           </div>
         )}

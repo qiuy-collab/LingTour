@@ -180,15 +180,15 @@ export default function InterpretingPageClient({
         .map((profile) => profile.id)
         .join("|")}`}
     >
-      <section className="relative overflow-hidden pb-16 pt-20 sm:pb-20 sm:pt-24 lg:min-h-[72vh] lg:pt-28">
+      <section className="relative overflow-hidden pb-16 pt-16 sm:pb-20 sm:pt-20 lg:min-h-[72vh] lg:pt-28">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center lg:gap-10 xl:gap-16">
-            <div className="max-w-4xl lg:col-span-7">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-10 xl:gap-16">
+            <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <div className="mb-8 flex items-center gap-4 sm:mb-10 sm:gap-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-xl italic text-[var(--gold)]">
+                <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4 lg:mb-10 lg:gap-6">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-base italic text-[var(--gold)] sm:h-12 sm:w-12 sm:text-xl">
                     L
                   </div>
                   <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
@@ -198,7 +198,7 @@ export default function InterpretingPageClient({
                   </p>
                 </div>
 
-                <h1 className="mb-8 font-[family:var(--font-display)] text-[3.35rem] leading-[0.88] tracking-[-0.045em] sm:text-7xl md:text-8xl lg:text-[7rem] xl:text-[8.25rem]">
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.88] tracking-[-0.045em] sm:mb-8 lg:text-[7rem] xl:text-[8.25rem]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{locale === "zh" ? "广东" : "Guangdong"}</span></span>
                   {locale === "zh" ? (
                     <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">口译服务</span></span>
@@ -210,12 +210,12 @@ export default function InterpretingPageClient({
                   )}
                 </h1>
 
-                <div className="grid grid-cols-1 items-end gap-7 border-t border-[var(--line)] pt-7 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-8">
-                  <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-base leading-relaxed text-[var(--river-deep)]/70 sm:text-lg">
+                <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
+                  <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-[13px] leading-6 text-[var(--river-deep)]/70 sm:text-base sm:leading-relaxed lg:text-lg">
                     {t("interpreting.hero.subtitle")}
                   </p>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3 lg:gap-4">
                     <a
                       href="#interpreting-booking"
                       className="btn-primary inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none active:scale-95 sm:w-auto sm:px-10 sm:py-5"
@@ -233,9 +233,9 @@ export default function InterpretingPageClient({
               </Reveal>
             </div>
 
-            <div className="mx-auto w-full max-w-[22rem] self-center sm:max-w-[25rem] lg:col-span-5 lg:max-w-none lg:self-center">
+            <div className="w-full min-w-0 self-center lg:col-span-5 lg:max-w-none">
               <Reveal delay={240}>
-                <div className="relative mx-auto aspect-[5/4] w-full overflow-hidden rotate-[1.5deg] border-[0.55rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-[0.9rem] lg:ml-auto lg:max-w-[25rem] lg:border-[12px]">
+                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rotate-[1.5deg] border-[0.35rem] border-white scrapbook-shadow sm:border-[0.65rem] lg:aspect-[4/5] lg:max-w-[25rem] lg:border-[12px]">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
@@ -260,9 +260,9 @@ export default function InterpretingPageClient({
           </Reveal>
         </div>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-3">
+        <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
           {serviceTypes.map((item, index) => (
-            <Reveal key={item.id} delay={index * 100} className="h-full">
+            <Reveal key={item.id} delay={index * 100} className="h-full w-[82vw] max-w-[24rem] shrink-0 snap-start lg:w-auto lg:max-w-none lg:shrink lg:snap-none">
               <article
                 className={`group relative flex h-full min-h-[380px] flex-col bg-white p-6 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 sm:min-h-[420px] sm:p-8 ${
                   index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
