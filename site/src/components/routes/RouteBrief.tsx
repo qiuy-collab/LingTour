@@ -116,7 +116,7 @@ export function RouteBrief({ route }: Props) {
   return (
     <section ref={briefRef} className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
       <div className="site-container py-10 sm:py-12 lg:py-16">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:gap-14">
+        <div className="grid gap-10 min-[620px]:grid-cols-[minmax(0,1.2fr)_minmax(14rem,0.8fr)] min-[620px]:gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:gap-14">
           <div className="max-w-4xl">
             <p data-route-brief-kicker className="font-mono text-[9px] font-bold uppercase tracking-[0.34em] text-[var(--cinnabar)]/80">
               Route Promise

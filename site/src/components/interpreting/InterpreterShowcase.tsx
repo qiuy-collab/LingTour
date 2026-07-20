@@ -48,12 +48,12 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
         </Reveal>
       </div>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-3 lg:gap-8">
+      <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
         {profiles.map((profile, index) => {
           const isSelected = selectedProfileId === profile.id;
 
           return (
-            <Reveal key={profile.id} delay={index * 100}>
+            <Reveal key={profile.id} delay={index * 100} className="w-[82vw] max-w-[24rem] shrink-0 snap-start lg:w-auto lg:max-w-none lg:shrink lg:snap-none">
               <article
                 className={[
                   "group relative overflow-hidden bg-[var(--paper)] bg-grain transition-all duration-500 scrapbook-shadow border border-[var(--line)]",
