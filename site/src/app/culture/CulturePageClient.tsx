@@ -72,33 +72,33 @@ export default function CulturePageClient({
       className="min-h-screen bg-[var(--paper-deep)] bg-grain"
       motionKey={filteredCultures.map((city) => city.slug).join("|")}
     >
-      <section className="relative overflow-hidden pt-20 pb-12 sm:pb-16 lg:pt-32 lg:pb-24">
+      <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
-            <div className="z-10 max-w-3xl lg:col-span-7">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+            <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="h-px w-12 bg-[var(--cinnabar)]" />
+                <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
+                  <div className="h-px w-8 shrink-0 bg-[var(--cinnabar)] sm:w-12" />
                   <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("culture.atlas.eyebrow")}
                   </p>
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("culture.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("culture.atlas.titleItalic")}</span></span>
                 </h1>
-                <p data-pastoral-subtitle className="handwritten mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:mt-12 sm:text-lg">
+                <p data-pastoral-subtitle className="handwritten mt-5 max-w-xl text-[13px] leading-6 text-[var(--muted)] sm:mt-8 sm:text-base sm:leading-relaxed lg:mt-12 lg:text-lg">
                   {t("culture.atlas.lede")}
                 </p>
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-5 lg:mt-0 lg:max-w-none">
+            <div className="relative w-full min-w-0 self-end lg:col-span-5 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
-                <div className="relative mx-auto aspect-[6/5] w-full overflow-hidden rounded-sm border-[0.5rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:border-8 sm:rotate-2 lg:ml-auto">
+                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rounded-sm border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:border-8 lg:aspect-[4/5]">
                   <div
                     data-pastoral-hero-media
-                    className="absolute inset-0 bg-contain bg-center bg-no-repeat sm:bg-cover"
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${heroImage})` }}
                   />
                   <div className="absolute inset-0 bg-black/10" />
