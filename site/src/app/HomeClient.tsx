@@ -153,7 +153,7 @@ export default function HomeClient({
                     {t("shop.page.title")}
                   </p>
                 </div>
-                <h2 className="font-[family:var(--font-display)] text-[3.2rem] leading-[0.98] text-[var(--river-deep)] sm:text-5xl md:text-7xl">
+                <h2 className="font-[family:var(--font-display)] text-[clamp(2.55rem,10.5vw,2.9rem)] leading-[0.98] text-[var(--river-deep)] md:text-7xl">
                   {t("home.shop.title")}
                 </h2>
               </Reveal>
