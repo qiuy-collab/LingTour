@@ -196,8 +196,8 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
       </div>
 
       <div className="site-container mt-9 sm:mt-12">
-        <div className="grid min-w-0 gap-10 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
-          <div className="min-w-0 space-y-7 sm:space-y-8 lg:col-span-3 lg:space-y-10">
+        <div className="grid min-w-0 gap-10 min-[600px]:grid-cols-2 min-[600px]:gap-7 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
+          <div className="min-w-0 space-y-7 sm:space-y-8 min-[600px]:col-span-2 lg:col-span-3 lg:space-y-10">
             <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
               <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
               <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-white">

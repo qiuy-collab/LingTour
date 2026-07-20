@@ -116,7 +116,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
       >
         <div className="site-container py-10 lg:py-14">
           <Reveal>
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+            <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_15rem] sm:items-end lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
               <div className="min-w-0">
                 <div className="flex items-center gap-3">
                   <span className="h-px w-10 bg-[var(--cinnabar)]" />

@@ -214,11 +214,11 @@ export default function HomeClient({
                 <h2 className="mb-6 font-[family:var(--font-display)] text-[3.3rem] leading-[0.92] text-[var(--river-deep)] sm:mb-10 sm:text-6xl md:mb-12 md:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
-                <div className="space-y-5 sm:space-y-7">
+                <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 lg:mx-0 lg:block lg:space-y-7 lg:overflow-visible lg:px-0 lg:pb-0">
                   {testimonials
                     .slice(0, 2)
                     .map((item: { name: string; quote: string }) => (
-                        <div key={item.name} className="rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6">
+                        <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 lg:w-auto lg:max-w-none">
                           <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
                             {item.quote}
                           </p>

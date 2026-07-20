@@ -150,8 +150,8 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
   }
 
   return (
-    <section className="site-container py-20 lg:py-40">
-      <div className="grid items-start gap-12 lg:grid-cols-[1fr_420px] lg:gap-20">
+    <section className="site-container py-16 sm:py-20 lg:py-40">
+      <div className="grid items-start gap-10 min-[620px]:grid-cols-[minmax(0,1fr)_15rem] min-[620px]:gap-8 lg:grid-cols-[1fr_420px] lg:gap-20">
         <div className="flex flex-col">
           <Reveal>
             <div className="mb-12 sm:mb-16">
@@ -306,8 +306,8 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                 href={`/routes/${relatedRoute.slug}`}
                 className="group relative block"
               >
-                <div className="border border-[var(--line)] bg-white p-5 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] sm:-rotate-2 sm:p-6 sm:group-hover:rotate-0">
-                  <div className="relative mb-6 aspect-[4/3] overflow-hidden sm:mb-8 sm:aspect-[3/4]">
+                <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] min-[620px]:block min-[620px]:-rotate-2 min-[620px]:p-4 min-[620px]:group-hover:rotate-0 lg:p-6">
+                  <div className="relative aspect-square overflow-hidden min-[620px]:mb-5 min-[620px]:aspect-[3/4] lg:mb-8">
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
                       style={{ backgroundImage: `url(${relatedRoute.image})` }}
@@ -315,7 +315,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                     <div className="absolute left-1/2 top-[-0.5rem] z-20 h-8 w-24 -translate-x-1/2 -rotate-3 bg-[var(--paper)]/60 backdrop-blur-sm" />
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="min-w-0 space-y-3 lg:space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="border border-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase text-[var(--gold)]">
                         {t("home.calendar.verifiedRoute")}
@@ -324,13 +324,13 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                         {relatedRoute.duration}
                       </span>
                     </div>
-                    <h4 className="font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] sm:text-3xl">
+                    <h4 className="font-[family:var(--font-display)] text-xl leading-tight text-[var(--river-deep)] lg:text-3xl">
                       {relatedRoute.title}
                     </h4>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-[var(--muted)]">
+                    <p className="hidden line-clamp-2 text-sm leading-relaxed text-[var(--muted)] min-[620px]:block">
                       {relatedRoute.summary}
                     </p>
-                    <div className="flex items-center justify-between border-t border-[var(--line)] pt-6 text-[var(--cinnabar)]">
+                    <div className="flex items-center justify-between border-t border-[var(--line)] pt-3 text-[var(--cinnabar)] lg:pt-6">
                       <span className="text-[10px] font-bold uppercase tracking-widest">
                         {t("home.calendar.exploreRoute")}
                       </span>
