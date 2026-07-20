@@ -58,14 +58,14 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props)
           <Reveal key={route.slug} delay={idx * 80}>
             <Link
               href={`/routes/${route.slug}`}
-              className={`group relative flex flex-col gap-4 border border-[var(--line)] bg-white p-6 transition-all duration-500 scrapbook-shadow hover:border-[var(--cinnabar)] sm:flex-row sm:gap-8 ${idx % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
+              className={`group relative flex gap-4 border border-[var(--line)] bg-white p-4 transition-all duration-500 scrapbook-shadow hover:border-[var(--cinnabar)] sm:gap-8 sm:p-6 ${idx % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
               onMouseEnter={() => setHoveredRouteIdx(idx)}
               onMouseLeave={() => setHoveredRouteIdx(null)}
               onFocus={() => setHoveredRouteIdx(idx)}
               onBlur={() => setHoveredRouteIdx(null)}
             >
               <div
-                className="image-sheen h-32 w-full shrink-0 border-4 border-white bg-cover bg-center scrapbook-shadow sm:h-28 sm:w-40"
+                className="image-sheen h-28 w-[7.5rem] shrink-0 border-4 border-white bg-cover bg-center scrapbook-shadow sm:w-40"
                 style={{ backgroundImage: `url(${route.image})` }}
               />
               <div className="flex flex-1 flex-col min-w-0">

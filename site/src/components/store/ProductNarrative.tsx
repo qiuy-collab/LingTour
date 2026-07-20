@@ -25,7 +25,7 @@ export function ProductNarrative({ product }: { product: StoreProduct }) {
   return (
     <section className="border-y border-[var(--river-deep)]/10 bg-[var(--paper-deep)] bg-grain py-16 sm:py-20 lg:py-28 xl:py-32">
       <div className="site-container">
-        <div className="grid min-w-0 gap-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-center lg:gap-16">
+        <div className="grid min-w-0 gap-12 min-[620px]:grid-cols-[minmax(0,1.25fr)_minmax(14rem,0.75fr)] min-[620px]:items-center min-[620px]:gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:gap-16">
           <Reveal>
             <div className="max-w-2xl space-y-7 sm:space-y-8">
               <header>

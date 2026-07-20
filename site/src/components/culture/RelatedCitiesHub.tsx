@@ -69,12 +69,12 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
             <Reveal key={city.slug} delay={index * 80}>
               <Link
                 href={`/culture/${city.slug}`}
-                className={`group relative grid gap-5 border border-[var(--line)] bg-white p-5 transition-all duration-300 scrapbook-shadow sm:grid-cols-[120px_1fr] ${isHovered ? "border-[var(--cinnabar)]" : "hover:border-[var(--gold)]"}`}
+                className={`group relative grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-4 transition-all duration-300 scrapbook-shadow sm:grid-cols-[120px_1fr] sm:gap-5 sm:p-5 ${isHovered ? "border-[var(--cinnabar)]" : "hover:border-[var(--gold)]"}`}
                 onMouseEnter={() => setHoveredCitySlug(city.slug)}
                 onMouseLeave={() => setHoveredCitySlug(null)}
               >
                 <div
-                  className="h-28 w-full bg-cover bg-center sm:h-full"
+                  className="h-full min-h-28 w-full bg-cover bg-center"
                   style={{ backgroundImage: `url(${city.image})` }}
                 />
                 <div className="min-w-0">

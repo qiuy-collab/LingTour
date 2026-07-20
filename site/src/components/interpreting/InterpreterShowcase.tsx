@@ -63,7 +63,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                     : "hover:-translate-y-2 hover:rotate-0",
                 ].join(" ")}
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] sm:aspect-[4/5]">
+                <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
                   <div
                     className={[
                       "absolute inset-0 bg-cover bg-center transition-all duration-1000",

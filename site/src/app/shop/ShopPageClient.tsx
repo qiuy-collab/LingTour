@@ -137,7 +137,7 @@ export default function ShopPageClient({
                 <Reveal key={collection.title} delay={i * 100} className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none">
                   <Link href={collection.href} className="group block">
                     <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
-                      <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.9rem]">
+                      <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow lg:aspect-[3/4] lg:border-[0.9rem]">
                         <div
                           className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-105"
                           style={{ backgroundImage: `url(${cardImage})` }}
