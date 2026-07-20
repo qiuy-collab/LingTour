@@ -168,11 +168,13 @@ export default function HomeClient({
           </div>
 
           {storeProducts.length > 0 ? (
-            <div className="mx-auto grid max-w-[69rem] grid-cols-1 gap-x-16 gap-y-16 pb-2 md:grid-cols-2 md:gap-x-20 md:gap-y-20 md:pb-10 lg:gap-x-28 lg:pb-16">
-              {storeProducts.slice(0, 2).map((product, idx) => (
+            <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-8 md:mx-auto md:grid md:max-w-[69rem] md:grid-cols-2 md:gap-x-20 md:gap-y-20 md:overflow-visible md:px-0 md:pb-10 lg:gap-x-28 lg:pb-16">
+              {storeProducts.slice(0, 6).map((product, idx) => (
                 <div
                   key={product.slug}
-                  className={`min-w-0 pb-2 sm:pb-10 ${idx === 1 ? "md:pt-20 lg:pt-28" : ""}`}
+                  className={`w-[82vw] max-w-[24rem] shrink-0 snap-start pb-2 sm:w-[64vw] md:w-auto md:max-w-none md:shrink md:snap-none md:pb-10 ${
+                    idx >= 2 ? "md:hidden" : ""
+                  } ${idx === 1 ? "md:pt-20 lg:pt-28" : ""}`}
                 >
                   <StoreProductCard product={product} index={idx} />
                 </div>
