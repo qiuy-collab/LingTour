@@ -13,6 +13,7 @@ import type { EventData } from "@/lib/api-data";
 import type { Region } from "@/types/content";
 import { Reveal } from "@/components/ui/Reveal";
 import { useLocale } from "@/lib/locale-context";
+import { gsap, motionEase, useGSAP } from "@/lib/motion";
 
 const initialFeatures = getMapFeatures();
 
@@ -44,6 +45,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   const [activeCode, setActiveCode] = useState<number>(defaultActiveCode);
   const [slideIndex, setSlideIndex] = useState(0);
   const lastTouchedRef = useRef<number | null>(null);
+  const mobilePanelRef = useRef<HTMLDivElement | null>(null);
 
   const eventsByCity = useMemo(() => {
     const map = new Map<number, (typeof events)[number]>();
@@ -144,6 +146,34 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     .replace(/^#{1,3}\s+/gm, "")
     .replace(/\*{1,3}(.+?)\*{1,3}/g, "$1");
 
+  useGSAP(
+    () => {
+      if (!mobilePanelRef.current) return;
+
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          mobilePanelRef.current,
+          { autoAlpha: 0, y: 18 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.5,
+            ease: motionEase.enter,
+            clearProps: "opacity,transform,visibility",
+          },
+        );
+      });
+
+      return () => media.revert();
+    },
+    {
+      scope: mobilePanelRef,
+      dependencies: [resolvedActiveCode],
+      revertOnUpdate: true,
+    },
+  );
+
   return (
     <section className="relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-14 lg:pb-40 lg:pt-24">
       <div className="site-container relative z-10">
@@ -155,14 +185,14 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 {t("home.map.eyebrow")}
               </p>
             </div>
-            <h2 className="max-w-4xl font-[family:var(--font-display)] text-[3.2rem] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-7xl lg:text-8xl">
+            <h2 className="max-w-4xl font-[family:var(--font-display)] text-[clamp(2.5rem,11vw,3.6rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] md:text-7xl lg:text-8xl">
               {t("home.map.heading")}
             </h2>
           </Reveal>
         </div>
 
         <div className="relative">
-          <div className="scrapbook-shadow relative z-30 mx-auto mb-6 w-full max-w-[19rem] border-[0.4rem] border-white bg-white/95 p-3 backdrop-blur-sm sm:max-w-[22rem] md:absolute md:left-0 md:top-0 md:mx-0 md:mb-0 md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:w-52">
+          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm md:absolute md:left-0 md:top-0 md:block md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:w-52">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
@@ -221,7 +251,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
             </Reveal>
           </div>
 
-          <div className="relative z-10 h-[18rem] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] sm:h-[24rem] md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
+          <div className="relative z-10 h-[18rem] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] min-[430px]:h-[20rem] sm:h-[22rem] md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
             <div className="pointer-events-auto h-full w-full opacity-60">
               {mapData ? (
                 <svg
@@ -350,6 +380,75 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
               )}
             </div>
           </div>
+
+          <div
+            ref={mobilePanelRef}
+            className="relative z-30 mx-3 -mt-12 grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] gap-3 border-[0.35rem] border-white bg-[rgba(248,246,239,0.96)] p-2.5 shadow-[0_16px_35px_rgba(20,52,61,0.14)] backdrop-blur-sm md:hidden"
+          >
+            <Link
+              href={`/culture/${activeCity.slug}`}
+              className="relative aspect-square min-w-0 overflow-hidden bg-[var(--line)]"
+            >
+              {activeImage ? (
+                <img
+                  src={activeImage}
+                  alt={activeCity.name}
+                  loading="eager"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : null}
+            </Link>
+
+            <div className="flex min-w-0 flex-col justify-center py-0.5">
+              <p className="truncate text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                {panelEyebrow}
+              </p>
+              <div className="mt-1 flex min-w-0 items-baseline justify-between gap-2">
+                <h3 className="truncate font-[family:var(--font-display)] text-[1.55rem] italic leading-none text-[var(--river-deep)]">
+                  {panelTitle}
+                </h3>
+                <Link
+                  href={`/culture/${activeCity.slug}`}
+                  aria-label={`Open ${activeCity.name} story`}
+                  className="shrink-0 text-xl leading-none text-[var(--cinnabar)] transition-transform duration-300 hover:translate-x-1"
+                >
+                  →
+                </Link>
+              </div>
+              <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-[var(--muted)]">
+                {panelLead}
+              </p>
+            </div>
+          </div>
+
+          {showcase.length > 1 ? (
+            <div className="scrollbar-hide -mx-4 mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 md:hidden">
+              {showcase.map((city, index) => {
+                const isActive = city.adcode === resolvedActiveCode;
+                return (
+                  <button
+                    key={city.adcode}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => activateCity(city.adcode)}
+                    className={`snap-start whitespace-nowrap border-b pb-2 text-left transition-colors ${
+                      isActive
+                        ? "border-[var(--cinnabar)] text-[var(--river-deep)]"
+                        : "border-[var(--line)] text-[var(--muted)]"
+                    }`}
+                  >
+                    <span className="mr-2 text-[8px] font-bold tracking-[0.18em] text-[var(--gold)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="font-[family:var(--font-display)] text-base italic">
+                      {city.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>
