@@ -186,13 +186,14 @@ export default function CulturePageClient({
             </button>
           </div>
         ) : (
-          <div className="grid gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-y-24">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-16 md:overflow-visible md:px-0 lg:grid-cols-3 lg:gap-y-24">
             <AnimatePresence initial={false} mode="popLayout">
             {filteredCultures.map((city, index) => {
               const cardImage = city.image || placeholderFor("square");
               return (
                 <motion.div
                   key={city.slug}
+                  className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
                   layout
                   initial={false}
                   animate={{ opacity: 1, y: 0 }}

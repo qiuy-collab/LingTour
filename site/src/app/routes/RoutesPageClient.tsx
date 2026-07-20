@@ -76,32 +76,32 @@ export default function RoutesPageClient({
       className="min-h-screen bg-[var(--paper-deep)] bg-grain"
       motionKey={filteredRoutes.map((route) => route.slug).join("|")}
     >
-      <section className="relative overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pt-40 lg:pb-32">
+      <section className="relative overflow-hidden pb-14 pt-16 sm:pb-16 sm:pt-20 lg:pb-32 lg:pt-40">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
 
         <div className="site-container relative">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
-            <div className="max-w-3xl lg:col-span-8">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-start lg:gap-16">
+            <div className="min-w-0 max-w-3xl lg:col-span-8">
               <Reveal>
-                <div data-pastoral-kicker className="inline-block px-4 py-1 border border-[var(--cinnabar)] text-[var(--cinnabar)] text-[10px] font-bold uppercase tracking-[0.3em] mb-10">
+                <div data-pastoral-kicker className="mb-6 inline-block border border-[var(--cinnabar)] px-3 py-1 text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)] sm:mb-8 sm:px-4 sm:text-[10px] sm:tracking-[0.3em] lg:mb-10">
                   {t("routes.atlas.eyebrow")}
                 </div>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply lg:text-[clamp(2.75rem,7vw,6rem)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("routes.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("routes.atlas.titleItalic")}</span></span>
                 </h1>
-                <div className="mt-8 flex flex-col items-start gap-4 md:mt-16 md:flex-row md:gap-8">
+                <div className="mt-5 flex flex-col items-start gap-4 sm:mt-8 lg:mt-16 lg:flex-row lg:gap-8">
                   <div className="hidden h-24 w-px bg-[var(--line)] md:block" />
-                  <p data-pastoral-subtitle className="max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-xl">
+                  <p data-pastoral-subtitle className="max-w-xl text-[13px] leading-6 text-[var(--muted)] sm:text-base sm:leading-relaxed lg:text-xl">
                     {t("routes.atlas.lede")}
                   </p>
                 </div>
               </Reveal>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[19rem] self-center sm:max-w-[22rem] lg:col-span-4 lg:mt-0 lg:max-w-none">
+            <div className="relative w-full min-w-0 self-end lg:col-span-4 lg:max-w-none lg:self-start">
               <Reveal delay={300}>
-                <div className="group relative mx-auto aspect-[6/5] w-full scrapbook-shadow sm:aspect-[3/4] sm:-rotate-3 lg:ml-auto">
+                <div className="group relative ml-auto aspect-[3/4] w-full -rotate-2 scrapbook-shadow lg:aspect-[3/4] lg:-rotate-3">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
@@ -109,14 +109,14 @@ export default function RoutesPageClient({
                   />
                   <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
 
-                  <div className="absolute -bottom-4 right-2 hidden h-32 w-32 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]/45 animate-spin-slow sm:grid sm:h-40 sm:w-40 sm:text-[10px] sm:tracking-[0.35em] lg:-bottom-8 lg:-right-4">
+                  <div className="absolute -bottom-8 -right-4 hidden h-40 w-40 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[10px] font-bold uppercase tracking-[0.35em] text-[var(--cinnabar)]/45 animate-spin-slow lg:grid">
                     <span className="leading-relaxed">
                       Field
                       <br />
                       Dispatch
                     </span>
                   </div>
-                  <div className="handwritten absolute bottom-3 left-4 text-lg text-[var(--gold)] sm:bottom-auto sm:left-auto sm:top-1/2 sm:-right-12 sm:origin-bottom-right sm:-rotate-90 sm:text-2xl sm:whitespace-nowrap">
+                  <div className="handwritten absolute bottom-3 left-4 text-sm text-[var(--gold)] lg:bottom-auto lg:left-auto lg:top-1/2 lg:-right-12 lg:origin-bottom-right lg:-rotate-90 lg:whitespace-nowrap lg:text-2xl">
                     {t("routes.atlas.archiveBadge")}
                   </div>
                 </div>
@@ -201,13 +201,14 @@ export default function RoutesPageClient({
             </button>
           </div>
         ) : (
-          <div className="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:gap-x-20 lg:gap-y-20">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-10 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
             <AnimatePresence initial={false} mode="popLayout">
             {filteredRoutes.map((route, i) => {
               const cardImage = route.image || placeholderFor("hero");
               return (
                 <motion.div
                   key={route.slug}
+                  className="w-[82vw] max-w-[25rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
                   layout
                   initial={false}
                   animate={{ opacity: 1, y: 0 }}
