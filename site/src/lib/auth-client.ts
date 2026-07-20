@@ -96,6 +96,16 @@ export function readStoredUser(): LocalUser | null {
   }
 }
 
+export function clearStoredAuth() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem("lingtour-user");
+    window.localStorage.removeItem("lingtour-token");
+  } finally {
+    window.dispatchEvent(new Event("lingtour-auth"));
+  }
+}
+
 export function persistAuthUser(
   user: AuthUser,
   overrides: Partial<LocalUser> = {},

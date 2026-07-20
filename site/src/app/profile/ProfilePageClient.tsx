@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
+import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
 import { Price } from "@/components/ui/Price";
 import {
+  clearStoredAuth,
   readStoredUser,
   refreshCurrentUserProfile,
   updateCurrentUserProfile,
@@ -16,10 +18,12 @@ import {
 import { readCart, type CartItem } from "@/lib/cart";
 import {
   fetchSavedCommunityPosts,
+  fetchStoreProducts,
   fetchTravelerInterpretingBookings,
   type CommunityFeedPost,
   type TravelerInterpretingBooking,
 } from "@/lib/api-data";
+import type { StoreProduct } from "@/data/store";
 import { countryName, countryOptions, normalizeCountryCode } from "@/lib/country-list";
 import { useLocale } from "@/lib/locale-context";
 
@@ -77,14 +81,22 @@ function formatBookingDate(value: string, locale: string) {
 
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
-    <div className="mx-auto max-w-2xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] px-6 py-14 text-center shadow-[0_18px_62px_rgba(17,25,35,0.07)] sm:px-10">
-      <span className="mx-auto block h-px w-12 bg-[var(--gold)]" />
-      <h2 className="mt-6 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">{title}</h2>
-      <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-[var(--muted)]">{body}</p>
-      <Link href={href} className="lt-action lt-action-primary mt-8">
-        {cta}
-      </Link>
-    </div>
+    <section data-pastoral-card className="mx-auto grid max-w-4xl border-y border-[var(--line)] bg-white/46 sm:grid-cols-[8rem_minmax(0,1fr)]">
+      <div className="hidden border-r border-[var(--line)] p-6 sm:flex sm:flex-col sm:justify-between">
+        <span className="font-[family:var(--font-display)] text-6xl italic leading-none text-[var(--gold)]/75">L</span>
+        <span className="h-px w-full bg-[var(--gold)]/45" />
+      </div>
+      <div className="px-5 py-10 sm:px-10 sm:py-12 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">LingTour field archive</p>
+          <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
+          <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
+        </div>
+        <Link href={href} className="lt-action lt-action-primary mt-7 lg:mt-0">
+          {cta}
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -102,6 +114,7 @@ export function ProfilePageClient() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedNotes, setSavedNotes] = useState<CommunityFeedPost[]>([]);
   const [bookings, setBookings] = useState<TravelerInterpretingBooking[]>([]);
+  const [storeProducts, setStoreProducts] = useState<StoreProduct[]>([]);
   const [bookingsReady, setBookingsReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -117,14 +130,20 @@ export function ProfilePageClient() {
   const countries = useMemo(() => countryOptions(locale), [locale]);
   const savedRoutes = favorites.filter((item) => item.type !== "product");
   const savedProducts = favorites.filter((item) => item.type === "product");
-  const savedCollectionItems: CartItem[] = savedProducts.map((item) => ({
-    slug: item.id,
-    name: item.title,
-    quantity: 1,
-    price: 0,
-    currency: "CNY",
-    selected: false,
-  }));
+  const productBySlug = new Map(storeProducts.map((product) => [product.slug, product]));
+  const savedCollectionItems: CartItem[] = savedProducts.map((item) => {
+    const product = productBySlug.get(item.id);
+    return {
+      productId: product?.id,
+      slug: item.id,
+      name: product?.name || item.title,
+      quantity: 1,
+      price: product?.price || 0,
+      currency: product?.currency || "CNY",
+      image: product?.image,
+      selected: false,
+    };
+  });
   const collectionItems = Array.from(
     new Map<string, CartItem>(
       [...cart, ...savedCollectionItems].map((item) => [item.slug, item]),
@@ -158,11 +177,13 @@ export function ProfilePageClient() {
       refreshCurrentUserProfile(),
       fetchSavedCommunityPosts(locale, 24),
       fetchTravelerInterpretingBookings(),
-    ]).then(([profileResult, notesResult, bookingsResult]) => {
+      fetchStoreProducts(locale),
+    ]).then(([profileResult, notesResult, bookingsResult, productsResult]) => {
       if (cancelled) return;
       if (profileResult.status === "fulfilled") hydrateProfile(profileResult.value);
       if (notesResult.status === "fulfilled") setSavedNotes(notesResult.value);
       if (bookingsResult.status === "fulfilled") setBookings(bookingsResult.value);
+      if (productsResult.status === "fulfilled") setStoreProducts(productsResult.value);
       setBookingsReady(true);
     });
 
@@ -225,6 +246,12 @@ export function ProfilePageClient() {
     }
   }
 
+  function logout() {
+    clearStoredAuth();
+    router.replace("/");
+    router.refresh();
+  }
+
   if (!ready) return <div className="min-h-[60vh] bg-[var(--paper-deep)]" />;
 
   if (!user) {
@@ -241,7 +268,10 @@ export function ProfilePageClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20">
+    <PastoralPageMotion
+      className="min-h-screen bg-[var(--paper-deep)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20"
+      motionKey={`${activeTab}:${collectionItems.length}:${savedNotes.length}`}
+    >
       <header className="border-b border-white/10 bg-[var(--night)] py-10 text-white sm:py-12 lg:py-16">
         <div className="site-container flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
@@ -259,23 +289,31 @@ export function ProfilePageClient() {
             </button>
             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
             <div>
-              <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
+              <p data-pastoral-kicker className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
                 {t("account.profile.passportLabel")}
               </p>
-              <h1 className="mt-3 font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.04em]">
-                {user.name}
+              <h1 className="mt-3 overflow-hidden font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.04em]">
+                <span data-pastoral-title className="block">{user.name}</span>
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-7 text-white/58 sm:text-lg">
+              <p data-pastoral-subtitle className="mt-4 max-w-xl text-base leading-7 text-white/58 sm:text-lg">
                 {user.bio || t("account.profile.bioFallback")}
               </p>
             </div>
           </div>
-          <div className="rounded-[var(--radius-md)] border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
+          <div data-pastoral-stamp className="border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
             <p>{countryName(user.country, locale) || t("account.profile.locationUnset")}</p>
             <p className="mt-2">{user.homeBase || user.email}</p>
             <p className="mt-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
               {t("account.profile.completion").replace("{number}", String(profileCompletion(user)))}
             </p>
+            <button
+              type="button"
+              onClick={logout}
+              className="mt-5 flex w-full items-center justify-between border-t border-white/12 pt-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/72 transition-colors hover:text-[var(--gold)]"
+            >
+              {t("common.nav.logout")}
+              <span aria-hidden="true">↗</span>
+            </button>
           </div>
         </div>
       </header>
@@ -306,9 +344,9 @@ export function ProfilePageClient() {
       <main className="site-container py-10 sm:py-14 lg:py-20">
         {activeTab === "notes" ? (
           savedNotes.length ? (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {savedNotes.map((note) => (
-                <Link key={note.id} href={`/community?post=${note.id}`} className="group block overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.06)] transition hover:-translate-y-1">
+                <Link data-pastoral-card key={note.id} href={`/community?post=${note.id}`} className="group block overflow-hidden rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_16px_52px_rgba(17,25,35,0.06)] transition hover:-translate-y-1">
                   {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full object-cover" /> : null}
                   <div className="p-5">
                   <p className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{note.channel}</p>
@@ -317,7 +355,7 @@ export function ProfilePageClient() {
                   </div>
                 </Link>
               ))}
-            </div>
+            </section>
           ) : (
             <EmptyArchive title={t("account.profile.notesEmpty")} body={t("account.profile.notesEmptyBody")} href="/community" cta={t("account.profile.notesCta")} />
           )
@@ -325,15 +363,15 @@ export function ProfilePageClient() {
 
         {activeTab === "routes" ? (
           savedRoutes.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {savedRoutes.map((item) => (
-                <Link key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] transition hover:-translate-y-1">
+                <Link data-pastoral-card key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] transition hover:-translate-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.type}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.title}</h2>
                   <span className="mt-6 inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">{t("account.profile.openRecord")} →</span>
                 </Link>
               ))}
-            </div>
+            </section>
           ) : (
             <EmptyArchive title={t("account.profile.routesEmpty")} body={t("account.profile.routesEmptyBody")} href="/routes" cta={t("account.profile.routesCta")} />
           )
@@ -341,18 +379,40 @@ export function ProfilePageClient() {
 
         {activeTab === "collection" ? (
           collectionItems.length ? (
-            <div className="grid gap-10 lg:grid-cols-2">
+            <section className="grid items-start gap-7 lg:grid-cols-2">
               {collectionItems.map((item, index) => (
-                <Link key={`${item.slug}-${index}`} href={`/shop/products/${item.slug}`} className="group flex gap-5 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_14px_46px_rgba(17,25,35,0.05)] transition hover:-translate-y-1">
-                  {"image" in item && item.image ? <img src={item.image} alt="" className="h-24 w-24 shrink-0 rounded-[var(--radius-sm)] object-cover" /> : <div className="h-24 w-24 shrink-0 rounded-[var(--radius-sm)] border border-dashed border-[var(--line)] bg-white/45" />}
-                  <div className="min-w-0">
-                    <h2 className="font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.name}</h2>
-                    <p className="mt-2 text-sm text-[var(--muted)]">{t("account.profile.quantity")} {item.quantity}</p>
-                    {item.price > 0 ? <p className="mt-3 text-sm text-[var(--gold)]"><Price amount={item.price * item.quantity} currency={item.currency} /></p> : null}
+                <Link
+                  data-pastoral-card
+                  key={`${item.slug}-${index}`}
+                  href={`/shop/products/${item.slug}`}
+                  className="group grid grid-cols-[7.5rem_minmax(0,1fr)] border border-[var(--line)] bg-white/82 p-3 scrapbook-shadow transition-transform duration-500 hover:-translate-y-1 sm:grid-cols-[9rem_minmax(0,1fr)] sm:p-4"
+                >
+                  <div className="relative aspect-square overflow-hidden bg-[var(--paper)]">
+                    {item.image ? (
+                      <img src={item.image} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+                    ) : (
+                      <div className="grid h-full place-items-center border border-dashed border-[var(--line)] bg-[var(--paper)] font-[family:var(--font-display)] text-5xl italic text-[var(--gold)]/55">L</div>
+                    )}
+                    <span className="absolute left-2 top-2 bg-white/88 px-2 py-1 text-[8px] font-bold tracking-[0.16em] text-[var(--river-deep)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div className="flex min-w-0 flex-col justify-between px-4 py-2 sm:px-5 sm:py-3">
+                    <div>
+                      <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">Curated object</p>
+                      <h2 className="mt-3 font-[family:var(--font-display)] text-xl leading-[1.05] transition-colors group-hover:text-[var(--cinnabar)] sm:text-2xl">{item.name}</h2>
+                      <p className="mt-2 handwritten text-xs italic text-[var(--muted)]">{t("account.profile.quantity")} {item.quantity}</p>
+                    </div>
+                    <div className="mt-4 flex items-end justify-between gap-3 border-t border-[var(--line)] pt-3">
+                      <span className="text-sm text-[var(--gold)]">
+                        {item.price > 0 ? <Price amount={item.price * item.quantity} currency={item.currency} /> : t("account.profile.openRecord")}
+                      </span>
+                      <span className="text-base text-[var(--cinnabar)] transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
+                    </div>
                   </div>
                 </Link>
               ))}
-            </div>
+            </section>
           ) : (
             <EmptyArchive title={t("account.profile.collectionEmpty")} body={t("account.profile.collectionEmptyBody")} href="/shop" cta={t("account.profile.collectionCta")} />
           )
@@ -367,7 +427,7 @@ export function ProfilePageClient() {
             <section aria-label={t("account.profile.bookingsLabel")}>
               <div className="grid gap-4 lg:grid-cols-2">
                 {bookings.map((booking) => (
-                  <article key={booking.id} className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] sm:p-8">
+                  <article data-pastoral-card key={booking.id} className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_14px_46px_rgba(17,25,35,0.05)] sm:p-8">
                     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
                       <div>
                         <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
@@ -465,6 +525,6 @@ export function ProfilePageClient() {
           {t("account.profile.edit")}
         </button>
       ) : null}
-    </div>
+    </PastoralPageMotion>
   );
 }
