@@ -202,8 +202,8 @@ export default function HomeClient({
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
         <section className="site-container py-16 sm:py-20 lg:py-28">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-16">
-            <div className="max-w-2xl lg:col-span-5">
+          <div className="grid grid-cols-1 gap-10 min-[620px]:grid-cols-[minmax(0,1.15fr)_minmax(13rem,0.85fr)] min-[620px]:items-start min-[620px]:gap-7 lg:grid-cols-12 lg:items-center lg:gap-16">
+            <div className="min-w-0 max-w-2xl lg:col-span-5">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
@@ -211,14 +211,14 @@ export default function HomeClient({
                     {t("interpreting.page.title")}
                   </p>
                 </div>
-                <h2 className="mb-6 font-[family:var(--font-display)] text-[3.3rem] leading-[0.92] text-[var(--river-deep)] sm:mb-10 sm:text-6xl md:mb-12 md:text-7xl">
+                <h2 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.5rem,8vw,3.5rem)] leading-[0.92] text-[var(--river-deep)] sm:mb-10 lg:mb-12 lg:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
                 <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 lg:mx-0 lg:block lg:space-y-7 lg:overflow-visible lg:px-0 lg:pb-0">
                   {testimonials
                     .slice(0, 2)
                     .map((item: { name: string; quote: string }) => (
-                        <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 lg:w-auto lg:max-w-none">
+                        <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 min-[620px]:w-[18rem] lg:w-auto lg:max-w-none">
                           <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
                             {item.quote}
                           </p>
@@ -244,9 +244,9 @@ export default function HomeClient({
               </Reveal>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[32rem] self-center lg:col-span-7 lg:max-w-none">
+            <div className="relative mx-auto w-full max-w-[32rem] self-start min-[620px]:mt-10 lg:col-span-7 lg:mt-0 lg:max-w-none lg:self-center">
               <Reveal delay={300}>
-                <div className="group relative aspect-[6/5] overflow-hidden rounded-[var(--radius-xl)] border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] sm:aspect-[16/10]">
+                <div className="group relative aspect-[6/5] overflow-hidden rounded-[var(--radius-xl)] border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] min-[620px]:aspect-[3/4] lg:aspect-[16/10]">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"

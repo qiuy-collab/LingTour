@@ -21,7 +21,7 @@ export function EditorialIntro({
 
   return (
     <div
-      className={`site-container grid gap-7 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,0.68fr)] lg:items-center lg:gap-10 ${className}`}
+      className={`site-container grid gap-7 min-[620px]:grid-cols-[minmax(0,0.92fr)_minmax(15rem,0.68fr)] min-[620px]:items-center min-[620px]:gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(20rem,0.68fr)] lg:gap-10 ${className}`}
     >
       <div className="max-w-4xl">
         <p className={`text-label ${isDark ? "text-white/56" : "text-[var(--cinnabar)]"}`}>
