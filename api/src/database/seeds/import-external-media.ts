@@ -77,6 +77,25 @@ function inferExtension(url: string, contentType: string | null): string {
   return '.jpg';
 }
 
+function buildDownloadCandidates(url: string): string[] {
+  const candidates = [url];
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.hostname === 'upload.wikimedia.org' ||
+      parsed.hostname === 'commons.wikimedia.org'
+    ) {
+      const source = `${parsed.host}${parsed.pathname}${parsed.search}`;
+      candidates.push(
+        `https://wsrv.nl/?url=${encodeURIComponent(source)}&w=2200&output=jpg`,
+      );
+    }
+  } catch {
+    // The original URL will produce the actionable error below.
+  }
+  return candidates;
+}
+
 async function ensureMediaTracked(
   filename: string,
   module: string,
@@ -169,33 +188,32 @@ async function importRemoteImage(
   if (context.apply) {
     let response: Response | null = null;
 
-    for (let attempt = 0; attempt < 4; attempt += 1) {
-      response = await fetch(url, {
-        headers: {
-          Accept: 'image/*,*/*;q=0.8',
-          'User-Agent': 'LingTour media importer/1.0',
-        },
-      });
+    download: for (const candidate of buildDownloadCandidates(url)) {
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        response = await fetch(candidate, {
+          headers: {
+            Accept: 'image/*,*/*;q=0.8',
+            'User-Agent': 'LingTour media importer/1.0',
+          },
+        });
 
-      if (response.ok) {
-        break;
+        if (response.ok) {
+          break download;
+        }
+
+        const shouldRetry =
+          response.status === 429 ||
+          response.status >= 500 ||
+          response.status === 403;
+        if (!shouldRetry) break;
+        if (attempt < 3) await sleep((attempt + 1) * 1500);
       }
-
-      const shouldRetry =
-        response.status === 429 ||
-        response.status >= 500 ||
-        response.status === 403;
-      if (!shouldRetry || attempt === 3) {
-        throw new Error(
-          `Failed to download ${url}: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      await sleep((attempt + 1) * 1500);
     }
 
     if (!response || !response.ok) {
-      throw new Error(`Failed to download ${url}: no successful response`);
+      throw new Error(
+        `Failed to download ${url}: ${response?.status ?? 'no response'} ${response?.statusText ?? ''}`,
+      );
     }
 
     contentType = response.headers.get('content-type');
