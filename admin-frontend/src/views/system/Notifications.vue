@@ -16,7 +16,7 @@ const router = useRouter()
 const notifStore = useNotificationStore()
 const pageRoot = ref<HTMLElement | null>(null)
 const loading = ref(false)
-const list = ref<Notification[]>([])
+const list = computed(() => notifStore.notifications)
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
@@ -39,7 +39,6 @@ async function fetchList(animate = true) {
     if (filterType.value) params.type = filterType.value
     if (filterRead.value !== '') params.read = filterRead.value === 'read'
     const result = await notifStore.fetchNotifications(params)
-    list.value = notifStore.notifications
     total.value = result?.total ?? list.value.length
     if (animate) await revealList()
   } finally {
