@@ -138,6 +138,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { path: '/admin/events', title: '活动', icon: Present },
       { path: '/admin/community', title: '社区帖子', icon: ChatDotSquare },
+      { path: '/admin/community-briefs', title: '发帖引导', icon: ChatLineSquare },
       { path: '/admin/home', title: '首页配置', icon: HomeFilled },
       {
         path: '/admin/operations/audit',

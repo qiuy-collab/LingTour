@@ -208,6 +208,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/community/PostDetail.vue'),
         meta: { title: '帖子详情' },
       },
+      {
+        path: 'community-briefs',
+        name: 'CommunityBriefs',
+        component: () => import('@/views/community/CommunityBriefs.vue'),
+        meta: { title: '发帖引导' },
+      },
       // 首页配置
       {
         path: 'home',
