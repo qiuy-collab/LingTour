@@ -9,10 +9,12 @@ import { InterpretingController } from './interpreting.controller';
 import { OrdersModule } from '../orders/orders.module';
 import { TravelerBookingsController } from './traveler-bookings.controller';
 import { TravelerBookingsService } from './traveler-bookings.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     OrdersModule,
+    NotificationsModule,
     TypeOrmModule.forFeature([
       ServiceMode,
       InterpreterProfile,

@@ -10,6 +10,7 @@ import { CommunityPostLike } from './entities/community-post-like.entity';
 import { CommunityPostSave } from './entities/community-post-save.entity';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
 import { UpsertCommunityBriefDto } from './dto/upsert-community-brief.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CommunityService {
@@ -23,6 +24,7 @@ export class CommunityService {
     private readonly likeRepo: Repository<CommunityPostLike>,
     @InjectRepository(CommunityPostSave)
     private readonly saveRepo: Repository<CommunityPostSave>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async getPublicPosts(query: {
@@ -138,7 +140,20 @@ export class CommunityService {
       comments: dto.comments ?? 0,
       saves: dto.saves ?? 0,
     });
-    return this.postRepo.save(post);
+    const saved = await this.postRepo.save(post);
+    if (saved.status === 'pending_review') {
+      await this.notificationsService.notifyStaff({
+        type: 'review',
+        title: '新的社区内容待审核',
+        body:
+          this.localizedText(saved.title) ||
+          `${saved.user} 提交了一篇社区内容。`,
+        resourceType: 'community_post',
+        resourceId: saved.id,
+        link: `/admin/community/${saved.id}`,
+      });
+    }
+    return saved;
   }
 
   async update(id: string, dto: UpsertCommunityPostDto) {
@@ -394,5 +409,14 @@ export class CommunityService {
     const brief = await this.getAdminBriefById(id);
     await this.briefRepo.remove(brief);
     return { deleted: true };
+  }
+
+  private localizedText(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object') {
+      const localized = value as { zh?: string; en?: string };
+      return localized.zh ?? localized.en ?? '';
+    }
+    return '';
   }
 }

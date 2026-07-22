@@ -1,35 +1,42 @@
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import { notificationApi } from '@/api/notifications'
-import type { Notification } from '@/types/notification'
+import type { Notification, NotificationFilter } from '@/types/notification'
 
 export const useNotificationStore = defineStore('notification', () => {
   const notifications = ref<Notification[]>([])
   const unreadCount = ref(0)
   const loading = ref(false)
+  const lastError = ref('')
   let pollTimer: ReturnType<typeof setInterval> | null = null
 
   const hasUnread = computed(() => unreadCount.value > 0)
 
   async function fetchUnreadCount() {
     try {
-      const res = await notificationApi.getUnreadCount()
-      const data = res.data?.data ?? res.data
+      lastError.value = ''
+      const response = await notificationApi.getUnreadCount()
+      const data = response.data?.data ?? response.data
       unreadCount.value = data?.count ?? data ?? 0
+      return unreadCount.value
     } catch {
-      // Silently fail — don't disrupt user workflow
+      lastError.value = '通知接口暂时不可用'
+      return unreadCount.value
     }
   }
 
-  async function fetchNotifications(params?: { page?: number; pageSize?: number }) {
+  async function fetchNotifications(params: NotificationFilter = { page: 1, pageSize: 20 }) {
     loading.value = true
     try {
-      const res = await notificationApi.getList(params || { page: 1, pageSize: 20 })
-      const data = res.data?.data ?? res.data
+      lastError.value = ''
+      const response = await notificationApi.getList(params)
+      const data = response.data?.data ?? response.data
       notifications.value = data?.data ?? data ?? []
       return data
     } catch {
       notifications.value = []
+      lastError.value = '通知接口暂时不可用'
+      return undefined
     } finally {
       loading.value = false
     }
@@ -38,23 +45,27 @@ export const useNotificationStore = defineStore('notification', () => {
   async function markAsRead(id: string) {
     try {
       await notificationApi.markAsRead(id)
-      const item = notifications.value.find((n) => n.id === id)
+      const item = notifications.value.find((notification) => notification.id === id)
       if (item && !item.read) {
         item.read = true
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
+      return true
     } catch {
-      // ignore
+      lastError.value = '通知状态更新失败'
+      return false
     }
   }
 
   async function markAllAsRead() {
     try {
       await notificationApi.markAllAsRead()
-      notifications.value.forEach((n) => (n.read = true))
+      notifications.value.forEach((notification) => (notification.read = true))
       unreadCount.value = 0
+      return true
     } catch {
-      // ignore
+      lastError.value = '通知状态更新失败'
+      return false
     }
   }
 
@@ -65,10 +76,9 @@ export const useNotificationStore = defineStore('notification', () => {
   }
 
   function stopPolling() {
-    if (pollTimer) {
-      clearInterval(pollTimer)
-      pollTimer = null
-    }
+    if (!pollTimer) return
+    clearInterval(pollTimer)
+    pollTimer = null
   }
 
   return {
@@ -76,6 +86,7 @@ export const useNotificationStore = defineStore('notification', () => {
     unreadCount,
     hasUnread,
     loading,
+    lastError,
     fetchUnreadCount,
     fetchNotifications,
     markAsRead,

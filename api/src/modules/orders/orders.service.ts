@@ -14,6 +14,7 @@ import {
 } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { NotificationsService } from '../notifications/notifications.service';
 
 /**
  * 订单履约状态机：从 ← 到的合法迁移。
@@ -35,6 +36,7 @@ export class OrdersService {
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {
     const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (stripeKey) {
@@ -72,6 +74,15 @@ export class OrdersService {
     });
 
     const saved = await this.orderRepo.save(order);
+
+    await this.notificationsService.notifyStaff({
+      type: 'order',
+      title: `新订单 ${saved.orderNo}`,
+      body: `金额 S$${Number(saved.totalAmount).toFixed(2)}，请及时确认付款与履约信息。`,
+      resourceType: 'order',
+      resourceId: saved.id,
+      link: `/admin/orders/${saved.id}`,
+    });
 
     // Create Stripe PaymentIntent if configured, otherwise sandbox
     let stripeClientSecret: string;

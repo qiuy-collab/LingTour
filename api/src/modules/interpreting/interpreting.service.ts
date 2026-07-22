@@ -7,6 +7,7 @@ import { Faq } from './entities/faq.entity';
 import { BookingSubmission } from './entities/booking-submission.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { OrdersService } from '../orders/orders.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class InterpretingService {
@@ -20,6 +21,7 @@ export class InterpretingService {
     @InjectRepository(BookingSubmission)
     private readonly bookingRepo: Repository<BookingSubmission>,
     private readonly ordersService: OrdersService,
+    private readonly notificationsService: NotificationsService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -176,9 +178,15 @@ export class InterpretingService {
   async updateFaq(id: string, data: Partial<Faq>) {
     const faq = await this.findFaqByIdAdmin(id);
     const requestedSortOrder = data.sortOrder;
-    Object.assign(faq, this.normalizeFaq({ ...data, sortOrder: faq.sortOrder }, faq));
+    Object.assign(
+      faq,
+      this.normalizeFaq({ ...data, sortOrder: faq.sortOrder }, faq),
+    );
     const saved = await this.faqRepo.save(faq);
-    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
+    if (
+      typeof requestedSortOrder === 'number' &&
+      requestedSortOrder !== saved.sortOrder
+    ) {
       return this.moveEntityToSortOrder(this.faqRepo, id, requestedSortOrder);
     }
     return saved;
@@ -286,6 +294,7 @@ export class InterpretingService {
       status: 'new',
     });
     const saved = await this.bookingRepo.save(booking);
+    await this.notifyNewBooking(saved.id, dto);
     return {
       id: saved.id,
       message: 'Booking request received. We will contact you within 24 hours.',
@@ -564,5 +573,16 @@ export class InterpretingService {
       return 'Story-led route interpreter deposit';
     }
     return 'City companion interpreter deposit';
+  }
+
+  private async notifyNewBooking(id: string, dto: CreateBookingDto) {
+    await this.notificationsService.notifyStaff({
+      type: 'booking',
+      title: `新口译预约 · ${dto.city}`,
+      body: `${dto.name} 计划于 ${dto.serviceDate} 使用 ${dto.supportMode} 服务。`,
+      resourceType: 'booking',
+      resourceId: id,
+      link: '/admin/interpreting/bookings',
+    });
   }
 }

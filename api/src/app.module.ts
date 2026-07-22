@@ -32,6 +32,7 @@ import { CommunityModule } from './modules/community/community.module';
 import { EventsModule } from './modules/events/events.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { AuditModule } from './modules/audit/audit.module';
     EventsModule,
     HealthModule,
     AuditModule,
+    NotificationsModule,
   ],
   providers: [
     {

@@ -7,6 +7,7 @@ import { CommunityBrief } from './entities/community-brief.entity';
 import { CommunityPostLike } from './entities/community-post-like.entity';
 import { CommunityPostSave } from './entities/community-post-save.entity';
 import { UploadModule } from '../upload/upload.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UploadModule } from '../upload/upload.module';
       CommunityPostSave,
     ]),
     UploadModule,
+    NotificationsModule,
   ],
   controllers: [CommunityController],
   providers: [CommunityService],
