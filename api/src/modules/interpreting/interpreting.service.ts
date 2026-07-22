@@ -125,10 +125,20 @@ export class InterpretingService {
   async updateProfile(id: string, data: Partial<InterpreterProfile>) {
     const profile = await this.findProfileByIdAdmin(id);
     const requestedSortOrder = data.sortOrder;
-    Object.assign(profile, this.normalizeProfile({ ...data, sortOrder: profile.sortOrder }, profile));
+    Object.assign(
+      profile,
+      this.normalizeProfile({ ...data, sortOrder: profile.sortOrder }, profile),
+    );
     const saved = await this.profileRepo.save(profile);
-    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
-      return this.moveEntityToSortOrder(this.profileRepo, id, requestedSortOrder);
+    if (
+      typeof requestedSortOrder === 'number' &&
+      requestedSortOrder !== saved.sortOrder
+    ) {
+      return this.moveEntityToSortOrder(
+        this.profileRepo,
+        id,
+        requestedSortOrder,
+      );
     }
     return saved;
   }
