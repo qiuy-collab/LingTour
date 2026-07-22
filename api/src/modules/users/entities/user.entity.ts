@@ -21,8 +21,8 @@ export class User {
   @Column({ type: 'varchar', length: 255, name: 'password_hash' })
   passwordHash: string;
 
-  @Column({ type: 'varchar', length: 50, default: 'editor' })
-  role: 'admin' | 'editor';
+  @Column({ type: 'varchar', length: 50, default: 'traveler' })
+  role: 'admin' | 'editor' | 'traveler';
 
   @Index()
   @Column({ type: 'varchar', length: 20, default: 'active' })

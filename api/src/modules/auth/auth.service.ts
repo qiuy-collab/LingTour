@@ -27,7 +27,7 @@ export class AuthService {
   private buildAuthResponse(user: {
     id: string;
     email: string;
-    role: 'admin' | 'editor';
+    role: 'admin' | 'editor' | 'traveler';
     name: string | null;
     avatarUrl?: string;
     country?: string;
@@ -68,6 +68,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('This account is disabled');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
@@ -91,7 +95,7 @@ export class AuthService {
     const user = await this.usersService.create(
       email,
       passwordHash,
-      'editor',
+      'traveler',
       name,
       {
         provider: 'password',
@@ -150,7 +154,7 @@ export class AuthService {
     const user = await this.usersService.create(
       email,
       generatedPassword,
-      'editor',
+      'traveler',
       name,
       {
         provider: 'Google',
@@ -175,7 +179,13 @@ export class AuthService {
    */
   async refreshToken(rawToken: string) {
     // 1. Decode / verify the token, ignoring expiration so we can do our own check
-    let decoded: { sub: string; email: string; role: string; exp?: number; iat?: number };
+    let decoded: {
+      sub: string;
+      email: string;
+      role: string;
+      exp?: number;
+      iat?: number;
+    };
     try {
       decoded = this.jwtService.verify(rawToken, { ignoreExpiration: true });
     } catch {
@@ -191,7 +201,9 @@ export class AuthService {
     if (decoded.exp) {
       const nowSeconds = Math.floor(Date.now() / 1000);
       if (nowSeconds - decoded.exp > GRACE_PERIOD_SECONDS) {
-        throw new UnauthorizedException('Token has expired beyond the refresh window');
+        throw new UnauthorizedException(
+          'Token has expired beyond the refresh window',
+        );
       }
     }
 

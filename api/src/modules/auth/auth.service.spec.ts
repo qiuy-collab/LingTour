@@ -16,6 +16,7 @@ describe('AuthService', () => {
     email: 'admin@lingtour.cn',
     passwordHash: '',
     role: 'admin' as const,
+    status: 'active' as const,
     name: 'Test Admin',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -80,6 +81,17 @@ describe('AuthService', () => {
         authService.validateUser('admin@lingtour.cn', 'WrongPassword'),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it('should reject a disabled account even with the correct password', async () => {
+      usersService.findByEmail!.mockResolvedValue({
+        ...mockUser,
+        status: 'banned',
+      } as any);
+
+      await expect(
+        authService.validateUser('admin@lingtour.cn', 'LingTour2026!'),
+      ).rejects.toThrow('This account is disabled');
+    });
   });
 
   describe('login', () => {
@@ -114,11 +126,14 @@ describe('AuthService', () => {
 
       await authService.login('admin@lingtour.cn', 'LingTour2026!');
 
-      expect(jwtService.sign).toHaveBeenCalledWith({
-        sub: mockUser.id,
-        email: mockUser.email,
-        role: mockUser.role,
-      }, { expiresIn: '24h' });
+      expect(jwtService.sign).toHaveBeenCalledWith(
+        {
+          sub: mockUser.id,
+          email: mockUser.email,
+          role: mockUser.role,
+        },
+        { expiresIn: '24h' },
+      );
     });
   });
 });

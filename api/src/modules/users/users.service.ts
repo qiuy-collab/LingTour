@@ -1,9 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserFavorite } from './entities/user-favorite.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
+import { UpdateStaffAccountDto } from './dto/update-staff-account.dto';
+import * as bcrypt from 'bcrypt';
 
 interface ManagedUserStats {
   ordersCount: number;
@@ -46,7 +54,9 @@ export class UsersService {
     keyword?: string,
     status?: string,
   ) {
-    const qb = this.userRepository.createQueryBuilder('u');
+    const qb = this.userRepository
+      .createQueryBuilder('u')
+      .where('u.role = :travelerRole', { travelerRole: 'traveler' });
     if (keyword) {
       qb.andWhere('(u.email ILIKE :keyword OR u.name ILIKE :keyword)', {
         keyword: `%${keyword}%`,
@@ -67,6 +77,108 @@ export class UsersService {
       users.map((user) => this.toManagedUser(user, statsMap.get(user.id))),
     );
     return { data: items, total, page, pageSize };
+  }
+
+  async findAllStaff(
+    page = 1,
+    pageSize = 20,
+    keyword?: string,
+    role?: 'admin' | 'editor',
+    status?: 'active' | 'banned',
+  ) {
+    const safePage = Math.max(Number(page) || 1, 1);
+    const safePageSize = Math.min(Math.max(Number(pageSize) || 20, 1), 100);
+    const qb = this.userRepository
+      .createQueryBuilder('u')
+      .where('u.role IN (:...staffRoles)', {
+        staffRoles: ['admin', 'editor'],
+      });
+
+    if (keyword?.trim()) {
+      qb.andWhere('(u.email ILIKE :keyword OR u.name ILIKE :keyword)', {
+        keyword: `%${keyword.trim()}%`,
+      });
+    }
+    if (role) qb.andWhere('u.role = :role', { role });
+    if (status) qb.andWhere('u.status = :status', { status });
+
+    const [accounts, total] = await qb
+      .orderBy('u.role', 'ASC')
+      .addOrderBy('u.createdAt', 'ASC')
+      .skip((safePage - 1) * safePageSize)
+      .take(safePageSize)
+      .getManyAndCount();
+
+    return {
+      data: accounts.map((account) => this.toStaffAccount(account)),
+      total,
+      page: safePage,
+      pageSize: safePageSize,
+    };
+  }
+
+  async createStaff(dto: CreateStaffAccountDto) {
+    const email = dto.email.trim().toLowerCase();
+    if (await this.findByEmail(email)) {
+      throw new ConflictException('This email is already in use');
+    }
+
+    const account = this.userRepository.create({
+      email,
+      passwordHash: await bcrypt.hash(dto.password, 12),
+      role: dto.role,
+      status: dto.status ?? 'active',
+      name: dto.name.trim(),
+      provider: 'staff',
+      memberSince: new Date().toISOString().slice(0, 10),
+    });
+    return this.toStaffAccount(await this.userRepository.save(account));
+  }
+
+  async updateStaff(id: string, dto: UpdateStaffAccountDto, actorId: string) {
+    const account = await this.findStaffByIdOrFail(id);
+    const nextRole = dto.role ?? account.role;
+    const nextStatus = dto.status ?? account.status;
+
+    if (id === actorId && (nextRole !== 'admin' || nextStatus !== 'active')) {
+      throw new BadRequestException(
+        'You cannot remove your own active administrator access',
+      );
+    }
+    await this.assertAdminContinuity(account, nextRole, nextStatus);
+
+    if (dto.email) {
+      const email = dto.email.trim().toLowerCase();
+      const duplicate = await this.findByEmail(email);
+      if (duplicate && duplicate.id !== id) {
+        throw new ConflictException('This email is already in use');
+      }
+      account.email = email;
+    }
+    if (dto.name !== undefined) account.name = dto.name.trim();
+    if (dto.role !== undefined) account.role = dto.role;
+    if (dto.status !== undefined) account.status = dto.status;
+    if (dto.password)
+      account.passwordHash = await bcrypt.hash(dto.password, 12);
+
+    return this.toStaffAccount(await this.userRepository.save(account));
+  }
+
+  async deleteStaff(id: string, actorId: string) {
+    if (id === actorId) {
+      throw new BadRequestException('You cannot delete your own account');
+    }
+    const account = await this.findStaffByIdOrFail(id);
+    await this.assertAdminContinuity(account, 'traveler', 'banned');
+
+    try {
+      await this.userRepository.delete(id);
+    } catch {
+      throw new ConflictException(
+        'This account has linked records and cannot be deleted; disable it instead',
+      );
+    }
+    return { deleted: true, id };
   }
 
   async findManagedById(id: string) {
@@ -104,7 +216,7 @@ export class UsersService {
   async create(
     email: string,
     passwordHash: string,
-    role: 'admin' | 'editor' = 'editor',
+    role: 'admin' | 'editor' | 'traveler' = 'traveler',
     name?: string,
     overrides: Partial<User> = {},
   ): Promise<User> {
@@ -118,9 +230,50 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
+  private async findStaffByIdOrFail(id: string) {
+    const account = await this.findByIdOrFail(id);
+    if (account.role !== 'admin' && account.role !== 'editor') {
+      throw new NotFoundException('Staff account not found');
+    }
+    return account;
+  }
+
+  private async assertAdminContinuity(
+    current: User,
+    nextRole: User['role'],
+    nextStatus: User['status'],
+  ) {
+    const removesActiveAdmin =
+      current.role === 'admin' &&
+      current.status === 'active' &&
+      (nextRole !== 'admin' || nextStatus !== 'active');
+    if (!removesActiveAdmin) return;
+
+    const activeAdmins = await this.userRepository.count({
+      where: { role: 'admin', status: 'active' },
+    });
+    if (activeAdmins <= 1) {
+      throw new ConflictException(
+        'At least one active administrator is required',
+      );
+    }
+  }
+
+  private toStaffAccount(account: User) {
+    return {
+      id: account.id,
+      email: account.email,
+      name: account.name || account.email.split('@')[0],
+      role: account.role,
+      status: account.status,
+      createdAt: account.createdAt,
+      updatedAt: account.updatedAt,
+    };
+  }
+
   private async toManagedUser(user: User, stats?: ManagedUserStats | null) {
-    const resolvedStats =
-      stats ?? (await this.loadManagedUserStats([user])).get(user.id) ?? {
+    const resolvedStats = stats ??
+      (await this.loadManagedUserStats([user])).get(user.id) ?? {
         ordersCount: 0,
         bookingsCount: 0,
         dispatchCount: 0,
@@ -216,18 +369,23 @@ export class UsersService {
     const emails = users.map((user) => user.email).filter(Boolean);
     const manager = this.userRepository.manager;
 
-    const [orderRows, bookingRows, dispatchRows, latestDispatchRows, favoriteRows] =
-      await Promise.all([
-        manager.query(
-          'SELECT user_id AS "userId", COUNT(*)::int AS count FROM orders WHERE user_id = ANY($1::uuid[]) GROUP BY user_id',
-          [userIds],
-        ),
-        manager.query(
-          'SELECT contact, COUNT(*)::int AS count FROM booking_submissions WHERE contact = ANY($1::text[]) GROUP BY contact',
-          [emails],
-        ),
-        manager.query(
-          `
+    const [
+      orderRows,
+      bookingRows,
+      dispatchRows,
+      latestDispatchRows,
+      favoriteRows,
+    ] = await Promise.all([
+      manager.query(
+        'SELECT user_id AS "userId", COUNT(*)::int AS count FROM orders WHERE user_id = ANY($1::uuid[]) GROUP BY user_id',
+        [userIds],
+      ),
+      manager.query(
+        'SELECT contact, COUNT(*)::int AS count FROM booking_submissions WHERE contact = ANY($1::text[]) GROUP BY contact',
+        [emails],
+      ),
+      manager.query(
+        `
             SELECT
               COALESCE(user_id::text, user_email) AS "ownerKey",
               COUNT(*)::int AS "dispatchCount",
@@ -237,10 +395,10 @@ export class UsersService {
             WHERE user_id = ANY($1::uuid[]) OR user_email = ANY($2::text[])
             GROUP BY COALESCE(user_id::text, user_email)
           `,
-          [userIds, emails],
-        ),
-        manager.query(
-          `
+        [userIds, emails],
+      ),
+      manager.query(
+        `
             SELECT DISTINCT ON (COALESCE(user_id::text, user_email))
               COALESCE(user_id::text, user_email) AS "ownerKey",
               title
@@ -248,19 +406,19 @@ export class UsersService {
             WHERE user_id = ANY($1::uuid[]) OR user_email = ANY($2::text[])
             ORDER BY COALESCE(user_id::text, user_email), created_at DESC
           `,
-          [userIds, emails],
-        ),
-        manager.query(
-          `
+        [userIds, emails],
+      ),
+      manager.query(
+        `
             SELECT user_id AS "userId", id, target_type AS "targetType", target_id AS "targetId",
                    target_title AS "targetTitle", target_image AS "targetImage", created_at AS "createdAt"
             FROM user_favorites
             WHERE user_id = ANY($1::uuid[])
             ORDER BY user_id ASC, created_at DESC
           `,
-          [userIds],
-        ),
-      ]);
+        [userIds],
+      ),
+    ]);
 
     for (const row of orderRows as Array<{ userId: string; count: number }>) {
       const current = stats.get(row.userId);
@@ -269,7 +427,10 @@ export class UsersService {
       }
     }
 
-    for (const row of bookingRows as Array<{ contact: string; count: number }>) {
+    for (const row of bookingRows as Array<{
+      contact: string;
+      count: number;
+    }>) {
       const user = users.find((item) => item.email === row.contact);
       if (user) {
         const current = stats.get(user.id);
@@ -374,7 +535,12 @@ export class UsersService {
 
   async addFavorite(
     userId: string,
-    data: { targetType: 'route' | 'city' | 'product'; targetId: string; targetTitle: string; targetImage: string },
+    data: {
+      targetType: 'route' | 'city' | 'product';
+      targetId: string;
+      targetTitle: string;
+      targetImage: string;
+    },
   ) {
     // Upsert: if already exists, just return it
     const existing = await this.favoriteRepository.findOne({
