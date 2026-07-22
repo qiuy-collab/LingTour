@@ -326,6 +326,7 @@ export class InterpretingService {
     });
 
     const saved = await this.bookingRepo.save(booking);
+    await this.notifyNewBooking(saved.id, dto);
     const depositOrder = await this.ordersService.createInterpretingDeposit({
       name: dto.name,
       contact: dto.contact,
