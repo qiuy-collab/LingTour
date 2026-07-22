@@ -3,11 +3,9 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { GlobalDrawer } from "@/components/layout/GlobalDrawer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { LocaleProvider } from "@/lib/locale-context";
-import { UIProvider } from "@/lib/ui-context";
 
 export const metadata: Metadata = {
   title: "LingTour Guangdong",
@@ -41,17 +39,14 @@ export default function RootLayout({
           />
         )}
         <LocaleProvider>
-          <UIProvider>
-            <div className="min-h-screen text-[var(--ink)]">
-              <ScrollProgress />
-              <SiteHeader />
-              <main>
-                <PageTransition>{children}</PageTransition>
-              </main>
-              <SiteFooter />
-              <GlobalDrawer />
-            </div>
-          </UIProvider>
+          <div className="min-h-screen text-[var(--ink)]">
+            <ScrollProgress />
+            <SiteHeader />
+            <main>
+              <PageTransition>{children}</PageTransition>
+            </main>
+            <SiteFooter />
+          </div>
         </LocaleProvider>
       </body>
     </html>

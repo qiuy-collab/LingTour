@@ -24,7 +24,7 @@ const LABEL_CLASS =
   "grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
 
 function safeNextPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/";
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/profile?tab=notes";
   return value;
 }
 
@@ -180,7 +180,7 @@ export function LoginPanel() {
   return (
     <div
       ref={panelRef}
-      className="grid overflow-hidden rounded-[var(--radius-xl)] border border-white/14 bg-[var(--paper)] shadow-[0_34px_100px_rgba(0,0,0,0.3)] lg:min-h-[38rem] lg:grid-cols-[minmax(0,1.1fr)_minmax(25rem,0.76fr)]"
+      className="grid overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper)] shadow-[0_34px_100px_rgba(17,25,35,0.16)] lg:min-h-[38rem] lg:grid-cols-[minmax(0,1.1fr)_minmax(25rem,0.76fr)]"
     >
       <aside
         data-auth-media

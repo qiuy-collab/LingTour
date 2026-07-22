@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUI } from "@/lib/ui-context";
 import { LocalUser, readStoredUser } from "@/lib/auth-client";
 
 function getInitials(name: string) {
@@ -16,7 +15,6 @@ function getInitials(name: string) {
 
 export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
   const [user, setUser] = useState<LocalUser | null>(null);
-  const { openDrawer } = useUI();
 
   useEffect(() => {
     function syncUser() {
@@ -37,14 +35,11 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
 
   if (!user) {
     return (
-      <button
-        type="button"
-        onClick={() => {
-          openDrawer();
-          onNavigate?.();
-        }}
+      <Link
+        href="/login?next=%2Fprofile%3Ftab%3Dnotes"
+        onClick={onNavigate}
         className="ml-2 grid h-9 w-9 place-items-center border border-[var(--line)] bg-white/60 transition hover:bg-white"
-        aria-label="Open your travel desk"
+        aria-label="Log in to open your traveler profile"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--ink)]">
           <circle cx="6" cy="6" r="1.5" fill="currentColor" />
@@ -57,7 +52,7 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
           <circle cx="12" cy="18" r="1.5" fill="currentColor" />
           <circle cx="18" cy="18" r="1.5" fill="currentColor" />
         </svg>
-      </button>
+      </Link>
     );
   }
 
