@@ -6,8 +6,10 @@ import {
   IsInt,
   Min,
   MaxLength,
+  IsNotEmpty,
 } from 'class-validator';
 import { IsI18nObject } from '../../../common/validators/i18n.validator';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateCollectionDto {
   @ApiProperty({ example: 'coastal-life-kit' })
@@ -30,8 +32,10 @@ export class CreateCollectionDto {
   @MaxLength(100)
   routeSlug?: string;
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/shop/coastal-cover.jpg' })
+  @ApiProperty({ example: '/uploads/shop/coastal-cover.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   image: string;
 
   @ApiProperty({

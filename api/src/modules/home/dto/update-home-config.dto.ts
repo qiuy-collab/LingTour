@@ -1,7 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { IsI18nObject } from '../../../common/validators/i18n.validator';
+import { ContainsOnlyMediaLibraryPaths } from '../../../common/validators/media-library.validator';
 
 class RouteRegionConfigDto {
   @ApiPropertyOptional()
@@ -25,6 +32,7 @@ export class UpdateHomeConfigDto {
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   @IsObject()
+  @ContainsOnlyMediaLibraryPaths()
   hero?: Record<string, unknown>;
 
   @ApiPropertyOptional({ type: [Object] })
@@ -35,16 +43,19 @@ export class UpdateHomeConfigDto {
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @ContainsOnlyMediaLibraryPaths()
   entryCards?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @ContainsOnlyMediaLibraryPaths()
   cultureHighlights?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @ContainsOnlyMediaLibraryPaths()
   testimonials?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [String] })

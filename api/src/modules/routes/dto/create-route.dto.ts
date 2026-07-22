@@ -10,6 +10,7 @@ import {
   IsNumber,
   MaxLength,
   ArrayMinSize,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -17,6 +18,7 @@ import {
   IsI18nArray,
 } from '../../../common/validators/i18n.validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateStopDto {
   @ApiProperty({ example: 0 })
@@ -56,8 +58,10 @@ export class CreateStopDto {
   @IsI18nArray()
   details?: { en: string; zh: string }[];
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/routes/stop-0.jpg' })
+  @ApiProperty({ example: '/uploads/routes/stop-0.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   image: string;
 
   @ApiPropertyOptional({ type: MediaAssetDto })
@@ -70,6 +74,7 @@ export class CreateStopDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsMediaLibraryPath({ each: true })
   images?: string[];
 
   @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
@@ -155,8 +160,10 @@ export class CreateRouteDto {
   @IsI18nObject()
   story: { en: string; zh: string };
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/routes/cover.jpg' })
+  @ApiProperty({ example: '/uploads/routes/cover.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   coverImage: string;
 
   @ApiPropertyOptional({ example: 'southern-sea' })

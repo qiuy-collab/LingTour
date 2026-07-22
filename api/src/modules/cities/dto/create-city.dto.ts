@@ -9,6 +9,7 @@ import {
   Min,
   ArrayMinSize,
   MaxLength,
+  IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -16,6 +17,7 @@ import {
   IsI18nArray,
 } from '../../../common/validators/i18n.validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateSectionDto {
   @ApiProperty({ example: { en: 'Southern coast', zh: '南部海岸' } })
@@ -28,8 +30,10 @@ export class CreateSectionDto {
   @IsI18nObject({ message: 'Section body must be { en: string, zh: string }' })
   body: { en: string; zh: string };
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/cities/xxx.jpg' })
+  @ApiProperty({ example: '/uploads/cities/section.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   image: string;
 
   @ApiPropertyOptional({ type: MediaAssetDto })
@@ -42,6 +46,7 @@ export class CreateSectionDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsMediaLibraryPath({ each: true })
   images?: string[];
 
   @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
@@ -64,6 +69,7 @@ export class CreateSectionDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @IsMediaLibraryPath()
   breathImage?: string;
 
   @ApiPropertyOptional()
@@ -92,8 +98,10 @@ export class CreateCityDto {
   @IsI18nObject({ message: 'Region label must be { en: string, zh: string }' })
   regionLabel: { en: string; zh: string };
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/cities/gz-hero.jpg' })
+  @ApiProperty({ example: '/uploads/cities/guangzhou-hero.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   heroImage: string;
 
   @ApiPropertyOptional({ type: MediaAssetDto })
@@ -131,6 +139,7 @@ export class CreateCityDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsMediaLibraryPath({ each: true })
   galleryImages?: string[];
 
   @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
@@ -156,6 +165,7 @@ export class CreateCityDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsMediaLibraryPath({ each: true })
   foodImages?: string[];
 
   @ApiPropertyOptional({ example: 440800 })

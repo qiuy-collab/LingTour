@@ -1,6 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { IsI18nObject } from '../validators/i18n.validator';
+import { IsMediaLibraryPath } from '../validators/media-library.validator';
 import { MEDIA_TYPES, type MediaAsset, type MediaType } from '../types/media';
 
 export class MediaAssetDto implements MediaAsset {
@@ -10,12 +17,15 @@ export class MediaAssetDto implements MediaAsset {
 
   @ApiProperty({ example: '/uploads/routes/arrival.mp4' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   @MaxLength(2000)
   url: string;
 
   @ApiPropertyOptional({ example: '/uploads/routes/arrival-poster.webp' })
   @IsOptional()
   @IsString()
+  @IsMediaLibraryPath()
   @MaxLength(2000)
   poster?: string;
 

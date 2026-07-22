@@ -14,6 +14,7 @@ import {
   COMMUNITY_POST_STATUSES,
   type CommunityPostStatus,
 } from '../entities/community-post.entity';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class UpsertCommunityPostDto {
   @ApiProperty()
@@ -28,7 +29,7 @@ export class UpsertCommunityPostDto {
       '管理后台创建时可指定；公开提交端点会忽略此字段并强制 pending_review',
   })
   @IsOptional()
-  @IsIn(COMMUNITY_POST_STATUSES as unknown as string[])
+  @IsIn(COMMUNITY_POST_STATUSES)
   status?: CommunityPostStatus;
 
   @ApiProperty({ type: Object })
@@ -62,6 +63,7 @@ export class UpsertCommunityPostDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @IsMediaLibraryPath()
   image?: string;
 
   @ApiPropertyOptional()

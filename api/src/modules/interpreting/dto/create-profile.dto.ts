@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
-import { IsI18nObject, IsI18nArray } from '../../../common/validators/i18n.validator';
+import {
+  IsI18nObject,
+  IsI18nArray,
+} from '../../../common/validators/i18n.validator';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateProfileDto {
   @ApiProperty({ example: 0 })
@@ -12,11 +16,15 @@ export class CreateProfileDto {
   @IsI18nObject()
   name: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'English / Mandarin / Cantonese', zh: '英语/普通话/粤语' } })
+  @ApiProperty({
+    example: { en: 'English / Mandarin / Cantonese', zh: '英语/普通话/粤语' },
+  })
   @IsI18nObject()
   language: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'Guangdong city history...', zh: '广东城市历史...' } })
+  @ApiProperty({
+    example: { en: 'Guangdong city history...', zh: '广东城市历史...' },
+  })
   @IsI18nObject()
   focus: { en: string; zh: string };
 
@@ -27,6 +35,7 @@ export class CreateProfileDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @IsMediaLibraryPath()
   @MaxLength(500)
   avatar?: string;
 

@@ -7,6 +7,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateEventDto {
   @ApiProperty() @IsString() @MaxLength(120) slug: string;
@@ -27,7 +28,11 @@ export class CreateEventDto {
   @IsOptional()
   @IsArray()
   tags?: string[];
-  @ApiPropertyOptional() @IsOptional() @IsString() image?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @IsMediaLibraryPath()
+  image?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() status?: string;
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()

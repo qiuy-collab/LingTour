@@ -11,11 +11,13 @@ import {
   MaxLength,
   IsPositive,
   IsObject,
+  IsNotEmpty,
 } from 'class-validator';
 import { IsI18nObject } from '../../../common/validators/i18n.validator';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'volcanic-soil-bowl' })
@@ -46,8 +48,10 @@ export class CreateProductDto {
   @IsI18nObject()
   tag: { en: string; zh: string };
 
-  @ApiProperty({ example: 'https://oss.lingtour.cn/shop/bowl.jpg' })
+  @ApiProperty({ example: '/uploads/shop/bowl.jpg' })
   @IsString()
+  @IsNotEmpty()
+  @IsMediaLibraryPath()
   image: string;
 
   @ApiPropertyOptional({ type: MediaAssetDto })
@@ -91,6 +95,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @IsMediaLibraryPath({ each: true })
   gallery?: string[];
 
   @ApiPropertyOptional({ type: [MediaAssetDto], default: [] })
