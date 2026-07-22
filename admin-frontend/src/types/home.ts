@@ -78,7 +78,7 @@ export type HomeConfigBlock =
 
 export const HomeConfigBlockLabels: Record<HomeConfigBlock, string> = {
   hero: '首屏与影片',
-  heroStats: 'Hero 统计卡片',
+  heroStats: '首屏统计卡片',
   trustMetrics: '信任指标',
   entryCards: '入口卡片',
   featuredRoutes: '精选路线',

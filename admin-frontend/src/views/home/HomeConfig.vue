@@ -97,14 +97,14 @@ function cityNameFor(slug: string) {
 
 function cultureHighlightCoverHint(item: { image?: string; citySlug?: string }) {
   if (item.image?.trim()) {
-    return 'Using a custom uploaded cover image.'
+    return '当前使用媒体库中的自定义封面。'
   }
 
   if (item.citySlug?.trim()) {
-    return `If left empty, the homepage will inherit ${cityNameFor(item.citySlug)}'s city cover image.`
+    return `留空时，首页会自动使用${cityNameFor(item.citySlug)}的城市封面。`
   }
 
-  return 'Upload a custom cover image, or link a city to inherit its cover.'
+  return '请选择自定义封面，或关联城市并自动沿用城市封面。'
 }
 
 onMounted(async () => {
@@ -133,7 +133,7 @@ onMounted(async () => {
     normalizeRouteRegions()
     resetDirty()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to load home configuration'))
+    ElMessage.error(extractErrorMessage(err, '首页配置加载失败'))
   } finally {
     loading.value = false
   }
@@ -187,24 +187,24 @@ async function handleSave() {
     (item) => !item.title?.zh?.trim() && !item.title?.en?.trim(),
   )
   if (hasEmptyHeroTitle) {
-    ElMessage.warning('Hero stats need a title before saving.')
+    ElMessage.warning('首屏统计卡片必须填写标题后才能保存。')
     return
   }
 
   normalizeRouteRegions()
   const hasInvalidRegion = config.routeRegions.some((region) => !region.key.trim())
   if (hasInvalidRegion) {
-    ElMessage.warning('Each route region needs a non-empty unique key.')
+    ElMessage.warning('每个路线分区都需要填写唯一标识。')
     return
   }
 
   saving.value = true
   try {
     await homeApi.updateHomeConfig({ ...config })
-    ElMessage.success('Home configuration saved.')
+    ElMessage.success('首页配置已保存。')
     resetDirty()
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, 'Failed to save home configuration'))
+    ElMessage.error(extractErrorMessage(err, '首页配置保存失败'))
   } finally {
     saving.value = false
   }
@@ -214,7 +214,7 @@ async function handleSave() {
 <template>
   <div class="home-config-page" v-loading="loading">
     <EditorPageHeader
-      title="Homepage Content"
+      title="首页配置"
       :saving="saving"
       :dirty="isDirty"
       @save="handleSave"
@@ -222,12 +222,12 @@ async function handleSave() {
     />
 
     <el-card shadow="never" class="section-card">
-      <template #header>Global Summary</template>
+      <template #header>模块概览</template>
       <div class="global-summary">
-        <div class="summary-chip">Route regions {{ config.routeRegions.length }}</div>
-        <div class="summary-chip">Featured routes {{ config.featuredRoutes.length }}</div>
-        <div class="summary-chip">Culture highlights {{ config.cultureHighlights.length }}</div>
-        <div class="summary-chip">Entry cards {{ config.entryCards.length }}</div>
+        <div class="summary-chip">路线分区 {{ config.routeRegions.length }}</div>
+        <div class="summary-chip">精选路线 {{ config.featuredRoutes.length }}</div>
+        <div class="summary-chip">文化亮点 {{ config.cultureHighlights.length }}</div>
+        <div class="summary-chip">入口卡片 {{ config.entryCards.length }}</div>
       </div>
     </el-card>
 
@@ -235,7 +235,7 @@ async function handleSave() {
       v-model="activeBlock"
       eyebrow="首页内容"
       title="首页模块设置"
-      description="Edit the modular homepage pieces here without scrolling through one giant form."
+      description="按模块维护首页内容，并在保存前预览前台效果。"
       :active-label="HomeConfigBlockLabels[activeBlock]"
       :tabs="workspaceTabs"
     >
@@ -243,42 +243,42 @@ async function handleSave() {
         <div class="panel-title">首屏图片与视频</div>
         <div class="block-item">
           <div class="block-item-header">
-            <span>Homepage cover system</span>
+            <span>首屏封面</span>
           </div>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Hero cover">
+              <el-form-item label="首页首屏封面">
                 <ImageUpload v-model="config.hero.image" module="home" />
                 <div class="field-hint">显示在首页首屏的全宽图片。</div>
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Interpreting cover">
+              <el-form-item label="口译入口封面">
                 <ImageUpload v-model="config.hero.interpretingImage" module="home" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Departure CTA cover">
+              <el-form-item label="出发引导封面">
                 <ImageUpload v-model="config.hero.ctaImage" module="home" />
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Hero caption">
+          <el-form-item label="首屏说明">
             <I18nInput v-model="config.hero.caption" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Interpreting label">
+              <el-form-item label="口译入口标题">
                 <I18nInput v-model="config.hero.interpretingLabel" />
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item label="Badge value">
+              <el-form-item label="徽标数字">
                 <el-input v-model="config.hero.badgeValue" placeholder="60+" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Badge label">
+              <el-form-item label="徽标说明">
                 <I18nInput v-model="config.hero.badgeLabel" />
               </el-form-item>
             </el-col>
@@ -289,28 +289,28 @@ async function handleSave() {
           <div class="block-item-header">
             <span>首页视频（选填）</span>
           </div>
-          <el-form-item label="Homepage video">
+          <el-form-item label="首页视频">
             <ImageUpload v-model="config.hero.video.url" media-kind="video" module="home" entity-type="home" />
             <div class="field-hint">从媒体库选择视频；留空时前台不显示该模块。</div>
           </el-form-item>
           <el-form-item label="视频封面">
             <ImageUpload v-model="config.hero.video.poster" module="home" />
-            <div class="field-hint">Shown before the visitor chooses to play the film.</div>
+            <div class="field-hint">访客播放视频前显示，建议与视频首帧色调一致。</div>
           </el-form-item>
-          <el-form-item label="Film title">
+          <el-form-item label="视频标题">
             <I18nInput v-model="config.hero.video.title" />
           </el-form-item>
-          <el-form-item label="Film description">
+          <el-form-item label="视频说明">
             <I18nInput v-model="config.hero.video.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Duration">
+              <el-form-item label="时长">
                 <el-input v-model="config.hero.video.duration" placeholder="2 min" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Format">
+              <el-form-item label="清晰度">
                 <el-input v-model="config.hero.video.resolution" placeholder="4K" />
               </el-form-item>
             </el-col>
@@ -319,22 +319,22 @@ async function handleSave() {
       </div>
 
       <div v-else-if="activeBlock === 'routeRegions'" class="workspace-panel">
-        <div class="panel-title">Route Regions</div>
+        <div class="panel-title">路线地区分组</div>
         <div v-for="(item, index) in config.routeRegions" :key="item.key || index" class="block-item">
           <div class="block-item-header">
-            <span>Region #{{ index + 1 }}</span>
+            <span>分组 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.routeRegions.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Key">
+              <el-form-item label="唯一标识">
                 <el-input v-model="item.key" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Title">
+              <el-form-item label="分组标题">
                 <I18nInput v-model="item.title" />
               </el-form-item>
             </el-col>
@@ -344,7 +344,7 @@ async function handleSave() {
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="Included adcodes">
+          <el-form-item label="包含城市">
             <el-select v-model="item.adcodes" multiple filterable collapse-tags collapse-tags-tooltip style="width: 100%">
               <el-option
                 v-for="option in GUANGDONG_ADCODE_OPTIONS"
@@ -355,11 +355,11 @@ async function handleSave() {
             </el-select>
           </el-form-item>
         </div>
-        <el-button :icon="Plus" @click="addRouteRegion">Add route region</el-button>
+        <el-button :icon="Plus" @click="addRouteRegion">添加地区分组</el-button>
       </div>
 
       <div v-else-if="activeBlock === 'featuredRoutes'" class="workspace-panel">
-        <div class="panel-title">Featured Routes</div>
+        <div class="panel-title">精选路线</div>
         <el-select v-model="config.featuredRoutes" multiple filterable collapse-tags collapse-tags-tooltip style="width: 100%">
           <el-option
             v-for="routeItem in routeOptions"
@@ -371,104 +371,104 @@ async function handleSave() {
       </div>
 
       <div v-else-if="activeBlock === 'heroStats'" class="workspace-panel">
-        <div class="panel-title">Hero Stats</div>
+        <div class="panel-title">首屏统计卡片</div>
         <div v-for="(item, index) in config.heroStats" :key="index" class="block-item">
           <div class="block-item-header">
-            <span>Stat #{{ index + 1 }}</span>
+            <span>统计卡片 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.heroStats.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
-          <el-form-item label="Title">
+          <el-form-item label="标题">
             <I18nInput v-model="item.title" />
           </el-form-item>
-          <el-form-item label="Description">
+          <el-form-item label="说明">
             <I18nInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
         </div>
-        <el-button :icon="Plus" @click="addHeroStat">Add hero stat</el-button>
+        <el-button :icon="Plus" @click="addHeroStat">添加统计卡片</el-button>
       </div>
 
       <div v-else-if="activeBlock === 'trustMetrics'" class="workspace-panel">
-        <div class="panel-title">Trust Metrics</div>
+        <div class="panel-title">信任指标</div>
         <div v-for="(item, index) in config.trustMetrics" :key="index" class="block-item">
           <div class="block-item-header">
-            <span>Metric #{{ index + 1 }}</span>
+            <span>指标 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.trustMetrics.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
           <el-row :gutter="16">
             <el-col :span="8">
-              <el-form-item label="Value">
+              <el-form-item label="数值">
                 <el-input v-model="item.value" />
               </el-form-item>
             </el-col>
             <el-col :span="16">
-              <el-form-item label="Label">
+              <el-form-item label="说明">
                 <I18nInput v-model="item.label" />
               </el-form-item>
             </el-col>
           </el-row>
         </div>
-        <el-button :icon="Plus" @click="addTrustMetric">Add metric</el-button>
+        <el-button :icon="Plus" @click="addTrustMetric">添加指标</el-button>
       </div>
 
       <div v-else-if="activeBlock === 'entryCards'" class="workspace-panel">
-        <div class="panel-title">Entry Cards</div>
+        <div class="panel-title">入口卡片</div>
         <div v-for="(item, index) in config.entryCards" :key="index" class="block-item">
           <div class="block-item-header">
-            <span>Entry #{{ index + 1 }}</span>
+            <span>入口 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.entryCards.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
-          <el-form-item label="Title">
+          <el-form-item label="标题">
             <I18nInput v-model="item.title" />
           </el-form-item>
-          <el-form-item label="Description">
+          <el-form-item label="说明">
             <I18nInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Image">
+              <el-form-item label="图片">
                 <ImageUpload v-model="item.image" module="home" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Link">
+              <el-form-item label="跳转路径">
                 <el-input v-model="item.link" placeholder="/culture" />
               </el-form-item>
             </el-col>
           </el-row>
         </div>
-        <el-button :icon="Plus" @click="addEntryCard">Add entry card</el-button>
+        <el-button :icon="Plus" @click="addEntryCard">添加入口卡片</el-button>
       </div>
 
       <div v-else-if="activeBlock === 'cultureHighlights'" class="workspace-panel">
-        <div class="panel-title">Culture Highlights</div>
+        <div class="panel-title">文化亮点</div>
         <div v-for="(item, index) in config.cultureHighlights" :key="index" class="block-item">
           <div class="block-item-header">
-            <span>Highlight #{{ index + 1 }}</span>
+            <span>文化亮点 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.cultureHighlights.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
-          <el-form-item label="Title">
+          <el-form-item label="标题">
             <I18nInput v-model="item.title" />
           </el-form-item>
-          <el-form-item label="Description">
+          <el-form-item label="说明">
             <I18nInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="Cover Image">
+              <el-form-item label="封面图片">
                 <ImageUpload v-model="item.image" module="home" />
                 <div class="field-hint">{{ cultureHighlightCoverHint(item) }}</div>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="Linked City">
+              <el-form-item label="关联城市">
                 <el-select v-model="item.citySlug" filterable clearable style="width: 100%">
                   <el-option
                     v-for="city in cityOptions"
@@ -478,41 +478,41 @@ async function handleSave() {
                   />
                 </el-select>
                 <div class="field-hint">
-                  Homepage culture cards will inherit the linked city's cover and place label when no custom image is set.
+                  未设置自定义图片时，首页文化卡片会沿用关联城市的封面与地点名称。
                 </div>
               </el-form-item>
             </el-col>
           </el-row>
         </div>
-        <el-button :icon="Plus" @click="addCultureHighlight">Add culture highlight</el-button>
+        <el-button :icon="Plus" @click="addCultureHighlight">添加文化亮点</el-button>
       </div>
 
       <div v-else class="workspace-panel">
-        <div class="panel-title">Testimonials</div>
+        <div class="panel-title">用户评价</div>
         <div v-for="(item, index) in config.testimonials" :key="index" class="block-item">
           <div class="block-item-header">
-            <span>Testimonial #{{ index + 1 }}</span>
+            <span>评价 {{ index + 1 }}</span>
             <el-button size="small" type="danger" :icon="Delete" @click="config.testimonials.splice(index, 1)">
-              Remove
+              移除
             </el-button>
           </div>
-          <el-form-item label="Quote">
+          <el-form-item label="评价内容">
             <I18nInput v-model="item.quote" type="textarea" :rows="3" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="16">
-              <el-form-item label="Author">
+              <el-form-item label="用户署名">
                 <I18nInput v-model="item.author" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Avatar">
+              <el-form-item label="头像">
                 <ImageUpload v-model="item.avatar" module="home" />
               </el-form-item>
             </el-col>
           </el-row>
         </div>
-        <el-button :icon="Plus" @click="addTestimonial">Add testimonial</el-button>
+        <el-button :icon="Plus" @click="addTestimonial">添加评价</el-button>
       </div>
     </EditorWorkspace>
   </div>
@@ -526,26 +526,28 @@ async function handleSave() {
 }
 
 .global-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .summary-chip {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: #f5f8ff;
-  color: #2757a5;
+  padding: 10px 14px;
+  border-right: 1px solid var(--lt-border-light);
+  color: var(--lt-text-regular);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 650;
+}
+
+.summary-chip:last-child {
+  border-right: 0;
 }
 
 .block-item {
-  padding: 12px;
-  margin-bottom: 12px;
-  background: #fafbfc;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: color-mix(in srgb, var(--lt-bg-page) 62%, var(--lt-bg-card));
+  border: 1px solid var(--lt-border-light);
+  border-radius: var(--lt-radius-lg);
 }
 
 .block-item-header {
@@ -555,13 +557,49 @@ async function handleSave() {
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: #606266;
+  color: var(--lt-text-regular);
 }
 
 .field-hint {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.5;
-  color: #7a7f87;
+  color: var(--lt-text-secondary);
+}
+
+.panel-title {
+  margin-bottom: 14px;
+  color: var(--lt-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .global-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-chip:nth-child(2) {
+    border-right: 0;
+  }
+
+  .summary-chip:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--lt-border-light);
+  }
+}
+
+@media (max-width: 640px) {
+  .home-config-page {
+    padding-bottom: 20px;
+  }
+
+  .block-item {
+    padding: 14px;
+  }
+
+  .block-item :deep(.el-col) {
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
 }
 </style>

@@ -266,7 +266,7 @@ watch(() => route.fullPath, closeMobileMenu)
       >
         <span class="status-dot" />
         <span>线上数据</span>
-        <small>Production API</small>
+        <small>实时接口</small>
       </div>
 
       <el-menu
@@ -293,7 +293,7 @@ watch(() => route.fullPath, closeMobileMenu)
 
       <div v-if="!isCollapse || isMobile" class="sidebar-footer">
         <span>线上内容与运营</span>
-        <small>Content · Commerce · Service</small>
+        <small>内容 · 商城 · 服务</small>
       </div>
     </el-aside>
 
