@@ -100,7 +100,7 @@ const posterUrl = computed({
     <div class="media-field">
       <div class="media-field-heading">
         <strong>{{ mediaType === 'video' ? 'Video source' : 'Image source' }}</strong>
-        <span>Choose from the library, upload a file, or paste a URL.</span>
+        <span>Choose an existing file or upload one into the media library.</span>
       </div>
       <ImageUpload
         v-model="mediaUrl"
@@ -108,11 +108,6 @@ const posterUrl = computed({
         :module="module"
         :entity-type="entityType"
         :entity-id="entityId"
-      />
-      <el-input
-        v-model="mediaUrl"
-        clearable
-        :placeholder="mediaType === 'video' ? 'https://.../story.mp4' : 'https://.../cover.webp'"
       />
     </div>
 
@@ -131,7 +126,6 @@ const posterUrl = computed({
         :entity-type="entityType"
         :entity-id="entityId"
       />
-      <el-input v-model="posterUrl" clearable placeholder="https://.../poster.webp" />
       <el-alert
         v-if="mediaUrl && !posterUrl"
         title="Add a poster before publishing this video."

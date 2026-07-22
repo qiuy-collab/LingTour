@@ -289,9 +289,9 @@ async function handleSave() {
           <div class="block-item-header">
             <span>Video chapter (optional)</span>
           </div>
-          <el-form-item label="Video URL">
-            <el-input v-model="config.hero.video.url" placeholder="https://.../guangdong-field-film.mp4" />
-            <div class="field-hint">Leave empty to hide the whole section. Direct MP4/WebM, YouTube and Vimeo links are supported.</div>
+          <el-form-item label="Homepage video">
+            <ImageUpload v-model="config.hero.video.url" media-kind="video" module="home" entity-type="home" />
+            <div class="field-hint">Choose a video from the media library. Leave empty to hide the section.</div>
           </el-form-item>
           <el-form-item label="Poster image">
             <ImageUpload v-model="config.hero.video.poster" module="home" />

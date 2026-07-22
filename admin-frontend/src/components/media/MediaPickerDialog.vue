@@ -113,7 +113,6 @@ function handleSelectionChange(files: Array<{ url: string }>) {
       :default-module="module"
       :entity-type="entityType"
       :entity-id="entityId"
-      :seed-urls="selectedUrls"
       :selected-urls="selectedUrls"
       @selection-change="handleSelectionChange"
     />

@@ -16,7 +16,6 @@ const props = withDefaults(
     defaultModule?: string
     entityType?: string
     entityId?: string
-    seedUrls?: string[]
     selectedUrls?: string[]
   }>(),
   {
@@ -28,7 +27,6 @@ const props = withDefaults(
     defaultModule: '',
     entityType: '',
     entityId: '',
-    seedUrls: () => [],
     selectedUrls: () => [],
   },
 )
@@ -132,39 +130,7 @@ function buildSelectionKey(url: string) {
   return `seed:${trimmed}`
 }
 
-function extractDisplayName(url: string) {
-  return url.split('/').pop() || 'referenced-image'
-}
-
-function isVirtualFile(file: MediaFile) {
-  return file.filename.startsWith('seed:')
-}
-
-const seedFiles = computed<MediaFile[]>(() => {
-  const urls = Array.isArray(props.seedUrls) ? props.seedUrls : []
-  return urls
-    .filter((url) => typeof url === 'string' && url.trim())
-    .map((url) => ({
-      filename: buildSelectionKey(url),
-      url,
-      size: 0,
-      size_bytes: 0,
-      createdAt: '',
-      module: moduleFilter.value || props.defaultModule || 'referenced',
-      original_name: extractDisplayName(url),
-    }))
-})
-
-const displayFiles = computed<MediaFile[]>(() => {
-  const merged = new Map<string, MediaFile>()
-  for (const file of files.value) {
-    merged.set(file.filename, file)
-  }
-  for (const file of seedFiles.value) {
-    if (!merged.has(file.filename)) merged.set(file.filename, file)
-  }
-  return [...merged.values()]
-})
+const displayFiles = computed<MediaFile[]>(() => files.value)
 
 const selectedMediaFiles = computed(() => {
   const selectedSet = new Set(selectedFilenames.value)
@@ -279,8 +245,6 @@ function copyUrl(file: MediaFile) {
 }
 
 async function handleDelete(file: MediaFile) {
-  if (isVirtualFile(file)) return
-
   try {
     await ElMessageBox.confirm(
       `Delete "${file.filename}" permanently? This cannot be undone.`,
@@ -300,11 +264,7 @@ async function handleDelete(file: MediaFile) {
 async function handleBatchDelete() {
   if (selectedFilenames.value.length === 0) return
 
-  const deletable = selectedFilenames.value.filter((item) => !item.startsWith('seed:'))
-  if (!deletable.length) {
-    ElMessage.warning('Referenced images cannot be deleted from the media library')
-    return
-  }
+  const deletable = [...selectedFilenames.value]
 
   try {
     await ElMessageBox.confirm(`Delete ${deletable.length} selected files?`, 'Batch delete', {
@@ -312,7 +272,7 @@ async function handleBatchDelete() {
     })
     const promises = deletable.map((filename) => deleteMediaFile(filename))
     await Promise.allSettled(promises)
-    selectedFilenames.value = selectedFilenames.value.filter((item) => item.startsWith('seed:'))
+    selectedFilenames.value = []
     ElMessage.success('Batch delete completed')
     await fetchFiles()
     await checkOrphanCount()
@@ -557,8 +517,8 @@ onMounted(() => {
     </div>
 
     <div class="picker-hint" v-if="isPickerMode">
-      Click cards to add or remove them from the selection. Referenced images stay available here
-      even when they were not uploaded through the media library.
+      Click cards to add or remove them from the selection. Only files stored in the media library
+      can be attached to content.
     </div>
 
     <div class="media-grid" v-if="displayFiles.length > 0">
@@ -586,13 +546,7 @@ onMounted(() => {
             <el-button size="small" circle @click.stop="copyUrl(file)">
               <el-icon><CopyDocument /></el-icon>
             </el-button>
-            <el-button
-              v-if="!isVirtualFile(file)"
-              size="small"
-              circle
-              type="danger"
-              @click.stop="handleDelete(file)"
-            >
+            <el-button size="small" circle type="danger" @click.stop="handleDelete(file)">
               <el-icon><Delete /></el-icon>
             </el-button>
           </div>
@@ -605,7 +559,7 @@ onMounted(() => {
             {{
               file.size_bytes || file.size
                 ? formatSize(file.size_bytes ?? file.size)
-                : 'Referenced media'
+                : 'Metadata unavailable'
             }}
           </p>
           <p class="media-meta" v-if="formatTimestamp(file.createdAt)">
