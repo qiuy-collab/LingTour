@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { existsSync } from 'fs';
-import { mkdir, stat, writeFile } from 'fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'fs/promises';
 import { dirname, extname, join, resolve } from 'path';
 import { AppDataSource } from '../data-source';
 import {
@@ -31,6 +31,17 @@ const STATIC_FALLBACK_UPLOADS: Record<string, string> = {
 
 function isRemoteUrl(value: unknown): value is string {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
+}
+
+function isSiteMediaPath(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    /^\/(?:editorial|video)\/[A-Za-z0-9._/-]+$/i.test(value.trim())
+  );
+}
+
+function shouldImport(value: unknown): value is string {
+  return isRemoteUrl(value) || isSiteMediaPath(value);
 }
 
 function slugify(value: string): string {
@@ -171,7 +182,9 @@ async function importRemoteImage(
       }
 
       const shouldRetry =
-        response.status === 429 || response.status >= 500 || response.status === 403;
+        response.status === 429 ||
+        response.status >= 500 ||
+        response.status === 403;
       if (!shouldRetry || attempt === 3) {
         throw new Error(
           `Failed to download ${url}: ${response.status} ${response.statusText}`,
@@ -219,6 +232,79 @@ async function importRemoteImage(
   return buildPublicUploadUrl(storedPath);
 }
 
+async function importSiteMedia(
+  sourcePath: string,
+  module: string,
+  hint: string,
+  context: ImportContext,
+) {
+  const safeModule = sanitizeUploadModule(module);
+  if (!safeModule) {
+    throw new Error(`Unsupported upload module: ${module}`);
+  }
+
+  const normalizedSource = sourcePath.replace(/^\//, '');
+  const cacheKey = `${safeModule}|site:${normalizedSource}`;
+  const cached = context.cache.get(cacheKey);
+  if (cached) {
+    context.reused += 1;
+    return buildPublicUploadUrl(cached);
+  }
+
+  const extension = extname(normalizedSource).toLowerCase() || '.jpg';
+  const hash = createHash('sha1')
+    .update(normalizedSource)
+    .digest('hex')
+    .slice(0, 12);
+  const storedPath = buildStoredUploadPath(
+    `${slugify(hint)}-${hash}${extension}`,
+    safeModule,
+  );
+
+  if (context.apply) {
+    const sitePublicRoot = resolve(
+      process.cwd(),
+      process.env.SITE_PUBLIC_DIR ?? '../site/public',
+    );
+    const absoluteSource = resolve(sitePublicRoot, normalizedSource);
+    const relativeSource = absoluteSource.slice(sitePublicRoot.length);
+    if (!relativeSource || relativeSource.startsWith('..')) {
+      throw new Error(`Invalid site media path: ${sourcePath}`);
+    }
+
+    const bytes = await readFile(absoluteSource);
+    const absoluteTarget = join(context.uploadRoot, ...storedPath.split('/'));
+    await mkdir(dirname(absoluteTarget), { recursive: true });
+    if (!existsSync(absoluteTarget)) {
+      await writeFile(absoluteTarget, bytes);
+      context.downloads += 1;
+    }
+
+    const fileStat = await stat(absoluteTarget);
+    await ensureMediaTracked(
+      storedPath,
+      safeModule,
+      fileStat.size,
+      null,
+      normalizedSource.split('/').pop() ?? storedPath,
+    );
+  }
+
+  context.cache.set(cacheKey, storedPath);
+  return buildPublicUploadUrl(storedPath);
+}
+
+function importMediaReference(
+  value: string,
+  module: string,
+  hint: string,
+  context: ImportContext,
+) {
+  return isRemoteUrl(value)
+    ? importRemoteImage(value, module, hint, context)
+    : importSiteMedia(value, module, hint, context);
+}
+
 async function convertImageArray(
   values: JsonArray,
   module: string,
@@ -231,9 +317,9 @@ async function convertImageArray(
 
   for (let index = 0; index < source.length; index += 1) {
     const value = source[index];
-    if (isRemoteUrl(value)) {
+    if (shouldImport(value)) {
       nextValues.push(
-        await importRemoteImage(
+        await importMediaReference(
           value,
           module,
           `${hintPrefix}-${index + 1}`,
@@ -264,8 +350,8 @@ async function processCities(context: ImportContext) {
     let nextGallery = row.gallery_images;
     let nextFood = row.food_images;
 
-    if (isRemoteUrl(row.hero_image)) {
-      nextHero = await importRemoteImage(
+    if (shouldImport(row.hero_image)) {
+      nextHero = await importMediaReference(
         row.hero_image,
         'cities',
         `${row.slug}-hero`,
@@ -338,8 +424,8 @@ async function processCitySections(context: ImportContext) {
     let nextBreathImage = row.breath_image;
     const hintBase = `${row.city_slug}-section-${row.sort_order + 1}`;
 
-    if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(
+    if (shouldImport(row.image)) {
+      nextImage = await importMediaReference(
         row.image,
         'cities',
         `${hintBase}-image`,
@@ -359,8 +445,8 @@ async function processCitySections(context: ImportContext) {
       changed = true;
     }
 
-    if (isRemoteUrl(row.breath_image)) {
-      nextBreathImage = await importRemoteImage(
+    if (shouldImport(row.breath_image)) {
+      nextBreathImage = await importMediaReference(
         row.breath_image,
         'cities',
         `${hintBase}-breath`,
@@ -398,12 +484,12 @@ async function processStoryRoutes(context: ImportContext) {
   let updated = 0;
 
   for (const row of rows) {
-    if (!isRemoteUrl(row.cover_image)) {
+    if (!shouldImport(row.cover_image)) {
       continue;
     }
 
     updated += 1;
-    const nextCover = await importRemoteImage(
+    const nextCover = await importMediaReference(
       row.cover_image,
       'routes',
       `${row.slug}-cover`,
@@ -439,8 +525,8 @@ async function processRouteStops(context: ImportContext) {
     let nextImages = row.images;
     const hintBase = `${row.route_slug}-stop-${row.sort_order + 1}`;
 
-    if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(
+    if (shouldImport(row.image)) {
+      nextImage = await importMediaReference(
         row.image,
         'routes',
         `${hintBase}-image`,
@@ -487,12 +573,12 @@ async function processStoreCollections(context: ImportContext) {
   let updated = 0;
 
   for (const row of rows) {
-    if (!isRemoteUrl(row.image)) {
+    if (!shouldImport(row.image)) {
       continue;
     }
 
     updated += 1;
-    const nextImage = await importRemoteImage(
+    const nextImage = await importMediaReference(
       row.image,
       'shop',
       `${row.slug}-cover`,
@@ -527,8 +613,8 @@ async function processStoreProducts(context: ImportContext) {
     let nextImage = row.image;
     let nextGallery = row.gallery;
 
-    if (isRemoteUrl(row.image)) {
-      nextImage = await importRemoteImage(
+    if (shouldImport(row.image)) {
+      nextImage = await importMediaReference(
         row.image,
         'shop',
         `${row.slug}-main`,
@@ -574,12 +660,12 @@ async function processEvents(context: ImportContext) {
   let updated = 0;
 
   for (const row of rows) {
-    if (!isRemoteUrl(row.image)) {
+    if (!shouldImport(row.image)) {
       continue;
     }
 
     updated += 1;
-    const nextImage = await importRemoteImage(
+    const nextImage = await importMediaReference(
       row.image,
       'events',
       `${row.slug}-cover`,

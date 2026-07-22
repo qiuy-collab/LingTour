@@ -27,7 +27,9 @@
     "content:sync": "ts-node src/database/seeds/sync-showcase-content.ts --apply",
     "content:sync:dry-run": "ts-node src/database/seeds/sync-showcase-content.ts",
     "media:ingest-external": "ts-node src/database/seeds/import-external-media.ts --apply",
-    "media:ingest-external:dry-run": "ts-node src/database/seeds/import-external-media.ts"
+    "media:ingest-external:dry-run": "ts-node src/database/seeds/import-external-media.ts",
+    "media:migrate-home-video": "ts-node src/database/seeds/migrate-home-video.ts --apply",
+    "media:migrate-home-video:dry-run": "ts-node src/database/seeds/migrate-home-video.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.1.2",
