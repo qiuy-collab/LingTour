@@ -44,6 +44,12 @@ export class I18nInterceptor implements NestInterceptor {
       return data.map((item) => this.transformResponse(item, lang));
     }
 
+    // Date has no enumerable keys. Walking it as a regular object turns every
+    // timestamp into `{}` before Nest can serialize the response.
+    if (data instanceof Date) {
+      return data.toISOString();
+    }
+
     // Handle objects
     if (typeof data === 'object') {
       // Check if this is an i18n object { en: string, zh: string }

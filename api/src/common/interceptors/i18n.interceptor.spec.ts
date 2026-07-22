@@ -122,6 +122,22 @@ describe('I18nInterceptor', () => {
       });
     });
 
+    it('should serialize Date values as ISO timestamps', (done) => {
+      const ctx = createMockContext('en');
+      const handler = createMockHandler({
+        createdAt: new Date('2026-07-23T01:02:03.000Z'),
+        title: { en: 'Route', zh: '路线' },
+      });
+
+      interceptor.intercept(ctx, handler).subscribe((result) => {
+        expect(result).toEqual({
+          createdAt: '2026-07-23T01:02:03.000Z',
+          title: 'Route',
+        });
+        done();
+      });
+    });
+
     it('should handle arrays of i18n objects', (done) => {
       const ctx = createMockContext('en');
       const handler = createMockHandler({
