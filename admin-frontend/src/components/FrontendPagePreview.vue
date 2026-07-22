@@ -153,10 +153,14 @@ const previewPayload = computed(() => {
 })
 
 const iframePath = computed(() => {
-  const slug = String(previewPayload.value.slug || '').trim()
-  if (props.type === 'city') return `/culture/${slug || 'preview-city'}`
-  if (props.type === 'route') return `/routes/${slug || 'preview-route'}`
-  return `/shop/products/${slug || 'preview-product'}`
+  // The public site is statically exported in production. Newly-created slugs
+  // do not have an HTML file until the next site build, so opening the draft's
+  // own path produces a real static-server 404 before the preview bridge can
+  // receive its payload. These seeded pages are guaranteed build outputs and
+  // act only as shells; previewPayload replaces their content immediately.
+  if (props.type === 'city') return '/culture/zhanjiang/'
+  if (props.type === 'route') return '/routes/southern-sea-table/'
+  return '/shop/products/volcanic-soil-bowl/'
 })
 
 const iframeSrc = computed(
