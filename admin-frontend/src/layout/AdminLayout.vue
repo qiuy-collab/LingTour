@@ -34,6 +34,7 @@ import {
   Search,
   Bell,
   List,
+  User,
 } from '@element-plus/icons-vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
@@ -49,7 +50,9 @@ const mobileMenuOpen = ref(false)
 const showEditorLocaleSwitch = computed(() =>
   /\/create$|\/edit$|\/home$|\/settings$/.test(route.path),
 )
-const currentPageTitle = computed(() => (route.meta.title as string) || '工作台')
+const currentPageTitle = computed(
+  () => (route.meta.title as string) || '工作台',
+)
 
 // Responsive detection
 function checkMobile() {
@@ -100,9 +103,7 @@ interface MenuGroup {
 const menuGroups: MenuGroup[] = [
   {
     title: '概览',
-    items: [
-      { path: '/admin/dashboard', title: '仪表盘', icon: DataAnalysis },
-    ],
+    items: [{ path: '/admin/dashboard', title: '仪表盘', icon: DataAnalysis }],
   },
   {
     title: '内容管理',
@@ -123,7 +124,11 @@ const menuGroups: MenuGroup[] = [
     title: '口译服务',
     items: [
       { path: '/admin/interpreting/modes', title: '服务模式', icon: SetUp },
-      { path: '/admin/interpreting/profiles', title: '口译员', icon: UserFilled },
+      {
+        path: '/admin/interpreting/profiles',
+        title: '口译员',
+        icon: UserFilled,
+      },
       { path: '/admin/interpreting/bookings', title: '预约', icon: Calendar },
       { path: '/admin/interpreting/faqs', title: 'FAQ', icon: ChatLineSquare },
     ],
@@ -134,7 +139,11 @@ const menuGroups: MenuGroup[] = [
       { path: '/admin/events', title: '活动', icon: Present },
       { path: '/admin/community', title: '社区帖子', icon: ChatDotSquare },
       { path: '/admin/home', title: '首页配置', icon: HomeFilled },
-      { path: '/admin/operations/audit', title: '数据体检', icon: WarningFilled },
+      {
+        path: '/admin/operations/audit',
+        title: '数据体检',
+        icon: WarningFilled,
+      },
       { path: '/admin/media', title: '媒体库', icon: Picture },
     ],
   },
@@ -142,9 +151,25 @@ const menuGroups: MenuGroup[] = [
     title: '系统管理',
     items: [
       { path: '/admin/users', title: '用户', icon: Avatar, roles: ['admin'] },
-      { path: '/admin/system/audit-logs', title: '操作日志', icon: List, roles: ['admin'] },
+      {
+        path: '/admin/system/staff',
+        title: '管理员账号',
+        icon: User,
+        roles: ['admin'],
+      },
+      {
+        path: '/admin/system/audit-logs',
+        title: '操作日志',
+        icon: List,
+        roles: ['admin'],
+      },
       { path: '/admin/system/notifications', title: '通知中心', icon: Bell },
-      { path: '/admin/settings', title: '系统设置', icon: Setting, roles: ['admin'] },
+      {
+        path: '/admin/settings',
+        title: '系统设置',
+        icon: Setting,
+        roles: ['admin'],
+      },
     ],
   },
 ]
@@ -155,13 +180,15 @@ const filteredMenuGroups = computed(() => {
   return menuGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.roles || (role && item.roles.includes(role))),
+      items: group.items.filter(
+        (item) => !item.roles || (role && item.roles.includes(role)),
+      ),
     }))
     .filter((group) => group.items.length > 0)
 })
 
 // 计算当前激活的菜单项 — 匹配最长前缀的菜单路径
-const allMenuPaths = menuGroups.flatMap(g => g.items.map(i => i.path))
+const allMenuPaths = menuGroups.flatMap((g) => g.items.map((i) => i.path))
 const activeMenu = computed(() => {
   const path = route.path
   if (allMenuPaths.includes(path)) return path
@@ -175,7 +202,9 @@ const activeMenu = computed(() => {
 })
 
 const currentSectionTitle = computed(() => {
-  const match = menuGroups.find((group) => group.items.some((item) => item.path === activeMenu.value))
+  const match = menuGroups.find((group) =>
+    group.items.some((item) => item.path === activeMenu.value),
+  )
   return match?.title || 'LingTour Operations'
 })
 
@@ -229,7 +258,11 @@ watch(() => route.fullPath, closeMobileMenu)
         </span>
       </button>
 
-      <div v-if="!isCollapse || isMobile" class="sidebar-status" aria-label="当前使用线上接口数据">
+      <div
+        v-if="!isCollapse || isMobile"
+        class="sidebar-status"
+        aria-label="当前使用线上接口数据"
+      >
         <span class="status-dot" />
         <span>线上数据</span>
         <small>Production API</small>
@@ -271,7 +304,13 @@ watch(() => route.fullPath, closeMobileMenu)
           <button
             type="button"
             class="header-icon-button collapse-btn"
-            :aria-label="isMobile ? '打开导航菜单' : isCollapse ? '展开导航菜单' : '收起导航菜单'"
+            :aria-label="
+              isMobile
+                ? '打开导航菜单'
+                : isCollapse
+                  ? '展开导航菜单'
+                  : '收起导航菜单'
+            "
             :aria-expanded="isMobile ? mobileMenuOpen : !isCollapse"
             @click="toggleSidebar"
           >
@@ -292,7 +331,11 @@ watch(() => route.fullPath, closeMobileMenu)
           </div>
           <div v-if="showEditorLocaleSwitch" class="editor-locale-switch">
             <span class="editor-locale-label">编辑语言</span>
-            <el-segmented v-model="editorLocale" :options="editorLocaleOptions" size="small" />
+            <el-segmented
+              v-model="editorLocale"
+              :options="editorLocaleOptions"
+              size="small"
+            />
           </div>
           <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
             <button
@@ -310,8 +353,12 @@ watch(() => route.fullPath, closeMobileMenu)
           <div class="header-utility"><NotificationBell /></div>
           <el-dropdown>
             <span class="user-info">
-              <span class="user-avatar"><el-icon><Avatar /></el-icon></span>
-              <span class="hide-on-mobile">{{ authStore.currentUser?.name || '管理员' }}</span>
+              <span class="user-avatar"
+                ><el-icon><Avatar /></el-icon
+              ></span>
+              <span class="hide-on-mobile">{{
+                authStore.currentUser?.name || '管理员'
+              }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -337,7 +384,11 @@ watch(() => route.fullPath, closeMobileMenu)
                 @enter="animateRouteEnter"
                 @leave="animateRouteLeave"
               >
-                <component :is="Component" :key="route.fullPath" class="admin-page-stage" />
+                <component
+                  :is="Component"
+                  :key="route.fullPath"
+                  class="admin-page-stage"
+                />
               </Transition>
             </router-view>
           </ErrorBoundary>
@@ -362,7 +413,11 @@ watch(() => route.fullPath, closeMobileMenu)
   flex-direction: column;
   background-color: var(--lt-bg-sidebar);
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(111, 175, 157, 0.16), transparent 18rem),
+    radial-gradient(
+      circle at 12% 0%,
+      rgba(111, 175, 157, 0.16),
+      transparent 18rem
+    ),
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 32%);
   overflow-x: hidden;
   overflow-y: auto;
@@ -469,7 +524,9 @@ watch(() => route.fullPath, closeMobileMenu)
   justify-content: space-between;
   padding: 0 clamp(14px, 2vw, 28px);
   height: 72px;
-  transition: background-color 0.3s, border-color 0.3s;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
 }
 
 .header-left {
@@ -591,11 +648,18 @@ watch(() => route.fullPath, closeMobileMenu)
   background: color-mix(in srgb, var(--lt-bg-hover) 70%, transparent);
   color: var(--lt-text-secondary);
   cursor: pointer;
-  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
 }
 
 .header-search-button:hover {
-  border-color: color-mix(in srgb, var(--lt-primary) 35%, var(--lt-border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--lt-primary) 35%,
+    var(--lt-border-color)
+  );
   background: var(--lt-bg-hover);
   color: var(--lt-primary);
 }

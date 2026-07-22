@@ -250,6 +250,12 @@ const routes: RouteRecordRaw[] = [
       },
       // 操作日志
       {
+        path: 'system/staff',
+        name: 'StaffAccounts',
+        component: () => import('@/views/system/StaffAccounts.vue'),
+        meta: { title: '管理员账号', roles: ['admin'] },
+      },
+      {
         path: 'system/audit-logs',
         name: 'AuditLogs',
         component: () => import('@/views/system/AuditLogs.vue'),

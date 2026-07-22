@@ -7,14 +7,16 @@ import router from '@/router'
 export const useAuthStore = defineStore('auth', () => {
   // State
   const token = ref<string | null>(localStorage.getItem('token'))
-  const user = ref<AdminUser | null>((() => {
-    try {
-      return JSON.parse(localStorage.getItem('user') || 'null')
-    } catch {
-      localStorage.removeItem('user')
-      return null
-    }
-  })())
+  const user = ref<AdminUser | null>(
+    (() => {
+      try {
+        return JSON.parse(localStorage.getItem('user') || 'null')
+      } catch {
+        localStorage.removeItem('user')
+        return null
+      }
+    })(),
+  )
 
   // Getters
   /**
@@ -43,6 +45,10 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (!access_token || !loginUser) {
       throw new Error('Invalid response format')
+    }
+
+    if (loginUser.role !== 'admin' && loginUser.role !== 'editor') {
+      throw new Error('该账号没有后台管理权限')
     }
 
     token.value = access_token
