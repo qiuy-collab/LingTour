@@ -67,37 +67,37 @@ onUnmounted(() => motionContext?.revert())
         <span class="brand-mark" aria-hidden="true">LT</span>
         <span>
           <strong>LingTour</strong>
-          <small>Field operations</small>
+          <small>管理后台</small>
         </span>
       </div>
 
       <div class="story-copy">
         <div class="environment-pill">
           <span class="status-dot" />
-          Production workspace
+          线上服务已连接
         </div>
-        <p class="story-eyebrow">城市文化旅行的内容中枢</p>
-        <h1 id="login-story-title">把灵感、服务与交易，<br />整理成同一段旅程。</h1>
+        <p class="story-eyebrow">LINGTOUR 管理后台</p>
+        <h1 id="login-story-title">管理城市内容、路线与服务。</h1>
         <p class="story-lead">
-          在一个安静、清晰的工作台中维护城市、路线、商品、视频媒体与口译服务。
+          内容修改可预览，图片与视频统一从媒体库选择，数据直接同步线上接口。
         </p>
       </div>
 
       <div class="story-footer" aria-hidden="true">
-        <span>CONTENT</span>
+        <span>内容</span>
         <i />
-        <span>COMMERCE</span>
+        <span>交易</span>
         <i />
-        <span>SERVICE</span>
+        <span>服务</span>
       </div>
     </section>
 
     <section class="login-panel" aria-label="后台登录">
       <div class="login-card">
         <div class="login-header">
-          <p>LINGTOUR ADMIN</p>
+          <p>账号登录</p>
           <h2>欢迎回来</h2>
-          <span>登录后继续管理线上产品内容与运营工作流。</span>
+          <span>仅管理员和内容编辑账号可以进入。</span>
         </div>
 
         <el-form
@@ -143,7 +143,7 @@ onUnmounted(() => motionContext?.revert())
 
         <div class="login-meta">
           <span><i class="status-dot" />线上接口已连接</span>
-          <small>Secure editorial access</small>
+          <small>安全登录</small>
         </div>
       </div>
     </section>
@@ -155,7 +155,7 @@ onUnmounted(() => motionContext?.revert())
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(420px, 0.65fr);
   min-height: 100dvh;
-  background: #13241d;
+  background: #f3f0e8;
 }
 
 .login-story {
@@ -167,10 +167,10 @@ onUnmounted(() => motionContext?.revert())
   overflow: hidden;
   padding: clamp(28px, 4vw, 64px);
   background:
-    radial-gradient(circle at 78% 18%, rgba(125, 196, 174, 0.16), transparent 18rem),
-    radial-gradient(circle at 18% 92%, rgba(196, 138, 54, 0.13), transparent 22rem),
-    linear-gradient(145deg, #183229 0%, #10211a 58%, #0d1814 100%);
-  color: #eff6f2;
+    radial-gradient(circle at 78% 18%, rgba(111, 175, 157, 0.24), transparent 20rem),
+    radial-gradient(circle at 18% 92%, rgba(196, 138, 54, 0.16), transparent 24rem),
+    linear-gradient(145deg, #e8efe8 0%, #f6f2e8 58%, #efe5d3 100%);
+  color: #17372f;
 }
 
 .login-story::after {
@@ -179,11 +179,11 @@ onUnmounted(() => motionContext?.revert())
   right: -18vw;
   width: min(60vw, 740px);
   aspect-ratio: 1;
-  border: 1px solid rgba(236, 246, 240, 0.08);
+  border: 1px solid rgba(23, 55, 47, 0.08);
   border-radius: 50%;
   box-shadow:
-    0 0 0 80px rgba(236, 246, 240, 0.018),
-    0 0 0 170px rgba(236, 246, 240, 0.012);
+    0 0 0 80px rgba(23, 55, 47, 0.025),
+    0 0 0 170px rgba(23, 55, 47, 0.018);
   content: '';
   pointer-events: none;
 }
@@ -202,9 +202,9 @@ onUnmounted(() => motionContext?.revert())
   height: 46px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(23, 55, 47, 0.16);
   border-radius: 15px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.5);
   font-size: 13px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -221,7 +221,7 @@ onUnmounted(() => motionContext?.revert())
 
 .login-brand small {
   margin-top: 3px;
-  color: rgba(229, 241, 234, 0.52);
+  color: rgba(23, 55, 47, 0.55);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.17em;
@@ -241,10 +241,10 @@ onUnmounted(() => motionContext?.revert())
   align-items: center;
   gap: 10px;
   padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(23, 55, 47, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(229, 241, 234, 0.68);
+  background: rgba(255, 255, 255, 0.48);
+  color: rgba(23, 55, 47, 0.68);
   font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.08em;
@@ -269,10 +269,10 @@ onUnmounted(() => motionContext?.revert())
 }
 
 .story-copy h1 {
-  max-width: 760px;
+  max-width: 680px;
   margin: 0;
-  font-size: clamp(42px, 5vw, 76px);
-  font-weight: 520;
+  font-size: clamp(38px, 4.5vw, 64px);
+  font-weight: 580;
   letter-spacing: -0.055em;
   line-height: 1.08;
 }
@@ -280,7 +280,7 @@ onUnmounted(() => motionContext?.revert())
 .story-lead {
   max-width: 620px;
   margin: 26px 0 0;
-  color: rgba(229, 241, 234, 0.62);
+  color: rgba(23, 55, 47, 0.64);
   font-size: clamp(14px, 1.15vw, 17px);
   line-height: 1.85;
 }
@@ -291,7 +291,7 @@ onUnmounted(() => motionContext?.revert())
   display: flex;
   align-items: center;
   gap: 14px;
-  color: rgba(229, 241, 234, 0.32);
+  color: rgba(23, 55, 47, 0.38);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -300,7 +300,7 @@ onUnmounted(() => motionContext?.revert())
 .story-footer i {
   width: 24px;
   height: 1px;
-  background: rgba(229, 241, 234, 0.18);
+  background: rgba(23, 55, 47, 0.18);
 }
 
 .login-panel {
@@ -423,7 +423,7 @@ onUnmounted(() => motionContext?.revert())
   .login-panel {
     min-height: auto;
     padding: 28px 18px 42px;
-    background: #13241d;
+    background: #f3f0e8;
   }
 
   .login-card {

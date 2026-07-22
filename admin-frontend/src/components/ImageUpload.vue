@@ -64,7 +64,7 @@ const effectiveAccept = computed(() => {
     return 'image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-m4v'
   return 'image/jpeg,image/png,image/webp,image/gif'
 })
-const mediaNoun = computed(() => (props.mediaKind === 'video' ? 'video' : 'image'))
+const mediaNoun = computed(() => (props.mediaKind === 'video' ? '视频' : '图片'))
 
 function isVideoSource(url: string) {
   if (props.mediaKind === 'video') return true
@@ -72,18 +72,18 @@ function isVideoSource(url: string) {
 }
 
 const triggerLabel = computed(() => {
-  if (!fileList.value.length) return 'Choose media'
-  if (!isMultiple.value) return `Replace ${mediaNoun.value}`
-  if (hasReachedLimit.value) return 'Manage selection'
-  return 'Add more media'
+  if (!fileList.value.length) return '选择媒体'
+  if (!isMultiple.value) return `更换${mediaNoun.value}`
+  if (hasReachedLimit.value) return '管理已选文件'
+  return '继续添加'
 })
 const helperCopy = computed(() => {
   if (isMultiple.value) {
-    return `${fileList.value.length} of ${uploadLimit.value} media slots used`
+    return `已选择 ${fileList.value.length}/${uploadLimit.value}`
   }
   return fileList.value.length
-    ? `1 ${mediaNoun.value} selected`
-    : `No ${mediaNoun.value} selected yet`
+    ? `已选择 1 个${mediaNoun.value}`
+    : `尚未选择${mediaNoun.value}`
 })
 
 watch(
@@ -145,7 +145,7 @@ function handlePickerConfirm(urls: string[]) {
     const nextUrls = existing.concat(deduped.slice(0, remainingSlots))
 
     if (deduped.length > remainingSlots) {
-      ElMessage.warning(`At most ${uploadLimit.value} media files can be selected`)
+      ElMessage.warning(`最多可选择 ${uploadLimit.value} 个媒体文件`)
     }
 
     syncValue(nextUrls)
@@ -230,10 +230,10 @@ function moveItem(index: number, delta: -1 | 1) {
     <div class="upload-meta">
       <span>{{ helperCopy }}</span>
       <span>{{
-        isMultiple ? `Up to ${uploadLimit} media files` : `Single ${mediaNoun} selection`
+        isMultiple ? `最多 ${uploadLimit} 个媒体文件` : `单个${mediaNoun}`
       }}</span>
-      <span>Select from the media library or upload a local file inside the dialog.</span>
-      <span v-if="module">Folder: {{ module }}</span>
+      <span>从媒体库选择，或在弹窗中上传本地文件。</span>
+      <span v-if="module">分类：{{ module }}</span>
     </div>
 
     <MediaPickerDialog

@@ -48,13 +48,15 @@ function selectTab(key: string) {
       </div>
     </div>
 
-    <div class="workspace-tabs" role="tablist" aria-label="章节导航">
+    <div class="workspace-tabs" role="tablist" aria-label="内容分区">
       <button
         v-for="tab in tabs"
         :key="tab.key"
         type="button"
         class="workspace-tab"
         :class="{ active: modelValue === tab.key }"
+        role="tab"
+        :aria-selected="modelValue === tab.key"
         @click="selectTab(tab.key)"
       >
         <span class="workspace-tab__label">{{ tab.label }}</span>
@@ -75,16 +77,7 @@ function selectTab(key: string) {
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 20px;
-  border-radius: var(--lt-radius-lg);
-  background:
-    radial-gradient(circle at top left, var(--lt-primary-soft), transparent 34%),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 0%,
-      var(--lt-bg-card) 65%
-    );
-  border: 1px solid color-mix(in srgb, var(--lt-primary) 18%, var(--lt-border-color));
+  padding: 0;
 }
 
 .workspace-copy {
@@ -146,7 +139,10 @@ function selectTab(key: string) {
 .workspace-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--lt-radius-lg);
+  background: var(--lt-bg-hover);
 }
 
 .workspace-tab {
@@ -155,9 +151,9 @@ function selectTab(key: string) {
   gap: 8px;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--lt-border-color);
-  border-radius: var(--lt-radius-lg);
-  background: var(--lt-bg-card);
+  border: 0;
+  border-radius: var(--lt-radius-md);
+  background: transparent;
   color: var(--lt-text-regular);
   cursor: pointer;
   transition:
@@ -169,20 +165,13 @@ function selectTab(key: string) {
 }
 
 .workspace-tab:hover {
-  border-color: color-mix(in srgb, var(--lt-primary) 28%, var(--lt-border-color));
-  box-shadow: var(--lt-shadow-md);
-  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--lt-bg-card) 70%, transparent);
 }
 
 .workspace-tab.active {
-  border-color: var(--lt-primary);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--lt-primary-soft) 76%, var(--lt-bg-card)) 0%,
-    color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 100%
-  );
+  background: var(--lt-bg-card);
   color: var(--lt-primary-dark);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--lt-primary) 14%, transparent);
+  box-shadow: var(--lt-shadow-sm);
 }
 
 .workspace-tab__label {

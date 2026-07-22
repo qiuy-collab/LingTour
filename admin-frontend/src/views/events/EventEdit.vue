@@ -309,7 +309,7 @@ async function handleSave() {
 
         <EditorWorkspace
           v-model="activeWorkspace"
-          eyebrow="Event Content Workspace"
+          eyebrow="活动内容"
           title="活动内容工作台"
           description="日期、关联城市、标签和封面放在固定区，前台真正展示的摘要与正文集中在这里编辑。"
           :active-label="workspaceTabs.find((item) => item.key === activeWorkspace)?.label || '摘要展示'"

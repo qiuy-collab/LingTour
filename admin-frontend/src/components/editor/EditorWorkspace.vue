@@ -15,7 +15,7 @@ withDefaults(
     modelValue: string
   }>(),
   {
-    eyebrow: 'Content Workspace',
+    eyebrow: '内容编辑',
     description: '',
     activeLabel: '',
   },
@@ -40,13 +40,15 @@ const emit = defineEmits<{
         </div>
         <slot name="toolbar" />
       </div>
-      <div class="workspace-tabs">
+      <div class="workspace-tabs" role="tablist" aria-label="内容分区">
         <button
           v-for="tab in tabs"
           :key="tab.key"
           type="button"
           class="workspace-tab"
           :class="{ active: modelValue === tab.key }"
+          role="tab"
+          :aria-selected="modelValue === tab.key"
           @click="emit('update:modelValue', tab.key)"
         >
           <span>{{ tab.label }}</span>
@@ -78,16 +80,7 @@ const emit = defineEmits<{
 }
 
 .workspace-intro {
-  padding: 18px 20px;
-  border: 1px solid color-mix(in srgb, var(--lt-primary) 18%, var(--lt-border-color));
-  border-radius: var(--lt-radius-lg);
-  background:
-    radial-gradient(circle at top left, var(--lt-primary-soft), transparent 34%),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 0%,
-      var(--lt-bg-card) 65%
-    );
+  min-width: 0;
 }
 
 .workspace-eyebrow {
@@ -136,8 +129,11 @@ const emit = defineEmits<{
 .workspace-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 4px;
   margin-top: 16px;
+  padding: 4px;
+  border-radius: var(--lt-radius-lg);
+  background: var(--lt-bg-hover);
 }
 
 .workspace-tab {
@@ -146,15 +142,14 @@ const emit = defineEmits<{
   gap: 8px;
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--lt-border-color);
-  border-radius: var(--lt-radius-lg);
-  background: var(--lt-bg-card);
+  border: 0;
+  border-radius: var(--lt-radius-md);
+  background: transparent;
   color: var(--lt-text-regular);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
-    border-color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease,
     color 0.2s ease,
@@ -168,20 +163,13 @@ const emit = defineEmits<{
 }
 
 .workspace-tab:hover {
-  border-color: color-mix(in srgb, var(--lt-primary) 28%, var(--lt-border-color));
-  box-shadow: var(--lt-shadow-md);
-  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--lt-bg-card) 70%, transparent);
 }
 
 .workspace-tab.active {
-  border-color: var(--lt-primary);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--lt-primary-soft) 76%, var(--lt-bg-card)) 0%,
-    color-mix(in srgb, var(--lt-primary-soft) 38%, var(--lt-bg-card)) 100%
-  );
+  background: var(--lt-bg-card);
   color: var(--lt-primary-dark);
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--lt-primary) 14%, transparent);
+  box-shadow: var(--lt-shadow-sm);
 }
 
 .workspace-panel {

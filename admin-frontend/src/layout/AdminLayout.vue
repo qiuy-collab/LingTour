@@ -103,7 +103,7 @@ interface MenuGroup {
 const menuGroups: MenuGroup[] = [
   {
     title: '概览',
-    items: [{ path: '/admin/dashboard', title: '仪表盘', icon: DataAnalysis }],
+    items: [{ path: '/admin/dashboard', title: '运营概览', icon: DataAnalysis }],
   },
   {
     title: '内容管理',
@@ -254,7 +254,7 @@ watch(() => route.fullPath, closeMobileMenu)
         <span class="brand-mark" aria-hidden="true">LT</span>
         <span v-if="!isCollapse || isMobile" class="brand-copy">
           <strong>LingTour</strong>
-          <small>Field operations</small>
+          <small>管理后台</small>
         </span>
       </button>
 
@@ -291,7 +291,7 @@ watch(() => route.fullPath, closeMobileMenu)
       </el-menu>
 
       <div v-if="!isCollapse || isMobile" class="sidebar-footer">
-        <span>Editorial system</span>
+        <span>线上内容与运营</span>
         <small>Content · Commerce · Service</small>
       </div>
     </el-aside>

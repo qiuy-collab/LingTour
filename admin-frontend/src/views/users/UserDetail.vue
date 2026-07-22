@@ -17,6 +17,7 @@ import {
 } from '@/types/user'
 import { formatDateTime } from '@/utils/format'
 import { extractErrorMessage } from '@/utils/i18n'
+import ImageUpload from '@/components/ImageUpload.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,6 +36,12 @@ const form = reactive<UpdateUserProfilePayload>({
 })
 
 const visibilityOptions: ProfileVisibility[] = ['public', 'community', 'private']
+const avatarUrl = computed({
+  get: () => form.avatarUrl || '',
+  set: (value: string | string[]) => {
+    form.avatarUrl = typeof value === 'string' ? value : value[0] || ''
+  },
+})
 
 const latestDispatchLabel = computed(() => {
   if (!user.value?.latestDispatchAt) return '-'
@@ -187,7 +194,7 @@ onMounted(() => {
           <el-card shadow="never" class="section-card">
             <template #header>
               <div class="card-header">
-                <span>Personal Vault 档案管理</span>
+                <span>用户资料</span>
                 <el-button type="primary" size="small" :loading="saving" @click="saveProfile">
                   保存资料
                 </el-button>
@@ -202,8 +209,8 @@ onMounted(() => {
                   </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12">
-                  <el-form-item label="头像 URL">
-                    <el-input v-model="form.avatarUrl" placeholder="https://..." />
+                  <el-form-item label="头像">
+                    <ImageUpload v-model="avatarUrl" media-kind="image" module="avatars" />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -215,22 +222,22 @@ onMounted(() => {
                   </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12">
-                  <el-form-item label="Home Base">
+                  <el-form-item label="常驻城市">
                     <el-input v-model="form.homeBase" placeholder="例如：广州 / 上海" />
                   </el-form-item>
                 </el-col>
               </el-row>
 
-              <el-form-item label="Travel Style">
-                <el-input v-model="form.travelStyle" placeholder="例如：Coastal routes and food walks" />
+              <el-form-item label="旅行偏好">
+                <el-input v-model="form.travelStyle" placeholder="例如：滨海路线、美食漫步" />
               </el-form-item>
 
-              <el-form-item label="Bio">
+              <el-form-item label="个人简介">
                 <el-input
                   v-model="form.bio"
                   type="textarea"
                   :rows="4"
-                  placeholder="用户在 Personal Vault 中看到的个人说明"
+                  placeholder="用户公开资料中显示的个人说明"
                 />
               </el-form-item>
 
@@ -248,14 +255,14 @@ onMounted(() => {
             </template>
 
             <div class="stats-grid">
-              <el-statistic title="Dispatch 总数" :value="user.dispatchCount || 0" />
-              <el-statistic title="带图 Dispatch" :value="user.photoDispatchCount || 0" />
+              <el-statistic title="社区动态" :value="user.dispatchCount || 0" />
+              <el-statistic title="带图动态" :value="user.photoDispatchCount || 0" />
               <el-statistic title="口译预约" :value="user.bookingsCount" />
               <el-statistic title="商城订单" :value="user.ordersCount" />
             </div>
 
             <div class="latest-dispatch">
-              <div class="latest-label">最近一条 Dispatch</div>
+              <div class="latest-label">最近一条社区动态</div>
               <div class="latest-title">{{ user.latestDispatchTitle || '暂无社区内容' }}</div>
               <div class="latest-meta">{{ latestDispatchLabel }}</div>
             </div>

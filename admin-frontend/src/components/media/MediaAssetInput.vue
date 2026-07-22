@@ -74,7 +74,7 @@ const posterUrl = computed({
 
 <template>
   <div class="media-asset-input">
-    <div class="media-type-switch" role="group" aria-label="Primary media type">
+    <div class="media-type-switch" role="group" aria-label="主媒体类型">
       <button
         type="button"
         class="media-type-option"
@@ -83,7 +83,7 @@ const posterUrl = computed({
         @click="mediaType = 'image'"
       >
         <el-icon><Picture /></el-icon>
-        <span>Image</span>
+        <span>图片</span>
       </button>
       <button
         type="button"
@@ -93,14 +93,14 @@ const posterUrl = computed({
         @click="mediaType = 'video'"
       >
         <el-icon><VideoCamera /></el-icon>
-        <span>Video</span>
+        <span>视频</span>
       </button>
     </div>
 
     <div class="media-field">
       <div class="media-field-heading">
-        <strong>{{ mediaType === 'video' ? 'Video source' : 'Image source' }}</strong>
-        <span>Choose an existing file or upload one into the media library.</span>
+        <strong>{{ mediaType === 'video' ? '视频文件' : '图片文件' }}</strong>
+        <span>从媒体库选择已有文件，或上传本地文件。</span>
       </div>
       <ImageUpload
         v-model="mediaUrl"
@@ -113,10 +113,9 @@ const posterUrl = computed({
 
     <div v-if="mediaType === 'video'" class="media-field poster-field">
       <div class="media-field-heading">
-        <strong>Poster fallback</strong>
+        <strong>视频封面</strong>
         <span
-          >Required before publishing; used on cards, reduced-motion devices, and while
-          loading.</span
+          >发布前必须设置，用于列表卡片、加载过程和减少动态效果的设备。</span
         >
       </div>
       <ImageUpload
@@ -128,7 +127,7 @@ const posterUrl = computed({
       />
       <el-alert
         v-if="mediaUrl && !posterUrl"
-        title="Add a poster before publishing this video."
+        title="发布视频前请先添加封面。"
         type="warning"
         :closable="false"
         show-icon

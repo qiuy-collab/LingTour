@@ -405,11 +405,11 @@ const selectedRouteCards = computed(() =>
 
         <EditorWorkspace
           v-model="activeChapter"
-          eyebrow="City Story Workspace"
+          eyebrow="城市内容"
           title="章节工作台"
           description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
           :active-label="
-            chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || 'Overview'
+            chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || '基础信息'
           "
           :tabs="chapterTabs"
         >

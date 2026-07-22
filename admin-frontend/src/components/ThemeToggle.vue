@@ -18,14 +18,17 @@ function handleCommand(mode: ThemeMode) {
 
 <template>
   <el-dropdown trigger="click" @command="handleCommand">
-    <el-tooltip :content="isDark ? '切换主题 (当前: 深色)' : '切换主题 (当前: 浅色)'" placement="bottom">
-      <button type="button" class="theme-toggle-btn" aria-label="切换后台主题">
-        <el-icon>
-          <Moon v-if="isDark" />
-          <Sunny v-else />
-        </el-icon>
-      </button>
-    </el-tooltip>
+    <button
+      type="button"
+      class="theme-toggle-btn"
+      aria-label="切换后台主题"
+      :title="isDark ? '切换主题（当前：深色）' : '切换主题（当前：浅色）'"
+    >
+      <el-icon>
+        <Moon v-if="isDark" />
+        <Sunny v-else />
+      </el-icon>
+    </button>
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item

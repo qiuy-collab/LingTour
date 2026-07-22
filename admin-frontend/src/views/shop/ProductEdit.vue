@@ -365,7 +365,7 @@ async function handleSave() {
 
         <EditorWorkspace
           v-model="activeWorkspace"
-          eyebrow="Product Story Workspace"
+          eyebrow="商品内容"
           title="商品内容工作台"
           description="主图、价格、库存和溯源单独维护，真正给前台展示的故事和细节集中在这里编辑。"
           :active-label="activeWorkspaceLabel"

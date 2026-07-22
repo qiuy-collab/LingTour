@@ -122,7 +122,7 @@ async function handleSave() {
         <EditorWorkspace
           model-value="content"
           title="FAQ 内容工作台"
-          eyebrow="FAQ Content"
+          eyebrow="常见问题内容"
           description="分类和排序放固定区，问题与答案在这里集中编辑。"
           active-label="问答内容"
           :tabs="[{ key: 'content', label: '问答内容' }]"

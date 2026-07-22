@@ -162,7 +162,7 @@ async function handleSave() {
         <EditorWorkspace
           v-model="activePanel"
           title="服务内容工作台"
-          eyebrow="Service Mode Content"
+          eyebrow="服务模式内容"
           description="价格、排序和推荐状态放在固定区，面向前台的正文与服务清单集中在这里编辑。"
           :active-label="activePanel === 'body' ? '服务正文' : '服务清单'"
           :tabs="[{ key: 'body', label: '服务正文' }, { key: 'includes', label: '服务清单' }]"

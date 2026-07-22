@@ -25,7 +25,7 @@ interface CommandItem {
 }
 
 const allItems: CommandItem[] = [
-  { title: '仪表盘', path: '/admin/dashboard', group: '概览', keywords: 'dashboard 首页 统计' },
+  { title: '运营概览', path: '/admin/dashboard', group: '概览', keywords: '首页 统计 数据' },
   { title: '城市管理', path: '/admin/cities', group: '内容管理', keywords: 'city 城市' },
   { title: '新增城市', path: '/admin/cities/create', group: '内容管理', keywords: 'city create' },
   { title: '路线管理', path: '/admin/routes', group: '内容管理', keywords: 'route 路线 线路' },

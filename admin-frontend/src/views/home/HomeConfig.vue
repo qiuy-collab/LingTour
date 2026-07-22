@@ -233,14 +233,14 @@ async function handleSave() {
 
     <EditorWorkspace
       v-model="activeBlock"
-      eyebrow="Home Content Workspace"
-      title="Homepage Module Workspace"
+      eyebrow="首页内容"
+      title="首页模块设置"
       description="Edit the modular homepage pieces here without scrolling through one giant form."
       :active-label="HomeConfigBlockLabels[activeBlock]"
       :tabs="workspaceTabs"
     >
       <div v-if="activeBlock === 'hero'" class="workspace-panel">
-        <div class="panel-title">Hero Media & Film Chapter</div>
+        <div class="panel-title">首屏图片与视频</div>
         <div class="block-item">
           <div class="block-item-header">
             <span>Homepage cover system</span>
@@ -249,7 +249,7 @@ async function handleSave() {
             <el-col :span="8">
               <el-form-item label="Hero cover">
                 <ImageUpload v-model="config.hero.image" module="home" />
-                <div class="field-hint">Full-bleed image shown in the first fold.</div>
+                <div class="field-hint">显示在首页首屏的全宽图片。</div>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -287,13 +287,13 @@ async function handleSave() {
 
         <div class="block-item">
           <div class="block-item-header">
-            <span>Video chapter (optional)</span>
+            <span>首页视频（选填）</span>
           </div>
           <el-form-item label="Homepage video">
             <ImageUpload v-model="config.hero.video.url" media-kind="video" module="home" entity-type="home" />
-            <div class="field-hint">Choose a video from the media library. Leave empty to hide the section.</div>
+            <div class="field-hint">从媒体库选择视频；留空时前台不显示该模块。</div>
           </el-form-item>
-          <el-form-item label="Poster image">
+          <el-form-item label="视频封面">
             <ImageUpload v-model="config.hero.video.poster" module="home" />
             <div class="field-hint">Shown before the visitor chooses to play the film.</div>
           </el-form-item>
@@ -339,7 +339,7 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="Note">
+              <el-form-item label="区域说明">
                 <I18nInput v-model="item.note" />
               </el-form-item>
             </el-col>

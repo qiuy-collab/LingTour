@@ -187,7 +187,7 @@ async function handleSave() {
         <EditorWorkspace
           model-value="body"
           title="系列内容工作台"
-          eyebrow="Collection Content"
+          eyebrow="合集内容"
           description="基础信息、路线关联和发布状态放固定区，前台展示文案在这里集中编辑。"
           active-label="系列正文"
           :tabs="[{ key: 'body', label: '系列正文' }]"

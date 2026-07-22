@@ -192,7 +192,7 @@ async function handleSave() {
         <EditorWorkspace
           model-value="bio"
           title="口译员内容工作台"
-          eyebrow="Interpreter Content"
+          eyebrow="口译员资料"
           description="将前台展示的个人简介集中在这里维护，封面图、状态和能力标签则保留在上方基础信息区域。"
           active-label="个人简介"
           :tabs="[{ key: 'bio', label: '个人简介' }]"

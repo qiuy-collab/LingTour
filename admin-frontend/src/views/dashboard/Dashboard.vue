@@ -11,6 +11,7 @@ import { useTheme } from '@/composables/useTheme'
 import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '@/utils/motion'
+import OperationsGuide from '@/components/OperationsGuide.vue'
 import {
   User,
   MapLocation,
@@ -457,9 +458,9 @@ onUnmounted(() => {
   <div ref="dashboardRoot" class="dashboard" v-loading="loading">
     <section class="dashboard-intro">
       <div class="intro-copy">
-        <p class="intro-eyebrow">OPERATIONS PULSE · {{ todayLabel }}</p>
-        <h2>让今天的运营重点，一眼可见。</h2>
-        <p>内容、交易与服务的实时汇总，数据直接来自线上接口。</p>
+        <p class="intro-eyebrow">线上实时数据 · {{ todayLabel }}</p>
+        <h2>今日待办与内容状态</h2>
+        <p>快速查看待处理预约、订单和已发布内容。</p>
       </div>
       <div class="intro-signal">
         <span>待处理事项</span>
@@ -467,6 +468,8 @@ onUnmounted(() => {
         <small>{{ publishedTotal }} 项内容资产在线</small>
       </div>
     </section>
+
+    <OperationsGuide />
 
     <nav class="quick-actions" aria-label="快捷操作">
       <button
@@ -512,7 +515,7 @@ onUnmounted(() => {
       <article class="chart-card chart-card--wide">
         <header class="chart-header">
           <div>
-            <span>30 DAY SIGNAL</span>
+            <span>近 30 天</span>
             <h3>订单趋势</h3>
           </div>
           <p>金额与订单量的联合变化</p>
@@ -523,7 +526,7 @@ onUnmounted(() => {
       <article class="chart-card">
         <header class="chart-header">
           <div>
-            <span>SERVICE MIX</span>
+            <span>服务构成</span>
             <h3>口译预约分布</h3>
           </div>
           <p>按服务模式拆分</p>
@@ -534,7 +537,7 @@ onUnmounted(() => {
       <article class="chart-card">
         <header class="chart-header">
           <div>
-            <span>DESTINATION PULSE</span>
+            <span>目的地热度</span>
             <h3>热门城市 Top 5</h3>
           </div>
           <p>路线与预约热度</p>
