@@ -124,7 +124,7 @@ export default function HomeClient({
       />
 
       <div className="relative z-10">
-        <HomeVideoChapter video={hero.video} fallbackPoster={heroImage} />
+        <HomeVideoChapter video={hero.video} />
 
         {/* 2. MAP PILLAR */}
         <GuangdongMapSection cities={regionShowcase} events={liveEvents} />
