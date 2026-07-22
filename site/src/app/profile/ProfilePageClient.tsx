@@ -106,6 +106,7 @@ export function ProfilePageClient() {
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab") as ProfileTab | null;
   const activeTab = PROFILE_TABS.some((tab) => tab.key === requestedTab) ? requestedTab! : "notes";
+  const profilePath = `/profile${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const tabRefs = useRef<Partial<Record<ProfileTab, HTMLButtonElement | null>>>({});
   const [user, setUser] = useState<LocalUser | null>(null);
@@ -164,15 +165,18 @@ export function ProfilePageClient() {
   }
 
   useEffect(() => {
-    hydrateProfile(readStoredUser());
-    setFavorites(readFavorites());
-    setCart(readCart());
-    setReady(true);
-
-    const hasToken = Boolean(window.localStorage.getItem("lingtour-token"));
-    if (!hasToken) return;
+    const token = window.localStorage.getItem("lingtour-token");
+    if (!token) {
+      clearStoredAuth();
+      router.replace(`/login?next=${encodeURIComponent(profilePath)}`);
+      return;
+    }
 
     let cancelled = false;
+    setReady(false);
+    setBookingsReady(false);
+    setFavorites(readFavorites());
+    setCart(readCart());
     void Promise.allSettled([
       refreshCurrentUserProfile(),
       fetchSavedCommunityPosts(locale, 24),
@@ -180,17 +184,23 @@ export function ProfilePageClient() {
       fetchStoreProducts(locale),
     ]).then(([profileResult, notesResult, bookingsResult, productsResult]) => {
       if (cancelled) return;
-      if (profileResult.status === "fulfilled") hydrateProfile(profileResult.value);
+      if (profileResult.status === "rejected") {
+        clearStoredAuth();
+        router.replace(`/login?next=${encodeURIComponent(profilePath)}`);
+        return;
+      }
+      hydrateProfile(profileResult.value);
       if (notesResult.status === "fulfilled") setSavedNotes(notesResult.value);
       if (bookingsResult.status === "fulfilled") setBookings(bookingsResult.value);
       if (productsResult.status === "fulfilled") setStoreProducts(productsResult.value);
       setBookingsReady(true);
+      setReady(true);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [locale]);
+  }, [locale, profilePath, router]);
 
   useEffect(() => {
     if (!ready) return;
@@ -254,18 +264,7 @@ export function ProfilePageClient() {
 
   if (!ready) return <div className="min-h-[60vh] bg-[var(--paper-deep)]" />;
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[var(--paper-deep)] bg-grain py-20">
-        <EmptyArchive
-          title={t("account.profile.signInTitle")}
-          body={t("account.profile.signInBody")}
-          href="/login"
-          cta={t("account.profile.signInCta")}
-        />
-      </div>
-    );
-  }
+  if (!user) return null;
 
   return (
     <PastoralPageMotion
