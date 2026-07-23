@@ -52,10 +52,10 @@ const INITIAL_FORM: CheckoutForm = {
 };
 
 const CHECKOUT_FIELD_CLASS =
-  "min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+  "min-h-12 w-full border-0 border-b border-[var(--line)] bg-transparent px-0 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]";
 
 const CHECKOUT_PANEL_CLASS =
-  "min-w-0 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] sm:p-7";
+  "min-w-0 border-t border-[var(--line)] py-7 sm:py-9";
 
 function formatStorePrice(price: number, currency = "CNY") {
   return formatCurrency(price, currency);
@@ -405,10 +405,10 @@ export function CheckoutClient() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <div className="grid min-h-screen min-w-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(24rem,0.85fr)]">
-        <section className="min-w-0 border-r border-[var(--line)]/40 px-4 py-10 sm:px-6 lg:px-16 lg:py-20">
-          <div className="mx-auto min-w-0 max-w-2xl">
+    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain py-10 text-[var(--river-deep)] sm:py-14 lg:py-20">
+      <div className="site-container grid min-h-screen min-w-0 gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] lg:gap-16 xl:gap-24">
+        <section className="min-w-0">
+          <div className="min-w-0">
             <div className="mb-10 sm:mb-12">
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--cinnabar)]">
                 {t("checkout.page.eyebrow")}
@@ -434,7 +434,7 @@ export function CheckoutClient() {
               </div>
             ) : null}
 
-            <div className="grid min-w-0 gap-5 sm:gap-6">
+            <div className="grid min-w-0">
               <section className={CHECKOUT_PANEL_CLASS}>
                 <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.contactSection")}
@@ -581,7 +581,7 @@ export function CheckoutClient() {
                     id="checkout-note"
                     value={form.note}
                     onChange={(event) => updateField("note", event.target.value)}
-                    className="min-h-[120px] w-full resize-y rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 p-4 text-sm leading-7 outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]"
+                    className="min-h-[120px] w-full resize-y border-0 border-b border-[var(--line)] bg-transparent px-0 py-4 text-sm leading-7 outline-none transition focus:border-[var(--cinnabar)]"
                     placeholder={t("checkout.form.notesPlaceholder")}
                   />
                 </label>
@@ -590,19 +590,19 @@ export function CheckoutClient() {
           </div>
         </section>
 
-        <aside className="min-w-0 border-t border-[var(--line)] bg-[var(--paper)]/52 px-4 py-10 sm:px-6 lg:border-t-0 lg:px-12 lg:py-20">
-          <div className="sticky top-24 mx-auto max-w-md">
-            <div className="rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_22px_72px_rgba(17,25,35,0.09)] sm:p-7">
+        <aside className="min-w-0 border-t border-[var(--line)] pt-10 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0 xl:pl-14">
+          <div className="sticky top-24">
+            <div className="border-y border-[var(--line)] py-7 sm:py-9">
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
                 {t("checkout.summary.title")}
               </p>
-              <div className="mt-6 space-y-4">
+              <div className="mt-6">
                 {items.map((item) => (
                   <div
                     key={item.slug}
-                    className="flex items-center gap-4 rounded-2xl border border-[var(--line)]/70 bg-white/60 px-4 py-4"
+                    className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-4 border-t border-[var(--line)] py-4 last:border-b"
                   >
-                    <img src={item.image} alt="" className="h-16 w-16 shrink-0 rounded-[var(--radius-sm)] object-cover" />
+                    <img src={item.image} alt="" className="h-16 w-16 shrink-0 object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-[var(--river-deep)]">
                         {item.name}
@@ -652,10 +652,10 @@ export function CheckoutClient() {
                 type="button"
                 onClick={submitOrder}
                 disabled={!canSubmit || submitting}
-                className={`mt-8 min-h-[3.25rem] w-full rounded-full px-8 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition ${
+                className={`mt-8 min-h-[3.25rem] w-full border px-8 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition ${
                   canSubmit && !submitting
-                    ? "bg-[var(--river-deep)] text-white hover:bg-[var(--cinnabar)]"
-                    : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
+                    ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)]"
+                    : "cursor-not-allowed border-[var(--line)] bg-transparent text-[var(--muted)]"
                 }`}
               >
                 {submitting ? t("checkout.form.creatingOrder") : t("checkout.form.placeOrder")}

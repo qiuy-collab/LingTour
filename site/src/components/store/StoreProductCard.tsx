@@ -71,8 +71,12 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
                 </p>
               </div>
 
-              <Link href={`/shop/products/${product.slug}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--river-deep)] text-white transition-transform md:h-11 md:w-11 md:group-hover:scale-110">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <Link
+                href={`/shop/products/${product.slug}`}
+                className="lt-action-primary inline-flex min-h-9 shrink-0 items-center gap-2 border border-[var(--river-deep)] px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition-colors"
+              >
+                {t("common.btn.enter")}
+                <span aria-hidden>→</span>
               </Link>
             </div>
           </div>

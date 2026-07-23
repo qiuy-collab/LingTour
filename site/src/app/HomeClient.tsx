@@ -247,7 +247,7 @@ export default function HomeClient({
                             {item.quote}
                           </p>
                           <p className="mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-                            — {item.name}
+                            - {item.name}
                           </p>
                         </div>
                       ),
@@ -270,7 +270,7 @@ export default function HomeClient({
 
             <div className="relative mx-auto w-full max-w-[32rem] self-start min-[620px]:mt-10 lg:col-span-7 lg:mt-0 lg:max-w-none lg:self-center">
               <Reveal delay={300}>
-                <div className="group relative aspect-[6/5] overflow-hidden rounded-[var(--radius-xl)] border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] min-[620px]:aspect-[3/4] lg:aspect-[16/10]">
+                <div className="group relative aspect-[6/5] overflow-hidden border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] min-[620px]:aspect-[3/4] lg:aspect-[16/10]">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
@@ -289,7 +289,7 @@ export default function HomeClient({
                         {t("home.interpreting.registry")}
                       </p>
                     </div>
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/30 bg-white/10 text-lg backdrop-blur-md" aria-hidden>
+                    <span className="grid h-11 w-11 shrink-0 place-items-center border border-white/30 bg-white/10 text-lg backdrop-blur-md" aria-hidden>
                       →
                     </span>
                   </div>

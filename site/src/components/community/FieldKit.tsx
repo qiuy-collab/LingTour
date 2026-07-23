@@ -165,7 +165,7 @@ export function FieldKit<TChannel extends string>({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex justify-center overflow-y-auto overscroll-contain p-3 sm:p-6">
       <button
         type="button"
         aria-label="Close field note kit"
@@ -175,18 +175,12 @@ export function FieldKit<TChannel extends string>({
         }}
       />
 
-      <Reveal delay={0}>
+      <Reveal delay={0} className={`relative z-10 my-auto w-full ${compact ? "max-w-2xl" : "max-w-[42rem]"}`}>
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby="field-kit-title"
-          className={`relative w-full overflow-hidden journal-paper scrapbook-shadow ${
-            compact ? "max-w-2xl" : "max-w-[42rem]"
-          }`}
-          style={{
-            borderRadius: compact ? "24px" : "12px 44px 18px 36px",
-            maxHeight: compact ? "min(80vh, 740px)" : "min(84vh, 820px)",
-          }}
+          className="relative flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden border border-[var(--line)] journal-paper scrapbook-shadow sm:max-h-[calc(100dvh-3rem)]"
         >
           {!compact ? (
             <div className="pointer-events-none absolute bottom-0 left-6 top-0 hidden w-8 flex-col justify-around py-8 opacity-20 sm:flex">
@@ -200,10 +194,10 @@ export function FieldKit<TChannel extends string>({
           ) : null}
 
           <div
-            className={`scrollbar-hide overflow-y-auto ${
+            className={`min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain ${
               compact
-                ? "max-h-[80vh] p-6 sm:p-7"
-                : "max-h-[84vh] p-5 sm:p-10 sm:pl-20"
+                ? "p-5 sm:p-7"
+                : "p-5 sm:p-10 sm:pl-20"
             }`}
           >
             <div
@@ -229,7 +223,7 @@ export function FieldKit<TChannel extends string>({
                 onClick={onClose}
                 disabled={submitting}
                 aria-label="Close field note kit"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)] disabled:opacity-40"
+                className="flex h-10 w-10 items-center justify-center border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)] disabled:opacity-40"
               >
                 ×
               </button>
@@ -392,7 +386,7 @@ export function FieldKit<TChannel extends string>({
                   type="button"
                   onClick={handlePublish}
                   disabled={locked || !canPublish || submitting}
-                  className={`w-full rounded-full bg-[var(--night)] font-bold tracking-widest text-white shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
+                  className={`w-full bg-[var(--night)] font-bold tracking-widest text-white transition-all active:scale-[0.99] disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >

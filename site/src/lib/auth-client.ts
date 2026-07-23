@@ -52,6 +52,7 @@ export type AuthResponse = {
 
 export type UpdateProfileInput = {
   name?: string;
+  email?: string;
   avatarUrl?: string;
   country?: string;
   homeBase?: string;

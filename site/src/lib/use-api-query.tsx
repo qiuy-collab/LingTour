@@ -135,7 +135,9 @@ export function LoadingSpinner({
     <div className="flex min-h-[40vh] items-center justify-center">
       <div className="text-center">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-[var(--line)] border-t-[var(--cinnabar)]" />
-        <p className="mt-4 text-sm text-[var(--muted)] handwritten">{displayText}</p>
+        {displayText ? (
+          <p className="mt-4 text-sm text-[var(--muted)] handwritten">{displayText}</p>
+        ) : null}
       </div>
     </div>
   );

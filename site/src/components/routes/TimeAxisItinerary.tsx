@@ -194,7 +194,6 @@ function PracticalStrip({ stop }: { stop: Stop }) {
 }
 
 function ImagePlate({ stop }: { stop: Stop }) {
-  const { t } = useLocale();
   const frames = imageStackFor(stop);
   const [activeIndex, setActiveIndex] = useState(0);
   const mediaRef = useRef<HTMLDivElement | null>(null);
@@ -294,10 +293,10 @@ function ImagePlate({ stop }: { stop: Stop }) {
           <button
             type="button"
             onClick={showNextFrame}
-            className="absolute bottom-3 right-3 z-20 border border-black/5 bg-[var(--paper)]/92 px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/65 backdrop-blur-[1px] transition hover:bg-white hover:text-[var(--cinnabar)]"
+            className="absolute bottom-3 right-3 z-20 grid h-9 w-9 place-items-center border border-black/10 bg-[var(--paper)]/94 text-lg leading-none text-[var(--river-deep)] backdrop-blur-[1px] transition hover:border-[var(--cinnabar)] hover:bg-white hover:text-[var(--cinnabar)]"
             aria-label={`Show next media for ${stop.stop}`}
           >
-            {t("interpreting.card.tapToFlip")}
+            <span aria-hidden>↻</span>
           </button>
         ) : null}
       </div>
@@ -337,7 +336,7 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
   return (
     <section
       data-route-epilogue
-      className="mt-20 overflow-hidden border border-[var(--line)] bg-[linear-gradient(180deg,rgba(250,246,238,0.98),rgba(243,238,229,0.95))] shadow-[0_24px_60px_rgba(17,25,35,0.08)]"
+      className="mt-20 overflow-hidden border-y border-[var(--line)] bg-[linear-gradient(180deg,rgba(250,246,238,0.98),rgba(243,238,229,0.95))]"
     >
       <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
         <div className="relative min-h-[22rem] overflow-hidden bg-[var(--paper)]">
@@ -364,8 +363,9 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
           </div>
         </div>
 
-        <div className="grid gap-4 p-6 lg:p-8">
+        <div className="grid content-start border-t border-[var(--line)] lg:border-l lg:border-t-0">
           <div>
+            <div className="border-b border-[var(--line)] p-6 lg:p-8">
             <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
               {locale === "zh" ? "\u6700\u540e\u4e00\u7ad9" : "Final Stop"}
             </p>
@@ -381,14 +381,15 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
                 ))}
               </div>
             ) : null}
+            </div>
           </div>
 
           {supportFrames.length ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid border-b border-[var(--line)] ${supportFrames.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
               {supportFrames.map((frame, index) => (
                 <div
                   key={`${frame.type}:${frame.url}-${index}`}
-                  className={`overflow-hidden border border-white/70 bg-white shadow-[0_12px_30px_rgba(17,25,35,0.1)] ${
+                  className={`min-h-52 overflow-hidden border-r border-[var(--line)] bg-white last:border-r-0 ${
                     index === 1 ? "col-span-2" : ""
                   }`}
                 >
@@ -403,7 +404,7 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
             </div>
           ) : null}
 
-          <div className="rounded-2xl border border-[var(--gold)]/25 bg-[var(--gold)]/10 px-4 py-4">
+          <div className="border-t border-[var(--gold)]/24 bg-[var(--gold)]/8 p-6 lg:p-8">
             <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[var(--gold)]">
               Archive note
             </p>

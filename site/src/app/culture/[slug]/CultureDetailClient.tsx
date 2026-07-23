@@ -47,7 +47,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
   const activeCity = previewData ?? city;
 
   if (!hydrated) {
-    return <LoadingSpinner text="Opening the city file..." />;
+    return <LoadingSpinner text="" />;
   }
 
   if (previewEnabled && !activeCity) {
@@ -55,7 +55,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
   }
 
   if (loading && !activeCity) {
-    return <LoadingSpinner text="Opening the city file..." />;
+    return <LoadingSpinner text="" />;
   }
 
   if (error && !activeCity) {

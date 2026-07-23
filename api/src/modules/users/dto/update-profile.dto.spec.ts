@@ -23,4 +23,17 @@ describe('UpdateProfileDto', () => {
     expect(errors).toHaveLength(1);
     expect(errors[0].constraints?.isMediaLibraryPath).toContain('/uploads/');
   });
+
+  it('accepts a valid profile email', async () => {
+    const dto = new UpdateProfileDto();
+    dto.email = 'traveler@example.com';
+    await expect(validate(dto)).resolves.toHaveLength(0);
+  });
+
+  it('rejects an invalid profile email', async () => {
+    const dto = new UpdateProfileDto();
+    dto.email = 'not-an-email';
+    const errors = await validate(dto);
+    expect(errors[0].constraints?.isEmail).toBeDefined();
+  });
 });

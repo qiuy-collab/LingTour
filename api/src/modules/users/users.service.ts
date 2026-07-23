@@ -187,6 +187,14 @@ export class UsersService {
 
   async updateProfile(id: string, payload: UpdateProfileDto) {
     const user = await this.findByIdOrFail(id);
+    if (payload.email !== undefined) {
+      const email = payload.email.trim().toLowerCase();
+      const duplicate = await this.findByEmail(email);
+      if (duplicate && duplicate.id !== id) {
+        throw new ConflictException('This email is already in use');
+      }
+      user.email = email;
+    }
     Object.assign(user, this.normalizeProfilePayload(payload, user));
     const saved = await this.userRepository.save(user);
     return this.toManagedUser(saved);

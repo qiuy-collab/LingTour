@@ -92,7 +92,7 @@ export function HomeAtlasHero({
   return (
     <section
       ref={scope}
-      className="relative isolate flex min-h-[44rem] overflow-hidden border-b border-[var(--line)] bg-[var(--night)] text-white lg:min-h-[calc(100svh-4.5rem)] lg:bg-[#ebe9e3] lg:text-[var(--river-deep)]"
+      className="relative isolate flex min-h-[44rem] overflow-hidden border-b border-[var(--line)] bg-[var(--night)] text-white lg:min-h-[calc(100svh-4.5rem)] lg:bg-[var(--background)] lg:text-[var(--river-deep)]"
     >
       <div className="absolute inset-0 overflow-hidden lg:left-[43%]">
         <img
@@ -103,7 +103,7 @@ export function HomeAtlasHero({
           className="h-full w-full object-cover"
         />
       </div>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.12),rgba(8,18,24,0.36)_45%,rgba(8,18,24,0.92))] lg:bg-[linear-gradient(90deg,#ebe9e3_0%,#ebe9e3_39%,rgba(235,233,227,0.88)_48%,rgba(235,233,227,0.08)_72%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.12),rgba(8,18,24,0.36)_45%,rgba(8,18,24,0.92))] lg:bg-[linear-gradient(90deg,var(--background)_0%,var(--background)_40%,rgba(236,233,226,0.9)_49%,rgba(236,233,226,0.16)_72%)]" />
 
       <div className="site-container relative z-10 flex w-full flex-col justify-end pb-7 pt-28 sm:pb-10 lg:justify-center lg:pb-12 lg:pt-16">
         <div data-home-copy className="max-w-[46rem] lg:max-w-[50rem]">

@@ -122,6 +122,7 @@ export function ProfilePageClient() {
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     name: "",
+    email: "",
     country: "",
     homeBase: "",
     travelStyle: "",
@@ -156,6 +157,7 @@ export function ProfilePageClient() {
     if (!nextUser) return;
     setForm({
       name: nextUser.name || "",
+      email: nextUser.email || "",
       country: normalizeCountryCode(nextUser.country),
       homeBase: nextUser.homeBase || "",
       travelStyle: nextUser.travelStyle || "",
@@ -220,11 +222,16 @@ export function ProfilePageClient() {
       setMessage(t("account.profile.nameRequired"));
       return;
     }
+    if (!form.email.trim()) {
+      setMessage(t("account.profile.emailRequired"));
+      return;
+    }
     setSaving(true);
     setMessage("");
     try {
       const nextUser = await updateCurrentUserProfile({
         name: form.name.trim(),
+        email: form.email.trim(),
         country: form.country,
         homeBase: form.homeBase.trim(),
         travelStyle: form.travelStyle.trim(),
@@ -297,6 +304,14 @@ export function ProfilePageClient() {
               <p data-pastoral-subtitle className="mt-4 max-w-xl text-base leading-7 text-white/58 sm:text-lg">
                 {user.bio || t("account.profile.bioFallback")}
               </p>
+              <button
+                type="button"
+                onClick={() => selectTab("settings")}
+                className="mt-5 inline-flex min-h-10 items-center gap-3 border border-white/22 px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/82 transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
+              >
+                {t("account.profile.edit")}
+                <span aria-hidden>→</span>
+              </button>
             </div>
           </div>
           <div data-pastoral-stamp className="border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
@@ -475,6 +490,10 @@ export function ProfilePageClient() {
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.name")}</span>
                 <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={`${PROFILE_FIELD_CLASS} text-lg`} />
+              </label>
+              <label className="block">
+                <span className={PROFILE_LABEL_CLASS}>{t("account.profile.email")}</span>
+                <input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} className={PROFILE_FIELD_CLASS} autoComplete="email" />
               </label>
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.country")}</span>
