@@ -95,6 +95,7 @@ export default function InterpretingPageClient({
   const [prefillNeeds, setPrefillNeeds] = useState<string | undefined>(
     undefined,
   );
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
 
   const handleSelectGuide = useCallback((needsText: string) => {
     setPrefillNeeds(needsText);
@@ -422,6 +423,68 @@ export default function InterpretingPageClient({
           </div>
         </Reveal>
       </section>
+
+      {effectiveInterpretingData.faqs.length ? (
+        <section id="interpreting-faq" className="site-container scroll-mt-24 pb-24 lg:pb-32">
+          <div className="grid gap-10 border-t border-[var(--line)] pt-12 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,1.3fr)] lg:gap-16">
+            <Reveal>
+              <div className="lg:sticky lg:top-28">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+                  {locale === "zh" ? "服务答疑" : "Service notes"}
+                </p>
+                <h2 className="mt-4 max-w-[9ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl">
+                  {locale === "zh" ? "常见问题" : "Frequently asked questions"}
+                </h2>
+              </div>
+            </Reveal>
+
+            <div className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
+              {effectiveInterpretingData.faqs.map((faq, index) => {
+                const isOpen = openFaqId === faq.id;
+                return (
+                  <Reveal key={faq.id} delay={Math.min(index * 55, 220)}>
+                    <article>
+                      <h3>
+                        <button
+                          type="button"
+                          className="flex w-full items-start justify-between gap-6 py-6 text-left sm:py-7"
+                          aria-expanded={isOpen}
+                          aria-controls={`faq-answer-${faq.id}`}
+                          onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                        >
+                          <span className="font-[family:var(--font-display)] text-xl leading-snug text-[var(--river-deep)] sm:text-2xl">
+                            {faq.question}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className={`mt-1 grid h-8 w-8 shrink-0 place-items-center border border-[var(--line)] text-lg text-[var(--cinnabar)] transition-transform duration-300 ${
+                              isOpen ? "rotate-45" : ""
+                            }`}
+                          >
+                            +
+                          </span>
+                        </button>
+                      </h3>
+                      <div
+                        id={`faq-answer-${faq.id}`}
+                        className={`grid transition-[grid-template-rows,opacity] duration-300 ${
+                          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                        }`}
+                      >
+                        <div className="overflow-hidden">
+                          <p className="max-w-2xl pb-7 pr-10 handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <BookingSection locale={locale} prefillNeeds={prefillNeeds} />
 
