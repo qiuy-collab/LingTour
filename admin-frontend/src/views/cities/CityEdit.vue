@@ -167,17 +167,17 @@ function reindexSections() {
 }
 
 const chapterTabs = computed(() => [
-  { key: "overview", label: "Overview" },
-  { key: "intro", label: "Intro" },
+  { key: "overview", label: "概览" },
+  { key: "intro", label: "导语" },
   ...form.sections.map((section: any, index: number) => ({
     key: `section-${index}`,
     label:
       section.title?.zh?.trim() ||
       section.title?.en?.trim() ||
-      `Section ${index + 1}`,
+      `章节 ${index + 1}`,
     badge: `#${index + 1}`,
   })),
-  { key: "food", label: "Food" },
+  { key: "food", label: "风味" },
 ]);
 
 const activeSectionIndex = computed(() => {
@@ -445,9 +445,7 @@ const selectedRouteCards = computed(() =>
 
         <EditorWorkspace
           v-model="activeChapter"
-          eyebrow="城市内容"
-          title="章节工作台"
-          description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
+          title="城市内容"
           :active-label="
             chapterTabs.find((chapter) => chapter.key === activeChapter)
               ?.label || '基础信息'
@@ -461,7 +459,7 @@ const selectedRouteCards = computed(() =>
                 type="primary"
                 :icon="Plus"
                 @click="addSection"
-                >新增 Section</el-button
+                >新增章节</el-button
               >
               <el-button
                 size="small"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
@@ -11,7 +11,7 @@ import { useTheme } from '@/composables/useTheme'
 import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '@/utils/motion'
-import OperationsGuide from '@/components/OperationsGuide.vue'
+import OnboardingTour from '@/components/OnboardingTour.vue'
 import {
   User,
   MapLocation,
@@ -22,6 +22,7 @@ import {
   Tickets,
   Picture,
   ArrowRight,
+  QuestionFilled,
 } from '@element-plus/icons-vue'
 
 use([
@@ -41,7 +42,9 @@ const router = useRouter()
 const loading = ref(false)
 const data = ref<DashboardData | null>(null)
 const dashboardRoot = ref<HTMLElement>()
+const guideOpen = ref(false)
 let dashboardMotionContext: gsap.Context | undefined
+let guideTimer: number | undefined
 
 type DashboardStatKey = keyof DashboardData['stats']
 
@@ -118,22 +121,6 @@ const quickActions = [
   { label: '新建商品', hint: '录入商品与视频媒体', path: '/admin/shop/products/create', icon: Goods },
   { label: '媒体库', hint: '管理图片与视频素材', path: '/admin/media', icon: Picture },
 ]
-
-const todayLabel = new Intl.DateTimeFormat('zh-CN', {
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long',
-}).format(new Date())
-
-const pendingTotal = computed(() =>
-  (data.value?.stats.pendingBookings || 0) + (data.value?.stats.pendingOrders || 0),
-)
-
-const publishedTotal = computed(() =>
-  (data.value?.stats.totalCities || 0)
-  + (data.value?.stats.totalRoutes || 0)
-  + (data.value?.stats.totalProducts || 0),
-)
 
 function resolveThemeColor(token: string, fallback: string) {
   if (typeof window === 'undefined') return fallback
@@ -345,24 +332,29 @@ function renderPieChart() {
       formatter: '{b}: {c} ({d}%)',
     },
     legend: {
-      orient: 'vertical',
-      left: 'left',
-      top: 'center',
+      type: 'scroll',
+      orient: 'horizontal',
+      left: 'center',
+      right: 12,
+      bottom: 0,
+      itemWidth: 10,
+      itemHeight: 10,
+      textStyle: { fontSize: 10 },
+      formatter: (name: string) => name.length > 22 ? `${name.slice(0, 22)}…` : name,
     },
     series: [
       {
         type: 'pie',
-        radius: ['45%', '75%'],
-        center: ['60%', '50%'],
-        avoidLabelOverlap: false,
+        radius: ['40%', '68%'],
+        center: ['50%', '42%'],
+        avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: palette.radiusSm,
           borderColor: palette.cardBackground,
           borderWidth: 2,
         },
         label: {
-          show: true,
-          formatter: '{b}\n{d}%',
+          show: false,
         },
         emphasis: {
           label: { show: true, fontSize: 14, fontWeight: 'bold' },
@@ -437,6 +429,11 @@ function handleResize() {
 onMounted(() => {
   fetchData()
   window.addEventListener('resize', handleResize)
+  if (localStorage.getItem('lingtour-admin-onboarding-v1') !== 'done') {
+    guideTimer = window.setTimeout(() => {
+      guideOpen.value = true
+    }, 450)
+  }
 })
 
 watch(isDark, async () => {
@@ -451,27 +448,17 @@ onUnmounted(() => {
   pieChart?.dispose()
   barChart?.dispose()
   dashboardMotionContext?.revert()
+  window.clearTimeout(guideTimer)
 })
 </script>
 
 <template>
   <div ref="dashboardRoot" class="dashboard" v-loading="loading">
-    <section class="dashboard-intro">
-      <div class="intro-copy">
-        <p class="intro-eyebrow">线上实时数据 · {{ todayLabel }}</p>
-        <h2>今日待办与内容状态</h2>
-        <p>快速查看待处理预约、订单和已发布内容。</p>
-      </div>
-      <div class="intro-signal">
-        <span>待处理事项</span>
-        <strong>{{ data ? pendingTotal : '—' }}</strong>
-        <small>{{ publishedTotal }} 项内容资产在线</small>
-      </div>
-    </section>
+    <div class="dashboard-tools">
+      <el-button :icon="QuestionFilled" @click="guideOpen = true">新手引导</el-button>
+    </div>
 
-    <OperationsGuide />
-
-    <nav class="quick-actions" aria-label="快捷操作">
+    <nav class="quick-actions" aria-label="快捷操作" data-tour="quick-actions">
       <button
         v-for="action in quickActions"
         :key="action.path"
@@ -489,12 +476,13 @@ onUnmounted(() => {
     </nav>
 
     <!-- 统计卡片 -->
-    <div class="stats-grid">
+    <div class="stats-grid" data-tour="stats">
       <button
         v-for="card in statCards"
         :key="card.key"
         type="button"
         class="stat-card"
+        :data-tour="card.key === 'pendingBookings' ? 'pending-bookings' : undefined"
         @click="router.push(card.path)"
       >
         <div class="stat-card__top">
@@ -511,7 +499,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <section class="chart-grid" aria-label="运营趋势">
+    <section class="chart-grid" aria-label="运营趋势" data-tour="charts">
       <article class="chart-card chart-card--wide">
         <header class="chart-header">
           <div>
@@ -545,6 +533,8 @@ onUnmounted(() => {
         <div ref="barChartRef" class="chart-container" />
       </article>
     </section>
+
+    <OnboardingTour v-model="guideOpen" />
   </div>
 </template>
 
@@ -553,86 +543,10 @@ onUnmounted(() => {
   padding: 0;
 }
 
-.dashboard-intro {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
-  align-items: end;
-  overflow: hidden;
-  margin-bottom: 18px;
-  padding: clamp(24px, 3vw, 42px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--lt-radius-xl);
-  background:
-    radial-gradient(circle at 82% 16%, rgba(113, 180, 160, 0.2), transparent 18rem),
-    linear-gradient(135deg, #183229, #10211a 72%);
-  color: #eef5f1;
-  box-shadow: var(--lt-shadow-md);
-}
-
-.dashboard-intro::after {
-  position: absolute;
-  right: -7rem;
-  bottom: -12rem;
-  width: 25rem;
-  aspect-ratio: 1;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 50%;
-  box-shadow: 0 0 0 56px rgba(255, 255, 255, 0.018);
-  content: '';
-  pointer-events: none;
-}
-
-.intro-copy,
-.intro-signal {
-  position: relative;
-  z-index: 1;
-}
-
-.intro-eyebrow {
-  margin: 0 0 16px;
-  color: #d6aa68;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.13em;
-}
-
-.intro-copy h2 {
-  max-width: 720px;
-  margin: 0;
-  font-size: clamp(30px, 3.6vw, 52px);
-  font-weight: 520;
-  letter-spacing: -0.055em;
-  line-height: 1.08;
-}
-
-.intro-copy > p:last-child {
-  margin: 18px 0 0;
-  color: rgba(230, 240, 234, 0.62);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.intro-signal {
-  display: grid;
-  min-width: 170px;
-  padding-left: 24px;
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.intro-signal span,
-.intro-signal small {
-  color: rgba(230, 240, 234, 0.52);
-  font-size: 10px;
-}
-
-.intro-signal strong {
-  margin: 5px 0 9px;
-  font-size: clamp(38px, 4vw, 58px);
-  font-weight: 560;
-  letter-spacing: -0.05em;
-  line-height: 1;
+.dashboard-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
 }
 
 .quick-actions {
@@ -832,29 +746,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .dashboard-intro {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    padding: 24px 20px;
-  }
-
-  .intro-copy h2 {
-    font-size: 32px;
-  }
-
-  .intro-signal {
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    padding: 18px 0 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    border-left: 0;
-  }
-
-  .intro-signal strong {
-    grid-row: 1 / 3;
-    grid-column: 2;
-  }
-
   .quick-actions {
     display: flex;
     overflow-x: auto;

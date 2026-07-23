@@ -278,11 +278,15 @@ watch(() => route.fullPath, closeMobileMenu)
         @select="handleMenuSelect"
       >
         <template v-for="group in filteredMenuGroups" :key="group.title">
-          <el-menu-item-group :title="group.title">
+          <el-menu-item-group
+            :title="group.title"
+            :data-tour="group.title === '内容管理' ? 'content-nav' : undefined"
+          >
             <el-menu-item
               v-for="item in group.items"
               :key="item.path"
               :index="item.path"
+              :aria-label="item.title"
             >
               <el-icon><component :is="item.icon" /></el-icon>
               <template #title>{{ item.title }}</template>
@@ -718,14 +722,14 @@ watch(() => route.fullPath, closeMobileMenu)
 }
 
 :deep(.el-menu-item) {
-  height: 44px;
-  margin: 3px 12px;
+  height: 48px;
+  margin: 3px 10px;
   padding-inline: 13px !important;
   border-radius: 12px;
   color: var(--lt-sidebar-text);
   font-size: 13px;
   font-weight: 560;
-  line-height: 44px;
+  line-height: 48px;
 }
 
 :deep(.el-menu-item:hover) {
@@ -741,8 +745,16 @@ watch(() => route.fullPath, closeMobileMenu)
 
 :deep(.el-menu--collapse .el-menu-item) {
   justify-content: center;
-  margin-inline: 14px;
+  width: auto;
+  margin-inline: 8px;
   padding: 0 !important;
+}
+
+:deep(.el-menu--collapse .el-menu-item-group__title) {
+  height: 10px;
+  overflow: hidden;
+  padding: 0;
+  color: transparent;
 }
 
 .sidebar-footer {

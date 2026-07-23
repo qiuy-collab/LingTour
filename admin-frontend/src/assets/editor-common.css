@@ -15,12 +15,16 @@
 /* ── Two-column shell (form left, preview/aside right) ────── */
 .editor-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(620px, 46vw);
+  grid-template-columns: minmax(680px, 1fr) minmax(460px, 560px);
   gap: 20px;
   align-items: start;
 }
 
-@media (max-width: 1100px) {
+.editor-shell > * {
+  min-width: 0;
+}
+
+@media (max-width: 1680px) {
   .editor-shell {
     grid-template-columns: 1fr;
   }

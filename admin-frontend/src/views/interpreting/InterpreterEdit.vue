@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -79,6 +79,7 @@ onMounted(async () => {
       status: data.status || 'pending_review',
       city: data.city || '',
     })
+    await nextTick()
     resetDirty()
   } catch (error: any) {
     ElMessage.error(extractErrorMessage(error, '加载口译员数据失败'))
@@ -131,7 +132,7 @@ async function handleSave() {
           <el-row :gutter="16">
             <el-col :span="8">
               <el-form-item label="排序权重">
-                <el-input-number v-model="form.sortOrder" :min="1" style="width: 100%" />
+                <el-input-number v-model="form.sortOrder" :min="0" style="width: 100%" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -191,9 +192,7 @@ async function handleSave() {
 
         <EditorWorkspace
           model-value="bio"
-          title="口译员内容工作台"
-          eyebrow="口译员资料"
-          description="将前台展示的个人简介集中在这里维护，封面图、状态和能力标签则保留在上方基础信息区域。"
+          title="个人简介"
           active-label="个人简介"
           :tabs="[{ key: 'bio', label: '个人简介' }]"
         >

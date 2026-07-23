@@ -13,52 +13,35 @@ const emit = defineEmits<{
 }>()
 
 const value = computed(() => props.modelValue || { zh: '', en: '' })
+const body = computed(() => value.value.zh?.trim() ? value.value.zh : value.value.en || '')
 
-function updateLocale(locale: keyof I18nObject, nextValue: string) {
-  emit('update:modelValue', { ...value.value, [locale]: nextValue })
+function updateBody(nextValue: string) {
+  emit('update:modelValue', { zh: nextValue, en: nextValue })
 }
 </script>
 
 <template>
-  <div class="bilingual-markdown">
-    <label class="language-editor">
-      <span class="language-label"><strong>中文正文</strong><small>ZH · MARKDOWN</small></span>
-      <el-input
-        :model-value="value.zh || ''"
-        type="textarea"
-        :rows="rows"
-        :placeholder="placeholder || '请输入中文 Markdown 内容'"
-        @update:model-value="updateLocale('zh', $event)"
-      />
-    </label>
-    <label class="language-editor">
-      <span class="language-label"><strong>英文正文</strong><small>EN · MARKDOWN</small></span>
-      <el-input
-        :model-value="value.en || ''"
-        type="textarea"
-        :rows="rows"
-        :placeholder="placeholder || 'Enter English Markdown content'"
-        @update:model-value="updateLocale('en', $event)"
-      />
-    </label>
-  </div>
+  <label class="body-editor">
+    <span class="body-label"><strong>正文</strong><small>支持 Markdown</small></span>
+    <el-input
+      :model-value="body"
+      type="textarea"
+      :rows="rows"
+      :placeholder="placeholder || '请输入正文内容'"
+      @update:model-value="updateBody"
+    />
+  </label>
 </template>
 
 <style scoped>
-.bilingual-markdown {
+.body-editor {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-}
-
-.language-editor {
-  display: grid;
-  min-width: 0;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
-.language-label {
+.body-label {
   display: flex;
   align-items: baseline;
   gap: 7px;
@@ -67,20 +50,15 @@ function updateLocale(locale: keyof I18nObject, nextValue: string) {
   line-height: 1;
 }
 
-.language-label strong {
+.body-label strong {
   color: var(--lt-text-regular);
   font-weight: 650;
 }
 
-.language-label small {
+.body-label small {
   color: var(--lt-text-placeholder);
   font-size: 9px;
   letter-spacing: .08em;
 }
 
-@media (max-width: 720px) {
-  .bilingual-markdown {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

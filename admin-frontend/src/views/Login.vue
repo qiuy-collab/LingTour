@@ -52,7 +52,7 @@ onMounted(() => {
     const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
     timeline
       .from('.login-brand', { autoAlpha: 0, y: -14, duration: 0.45 })
-      .from('.story-copy > *', { autoAlpha: 0, y: 24, duration: 0.6, stagger: 0.08 }, '-=0.18')
+      .from('.login-emblem', { autoAlpha: 0, scale: 0.92, rotate: -3, duration: 0.6 }, '-=0.18')
       .from('.login-card', { autoAlpha: 0, x: 24, duration: 0.58 }, '-=0.5')
   }, loginRoot.value)
 })
@@ -62,7 +62,7 @@ onUnmounted(() => motionContext?.revert())
 
 <template>
   <main ref="loginRoot" class="login-container">
-    <section class="login-story" aria-labelledby="login-story-title">
+    <section class="login-story" aria-label="LingTour 管理后台">
       <div class="login-brand">
         <span class="brand-mark" aria-hidden="true">LT</span>
         <span>
@@ -71,24 +71,9 @@ onUnmounted(() => motionContext?.revert())
         </span>
       </div>
 
-      <div class="story-copy">
-        <div class="environment-pill">
-          <span class="status-dot" />
-          线上服务已连接
-        </div>
-        <p class="story-eyebrow">LINGTOUR 管理后台</p>
-        <h1 id="login-story-title">管理城市内容、路线与服务。</h1>
-        <p class="story-lead">
-          内容修改可预览，图片与视频统一从媒体库选择，数据直接同步线上接口。
-        </p>
-      </div>
-
-      <div class="story-footer" aria-hidden="true">
-        <span>内容</span>
+      <div class="login-emblem" aria-hidden="true">
+        <span>LT</span>
         <i />
-        <span>交易</span>
-        <i />
-        <span>服务</span>
       </div>
     </section>
 
@@ -141,10 +126,6 @@ onUnmounted(() => motionContext?.revert())
           </el-form-item>
         </el-form>
 
-        <div class="login-meta">
-          <span><i class="status-dot" />线上接口已连接</span>
-          <small>安全登录</small>
-        </div>
       </div>
     </section>
   </main>
@@ -228,79 +209,43 @@ onUnmounted(() => motionContext?.revert())
   text-transform: uppercase;
 }
 
-.story-copy {
-  position: relative;
-  z-index: 1;
-  max-width: 820px;
-  margin-block: clamp(80px, 15vh, 180px);
-}
-
-.environment-pill {
-  display: inline-flex;
-  min-height: 34px;
-  align-items: center;
-  gap: 10px;
-  padding: 0 13px;
-  border: 1px solid rgba(23, 55, 47, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.48);
-  color: rgba(23, 55, 47, 0.68);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #80d8a7;
-  box-shadow: 0 0 0 4px rgba(128, 216, 167, 0.12);
-}
-
-.story-eyebrow {
-  margin: clamp(34px, 6vh, 64px) 0 14px;
-  color: #d2a660;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-}
-
-.story-copy h1 {
-  max-width: 680px;
-  margin: 0;
-  font-size: clamp(38px, 4.5vw, 64px);
-  font-weight: 580;
-  letter-spacing: -0.055em;
-  line-height: 1.08;
-}
-
-.story-lead {
-  max-width: 620px;
-  margin: 26px 0 0;
-  color: rgba(23, 55, 47, 0.64);
-  font-size: clamp(14px, 1.15vw, 17px);
-  line-height: 1.85;
-}
-
-.story-footer {
+.login-emblem {
   position: relative;
   z-index: 1;
   display: flex;
+  align-self: center;
   align-items: center;
-  gap: 14px;
-  color: rgba(23, 55, 47, 0.38);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  justify-content: center;
+  width: min(30vw, 320px);
+  aspect-ratio: 1;
+  margin-block: auto;
+  border: 1px solid rgba(23, 55, 47, 0.11);
+  border-radius: 50%;
+  color: rgba(23, 55, 47, 0.68);
+  font-size: clamp(52px, 8vw, 112px);
+  font-weight: 520;
+  letter-spacing: -0.08em;
 }
 
-.story-footer i {
-  width: 24px;
+.login-emblem::before,
+.login-emblem::after {
+  position: absolute;
+  inset: 12%;
+  border: 1px solid rgba(23, 55, 47, 0.06);
+  border-radius: 50%;
+  content: '';
+}
+
+.login-emblem::after {
+  inset: -14%;
+}
+
+.login-emblem i {
+  position: absolute;
+  bottom: 22%;
+  width: 34%;
   height: 1px;
-  background: rgba(23, 55, 47, 0.18);
+  background: #c49550;
 }
 
 .login-panel {
@@ -372,31 +317,6 @@ onUnmounted(() => motionContext?.revert())
   box-shadow: 0 0 0 1px var(--lt-border-light) inset;
 }
 
-.login-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--lt-border-lighter);
-  color: var(--lt-text-secondary);
-  font-size: 10px;
-}
-
-.login-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.login-meta small {
-  color: var(--lt-text-placeholder);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 @media (max-width: 980px) {
   .login-container {
     grid-template-columns: 1fr;
@@ -407,16 +327,7 @@ onUnmounted(() => motionContext?.revert())
     padding: 24px;
   }
 
-  .story-copy {
-    margin: 60px 0 40px;
-  }
-
-  .story-copy h1 {
-    max-width: 640px;
-    font-size: clamp(38px, 8vw, 58px);
-  }
-
-  .story-footer {
+  .login-emblem {
     display: none;
   }
 
@@ -432,31 +343,9 @@ onUnmounted(() => motionContext?.revert())
 }
 
 @media (max-width: 560px) {
-  .story-copy {
-    margin: 46px 0 18px;
-  }
-
-  .environment-pill,
-  .story-lead {
-    display: none;
-  }
-
-  .story-eyebrow {
-    margin-top: 0;
-  }
-
-  .story-copy h1 {
-    font-size: 34px;
-    line-height: 1.14;
-  }
-
   .login-card {
     padding: 26px 22px;
     border-radius: 20px;
-  }
-
-  .login-meta small {
-    display: none;
   }
 }
 </style>

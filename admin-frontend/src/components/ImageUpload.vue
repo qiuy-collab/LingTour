@@ -191,7 +191,14 @@ function moveItem(index: number, delta: -1 | 1) {
           class="preview-image"
           :preview-src-list="[item.url]"
           preview-teleported
-        />
+        >
+          <template #error>
+            <div class="media-error">
+              <el-icon><Picture /></el-icon>
+              <span>资源失效</span>
+            </div>
+          </template>
+        </el-image>
         <div class="image-overlay">
           <el-icon class="preview-icon">
             <ZoomIn />
@@ -275,6 +282,18 @@ function moveItem(index: number, delta: -1 | 1) {
 .preview-image {
   width: 100%;
   height: 100%;
+}
+
+.media-error {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-content: center;
+  gap: 7px;
+  background: var(--lt-bg-hover);
+  color: var(--lt-text-secondary);
+  font-size: 11px;
+  text-align: center;
 }
 
 .preview-video {

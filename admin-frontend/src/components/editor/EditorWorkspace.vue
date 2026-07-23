@@ -15,7 +15,7 @@ withDefaults(
     modelValue: string
   }>(),
   {
-    eyebrow: '内容编辑',
+    eyebrow: '',
     description: '',
     activeLabel: '',
   },
@@ -31,7 +31,7 @@ const emit = defineEmits<{
     <template #header>
       <div class="workspace-header">
         <div class="workspace-intro">
-          <div class="workspace-eyebrow">{{ eyebrow }}</div>
+          <div v-if="eyebrow" class="workspace-eyebrow">{{ eyebrow }}</div>
           <div class="workspace-headline">
             <h3>{{ title }}</h3>
             <span v-if="activeLabel" class="workspace-pill">{{ activeLabel }}</span>
@@ -74,9 +74,29 @@ const emit = defineEmits<{
 
 .workspace-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+}
+
+.workspace-header > :deep(*) {
+  min-width: 0;
+}
+
+.workspace-header > :deep(:not(.workspace-intro)) {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.workspace-header > :deep(:not(.workspace-intro) .el-button) {
+  flex: 0 0 auto;
+  margin-left: 0;
+  white-space: nowrap;
 }
 
 .workspace-intro {
@@ -128,12 +148,14 @@ const emit = defineEmits<{
 
 .workspace-tabs {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   margin-top: 16px;
   padding: 4px;
+  overflow-x: auto;
   border-radius: var(--lt-radius-lg);
   background: var(--lt-bg-hover);
+  scrollbar-width: thin;
 }
 
 .workspace-tab {
@@ -149,6 +171,7 @@ const emit = defineEmits<{
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  flex: 0 0 auto;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -176,12 +199,6 @@ const emit = defineEmits<{
   min-height: 240px;
 }
 
-@media (max-width: 960px) {
-  .workspace-header {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 767px) {
   .workspace-tabs {
     overflow-x: auto;
@@ -199,6 +216,10 @@ const emit = defineEmits<{
     padding: 6px 12px;
     font-size: 12px;
     min-height: 36px;
+  }
+
+  .workspace-headline h3 {
+    font-size: 18px;
   }
 }
 </style>

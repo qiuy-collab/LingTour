@@ -514,9 +514,7 @@ async function handleSave() {
 
         <EditorWorkspace
           v-model="activeWorkspace"
-          eyebrow="路线内容"
-          title="路线内容工作台"
-          description="基础信息单独维护，真正影响前台呈现的导语、主题叙事和站点内容集中在这里编辑。"
+          title="路线内容"
           :active-label="activeWorkspaceLabel"
           :tabs="workspaceTabs"
         >
