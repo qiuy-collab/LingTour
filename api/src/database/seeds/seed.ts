@@ -433,11 +433,11 @@ async function seed() {
       ('FieldNotes', 'published', $1, $2, $3, $4, '/uploads/seed/volcanic-landscape-1200.jpg', 'Zhanjiang', 'southern-sea-table', 'curious', 12, 4, 6),
       ('FoodMap', 'published', $5, $6, $7, $8, '/uploads/seed/chaozhou-food-800.jpg', 'Chaozhou', 'chaoshan-tea-culture', 'warm', 89, 15, 32);`,
     [
-      j({ name: 'LingTour Team', handle: 'lingtour', avatar: 'https://ui-avatars.com/api/?name=LingTour&background=random' }),
+      j({ name: 'LingTour Team', handle: 'lingtour', avatar: '' }),
       j({ en: 'Morning auction notes', zh: '清晨拍卖现场笔记' }),
       j({ en: 'The auction rhythm explains local seafood hierarchy better than any brochure.', zh: '拍卖节奏比任何宣传册都更能解释本地海鲜层级。' }),
       j(['market', 'coast', 'seafood']),
-      j({ name: '林小明', handle: 'xiaoming_lin', avatar: 'https://ui-avatars.com/api/?name=林小明&background=random' }),
+      j({ name: '林小明', handle: 'xiaoming_lin', avatar: '' }),
       j({ en: 'Century-old tea shop on Paifang Street', zh: '牌坊街百年茶铺' }),
       j({ en: 'Found a four-generation tea shop at the corner of Paifang Street — their Dancong is all from their own garden.', zh: '在牌坊街拐角处发现一家传承四代的老茶铺，凤凰单丛都是自家茶园采摘的。' }),
       j(['tea', 'Chaozhou', 'heritage']),

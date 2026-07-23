@@ -6,12 +6,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
-
-// Accept either a full http(s) URL or a server-relative upload path like
-// `/uploads/avatars/<uuid>.png`. Empty string is also allowed so the client
-// can clear an existing avatar.
-const AVATAR_URL_REGEX =
-  /^(?:|https?:\/\/[^\s]+|\/uploads\/[^\s]+)$/i;
+import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional()
@@ -22,13 +17,13 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional({
     description:
-      'Either an absolute http(s) URL or a server-relative path under /uploads/. Empty string clears the avatar.',
+      'Server-relative media library path under /uploads/. Empty string clears the avatar.',
   })
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  @Matches(AVATAR_URL_REGEX, {
-    message: 'avatarUrl must be an http(s) URL or a path under /uploads/',
+  @IsMediaLibraryPath({
+    message: 'avatarUrl must reference a file under /uploads/',
   })
   avatarUrl?: string;
 

@@ -9,6 +9,10 @@ const apiBase = normalizedBase.endsWith('/api/v1')
   : `${normalizedBase}/api/v1`;
 const origin = apiBase.replace(/\/api\/v1$/, '');
 const timeoutMs = Number(process.env.LINGTOUR_SMOKE_TIMEOUT_MS || 10_000);
+const mediaTimeoutMs = Number(
+  process.env.LINGTOUR_SMOKE_MEDIA_TIMEOUT_MS || 20_000,
+);
+const mediaRetries = Number(process.env.LINGTOUR_SMOKE_MEDIA_RETRIES || 2);
 
 const publicEndpoints = [
   { path: '/public/home', data: 'object' },
@@ -125,6 +129,10 @@ function withTimeout(options = {}) {
   return { ...options, signal: AbortSignal.timeout(timeoutMs) };
 }
 
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 function unwrapList(body) {
   if (Array.isArray(body)) return body;
   if (!body || typeof body !== 'object') return [];
@@ -237,18 +245,26 @@ async function checkMediaFiles() {
     record('media-policy', url, false, '发现外部媒体链接');
   }
 
-  await mapWithConcurrency([...state.paths], 6, async (path) => {
+  await mapWithConcurrency([...state.paths], 3, async (path) => {
+    let lastError = '';
+    for (let attempt = 0; attempt <= mediaRetries; attempt += 1) {
       try {
-        const response = await fetch(
-          `${origin}${path}`,
-          withTimeout({ headers: { Range: 'bytes=0-0' } }),
-        );
-        const ok = response.ok || response.status === 206;
-        record('media-file', path, ok, `${response.status}`);
+        const response = await fetch(`${origin}${path}`, {
+          method: 'HEAD',
+          signal: AbortSignal.timeout(mediaTimeoutMs),
+        });
+        if (response.ok) {
+          record('media-file', path, true, `${response.status}`);
+          return;
+        }
+        lastError = `${response.status} ${response.statusText}`;
       } catch (error) {
-        record('media-file', path, false, error.message);
+        lastError = error.message;
       }
-    });
+      if (attempt < mediaRetries) await wait(250 * (attempt + 1));
+    }
+    record('media-file', path, false, lastError);
+  });
 
   return { checked: state.paths.size, external: state.external.size };
 }

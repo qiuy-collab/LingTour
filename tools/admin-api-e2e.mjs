@@ -125,28 +125,37 @@ async function sendAdmin(token, path, method, body) {
   });
 }
 
+async function getFixtureMediaPath(token) {
+  if (dryRun) return '/uploads/cities/e2e-placeholder.png';
+
+  const media = await getAdmin(
+    token,
+    '/admin/upload/media?page=1&limit=30&type=image',
+  );
+  const path = (media.data ?? []).find((item) =>
+    String(item.url ?? '').startsWith('/uploads/'),
+  )?.url;
+  ensure(path, 'No image is available in the media library for E2E tests');
+  return path;
+}
+
 // ── Test modules ───────────────────────────────────────────────────────
 
-async function testCities(token, results) {
+async function testCities(token, results, mediaPath) {
   const slug = stamp('e2e-city');
   const payload = {
     slug,
     name: { zh: `测试城市 ${slug}`, en: `Test City ${slug}` },
     regionLabel: { zh: '测试区域', en: 'Test region' },
     adcode: Number(String(Date.now()).slice(-6)),
-    heroImage:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    heroImage: mediaPath,
     heroNarrative: { zh: '测试城市概述', en: 'Test city narrative' },
     tags: [{ zh: '测试标签', en: 'test-tag' }],
     editorIntro: { zh: '测试城市正文', en: 'Test city intro' },
-    galleryImages: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-    ],
+    galleryImages: [mediaPath],
     foodTitle: { zh: '测试风味', en: 'Test flavors' },
     foodDescription: { zh: '测试美食说明', en: 'Test food copy' },
-    foodImages: [
-      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
-    ],
+    foodImages: [mediaPath],
     published: false,
     routeSlugs: [],
     relatedCitySlugs: [],
@@ -176,7 +185,7 @@ async function testCities(token, results) {
   record(results, 'cities', 'delete', Boolean(deleted.deletedAt), deleted.deletedAt);
 }
 
-async function testRoutes(token, results) {
+async function testRoutes(token, results, mediaPath) {
   const cityList = await getAdmin(token, '/admin/cities?page=1&limit=5');
   const city = cityList.data?.[0];
   ensure(city?.slug, 'No city available for route test');
@@ -192,8 +201,7 @@ async function testRoutes(token, results) {
     audience: { zh: '首次来访者', en: 'First-time visitors' },
     summary: { zh: '测试路线摘要', en: 'Test route summary' },
     story: { zh: '测试路线故事', en: 'Test route story' },
-    coverImage:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    coverImage: mediaPath,
     published: false,
     stops: [
       {
@@ -203,8 +211,7 @@ async function testRoutes(token, results) {
         story: { zh: '站点故事', en: 'Stop story' },
         culturalStory: { zh: '文化解读', en: 'Cultural story' },
         details: [{ zh: '细节', en: 'Detail' }],
-        image:
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        image: mediaPath,
         lat: 21.27,
         lng: 110.36,
       },
@@ -227,7 +234,7 @@ async function testRoutes(token, results) {
   record(results, 'routes', 'delete', Boolean(deleted.deletedAt), deleted.deletedAt);
 }
 
-async function testCollections(token, results) {
+async function testCollections(token, results, mediaPath) {
   const routeList = await getAdmin(token, '/admin/routes?page=1&limit=1');
   const route = routeList.data?.[0];
   ensure(route?.slug, 'No route available for collection test');
@@ -238,8 +245,7 @@ async function testCollections(token, results) {
     title: { zh: `测试系列 ${slug}`, en: `Test Collection ${slug}` },
     routeName: route.title,
     routeSlug: route.slug,
-    image:
-      'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=1200&q=80',
+    image: mediaPath,
     body: { zh: '测试系列正文', en: 'Test collection body' },
     sortOrder: 0,
     published: false,
@@ -260,7 +266,7 @@ async function testCollections(token, results) {
   record(results, 'collections', 'delete', true, created.id);
 }
 
-async function testProducts(token, results) {
+async function testProducts(token, results, mediaPath) {
   const collections = await getAdmin(token, '/admin/shop/collections?page=1&pageSize=1');
   const collection = collections[0];
   ensure(collection?.id, 'No collection available for product test');
@@ -273,8 +279,7 @@ async function testProducts(token, results) {
     price: 12.5,
     currency: 'SGD',
     tag: { zh: '测试', en: 'test' },
-    image:
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+    image: mediaPath,
     story: { zh: '测试商品故事', en: 'Test product story' },
     material: { zh: '陶', en: 'Ceramic' },
     dimensions: { zh: '10cm', en: '10cm' },
@@ -301,7 +306,7 @@ async function testProducts(token, results) {
   record(results, 'products', 'delete', true, created.id);
 }
 
-async function testEvents(token, results) {
+async function testEvents(token, results, mediaPath) {
   const cityList = await getAdmin(token, '/admin/cities?page=1&limit=1');
   const city = cityList.data?.[0];
   const routeList = await getAdmin(token, '/admin/routes?page=1&limit=1');
@@ -317,8 +322,7 @@ async function testEvents(token, results) {
     date: '2026-06-20',
     endDate: '2026-06-21',
     tags: ['test'],
-    image:
-      'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80',
+    image: mediaPath,
     status: 'draft',
     relatedRouteSlugs: route?.slug ? [route.slug] : [],
   };
@@ -671,13 +675,14 @@ async function main() {
   // try/finally ensures cleanup reporting even on unexpected failures
   try {
     const token = await login();
+    const mediaPath = await getFixtureMediaPath(token);
 
     const tests = [
-      () => testCities(token, results),
-      () => testRoutes(token, results),
-      () => testCollections(token, results),
-      () => testProducts(token, results),
-      () => testEvents(token, results),
+      () => testCities(token, results, mediaPath),
+      () => testRoutes(token, results, mediaPath),
+      () => testCollections(token, results, mediaPath),
+      () => testProducts(token, results, mediaPath),
+      () => testEvents(token, results, mediaPath),
       () => testModes(token, results),
       () => testProfiles(token, results),
       () => testFaqs(token, results),
