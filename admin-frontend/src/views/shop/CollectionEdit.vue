@@ -11,6 +11,7 @@ import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -39,7 +40,7 @@ const rules = {
     { required: true, message: '请输入 Slug', trigger: 'blur' },
     { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: '请输入系列英文名称', trigger: 'blur' }],
+  'title.en': [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -200,18 +201,14 @@ async function handleSave() {
           </div>
         </EditorWorkspace>
       </el-form>
+
+      <FrontendPagePreview type="collection" :model="form" />
     </div>
   </div>
 </template>
 
 <style scoped>
 @import '@/assets/editor-common.css';
-
-/* Narrower single-column layout for collection editor */
-.editor-shell {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 900px;
-}
 
 .workspace-panel {
   min-height: 220px;

@@ -14,6 +14,7 @@ import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
@@ -34,7 +35,7 @@ const rules = {
     { required: true, message: '请输入 Slug', trigger: 'blur' },
     { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: '请输入活动英文名称', trigger: 'blur' }],
+  'title.en': [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
   date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
 }
 
@@ -332,6 +333,8 @@ async function handleSave() {
       </el-form>
 
       <aside class="editor-aside">
+        <FrontendPagePreview type="event" :model="form" />
+
         <el-card shadow="never" class="aside-card">
           <template #header>发布摘要</template>
           <div class="info-list">
@@ -382,9 +385,8 @@ async function handleSave() {
 <style scoped>
 @import '@/assets/editor-common.css';
 
-/* EventEdit uses a narrower aside (no FrontendPagePreview) */
 .editor-shell {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 26vw);
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 32vw, 480px);
 }
 
 .section-card,
@@ -396,6 +398,17 @@ async function handleSave() {
   position: sticky;
   top: 20px;
   align-self: start;
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.editor-aside :deep(.frontend-preview) {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  margin-bottom: 16px;
+  padding-right: 0;
 }
 
 .tag-list {
@@ -439,7 +452,7 @@ async function handleSave() {
   color: #e6a23c;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 960px) {
   .editor-shell {
     grid-template-columns: 1fr;
   }

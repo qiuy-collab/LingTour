@@ -10,6 +10,7 @@ import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 
@@ -29,7 +30,7 @@ const form = reactive<FAQFormData>({
 
 const rules = {
   category: [{ required: true, message: '请选择分类', trigger: 'change' }],
-  'question.en': [{ required: true, message: '请输入英文问题', trigger: 'blur' }],
+  'question.en': [{ required: true, message: '请输入问题', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -138,18 +139,14 @@ async function handleSave() {
           </div>
         </EditorWorkspace>
       </el-form>
+
+      <FrontendPagePreview type="faq" :model="form" />
     </div>
   </div>
 </template>
 
 <style scoped>
 @import '@/assets/editor-common.css';
-
-/* Narrower single-column layout for FAQ editor */
-.editor-shell {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 900px;
-}
 
 .workspace-panel {
   min-height: 240px;

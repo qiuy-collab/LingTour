@@ -8,7 +8,6 @@ import CommandPalette from '@/components/CommandPalette.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
-import { useEditorLocale } from '@/composables/useEditorLocale'
 import { animateRouteEnter, animateRouteLeave } from '@/utils/motion'
 import {
   DataAnalysis,
@@ -42,14 +41,10 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 useTheme()
-const { editorLocale, editorLocaleOptions } = useEditorLocale()
 
 const isCollapse = ref(false)
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
-const showEditorLocaleSwitch = computed(() =>
-  /\/create$|\/edit$|\/home$|\/settings$/.test(route.path),
-)
 const currentPageTitle = computed(
   () => (route.meta.title as string) || '工作台',
 )
@@ -333,14 +328,6 @@ watch(() => route.fullPath, closeMobileMenu)
           <div class="api-status hide-on-mobile">
             <span class="status-dot" />
             <span>Online API</span>
-          </div>
-          <div v-if="showEditorLocaleSwitch" class="editor-locale-switch">
-            <span class="editor-locale-label">编辑语言</span>
-            <el-segmented
-              v-model="editorLocale"
-              :options="editorLocaleOptions"
-              size="small"
-            />
           </div>
           <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
             <button
@@ -745,8 +732,25 @@ watch(() => route.fullPath, closeMobileMenu)
 
 :deep(.el-menu--collapse .el-menu-item) {
   justify-content: center;
-  width: auto;
-  margin-inline: 8px;
+  width: calc(100% - 24px);
+  margin-inline: 12px;
+  padding: 0 !important;
+}
+
+:deep(.el-menu--collapse) {
+  width: 100%;
+}
+
+:deep(.el-menu--collapse .el-menu-item .el-icon) {
+  margin: 0;
+}
+
+:deep(.el-menu--collapse .el-menu-item .el-menu-tooltip__trigger) {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
   padding: 0 !important;
 }
 

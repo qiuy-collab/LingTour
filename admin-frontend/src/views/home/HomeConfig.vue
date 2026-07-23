@@ -7,11 +7,12 @@ import { routesApi } from '@/api/routes'
 import { citiesApi } from '@/api/cities'
 import type { HomeConfig, HomeConfigBlock } from '@/types/home'
 import { HomeConfigBlockLabels } from '@/types/home'
-import { pickI18n } from '@/types/common'
+import { pickI18n, toI18n } from '@/types/common'
 import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import {
@@ -50,7 +51,11 @@ const config = reactive<HomeConfig>({
   featuredRoutes: [],
   cultureHighlights: [],
   testimonials: [],
-  routeRegions: DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item })),
+  routeRegions: DEFAULT_ROUTE_REGIONS.map((item) => ({
+    ...item,
+    title: toI18n(item.title),
+    note: toI18n(item.note),
+  })),
 })
 
 const { isDirty, resetDirty } = useDirtyForm({ form: config })
@@ -65,8 +70,8 @@ const workspaceTabs = computed<EditorWorkspaceTab[]>(() =>
 function createDefaultRouteRegions() {
   return DEFAULT_ROUTE_REGIONS.map((item) => ({
     ...item,
-    title: { ...item.title },
-    note: { ...item.note },
+    title: toI18n(item.title),
+    note: toI18n(item.note),
     adcodes: [...item.adcodes],
   }))
 }
@@ -76,14 +81,8 @@ function normalizeRouteRegions() {
     const currentRegion = config.routeRegions[index]
     return {
       key: currentRegion?.key?.trim() || defaultRegion.key,
-      title: {
-        zh: currentRegion?.title?.zh || defaultRegion.title.zh,
-        en: currentRegion?.title?.en || defaultRegion.title.en,
-      },
-      note: {
-        zh: currentRegion?.note?.zh || defaultRegion.note.zh,
-        en: currentRegion?.note?.en || defaultRegion.note.en,
-      },
+      title: toI18n(currentRegion?.title || defaultRegion.title),
+      note: toI18n(currentRegion?.note || defaultRegion.note),
       adcodes: Array.isArray(currentRegion?.adcodes)
         ? [...currentRegion.adcodes]
         : [...defaultRegion.adcodes],
@@ -221,17 +220,19 @@ async function handleSave() {
       @cancel="() => {}"
     />
 
-    <el-card shadow="never" class="section-card">
-      <template #header>模块概览</template>
-      <div class="global-summary">
-        <div class="summary-chip">路线分区 {{ config.routeRegions.length }}</div>
-        <div class="summary-chip">精选路线 {{ config.featuredRoutes.length }}</div>
-        <div class="summary-chip">文化亮点 {{ config.cultureHighlights.length }}</div>
-        <div class="summary-chip">入口卡片 {{ config.entryCards.length }}</div>
-      </div>
-    </el-card>
+    <div class="editor-shell">
+      <div class="editor-form">
+        <el-card shadow="never" class="section-card">
+          <template #header>模块概览</template>
+          <div class="global-summary">
+            <div class="summary-chip">路线分区 {{ config.routeRegions.length }}</div>
+            <div class="summary-chip">精选路线 {{ config.featuredRoutes.length }}</div>
+            <div class="summary-chip">文化亮点 {{ config.cultureHighlights.length }}</div>
+            <div class="summary-chip">入口卡片 {{ config.entryCards.length }}</div>
+          </div>
+        </el-card>
 
-    <EditorWorkspace
+        <EditorWorkspace
       v-model="activeBlock"
       eyebrow="首页内容"
       title="首页模块设置"
@@ -514,7 +515,11 @@ async function handleSave() {
         </div>
         <el-button :icon="Plus" @click="addTestimonial">添加评价</el-button>
       </div>
-    </EditorWorkspace>
+        </EditorWorkspace>
+      </div>
+
+      <FrontendPagePreview type="home" :model="config" />
+    </div>
   </div>
 </template>
 

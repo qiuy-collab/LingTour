@@ -10,6 +10,7 @@ import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
@@ -36,18 +37,18 @@ const form = reactive<InterpreterFormData>({
 const newHelpEn = ref('')
 
 const rules = {
-  'name.en': [{ required: true, message: '请输入英文姓名', trigger: 'blur' }],
-  'language.en': [{ required: true, message: '请输入英文服务语言', trigger: 'blur' }],
+  'name.en': [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  'language.en': [{ required: true, message: '请输入服务语言', trigger: 'blur' }],
   city: [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 
 function addHelp() {
-  const en = newHelpEn.value.trim()
-  if (!en) return
-  if (!form.helps.some((item) => item.en === en)) {
-    form.helps.push({ zh: '', en })
+  const content = newHelpEn.value.trim()
+  if (!content) return
+  if (!form.helps.some((item) => item.en === content || item.zh === content)) {
+    form.helps.push({ zh: '', en: content })
   }
   newHelpEn.value = ''
 }
@@ -185,7 +186,7 @@ async function handleSave() {
             </el-tag>
           </div>
           <div class="tag-input-row">
-            <el-input v-model="newHelpEn" placeholder="英文标签" @keyup.enter="addHelp" />
+            <el-input v-model="newHelpEn" placeholder="输入能力标签" @keyup.enter="addHelp" />
             <el-button type="primary" @click="addHelp">添加</el-button>
           </div>
         </el-card>
@@ -204,17 +205,14 @@ async function handleSave() {
           </div>
         </EditorWorkspace>
       </el-form>
+
+      <FrontendPagePreview type="interpreter" :model="form" />
     </div>
   </div>
 </template>
 
 <style scoped>
 @import '@/assets/editor-common.css';
-
-.editor-shell {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 900px;
-}
 
 .workspace-panel {
   min-height: 220px;

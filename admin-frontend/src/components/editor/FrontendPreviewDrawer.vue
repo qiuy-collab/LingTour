@@ -2,7 +2,16 @@
 import { computed } from "vue";
 import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
 
-type PreviewType = "city" | "route" | "product";
+type PreviewType =
+  | "city"
+  | "route"
+  | "product"
+  | "event"
+  | "collection"
+  | "service"
+  | "interpreter"
+  | "faq"
+  | "home";
 
 const props = defineProps<{
   modelValue: boolean;

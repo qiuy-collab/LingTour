@@ -23,6 +23,7 @@ import type { StoryRoute } from "@/data/routes";
 import type { StoreProduct } from "@/data/store";
 import { HomeAtlasHero } from "@/components/home/HomeAtlasHero";
 import { StoreProductCard } from "@/components/store/StoreProductCard";
+import { usePreviewBridge } from "@/lib/preview";
 
 interface HomeClientProps {
   initialHomeData: HomeData;
@@ -38,6 +39,10 @@ export default function HomeClient({
   initialEvents,
 }: HomeClientProps) {
   const { t, locale } = useLocale();
+  const { previewData: previewHome } =
+    usePreviewBridge<Partial<HomeData>>("home");
+  const { previewData: previewEvent } =
+    usePreviewBridge<EventData>("event");
 
   // Server-fetched data is used as initialData.
   // When locale changes client-side, useApiQuery re-fetches in the background
@@ -80,14 +85,33 @@ export default function HomeClient({
     );
 
   // Use SSR data as fallback when client fetch hasn't returned yet
-  const effectiveHomeData = homeData ?? initialHomeData;
+  const baseHomeData = homeData ?? initialHomeData;
+  const effectiveHomeData: HomeData = previewHome
+    ? {
+        ...baseHomeData,
+        ...previewHome,
+        hero: {
+          ...baseHomeData.hero,
+          ...previewHome.hero,
+        },
+      }
+    : baseHomeData;
 
   const { hero, heroStats, homeEntryCards, regionShowcase, cultureHighlights, testimonials } =
     effectiveHomeData;
 
   const storeProducts = products ?? initialProducts;
   const storyRoutes = allRoutes ?? initialRoutes;
-  const liveEvents = events ?? initialEvents;
+  const baseEvents = events ?? initialEvents;
+  const liveEvents = previewEvent
+    ? [
+        previewEvent,
+        ...baseEvents.filter(
+          (event) =>
+            event.id !== previewEvent.id && event.slug !== previewEvent.slug,
+        ),
+      ]
+    : baseEvents;
 
   // Image priority: live CMS field → curated backend seed image → local Journal placeholder.
   // This way admin uploads will replace seed images automatically once available.

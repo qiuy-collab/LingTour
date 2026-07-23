@@ -4,13 +4,11 @@
  * - extractErrorMessage: 从 axios error 提取后端错误消息
  */
 
-import type { I18nObject } from '@/types/common'
+import { readContentValue, type I18nObject } from '@/types/common'
 
 export function optionalI18n(value: any): I18nObject | undefined {
-  if (!value || typeof value !== 'object') return undefined
-  const zh = (value.zh || '').trim()
-  const en = (value.en || '').trim()
-  return zh || en ? { zh, en } : undefined
+  const content = readContentValue(value).trim()
+  return content ? { zh: '', en: content } : undefined
 }
 
 export function extractErrorMessage(error: any, fallback = '操作失败'): string {

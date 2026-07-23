@@ -28,15 +28,29 @@ export interface I18nObject {
   en: string
 }
 
-/** 将后端返回的纯字符串或 I18nObject 统一转换为 I18nObject */
-export function toI18n(val: unknown): I18nObject {
-  if (!val) return { zh: '', en: '' }
-  if (typeof val === 'string') return { zh: val, en: '' }
+export function readContentValue(val: unknown): string {
+  if (!val) return ''
+  if (typeof val === 'string') {
+    if (val.startsWith('{') && val.includes('"')) {
+      try {
+        return readContentValue(JSON.parse(val))
+      } catch {
+        return val
+      }
+    }
+    return val
+  }
   if (typeof val === 'object' && val !== null) {
     const obj = val as Record<string, unknown>
-    return { zh: String(obj.zh ?? ''), en: String(obj.en ?? '') }
+    return String(obj.en || obj.zh || '')
   }
-  return { zh: '', en: '' }
+  return String(val)
+}
+
+/** 将后端返回的纯字符串或 I18nObject 统一转换为 I18nObject */
+export function toI18n(val: unknown): I18nObject {
+  const content = readContentValue(val)
+  return { zh: '', en: content }
 }
 
 export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string {
@@ -47,7 +61,7 @@ export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string 
       try {
         const parsed = JSON.parse(val)
         if (typeof parsed === 'object' && parsed !== null) {
-          return String(parsed[locale] ?? parsed.zh ?? parsed.en ?? val)
+          return String(parsed[locale] || parsed.en || parsed.zh || val)
         }
       } catch { /* not JSON, return as-is */ }
     }
@@ -55,7 +69,7 @@ export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string 
   }
   if (typeof val === 'object') {
     const obj = val as Record<string, unknown>
-    return String(obj[locale] ?? obj.zh ?? obj.en ?? '')
+    return String(obj[locale] || obj.en || obj.zh || '')
   }
   return String(val)
 }

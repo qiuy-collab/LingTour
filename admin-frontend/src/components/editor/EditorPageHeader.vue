@@ -113,12 +113,12 @@ function handleBack() {
   }
 }
 
-/* Mobile-only: preview button hidden on desktop */
+/* Compact-layout preview button hidden while the desktop side preview is visible. */
 .mobile-preview-btn {
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 960px) {
   .editor-page-header {
     padding: 12px 0;
     position: sticky;

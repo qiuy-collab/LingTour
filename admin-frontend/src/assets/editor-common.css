@@ -15,8 +15,8 @@
 /* ── Two-column shell (form left, preview/aside right) ────── */
 .editor-shell {
   display: grid;
-  grid-template-columns: minmax(680px, 1fr) minmax(460px, 560px);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 36vw, 540px);
+  gap: 18px;
   align-items: start;
 }
 
@@ -24,9 +24,15 @@
   min-width: 0;
 }
 
-@media (max-width: 1680px) {
+@media (max-width: 960px) {
   .editor-shell {
     grid-template-columns: 1fr;
+  }
+
+  .editor-shell > .frontend-preview,
+  .editor-shell > .editor-live-preview,
+  .editor-shell > .editor-aside {
+    display: none;
   }
 }
 

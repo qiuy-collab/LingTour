@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import type { Locale } from "@/lib/locale";
 
-type PreviewType = "city" | "route" | "product";
+type PreviewType =
+  | "city"
+  | "route"
+  | "product"
+  | "event"
+  | "collection"
+  | "service"
+  | "interpreter"
+  | "faq"
+  | "home";
 
 type PreviewEnvelope<T> = {
   channel: "lingtour-preview";
@@ -43,10 +51,25 @@ function persistPreview<T>(key: string, envelope: PreviewEnvelope<T>) {
 }
 
 export function usePreviewBridge<T>(expectedType: PreviewType) {
-  const searchParams = useSearchParams();
-  const previewKey = searchParams.get("previewKey") || "";
-  const previewSource = searchParams.get("previewSource") || "";
-  const previewEnabled = searchParams.get("preview") === "1" && previewKey.length > 0;
+  const [previewContext, setPreviewContext] = useState({
+    key: "",
+    source: "",
+    enabled: false,
+  });
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const key = searchParams.get("previewKey") || "";
+    setPreviewContext({
+      key,
+      source: searchParams.get("previewSource") || "",
+      enabled: searchParams.get("preview") === "1" && key.length > 0,
+    });
+  }, []);
+
+  const previewKey = previewContext.key;
+  const previewSource = previewContext.source;
+  const previewEnabled = previewContext.enabled;
 
   const initialPreview = useMemo(() => {
     if (!previewEnabled) return null;

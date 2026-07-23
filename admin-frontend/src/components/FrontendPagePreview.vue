@@ -4,7 +4,16 @@ import { pickI18n } from "@/types/common";
 import { resolveMediaUrl } from "@/utils/media";
 import { useEditorLocale } from "@/composables/useEditorLocale";
 
-type PreviewType = "city" | "route" | "product";
+type PreviewType =
+  | "city"
+  | "route"
+  | "product"
+  | "event"
+  | "collection"
+  | "service"
+  | "interpreter"
+  | "faq"
+  | "home";
 
 const props = defineProps<{
   type: PreviewType;
@@ -60,6 +69,12 @@ const desktopHeightMap: Record<PreviewType, number> = {
   city: 2200,
   route: 1800,
   product: 1700,
+  event: 2100,
+  collection: 1700,
+  service: 2100,
+  interpreter: 2100,
+  faq: 2100,
+  home: 2400,
 };
 const desktopHeight = computed(() => desktopHeightMap[props.type]);
 
@@ -167,10 +182,135 @@ function buildProductPreview() {
   };
 }
 
+function buildEventPreview() {
+  return {
+    id: "preview-event",
+    slug: props.model.slug || "preview-event",
+    title: text(props.model.title, "Preview Event"),
+    date: props.model.date || new Date().toISOString(),
+    city: props.model.city || "Guangdong",
+    citySlug: props.model.citySlug || "",
+    tags: list(props.model.tags),
+    summary: text(props.model.summary),
+    description: text(props.model.description),
+    relatedRouteSlugs: list(props.model.relatedRouteSlugs),
+    image: resolveMediaUrl(props.model.image),
+  };
+}
+
+function buildCollectionPreview() {
+  return {
+    title: text(props.model.title, "Preview Collection"),
+    route: props.model.routeName || "",
+    href: props.model.routeSlug
+      ? `/routes/${props.model.routeSlug}`
+      : "/routes",
+    image: resolveMediaUrl(props.model.image),
+    body: text(props.model.body),
+  };
+}
+
+function buildServicePreview() {
+  return {
+    id: "preview-service",
+    sortOrder: Number(props.model.sortOrder || 0),
+    title: text(props.model.title, "Preview Service"),
+    price: text(props.model.price),
+    bestFor: text(props.model.bestFor),
+    body: text(props.model.body),
+    includes: list(props.model.includes)
+      .map((item) => text(item))
+      .filter(Boolean),
+    accent: props.model.accent === "dark" ? "dark" : "light",
+    featured: Boolean(props.model.featured),
+  };
+}
+
+function buildInterpreterPreview() {
+  return {
+    id: "preview-interpreter",
+    sortOrder: Number(props.model.sortOrder || 0),
+    name: text(props.model.name, "Preview Interpreter"),
+    language: text(props.model.language),
+    focus: text(props.model.focus),
+    helps: list(props.model.helps)
+      .map((item) => text(item))
+      .filter(Boolean),
+    avatar: resolveMediaUrl(props.model.avatar),
+  };
+}
+
+function buildFaqPreview() {
+  return {
+    id: "preview-faq",
+    sortOrder: Number(props.model.sortOrder || 0),
+    question: text(props.model.question, "Preview question"),
+    answer: text(props.model.answer),
+  };
+}
+
+function buildHomePreview() {
+  return {
+    hero: {
+      image: resolveMediaUrl(props.model.hero?.image),
+      caption: text(props.model.hero?.caption),
+      ctaImage: resolveMediaUrl(props.model.hero?.ctaImage),
+      interpretingImage: resolveMediaUrl(
+        props.model.hero?.interpretingImage,
+      ),
+      interpretingLabel: text(props.model.hero?.interpretingLabel),
+      badge: {
+        value: props.model.hero?.badgeValue || "",
+        label: text(props.model.hero?.badgeLabel),
+      },
+      video: {
+        url: resolveMediaUrl(props.model.hero?.video?.url),
+        poster: resolveMediaUrl(props.model.hero?.video?.poster),
+        title: text(props.model.hero?.video?.title),
+        description: text(props.model.hero?.video?.description),
+        duration: props.model.hero?.video?.duration || "",
+        resolution: props.model.hero?.video?.resolution || "",
+      },
+    },
+    heroStats: list(props.model.heroStats).map((item) => ({
+      title: text(item?.title),
+      body: text(item?.description),
+    })),
+    trustMetrics: list(props.model.trustMetrics).map((item) => ({
+      value: item?.value || "",
+      label: text(item?.label),
+    })),
+    homeEntryCards: list(props.model.entryCards).map((item, index) => ({
+      id: String(index + 1).padStart(2, "0"),
+      title: text(item?.title),
+      body: text(item?.description),
+      href: item?.link || "/",
+      image: resolveMediaUrl(item?.image),
+    })),
+    cultureHighlights: list(props.model.cultureHighlights).map((item) => ({
+      slug: item?.citySlug || "preview-city",
+      title: text(item?.title),
+      body: text(item?.description),
+      href: item?.citySlug ? `/culture/${item.citySlug}` : "/culture",
+      image: resolveMediaUrl(item?.image),
+    })),
+    testimonials: list(props.model.testimonials).map((item) => ({
+      quote: text(item?.quote),
+      name: text(item?.author),
+    })),
+  };
+}
+
 const previewPayload = computed(() => {
   if (props.type === "city") return buildCityPreview();
   if (props.type === "route") return buildRoutePreview();
-  return buildProductPreview();
+  if (props.type === "product") return buildProductPreview();
+  if (props.type === "event") return buildEventPreview();
+  if (props.type === "collection") return buildCollectionPreview();
+  if (props.type === "service") return buildServicePreview();
+  if (props.type === "interpreter") return buildInterpreterPreview();
+  if (props.type === "faq") return buildFaqPreview();
+  return buildHomePreview();
 });
 
 const iframePath = computed(() => {
@@ -181,7 +321,16 @@ const iframePath = computed(() => {
   // act only as shells; previewPayload replaces their content immediately.
   if (props.type === "city") return "/culture/zhanjiang/";
   if (props.type === "route") return "/routes/southern-sea-table/";
-  return "/shop/products/volcanic-soil-bowl/";
+  if (props.type === "product")
+    return "/shop/products/volcanic-soil-bowl/";
+  if (props.type === "collection") return "/shop/";
+  if (
+    props.type === "service" ||
+    props.type === "interpreter" ||
+    props.type === "faq"
+  )
+    return "/interpreting/";
+  return "/";
 });
 
 const iframeSrc = computed(
@@ -306,7 +455,7 @@ onBeforeUnmount(() => {
         <p>{{ iframePath }}</p>
       </div>
       <div class="toolbar-actions">
-        <span class="toolbar-locale-hint">跟随顶部编辑语言</span>
+        <span class="toolbar-locale-hint">未保存内容会实时同步</span>
         <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer"
           >打开新窗口</a
         >
@@ -358,6 +507,9 @@ onBeforeUnmount(() => {
   position: sticky;
   top: 20px;
   align-self: start;
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding-right: 3px;
 }
 
 .preview-toolbar {
@@ -451,13 +603,7 @@ onBeforeUnmount(() => {
   transform-origin: top left;
 }
 
-@media (max-width: 1100px) {
-  .frontend-preview {
-    position: static;
-  }
-}
-
-@media (max-width: 767px) {
+@media (max-width: 960px) {
   .frontend-preview:not(.mobile-mode) {
     display: none;
   }

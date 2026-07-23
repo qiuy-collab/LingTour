@@ -451,7 +451,7 @@ function pickLocalized(
   return value.en ?? value.zh ?? "";
 }
 
-interface ApiInterpretingMode {
+export interface ApiInterpretingMode {
   id: string;
   sortOrder: number;
   title: string;
@@ -463,7 +463,7 @@ interface ApiInterpretingMode {
   featured: boolean;
 }
 
-interface ApiInterpreterProfile {
+export interface ApiInterpreterProfile {
   id: string;
   sortOrder: number;
   name: string;
@@ -473,7 +473,7 @@ interface ApiInterpreterProfile {
   avatar?: string;
 }
 
-interface ApiInterpretingFaq {
+export interface ApiInterpretingFaq {
   id: string;
   sortOrder: number;
   question: string;

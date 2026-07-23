@@ -10,6 +10,7 @@ import { extractErrorMessage } from '@/utils/i18n'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import I18nInput from '@/components/I18nInput.vue'
 import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
 
@@ -35,17 +36,17 @@ const form = reactive<ServiceModeFormData>({
 const newIncludeEn = ref('')
 
 const rules = {
-  'title.en': [{ required: true, message: '请输入英文模式名称', trigger: 'blur' }],
-  'price.en': [{ required: true, message: '请输入英文价格说明', trigger: 'blur' }],
+  'title.en': [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
+  'price.en': [{ required: true, message: '请输入价格说明', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 
 function addInclude() {
-  const en = newIncludeEn.value.trim()
-  if (!en) return
+  const content = newIncludeEn.value.trim()
+  if (!content) return
 
-  form.includes.push({ zh: '', en })
+  form.includes.push({ zh: '', en: content })
   newIncludeEn.value = ''
 }
 
@@ -184,7 +185,7 @@ async function handleSave() {
                   </el-tag>
                 </div>
                 <div class="tag-input-row">
-                  <el-input v-model="newIncludeEn" placeholder="英文项目" @keyup.enter="addInclude" />
+                  <el-input v-model="newIncludeEn" placeholder="输入服务项目" @keyup.enter="addInclude" />
                   <el-button type="primary" @click="addInclude">添加</el-button>
                 </div>
               </el-form-item>
@@ -192,18 +193,14 @@ async function handleSave() {
           </template>
         </EditorWorkspace>
       </el-form>
+
+      <FrontendPagePreview type="service" :model="form" />
     </div>
   </div>
 </template>
 
 <style scoped>
 @import '@/assets/editor-common.css';
-
-/* Narrower single-column layout for service mode editor */
-.editor-shell {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 900px;
-}
 
 .workspace-panel {
   min-height: 260px;

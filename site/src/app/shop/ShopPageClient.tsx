@@ -10,6 +10,7 @@ import { placeholderFor } from "@/lib/placeholders";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import type { StoreCollection, StoreProduct } from "@/data/store";
 import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
+import { usePreviewBridge } from "@/lib/preview";
 
 interface ShopPageClientProps {
   initialCollections: StoreCollection[];
@@ -21,6 +22,8 @@ export default function ShopPageClient({
   initialProducts,
 }: ShopPageClientProps) {
   const { t, locale } = useLocale();
+  const { previewData: previewCollection } =
+    usePreviewBridge<StoreCollection>("collection");
 
   const {
     data: storeCollections,
@@ -57,7 +60,17 @@ export default function ShopPageClient({
     );
   }
 
-  const collections = storeCollections ?? initialCollections;
+  const baseCollections = storeCollections ?? initialCollections;
+  const collections = previewCollection
+    ? [
+        previewCollection,
+        ...baseCollections.filter(
+          (collection) =>
+            collection.href !== previewCollection.href &&
+            collection.title !== previewCollection.title,
+        ),
+      ]
+    : baseCollections;
   const products = storeProducts ?? initialProducts;
   const heroImage = SEED_IMAGES.shopHero ?? placeholderFor("square");
 

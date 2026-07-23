@@ -2,7 +2,13 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
-import { fetchInterpreting, type InterpretingData } from "@/lib/api-data";
+import {
+  fetchInterpreting,
+  type ApiInterpretingFaq,
+  type ApiInterpretingMode,
+  type ApiInterpreterProfile,
+  type InterpretingData,
+} from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { Reveal } from "@/components/ui/Reveal";
 import {
@@ -14,6 +20,7 @@ import { MobileStickyActions } from "@/components/layout/MobileStickyActions";
 import { SEED_IMAGES } from "@/lib/seed-images";
 import { placeholderFor } from "@/lib/placeholders";
 import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
+import { usePreviewBridge } from "@/lib/preview";
 
 type ServiceType = {
   id: string;
@@ -82,6 +89,12 @@ export default function InterpretingPageClient({
   initialInterpretingData,
 }: InterpretingPageClientProps) {
   const { t, locale } = useLocale();
+  const { previewData: previewService } =
+    usePreviewBridge<ApiInterpretingMode>("service");
+  const { previewData: previewInterpreter } =
+    usePreviewBridge<ApiInterpreterProfile>("interpreter");
+  const { previewData: previewFaq } =
+    usePreviewBridge<ApiInterpretingFaq>("faq");
 
   const {
     data: interpretingData,
@@ -110,7 +123,33 @@ export default function InterpretingPageClient({
     [t],
   );
 
-  const effectiveInterpretingData = interpretingData ?? initialInterpretingData;
+  const baseInterpretingData = interpretingData ?? initialInterpretingData;
+  const effectiveInterpretingData = useMemo<InterpretingData>(() => {
+    const prependPreview = <T extends { id: string }>(
+      preview: T | null,
+      items: T[],
+    ) =>
+      preview
+        ? [preview, ...items.filter((item) => item.id !== preview.id)]
+        : items;
+
+    return {
+      serviceModes: prependPreview(
+        previewService,
+        baseInterpretingData.serviceModes,
+      ),
+      profiles: prependPreview(
+        previewInterpreter,
+        baseInterpretingData.profiles,
+      ),
+      faqs: prependPreview(previewFaq, baseInterpretingData.faqs),
+    };
+  }, [
+    baseInterpretingData,
+    previewFaq,
+    previewInterpreter,
+    previewService,
+  ]);
 
   const serviceTypes = useMemo<ServiceType[]>(() => {
     const modes = effectiveInterpretingData.serviceModes ?? [];
