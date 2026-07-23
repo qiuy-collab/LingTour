@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   buildPublicUploadUrl,
   buildStoredUploadPath,
+  normalizeUploadOriginalName,
   resolveStoredUploadPath,
   sanitizeUploadModule,
 } from './upload-path';
@@ -99,6 +100,8 @@ export class UploadService {
     file: Express.Multer.File,
     moduleOrOptions?: string | StoreFileOptions,
   ): Promise<{ url: string; filename: string; mediaFileId?: string }> {
+    file.originalname = normalizeUploadOriginalName(file.originalname);
+
     const options: StoreFileOptions =
       typeof moduleOrOptions === 'string'
         ? { module: moduleOrOptions }

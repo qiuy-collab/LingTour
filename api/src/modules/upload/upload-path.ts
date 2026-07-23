@@ -13,6 +13,20 @@ const ALLOWED_MODULES = new Set([
   'seed',
 ]);
 
+export function normalizeUploadOriginalName(value?: string): string {
+  if (!value) {
+    return '';
+  }
+
+  const decoded = Buffer.from(value, 'latin1').toString('utf8');
+  if (decoded === value || decoded.includes('\uFFFD')) {
+    return value;
+  }
+
+  const roundTrip = Buffer.from(decoded, 'utf8').toString('latin1');
+  return roundTrip === value ? decoded : value;
+}
+
 export function sanitizeUploadModule(module?: string): string | undefined {
   if (!module) {
     return undefined;
@@ -23,7 +37,11 @@ export function sanitizeUploadModule(module?: string): string | undefined {
     return undefined;
   }
 
-  if (normalized.includes('/') || normalized.includes('\\') || normalized.includes('..')) {
+  if (
+    normalized.includes('/') ||
+    normalized.includes('\\') ||
+    normalized.includes('..')
+  ) {
     throw new BadRequestException('Invalid upload module');
   }
 
@@ -34,7 +52,10 @@ export function sanitizeUploadModule(module?: string): string | undefined {
   return normalized;
 }
 
-export function buildStoredUploadPath(filename: string, module?: string): string {
+export function buildStoredUploadPath(
+  filename: string,
+  module?: string,
+): string {
   const safeFilename = basename(filename).trim();
   if (!safeFilename) {
     throw new BadRequestException('Invalid upload filename');
@@ -65,7 +86,10 @@ export function normalizeStoredRelativePath(
   return buildStoredUploadPath(filename, module);
 }
 
-export function buildPublicUploadUrl(filename: string, module?: string): string {
+export function buildPublicUploadUrl(
+  filename: string,
+  module?: string,
+): string {
   const storedPath = normalizeStoredRelativePath(filename, module);
   const encodedPath = storedPath
     .split('/')
@@ -74,13 +98,20 @@ export function buildPublicUploadUrl(filename: string, module?: string): string 
   return `/uploads/${encodedPath}`;
 }
 
-export function resolveStoredUploadPath(uploadRoot: string, filename: string): string {
+export function resolveStoredUploadPath(
+  uploadRoot: string,
+  filename: string,
+): string {
   const storedPath = normalizeStoredRelativePath(filename);
   const absolutePath = resolve(uploadRoot, storedPath);
   const normalizedRoot = resolve(uploadRoot);
   const resolvedRelative = relative(normalizedRoot, absolutePath);
 
-  if (!resolvedRelative || resolvedRelative.startsWith('..') || resolve(normalizedRoot, resolvedRelative) !== absolutePath) {
+  if (
+    !resolvedRelative ||
+    resolvedRelative.startsWith('..') ||
+    resolve(normalizedRoot, resolvedRelative) !== absolutePath
+  ) {
     throw new BadRequestException('Invalid upload filename');
   }
 

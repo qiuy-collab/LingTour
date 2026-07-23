@@ -65,6 +65,8 @@ const showOrphans = ref(false);
 const orphanCount = ref(0);
 const uploadInputRef = ref<HTMLInputElement | null>(null);
 const libraryRef = ref<HTMLElement | null>(null);
+const uploadDialogVisible = ref(false);
+const uploadModule = ref(props.defaultModule);
 let animationContext: gsap.Context | null = null;
 
 const modules = [
@@ -90,6 +92,9 @@ const moduleLabels: Record<string, string> = {
   interpreting: "口译服务",
   seed: "初始化素材",
 };
+const uploadModules = modules.filter(
+  (moduleName) => moduleName && moduleName !== "seed",
+);
 const entityLabels: Record<string, string> = {
   city: "城市",
   route: "路线",
@@ -408,6 +413,19 @@ function clearSelection() {
 }
 
 function triggerUploadPicker() {
+  uploadModule.value =
+    props.defaultModule || moduleFilter.value || uploadModule.value || "";
+  uploadDialogVisible.value = true;
+}
+
+async function confirmUploadCategory() {
+  if (!uploadModule.value) {
+    ElMessage.warning("请先选择文件分类");
+    return;
+  }
+
+  uploadDialogVisible.value = false;
+  await nextTick();
   uploadInputRef.value?.click();
 }
 
@@ -428,7 +446,7 @@ async function handleUpload(event: Event) {
       filesArr.map(async (file) => {
         const res = await uploadMediaFile(
           file,
-          moduleFilter.value || props.defaultModule || undefined,
+          uploadModule.value || undefined,
           props.entityType || undefined,
           props.entityId || undefined,
           (percent) => {
@@ -448,8 +466,7 @@ async function handleUpload(event: Event) {
           createdAt: payload?.createdAt || new Date().toISOString(),
           module:
             payload?.module ||
-            moduleFilter.value ||
-            props.defaultModule ||
+            uploadModule.value ||
             null,
           entity_type: payload?.entityType || props.entityType || null,
           entity_id: payload?.entityId || props.entityId || null,
@@ -473,6 +490,12 @@ async function handleUpload(event: Event) {
       );
     } else {
       ElMessage.error("文件上传失败");
+    }
+
+    if (!isPickerMode.value && uploadModule.value) {
+      moduleFilter.value = uploadModule.value;
+      page.value = 1;
+      showOrphans.value = false;
     }
 
     await fetchFiles();
@@ -650,6 +673,42 @@ onBeforeUnmount(() => {
       这些文件目前没有被内容引用。请确认不再需要后再清理；点击卡片可多选。
     </div>
 
+    <el-dialog
+      v-model="uploadDialogVisible"
+      title="上传媒体文件"
+      width="min(460px, calc(100vw - 32px))"
+      append-to-body
+    >
+      <el-form label-position="top" @submit.prevent="confirmUploadCategory">
+        <el-form-item label="文件分类" required>
+          <el-select
+            v-model="uploadModule"
+            placeholder="请选择上传后的分类"
+            :disabled="Boolean(props.defaultModule)"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="moduleName in uploadModules"
+              :key="moduleName"
+              :label="getModuleLabel(moduleName)"
+              :value="moduleName"
+            />
+          </el-select>
+        </el-form-item>
+        <p class="upload-category-hint">
+          文件上传后会进入“{{ getModuleLabel(uploadModule) || "未选择" }}”分类，可通过媒体库顶部筛选查看。
+        </p>
+      </el-form>
+      <template #footer>
+        <div class="upload-dialog-actions">
+          <el-button @click="uploadDialogVisible = false">取消</el-button>
+          <el-button type="primary" :disabled="!uploadModule" @click="confirmUploadCategory">
+            选择文件
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
     <div class="media-grid" v-if="displayFiles.length > 0">
       <div
         v-for="file in displayFiles"
@@ -786,6 +845,19 @@ onBeforeUnmount(() => {
   margin-bottom: 16px;
   color: var(--lt-text-regular);
   font-size: 13px;
+}
+
+.upload-category-hint {
+  margin: 0;
+  color: var(--lt-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.upload-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .cleanup-hint {
