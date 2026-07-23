@@ -1,124 +1,145 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { pickI18n } from '@/types/common'
-import { resolveMediaUrl } from '@/utils/media'
-import { useEditorLocale } from '@/composables/useEditorLocale'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { pickI18n } from "@/types/common";
+import { resolveMediaUrl } from "@/utils/media";
+import { useEditorLocale } from "@/composables/useEditorLocale";
 
-type PreviewType = 'city' | 'route' | 'product'
+type PreviewType = "city" | "route" | "product";
 
 const props = defineProps<{
-  type: PreviewType
-  model: Record<string, any>
-  meta?: Record<string, any>
-}>()
+  type: PreviewType;
+  model: Record<string, any>;
+  meta?: Record<string, any>;
+  mobileMode?: boolean;
+}>();
 
-const { editorLocale } = useEditorLocale()
-const iframeRef = ref<HTMLIFrameElement | null>(null)
-const frameShellRef = ref<HTMLDivElement | null>(null)
+const { editorLocale } = useEditorLocale();
+const iframeRef = ref<HTMLIFrameElement | null>(null);
+const frameShellRef = ref<HTMLDivElement | null>(null);
 
 function getDefaultPreviewOrigin() {
-  if (typeof window === 'undefined') return 'http://127.0.0.1:3000'
+  if (typeof window === "undefined") return "http://127.0.0.1:3000";
 
-  const current = new URL(window.location.origin)
-  if (current.hostname.startsWith('admin.')) {
-    return `${current.protocol}//${current.hostname.replace(/^admin\./, '')}${current.port ? `:${current.port}` : ''}`
+  const current = new URL(window.location.origin);
+  if (["localhost", "127.0.0.1", "0.0.0.0"].includes(current.hostname)) {
+    return `${current.protocol}//${current.hostname}:3000`;
   }
 
-  return current.origin
+  if (current.hostname.startsWith("admin.")) {
+    return `${current.protocol}//${current.hostname.replace(/^admin\./, "")}${current.port ? `:${current.port}` : ""}`;
+  }
+
+  return current.origin;
 }
 
 const previewOrigin =
-  (import.meta.env.VITE_SITE_PREVIEW_ORIGIN as string | undefined) || getDefaultPreviewOrigin()
-const previewSource = window.location.origin
+  (import.meta.env.VITE_SITE_PREVIEW_ORIGIN as string | undefined) ||
+  getDefaultPreviewOrigin();
+const previewSource = window.location.origin;
 const previewSessionId =
-  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+  typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-const previewKey = computed(() => `admin-preview:${props.type}:${previewSessionId}`)
-const iframeLoaded = ref(false)
-const iframeLoading = ref(true)
-const iframeFailed = ref(false)
-const frameReloadKey = ref(0)
+const previewKey = computed(
+  () => `admin-preview:${props.type}:${previewSessionId}`,
+);
+const iframeLoaded = ref(false);
+const iframeLoading = ref(true);
+const iframeFailed = ref(false);
+const frameReloadKey = ref(0);
 
-let postTimer: ReturnType<typeof setTimeout> | null = null
-let loadTimeout: ReturnType<typeof setTimeout> | null = null
-let resizeObserver: ResizeObserver | null = null
-let burstTimers: Array<ReturnType<typeof setTimeout>> = []
+let postTimer: ReturnType<typeof setTimeout> | null = null;
+let loadTimeout: ReturnType<typeof setTimeout> | null = null;
+let resizeObserver: ResizeObserver | null = null;
+let burstTimers: Array<ReturnType<typeof setTimeout>> = [];
 
-const shellWidth = ref(0)
-const desktopWidth = 1440
+const shellWidth = ref(0);
+const desktopWidth = 1440;
 const desktopHeightMap: Record<PreviewType, number> = {
   city: 2200,
   route: 1800,
   product: 1700,
-}
-const desktopHeight = computed(() => desktopHeightMap[props.type])
+};
+const desktopHeight = computed(() => desktopHeightMap[props.type]);
 
-function text(value: unknown, fallback = '') {
-  return pickI18n(value, editorLocale.value) || fallback
+function text(value: unknown, fallback = "") {
+  return pickI18n(value, editorLocale.value) || fallback;
 }
 
 function list(values: unknown) {
-  return Array.isArray(values) ? values.filter(Boolean) : []
+  return Array.isArray(values) ? values.filter(Boolean) : [];
 }
 
 function buildCityPreview() {
-  const sections = list(props.model.sections).map((section: any, index: number) => {
-    const statParts = [text(section?.statLabel), text(section?.statValue)].filter(Boolean)
-    return {
-      title: text(section?.title, `Section ${index + 1}`),
-      body: text(section?.body),
-      image: resolveMediaUrl(section?.image),
-      stat: statParts.join(' / '),
-      breathImage: resolveMediaUrl(section?.breathImage),
-      breathQuote: text(section?.breathQuote),
-    }
-  })
+  const sections = list(props.model.sections).map(
+    (section: any, index: number) => {
+      const statParts = [
+        text(section?.statLabel),
+        text(section?.statValue),
+      ].filter(Boolean);
+      return {
+        title: text(section?.title, `Section ${index + 1}`),
+        body: text(section?.body),
+        image: resolveMediaUrl(section?.image),
+        stat: statParts.join(" / "),
+        breathImage: resolveMediaUrl(section?.breathImage),
+        breathQuote: text(section?.breathQuote),
+      };
+    },
+  );
 
   return {
-    slug: props.model.slug || 'preview-city',
-    name: text(props.model.name, 'Preview City'),
+    slug: props.model.slug || "preview-city",
+    name: text(props.model.name, "Preview City"),
     adcode: Number(props.model.adcode || 0),
-    label: text(props.model.regionLabel, 'Preview Label'),
+    label: text(props.model.regionLabel, "Preview Label"),
     summary: text(props.model.editorIntro),
     narrative: text(props.model.heroNarrative),
     image: resolveMediaUrl(props.model.heroImage),
-    gallery: list(props.model.galleryImages).map((item) => resolveMediaUrl(item)),
-    tags: list(props.model.tags).map((item) => text(item)).filter(Boolean),
+    gallery: list(props.model.galleryImages).map((item) =>
+      resolveMediaUrl(item),
+    ),
+    tags: list(props.model.tags)
+      .map((item) => text(item))
+      .filter(Boolean),
     food: text(props.model.foodTitle),
     foodDescription: text(props.model.foodDescription),
     routeSlugs: list(props.model.routeSlugs),
     relatedCitySlugs: list(props.model.relatedCitySlugs),
-    foodImages: list(props.model.foodImages).map((item) => resolveMediaUrl(item)),
+    foodImages: list(props.model.foodImages).map((item) =>
+      resolveMediaUrl(item),
+    ),
     sections,
-  }
+  };
 }
 
 function normalizeCulture(value: string) {
-  if (value === 'BayArea' || value === 'Guangfu') return 'Bay Area'
-  return value || 'Guangfu'
+  if (value === "BayArea" || value === "Guangfu") return "Bay Area";
+  return value || "Guangfu";
 }
 
 function buildRoutePreview() {
   return {
-    slug: props.model.slug || 'preview-route',
-    title: text(props.model.title, 'Preview Route'),
+    slug: props.model.slug || "preview-route",
+    title: text(props.model.title, "Preview Route"),
     culture: normalizeCulture(props.model.cultureTag),
-    city: text(props.model.cityName, 'Preview City'),
+    city: text(props.model.cityName, "Preview City"),
     citySlugs: list(props.model.citySlugs),
     duration: text(props.model.duration),
     audience: text(props.model.audience),
     summary: text(props.model.summary),
     story: text(props.model.story),
     image: resolveMediaUrl(props.model.coverImage),
-    mapViewBox: '0 0 900 600',
+    mapViewBox: "0 0 900 600",
     itinerary: list(props.model.stops).map((stop: any) => ({
-      time: stop?.time || '',
-      stop: text(stop?.stopName, 'Preview Stop'),
-      plan: '',
+      time: stop?.time || "",
+      stop: text(stop?.stopName, "Preview Stop"),
+      plan: "",
       story: text(stop?.story),
-      details: list(stop?.details).map((detail) => text(detail)).filter(Boolean),
+      details: list(stop?.details)
+        .map((detail) => text(detail))
+        .filter(Boolean),
       culturalStory: text(stop?.culturalStory),
       lat: Number(stop?.lat || 0),
       lng: Number(stop?.lng || 0),
@@ -128,29 +149,29 @@ function buildRoutePreview() {
       transit: text(stop?.transit) || undefined,
       image: resolveMediaUrl(stop?.image) || undefined,
     })),
-  }
+  };
 }
 
 function buildProductPreview() {
   return {
-    slug: props.model.slug || 'preview-product',
-    name: text(props.model.name, 'Preview Product'),
-    collection: props.meta?.collectionTitle || 'LingTour Goods',
+    slug: props.model.slug || "preview-product",
+    name: text(props.model.name, "Preview Product"),
+    collection: props.meta?.collectionTitle || "LingTour Goods",
     price: Number(props.model.price || 0),
-    currency: props.model.currency || 'SGD',
+    currency: props.model.currency || "SGD",
     tag: text(props.model.tag),
     image: resolveMediaUrl(props.model.image),
     materialNotes: text(props.model.material) || undefined,
     story: text(props.model.story),
     gallery: list(props.model.gallery).map((item) => resolveMediaUrl(item)),
-  }
+  };
 }
 
 const previewPayload = computed(() => {
-  if (props.type === 'city') return buildCityPreview()
-  if (props.type === 'route') return buildRoutePreview()
-  return buildProductPreview()
-})
+  if (props.type === "city") return buildCityPreview();
+  if (props.type === "route") return buildRoutePreview();
+  return buildProductPreview();
+});
 
 const iframePath = computed(() => {
   // The public site is statically exported in production. Newly-created slugs
@@ -158,34 +179,38 @@ const iframePath = computed(() => {
   // own path produces a real static-server 404 before the preview bridge can
   // receive its payload. These seeded pages are guaranteed build outputs and
   // act only as shells; previewPayload replaces their content immediately.
-  if (props.type === 'city') return '/culture/zhanjiang/'
-  if (props.type === 'route') return '/routes/southern-sea-table/'
-  return '/shop/products/volcanic-soil-bowl/'
-})
+  if (props.type === "city") return "/culture/zhanjiang/";
+  if (props.type === "route") return "/routes/southern-sea-table/";
+  return "/shop/products/volcanic-soil-bowl/";
+});
 
 const iframeSrc = computed(
   () =>
     `${previewOrigin}${iframePath.value}?preview=1&previewKey=${encodeURIComponent(previewKey.value)}&previewSource=${encodeURIComponent(previewSource)}`,
-)
+);
 
-const iframeSrcWithReload = computed(() => `${iframeSrc.value}&reloadKey=${frameReloadKey.value}`)
+const iframeSrcWithReload = computed(
+  () => `${iframeSrc.value}&reloadKey=${frameReloadKey.value}`,
+);
 
 const previewScale = computed(() => {
-  if (!shellWidth.value) return 1
-  return Math.min(shellWidth.value / desktopWidth, 1)
-})
+  if (!shellWidth.value) return 1;
+  return Math.min(shellWidth.value / desktopWidth, 1);
+});
 
-const scaledFrameHeight = computed(() => Math.round(desktopHeight.value * previewScale.value))
+const scaledFrameHeight = computed(() =>
+  Math.round(desktopHeight.value * previewScale.value),
+);
 
 function postPreview() {
-  if (!iframeLoaded.value) return
+  if (!iframeLoaded.value) return;
 
-  const frame = iframeRef.value?.contentWindow
-  if (!frame) return
+  const frame = iframeRef.value?.contentWindow;
+  if (!frame) return;
 
   frame.postMessage(
     {
-      channel: 'lingtour-preview',
+      channel: "lingtour-preview",
       key: previewKey.value,
       type: props.type,
       locale: editorLocale.value,
@@ -194,86 +219,87 @@ function postPreview() {
       timestamp: Date.now(),
     },
     previewOrigin,
-  )
+  );
 }
 
 function postPreviewBurst() {
-  burstTimers.forEach((timer) => clearTimeout(timer))
-  burstTimers = []
+  burstTimers.forEach((timer) => clearTimeout(timer));
+  burstTimers = [];
 
-  const delays = [0, 200, 600, 1200, 2400]
+  const delays = [0, 200, 600, 1200, 2400];
   delays.forEach((delay) => {
     const timer = setTimeout(() => {
-      postPreview()
-    }, delay)
-    burstTimers.push(timer)
-  })
+      postPreview();
+    }, delay);
+    burstTimers.push(timer);
+  });
 }
 
 function schedulePostPreview() {
-  if (postTimer) clearTimeout(postTimer)
+  if (postTimer) clearTimeout(postTimer);
   postTimer = setTimeout(() => {
-    postPreviewBurst()
-  }, 180)
+    postPreviewBurst();
+  }, 180);
 }
 
 function startLoadTimeout() {
-  if (loadTimeout) clearTimeout(loadTimeout)
+  if (loadTimeout) clearTimeout(loadTimeout);
   loadTimeout = setTimeout(() => {
     if (!iframeLoaded.value) {
-      iframeLoading.value = false
-      iframeFailed.value = true
+      iframeLoading.value = false;
+      iframeFailed.value = true;
     }
-  }, 6000)
+  }, 6000);
 }
 
 function handleFrameLoad() {
-  iframeLoaded.value = true
-  iframeLoading.value = false
-  iframeFailed.value = false
-  if (loadTimeout) clearTimeout(loadTimeout)
-  postPreviewBurst()
+  iframeLoaded.value = true;
+  iframeLoading.value = false;
+  iframeFailed.value = false;
+  if (loadTimeout) clearTimeout(loadTimeout);
+  postPreviewBurst();
 }
 
 function reloadFrame() {
-  iframeLoaded.value = false
-  iframeLoading.value = true
-  iframeFailed.value = false
-  frameReloadKey.value += 1
-  startLoadTimeout()
+  iframeLoaded.value = false;
+  iframeLoading.value = true;
+  iframeFailed.value = false;
+  frameReloadKey.value += 1;
+  startLoadTimeout();
 }
 
-watch(previewPayload, schedulePostPreview, { deep: true })
-watch(editorLocale, schedulePostPreview)
+watch(previewPayload, schedulePostPreview, { deep: true });
+watch(editorLocale, schedulePostPreview);
 watch(iframeSrc, () => {
-  iframeLoaded.value = false
-  iframeLoading.value = true
-  iframeFailed.value = false
-  startLoadTimeout()
-})
+  iframeLoaded.value = false;
+  iframeLoading.value = true;
+  iframeFailed.value = false;
+  startLoadTimeout();
+});
 
 onMounted(() => {
-  if (!frameShellRef.value || typeof ResizeObserver === 'undefined') return
+  if (!frameShellRef.value || typeof ResizeObserver === "undefined") return;
 
-  shellWidth.value = frameShellRef.value.clientWidth
+  shellWidth.value = frameShellRef.value.clientWidth;
   resizeObserver = new ResizeObserver((entries) => {
-    const entry = entries[0]
-    shellWidth.value = entry?.contentRect.width || frameShellRef.value?.clientWidth || 0
-  })
-  resizeObserver.observe(frameShellRef.value)
-  startLoadTimeout()
-})
+    const entry = entries[0];
+    shellWidth.value =
+      entry?.contentRect.width || frameShellRef.value?.clientWidth || 0;
+  });
+  resizeObserver.observe(frameShellRef.value);
+  startLoadTimeout();
+});
 
 onBeforeUnmount(() => {
-  if (postTimer) clearTimeout(postTimer)
-  if (loadTimeout) clearTimeout(loadTimeout)
-  burstTimers.forEach((timer) => clearTimeout(timer))
-  resizeObserver?.disconnect()
-})
+  if (postTimer) clearTimeout(postTimer);
+  if (loadTimeout) clearTimeout(loadTimeout);
+  burstTimers.forEach((timer) => clearTimeout(timer));
+  resizeObserver?.disconnect();
+});
 </script>
 
 <template>
-  <aside class="frontend-preview">
+  <aside class="frontend-preview" :class="{ 'mobile-mode': mobileMode }">
     <div class="preview-toolbar">
       <div>
         <strong>真实前台预览</strong>
@@ -281,11 +307,17 @@ onBeforeUnmount(() => {
       </div>
       <div class="toolbar-actions">
         <span class="toolbar-locale-hint">跟随顶部编辑语言</span>
-        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">打开新窗口</a>
+        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer"
+          >打开新窗口</a
+        >
       </div>
     </div>
 
-    <div ref="frameShellRef" class="preview-frame-shell" :style="{ height: `${scaledFrameHeight}px` }">
+    <div
+      ref="frameShellRef"
+      class="preview-frame-shell"
+      :style="{ height: `${scaledFrameHeight}px` }"
+    >
       <div v-if="iframeLoading" class="preview-state">
         <el-skeleton :rows="6" animated />
         <p>前台预览加载中...</p>
@@ -295,8 +327,12 @@ onBeforeUnmount(() => {
         <strong>前台预览加载失败</strong>
         <p>当前预览地址是 {{ previewOrigin }}，请确认前台站点已经启动。</p>
         <div class="preview-state-actions">
-          <el-button size="small" type="primary" @click="reloadFrame">重试</el-button>
-          <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer">新窗口打开</a>
+          <el-button size="small" type="primary" @click="reloadFrame"
+            >重试</el-button
+          >
+          <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer"
+            >新窗口打开</a
+          >
         </div>
       </div>
 
@@ -422,9 +458,22 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 767px) {
-  /* Preview panel hidden on mobile, accessible via drawer */
-  .frontend-preview {
+  .frontend-preview:not(.mobile-mode) {
     display: none;
+  }
+
+  .frontend-preview.mobile-mode {
+    position: static;
+    width: 100%;
+  }
+
+  .frontend-preview.mobile-mode .preview-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .frontend-preview.mobile-mode .toolbar-actions {
+    justify-content: space-between;
   }
 }
 </style>

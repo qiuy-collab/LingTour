@@ -1,86 +1,95 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import type { FormInstance } from 'element-plus'
-import { ArrowDown, ArrowUp, Delete, Plus } from '@element-plus/icons-vue'
-import { citiesApi } from '@/api/cities'
-import { routesApi } from '@/api/routes'
-import { toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
-import { useDirtyForm } from '@/composables/useDirtyForm'
-import type { CityFormData } from '@/types/city'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
-import ImageUpload from '@/components/ImageUpload.vue'
-import MediaAssetInput from '@/components/media/MediaAssetInput.vue'
-import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
-import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
-import { GUANGDONG_ADCODE_OPTIONS, formatAdcodeLabel } from '@/constants/guangdongRegions'
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import type { FormInstance } from "element-plus";
+import { ArrowDown, ArrowUp, Delete, Plus } from "@element-plus/icons-vue";
+import { citiesApi } from "@/api/cities";
+import { routesApi } from "@/api/routes";
+import { toI18n } from "@/types/common";
+import { extractErrorMessage } from "@/utils/i18n";
+import { useDirtyForm } from "@/composables/useDirtyForm";
+import type { CityFormData } from "@/types/city";
+import I18nInput from "@/components/I18nInput.vue";
+import I18nMarkdownEditor from "@/components/I18nMarkdownEditor.vue";
+import ImageUpload from "@/components/ImageUpload.vue";
+import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
+import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
+import FrontendPreviewDrawer from "@/components/editor/FrontendPreviewDrawer.vue";
+import EditorPageHeader from "@/components/editor/EditorPageHeader.vue";
+import EditorWorkspace from "@/components/editor/EditorWorkspace.vue";
+import {
+  GUANGDONG_ADCODE_OPTIONS,
+  formatAdcodeLabel,
+} from "@/constants/guangdongRegions";
 import {
   isIncompleteVideoMedia,
   legacyImageForMedia,
   resolveMediaGallery,
   resolvePrimaryMedia,
-} from '@/types/media'
+} from "@/types/media";
 
-const router = useRouter()
-const route = useRoute()
-const isEdit = computed(() => Boolean(route.params.id))
-const loading = ref(false)
-const saving = ref(false)
-const formRef = ref<FormInstance>()
-const activeChapter = ref('overview')
+const router = useRouter();
+const route = useRoute();
+const isEdit = computed(() => Boolean(route.params.id));
+const loading = ref(false);
+const saving = ref(false);
+const mobilePreviewVisible = ref(false);
+const formRef = ref<FormInstance>();
+const activeChapter = ref("overview");
 
-const routeOptions = ref<Array<{ id: string; slug: string; title: string; cityName: string }>>([])
+const routeOptions = ref<
+  Array<{ id: string; slug: string; title: string; cityName: string }>
+>([]);
 
 const rules = {
   slug: [
-    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { required: true, message: "请输入 Slug", trigger: "blur" },
     {
       pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/,
-      message: 'Slug 必须是 kebab-case 格式',
-      trigger: 'blur',
+      message: "Slug 必须是 kebab-case 格式",
+      trigger: "blur",
     },
   ],
-  'name.en': [{ required: true, message: '请输入城市英文名称', trigger: 'blur' }],
-}
+  "name.en": [
+    { required: true, message: "请输入城市英文名称", trigger: "blur" },
+  ],
+};
 
 const form = reactive<any>({
-  slug: '',
-  name: { zh: '', en: '' },
-  regionLabel: { zh: '', en: '' },
+  slug: "",
+  name: { zh: "", en: "" },
+  regionLabel: { zh: "", en: "" },
   adcode: undefined,
-  heroImage: '',
+  heroImage: "",
   heroMedia: null,
-  heroNarrative: { zh: '', en: '' },
+  heroNarrative: { zh: "", en: "" },
   tags: [],
-  editorIntro: { zh: '', en: '' },
+  editorIntro: { zh: "", en: "" },
   galleryImages: [],
   galleryMedia: [],
-  foodTitle: { zh: '', en: '' },
-  foodDescription: { zh: '', en: '' },
+  foodTitle: { zh: "", en: "" },
+  foodDescription: { zh: "", en: "" },
   foodImages: [],
   sections: [],
-  status: 'draft',
+  status: "draft",
   routeSlugs: [],
   relatedCitySlugs: [],
-})
+});
 
-const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
+const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form });
 
-const newTag = reactive({ zh: '', en: '' })
+const newTag = reactive({ zh: "", en: "" });
 
 function normalizeI18nValue(value: unknown) {
-  return toI18n(value)
+  return toI18n(value);
 }
 
 function normalizeTagList(value: unknown) {
-  if (!Array.isArray(value)) return []
+  if (!Array.isArray(value)) return [];
   return value
     .map((item) => normalizeI18nValue(item))
-    .filter((item) => item.zh.trim() || item.en.trim())
+    .filter((item) => item.zh.trim() || item.en.trim());
 }
 
 function normalizeSection(section: any, index: number) {
@@ -88,138 +97,153 @@ function normalizeSection(section: any, index: number) {
     id: section.id || `section-${index}`,
     title: normalizeI18nValue(section.title),
     body: normalizeI18nValue(section.body),
-    image: section.image || '',
-    primaryMedia: resolvePrimaryMedia(section.primaryMedia, section.image || ''),
+    image: section.image || "",
+    primaryMedia: resolvePrimaryMedia(
+      section.primaryMedia,
+      section.image || "",
+    ),
     images: Array.isArray(section.images) ? section.images : [],
     media: resolveMediaGallery(section.media, section.images || []),
     statLabel: normalizeI18nValue(section.statLabel),
     statValue: normalizeI18nValue(section.statValue),
-    breathImage: section.breathImage || '',
+    breathImage: section.breathImage || "",
     breathQuote: normalizeI18nValue(section.breathQuote),
     sortOrder: section.sortOrder ?? index,
-  }
+  };
 }
 
 function addTag() {
-  if (!newTag.en.trim()) return
-  form.tags.push({ zh: '', en: newTag.en.trim() })
-  newTag.en = ''
+  if (!newTag.en.trim()) return;
+  form.tags.push({ zh: "", en: newTag.en.trim() });
+  newTag.en = "";
 }
 
 function removeTag(index: number) {
-  form.tags.splice(index, 1)
+  form.tags.splice(index, 1);
 }
 
 function addSection() {
   form.sections.push({
     id: `section-${Date.now()}`,
-    title: { zh: '', en: '' },
-    body: { zh: '', en: '' },
-    image: '',
+    title: { zh: "", en: "" },
+    body: { zh: "", en: "" },
+    image: "",
     primaryMedia: null,
     images: [],
     media: [],
-    statLabel: { zh: '', en: '' },
-    statValue: { zh: '', en: '' },
-    breathImage: '',
-    breathQuote: { zh: '', en: '' },
+    statLabel: { zh: "", en: "" },
+    statValue: { zh: "", en: "" },
+    breathImage: "",
+    breathQuote: { zh: "", en: "" },
     sortOrder: form.sections.length,
-  })
-  activeChapter.value = `section-${form.sections.length - 1}`
+  });
+  activeChapter.value = `section-${form.sections.length - 1}`;
 }
 
 function removeSection(index: number) {
-  form.sections.splice(index, 1)
-  reindexSections()
+  form.sections.splice(index, 1);
+  reindexSections();
   if (form.sections.length === 0) {
-    activeChapter.value = 'overview'
-    return
+    activeChapter.value = "overview";
+    return;
   }
-  activeChapter.value = `section-${Math.min(index, form.sections.length - 1)}`
+  activeChapter.value = `section-${Math.min(index, form.sections.length - 1)}`;
 }
 
 function moveSection(index: number, delta: -1 | 1) {
-  const target = index + delta
-  if (target < 0 || target >= form.sections.length) return
-  ;[form.sections[index], form.sections[target]] = [form.sections[target], form.sections[index]]
-  reindexSections()
+  const target = index + delta;
+  if (target < 0 || target >= form.sections.length) return;
+  [form.sections[index], form.sections[target]] = [
+    form.sections[target],
+    form.sections[index],
+  ];
+  reindexSections();
 }
 
 function reindexSections() {
   form.sections.forEach((section: any, index: number) => {
-    section.sortOrder = index
-  })
+    section.sortOrder = index;
+  });
 }
 
 const chapterTabs = computed(() => [
-  { key: 'overview', label: 'Overview' },
-  { key: 'intro', label: 'Intro' },
+  { key: "overview", label: "Overview" },
+  { key: "intro", label: "Intro" },
   ...form.sections.map((section: any, index: number) => ({
     key: `section-${index}`,
-    label: section.title?.zh?.trim() || section.title?.en?.trim() || `Section ${index + 1}`,
+    label:
+      section.title?.zh?.trim() ||
+      section.title?.en?.trim() ||
+      `Section ${index + 1}`,
     badge: `#${index + 1}`,
   })),
-  { key: 'food', label: 'Food' },
-])
+  { key: "food", label: "Food" },
+]);
 
 const activeSectionIndex = computed(() => {
-  const match = /^section-(\d+)$/.exec(activeChapter.value)
-  return match ? Number(match[1]) : -1
-})
+  const match = /^section-(\d+)$/.exec(activeChapter.value);
+  return match ? Number(match[1]) : -1;
+});
 
 const activeSection = computed(() =>
-  activeSectionIndex.value >= 0 ? form.sections[activeSectionIndex.value] : null,
-)
+  activeSectionIndex.value >= 0
+    ? form.sections[activeSectionIndex.value]
+    : null,
+);
 
-const isSectionChapter = computed(() => activeSectionIndex.value >= 0)
+const isSectionChapter = computed(() => activeSectionIndex.value >= 0);
 
 function moveActiveSection(delta: -1 | 1) {
-  if (activeSectionIndex.value < 0) return
-  const currentIndex = activeSectionIndex.value
-  moveSection(currentIndex, delta)
-  const targetIndex = currentIndex + delta
+  if (activeSectionIndex.value < 0) return;
+  const currentIndex = activeSectionIndex.value;
+  moveSection(currentIndex, delta);
+  const targetIndex = currentIndex + delta;
   if (targetIndex >= 0 && targetIndex < form.sections.length) {
-    activeChapter.value = `section-${targetIndex}`
+    activeChapter.value = `section-${targetIndex}`;
   }
 }
 
 async function loadRouteOptions() {
-  const res = await routesApi.getRoutes({ page: 1, pageSize: 200 })
+  const res = await routesApi.getRoutes({ page: 1, pageSize: 200 });
   routeOptions.value = (res.data.data.data || []).map((item: any) => ({
     id: item.id,
     slug: item.slug,
     title: item.title?.zh || item.title?.en || item.slug,
-    cityName: item.cityName?.zh || item.cityName?.en || '',
-  }))
+    cityName: item.cityName?.zh || item.cityName?.en || "",
+  }));
 }
 
 function fillFromApi(data: any) {
   Object.assign(form, {
-    slug: data.slug || '',
+    slug: data.slug || "",
     name: toI18n(data.name),
     regionLabel: toI18n(data.regionLabel),
     adcode: data.adcode ?? undefined,
-    heroImage: data.heroImage || '',
-    heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ''),
+    heroImage: data.heroImage || "",
+    heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ""),
     heroNarrative: toI18n(data.heroNarrative),
     tags: normalizeTagList(data.tags),
     editorIntro: toI18n(data.editorIntro),
     galleryImages: data.galleryImages || [],
-    galleryMedia: resolveMediaGallery(data.galleryMedia, data.galleryImages || []),
+    galleryMedia: resolveMediaGallery(
+      data.galleryMedia,
+      data.galleryImages || [],
+    ),
     foodTitle: toI18n(data.foodTitle),
     foodDescription: toI18n(data.foodDescription),
     foodImages: data.foodImages || [],
     sections: (data.sections || []).map((section: any, index: number) =>
       normalizeSection(section, index),
     ),
-    status: data.published ? 'published' : 'draft',
-    routeSlugs: data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
+    status: data.published ? "published" : "draft",
+    routeSlugs:
+      data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
-  })
+  });
 }
 
 function toPayload() {
-  const heroMedia = resolvePrimaryMedia(form.heroMedia, form.heroImage)
+  const heroMedia = resolvePrimaryMedia(form.heroMedia, form.heroImage);
   return {
     slug: form.slug,
     name: form.name,
@@ -235,108 +259,115 @@ function toPayload() {
     foodTitle: form.foodTitle,
     foodDescription: form.foodDescription,
     foodImages: form.foodImages,
-    published: form.status === 'published',
+    published: form.status === "published",
     routeSlugs: form.routeSlugs,
     relatedCitySlugs: form.relatedCitySlugs,
     sections: form.sections.map((section: any, index: number) => ({
       title: normalizeI18nValue(section.title),
       body: normalizeI18nValue(section.body),
-      image: legacyImageForMedia(section.primaryMedia, section.image || ''),
-      primaryMedia: resolvePrimaryMedia(section.primaryMedia, section.image || ''),
+      image: legacyImageForMedia(section.primaryMedia, section.image || ""),
+      primaryMedia: resolvePrimaryMedia(
+        section.primaryMedia,
+        section.image || "",
+      ),
       images: section.images || [],
       media: resolveMediaGallery(section.media, section.images || []),
       statLabel: normalizeI18nValue(section.statLabel),
       statValue: normalizeI18nValue(section.statValue),
-      breathImage: section.breathImage || '',
+      breathImage: section.breathImage || "",
       breathQuote: normalizeI18nValue(section.breathQuote),
       sortOrder: index,
     })),
-  }
+  };
 }
 
 watch(
   () => form.heroMedia,
   (value) => {
-    if (!value) return
-    const nextLegacyImage = legacyImageForMedia(value, '')
+    if (!value) return;
+    const nextLegacyImage = legacyImageForMedia(value, "");
     if (nextLegacyImage !== form.heroImage) {
-      form.heroImage = nextLegacyImage
+      form.heroImage = nextLegacyImage;
     }
   },
   { deep: true },
-)
+);
 
 watch(
   () => form.sections,
   (sections) => {
     sections.forEach((section: any) => {
-      if (!section.primaryMedia) return
-      const nextLegacyImage = legacyImageForMedia(section.primaryMedia, '')
+      if (!section.primaryMedia) return;
+      const nextLegacyImage = legacyImageForMedia(section.primaryMedia, "");
       if (nextLegacyImage !== section.image) {
-        section.image = nextLegacyImage
+        section.image = nextLegacyImage;
       }
-    })
+    });
   },
   { deep: true },
-)
+);
 
 onMounted(async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    await loadRouteOptions()
+    await loadRouteOptions();
     if (isEdit.value) {
-      const res = await citiesApi.getCity(route.params.id as string)
-      fillFromApi(res.data.data)
+      const res = await citiesApi.getCity(route.params.id as string);
+      fillFromApi(res.data.data);
     }
-    resetDirty()
+    resetDirty();
   } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, '加载城市数据失败'))
-    router.push('/admin/cities')
+    ElMessage.error(extractErrorMessage(err, "加载城市数据失败"));
+    router.push("/admin/cities");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 
 async function handleSave() {
   try {
-    await formRef.value?.validate()
+    await formRef.value?.validate();
   } catch {
-    ElMessage.warning('请检查必填项')
-    return
+    ElMessage.warning("请检查必填项");
+    return;
   }
 
   if (
-    form.status === 'published' &&
+    form.status === "published" &&
     (isIncompleteVideoMedia(form.heroMedia) ||
-      form.sections.some((section: any) => isIncompleteVideoMedia(section.primaryMedia)))
+      form.sections.some((section: any) =>
+        isIncompleteVideoMedia(section.primaryMedia),
+      ))
   ) {
-    ElMessage.warning('发布城市内容前，请补全所有视频文件和封面图')
-    return
+    ElMessage.warning("发布城市内容前，请补全所有视频文件和封面图");
+    return;
   }
 
-  saving.value = true
+  saving.value = true;
   try {
     if (isEdit.value) {
-      await citiesApi.updateCity(route.params.id as string, toPayload())
-      ElMessage.success('城市更新成功')
+      await citiesApi.updateCity(route.params.id as string, toPayload());
+      ElMessage.success("城市更新成功");
     } else {
-      await citiesApi.createCity(toPayload() as CityFormData)
-      ElMessage.success('城市创建成功')
+      await citiesApi.createCity(toPayload() as CityFormData);
+      ElMessage.success("城市创建成功");
     }
-    disableDirtyCheck()
-    router.push('/admin/cities')
+    disableDirtyCheck();
+    router.push("/admin/cities");
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '保存失败'))
+    ElMessage.error(extractErrorMessage(error, "保存失败"));
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 const selectedRouteCards = computed(() =>
   form.routeSlugs
-    .map((slug: string) => routeOptions.value.find((item) => item.slug === slug))
+    .map((slug: string) =>
+      routeOptions.value.find((item) => item.slug === slug),
+    )
     .filter(Boolean),
-)
+);
 </script>
 
 <template>
@@ -347,10 +378,17 @@ const selectedRouteCards = computed(() =>
       :saving="saving"
       :dirty="isDirty"
       @save="handleSave"
+      @preview="mobilePreviewVisible = true"
     />
 
     <div class="editor-shell">
-      <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        class="editor-form"
+        label-position="top"
+      >
         <el-card shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-row :gutter="16">
@@ -375,7 +413,9 @@ const selectedRouteCards = computed(() =>
                     :value="option.adcode"
                   />
                 </el-select>
-                <div class="form-hint-text">首页地图和路线地区高亮都依赖这个地区编码。</div>
+                <div class="form-hint-text">
+                  首页地图和路线地区高亮都依赖这个地区编码。
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -409,13 +449,18 @@ const selectedRouteCards = computed(() =>
           title="章节工作台"
           description="按章节切换城市内容，减少长表单滚动。Section 的新增、排序和删除统一在这里处理。"
           :active-label="
-            chapterTabs.find((chapter) => chapter.key === activeChapter)?.label || '基础信息'
+            chapterTabs.find((chapter) => chapter.key === activeChapter)
+              ?.label || '基础信息'
           "
           :tabs="chapterTabs"
         >
           <template #toolbar>
             <div class="chapter-actions">
-              <el-button size="small" type="primary" :icon="Plus" @click="addSection"
+              <el-button
+                size="small"
+                type="primary"
+                :icon="Plus"
+                @click="addSection"
                 >新增 Section</el-button
               >
               <el-button
@@ -429,7 +474,10 @@ const selectedRouteCards = computed(() =>
               <el-button
                 size="small"
                 :icon="ArrowDown"
-                :disabled="!isSectionChapter || activeSectionIndex === form.sections.length - 1"
+                :disabled="
+                  !isSectionChapter ||
+                  activeSectionIndex === form.sections.length - 1
+                "
                 @click="moveActiveSection(1)"
               >
                 下移
@@ -467,11 +515,19 @@ const selectedRouteCards = computed(() =>
               <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
             </el-form-item>
             <el-form-item label="Intro 图片组">
-              <ImageUpload v-model="form.galleryImages" multiple :limit="12" module="cities" />
+              <ImageUpload
+                v-model="form.galleryImages"
+                multiple
+                :limit="12"
+                module="cities"
+              />
             </el-form-item>
           </div>
 
-          <div v-else-if="isSectionChapter && activeSection" class="workspace-panel">
+          <div
+            v-else-if="isSectionChapter && activeSection"
+            class="workspace-panel"
+          >
             <div class="panel-title">
               {{
                 activeSection.title?.zh?.trim() ||
@@ -488,7 +544,12 @@ const selectedRouteCards = computed(() =>
               />
             </el-form-item>
             <el-form-item label="Section 图片集">
-              <ImageUpload v-model="activeSection.images" multiple :limit="10" module="cities" />
+              <ImageUpload
+                v-model="activeSection.images"
+                multiple
+                :limit="10"
+                module="cities"
+              />
             </el-form-item>
             <el-form-item label="Section 标题">
               <I18nInput v-model="activeSection.title" />
@@ -509,10 +570,17 @@ const selectedRouteCards = computed(() =>
               </el-col>
             </el-row>
             <el-form-item label="呼吸图">
-              <ImageUpload v-model="activeSection.breathImage" module="cities" />
+              <ImageUpload
+                v-model="activeSection.breathImage"
+                module="cities"
+              />
             </el-form-item>
             <el-form-item label="引语">
-              <I18nInput v-model="activeSection.breathQuote" type="textarea" :rows="3" />
+              <I18nInput
+                v-model="activeSection.breathQuote"
+                type="textarea"
+                :rows="3"
+              />
             </el-form-item>
           </div>
 
@@ -525,7 +593,12 @@ const selectedRouteCards = computed(() =>
               <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
             </el-form-item>
             <el-form-item label="Food 图片组">
-              <ImageUpload v-model="form.foodImages" multiple :limit="10" module="cities" />
+              <ImageUpload
+                v-model="form.foodImages"
+                multiple
+                :limit="10"
+                module="cities"
+              />
             </el-form-item>
           </div>
         </EditorWorkspace>
@@ -579,11 +652,17 @@ const selectedRouteCards = computed(() =>
 
       <FrontendPagePreview type="city" :model="form" />
     </div>
+
+    <FrontendPreviewDrawer
+      v-model="mobilePreviewVisible"
+      type="city"
+      :model="form"
+    />
   </div>
 </template>
 
 <style scoped>
-@import '@/assets/editor-common.css';
+@import "@/assets/editor-common.css";
 
 .chapter-actions {
   display: flex;

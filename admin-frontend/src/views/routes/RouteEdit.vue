@@ -1,209 +1,228 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import type { FormInstance } from 'element-plus'
-import { ArrowDown, ArrowUp, Delete, Plus } from '@element-plus/icons-vue'
-import { routesApi } from '@/api/routes'
-import { citiesApi } from '@/api/cities'
-import { homeApi } from '@/api/home'
-import { pickI18n, toI18n, toI18nArray } from '@/types/common'
-import { extractErrorMessage, optionalI18n } from '@/utils/i18n'
-import { useDirtyForm } from '@/composables/useDirtyForm'
-import { usePublishCheck } from '@/composables/usePublishCheck'
-import { ElMessageBox } from 'element-plus'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
-import ImageUpload from '@/components/ImageUpload.vue'
-import MediaAssetInput from '@/components/media/MediaAssetInput.vue'
-import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
-import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import type { FormInstance } from "element-plus";
+import { ArrowDown, ArrowUp, Delete, Plus } from "@element-plus/icons-vue";
+import { routesApi } from "@/api/routes";
+import { citiesApi } from "@/api/cities";
+import { homeApi } from "@/api/home";
+import { pickI18n, toI18n, toI18nArray } from "@/types/common";
+import { extractErrorMessage, optionalI18n } from "@/utils/i18n";
+import { useDirtyForm } from "@/composables/useDirtyForm";
+import { usePublishCheck } from "@/composables/usePublishCheck";
+import { ElMessageBox } from "element-plus";
+import I18nInput from "@/components/I18nInput.vue";
+import I18nMarkdownEditor from "@/components/I18nMarkdownEditor.vue";
+import ImageUpload from "@/components/ImageUpload.vue";
+import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
+import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
+import FrontendPreviewDrawer from "@/components/editor/FrontendPreviewDrawer.vue";
+import EditorPageHeader from "@/components/editor/EditorPageHeader.vue";
+import EditorWorkspace, {
+  type EditorWorkspaceTab,
+} from "@/components/editor/EditorWorkspace.vue";
 import {
   DEFAULT_ROUTE_REGIONS,
   ROUTE_TAG_OPTIONS,
   formatRouteRegionLabel,
   formatRouteTagLabel,
   normalizeRouteTag,
-} from '@/constants/guangdongRegions'
-import type { RouteRegionConfig } from '@/types/home'
+} from "@/constants/guangdongRegions";
+import type { RouteRegionConfig } from "@/types/home";
 import {
   isIncompleteVideoMedia,
   legacyImageForMedia,
   resolveMediaGallery,
   resolvePrimaryMedia,
-} from '@/types/media'
+} from "@/types/media";
 
-const router = useRouter()
-const route = useRoute()
-const isEdit = computed(() => Boolean(route.params.id))
-const loading = ref(false)
-const saving = ref(false)
-const formRef = ref<FormInstance>()
-const activeWorkspace = ref('hero')
+const mobilePreviewVisible = ref(false);
+
+const router = useRouter();
+const route = useRoute();
+const isEdit = computed(() => Boolean(route.params.id));
+const loading = ref(false);
+const saving = ref(false);
+const formRef = ref<FormInstance>();
+const activeWorkspace = ref("hero");
 
 const rules = {
   slug: [
-    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { required: true, message: "请输入 Slug", trigger: "blur" },
     {
       pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/,
-      message: 'Slug 必须是 kebab-case',
-      trigger: 'blur',
+      message: "Slug 必须是 kebab-case",
+      trigger: "blur",
     },
   ],
-  'title.en': [{ required: true, message: '请输入路线英文标题', trigger: 'blur' }],
-}
+  "title.en": [
+    { required: true, message: "请输入路线英文标题", trigger: "blur" },
+  ],
+};
 
 const form = reactive<any>({
-  slug: '',
-  title: { zh: '', en: '' },
-  cultureTag: 'Bay Area',
-  cityName: { zh: '', en: '' },
+  slug: "",
+  title: { zh: "", en: "" },
+  cultureTag: "Bay Area",
+  cityName: { zh: "", en: "" },
   citySlugs: [],
-  routeRegionKey: '',
-  duration: { zh: '', en: '' },
-  audience: { zh: '', en: '' },
-  summary: { zh: '', en: '' },
-  story: { zh: '', en: '' },
-  coverImage: '',
+  routeRegionKey: "",
+  duration: { zh: "", en: "" },
+  audience: { zh: "", en: "" },
+  summary: { zh: "", en: "" },
+  story: { zh: "", en: "" },
+  coverImage: "",
   stops: [],
   published: false,
-})
+});
 
-const cityOptions = ref<Array<{ slug: string; name: string; nameZh: string; nameEn: string }>>([])
+const cityOptions = ref<
+  Array<{ slug: string; name: string; nameZh: string; nameEn: string }>
+>([]);
 const routeRegionOptions = ref<RouteRegionConfig[]>(
   DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item })),
-)
+);
 
-const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
-const { check: runPublishCheck } = usePublishCheck()
+const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form });
+const { check: runPublishCheck } = usePublishCheck();
 
 function createStop() {
   return {
     id: `stop-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
     sortOrder: form.stops.length,
-    time: '',
-    stopName: { zh: '', en: '' },
-    story: { zh: '', en: '' },
-    culturalStory: { zh: '', en: '' },
+    time: "",
+    stopName: { zh: "", en: "" },
+    story: { zh: "", en: "" },
+    culturalStory: { zh: "", en: "" },
     details: [],
-    image: '',
+    image: "",
     primaryMedia: null,
     images: [],
     media: [],
     lat: 0,
     lng: 0,
-    meal: { zh: '', en: '' },
-    hotel: { zh: '', en: '' },
-    transit: { zh: '', en: '' },
-    plan: '',
-  }
+    meal: { zh: "", en: "" },
+    hotel: { zh: "", en: "" },
+    transit: { zh: "", en: "" },
+    plan: "",
+  };
 }
 
 function addStop() {
-  form.stops.push(createStop())
-  activeWorkspace.value = `stop-${form.stops.length - 1}`
+  form.stops.push(createStop());
+  activeWorkspace.value = `stop-${form.stops.length - 1}`;
 }
 
 function removeStop(index: number) {
-  form.stops.splice(index, 1)
-  reindexStops()
+  form.stops.splice(index, 1);
+  reindexStops();
   activeWorkspace.value = form.stops.length
     ? `stop-${Math.min(index, form.stops.length - 1)}`
-    : 'hero'
+    : "hero";
 }
 
 function moveStop(index: number, delta: -1 | 1) {
-  const target = index + delta
-  if (target < 0 || target >= form.stops.length) return
-  ;[form.stops[index], form.stops[target]] = [form.stops[target], form.stops[index]]
-  reindexStops()
+  const target = index + delta;
+  if (target < 0 || target >= form.stops.length) return;
+  [form.stops[index], form.stops[target]] = [
+    form.stops[target],
+    form.stops[index],
+  ];
+  reindexStops();
 }
 
 function reindexStops() {
   form.stops.forEach((stop: any, index: number) => {
-    stop.sortOrder = index
-  })
+    stop.sortOrder = index;
+  });
 }
 
 function moveActiveStop(delta: -1 | 1) {
-  if (activeStopIndex.value < 0) return
-  const currentIndex = activeStopIndex.value
-  moveStop(currentIndex, delta)
-  const targetIndex = currentIndex + delta
+  if (activeStopIndex.value < 0) return;
+  const currentIndex = activeStopIndex.value;
+  moveStop(currentIndex, delta);
+  const targetIndex = currentIndex + delta;
   if (targetIndex >= 0 && targetIndex < form.stops.length) {
-    activeWorkspace.value = `stop-${targetIndex}`
+    activeWorkspace.value = `stop-${targetIndex}`;
   }
 }
 
 function addDetail(stop: any) {
-  stop.details.push({ zh: '', en: '' })
+  stop.details.push({ zh: "", en: "" });
 }
 
 function removeDetail(stop: any, index: number | string) {
-  stop.details.splice(Number(index), 1)
+  stop.details.splice(Number(index), 1);
 }
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
-  { key: 'hero', label: '路线导语' },
-  { key: 'story', label: '主题叙事' },
+  { key: "hero", label: "路线导语" },
+  { key: "story", label: "主题叙事" },
   ...form.stops.map((stop: any, index: number) => ({
     key: `stop-${index}`,
     label: pickI18n(stop.stopName) || `站点 ${index + 1}`,
     badge: `#${index + 1}`,
   })),
-])
+]);
 
 const activeStopIndex = computed(() => {
-  const match = /^stop-(\d+)$/.exec(activeWorkspace.value)
-  return match ? Number(match[1]) : -1
-})
+  const match = /^stop-(\d+)$/.exec(activeWorkspace.value);
+  return match ? Number(match[1]) : -1;
+});
 
 const activeStop = computed(() =>
   activeStopIndex.value >= 0 ? form.stops[activeStopIndex.value] : null,
-)
+);
 const selectedCityCards = computed(() =>
   form.citySlugs
     .map((slug: string) => cityOptions.value.find((item) => item.slug === slug))
     .filter(Boolean),
-)
+);
 
 const activeWorkspaceLabel = computed(() => {
-  return workspaceTabs.value.find((item) => item.key === activeWorkspace.value)?.label || '路线导语'
-})
+  return (
+    workspaceTabs.value.find((item) => item.key === activeWorkspace.value)
+      ?.label || "路线导语"
+  );
+});
 
 function applySelectedCitiesToDisplayName() {
-  if (!selectedCityCards.value.length) return
+  if (!selectedCityCards.value.length) return;
   form.cityName = {
-    zh: selectedCityCards.value.map((item: any) => item.nameZh || item.name).join(' / '),
-    en: selectedCityCards.value.map((item: any) => item.nameEn || item.name).join(' / '),
-  }
+    zh: selectedCityCards.value
+      .map((item: any) => item.nameZh || item.name)
+      .join(" / "),
+    en: selectedCityCards.value
+      .map((item: any) => item.nameEn || item.name)
+      .join(" / "),
+  };
 }
 
 function fillFromApi(data: any) {
   Object.assign(form, {
-    slug: data.slug || '',
+    slug: data.slug || "",
     title: toI18n(data.title),
     cultureTag: normalizeRouteTag(data.cultureTag),
     cityName: toI18n(data.cityName),
     citySlugs: Array.isArray(data.citySlugs) ? data.citySlugs : [],
-    routeRegionKey: data.routeRegionKey || '',
+    routeRegionKey: data.routeRegionKey || "",
     duration: toI18n(data.duration),
     audience: toI18n(data.audience),
     summary: toI18n(data.summary),
     story: toI18n(data.story),
-    coverImage: data.coverImage || '',
+    coverImage: data.coverImage || "",
     published: data.published ?? false,
     stops: (data.stops || []).map((stop: any, index: number) => ({
       id: stop.id || `stop-${index}`,
       sortOrder: stop.sortOrder ?? index,
-      time: stop.time || '',
+      time: stop.time || "",
       stopName: toI18n(stop.stopName),
       story: toI18n(stop.story),
       culturalStory: toI18n(stop.culturalStory),
       details: toI18nArray(stop.details),
-      image: stop.image || '',
-      primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ''),
+      image: stop.image || "",
+      primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: Array.isArray(stop.images) ? stop.images : [],
       media: resolveMediaGallery(stop.media, stop.images || []),
       lat: stop.lat ?? 0,
@@ -211,9 +230,9 @@ function fillFromApi(data: any) {
       meal: toI18n(stop.meal),
       hotel: toI18n(stop.hotel),
       transit: toI18n(stop.transit),
-      plan: stop.plan || '',
+      plan: stop.plan || "",
     })),
-  })
+  });
 }
 
 function toPayload() {
@@ -237,8 +256,8 @@ function toPayload() {
       story: optionalI18n(stop.story),
       culturalStory: optionalI18n(stop.culturalStory),
       details: stop.details.filter((detail: any) => detail.zh || detail.en),
-      image: legacyImageForMedia(stop.primaryMedia, stop.image || ''),
-      primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ''),
+      image: legacyImageForMedia(stop.primaryMedia, stop.image || ""),
+      primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: stop.images || [],
       media: resolveMediaGallery(stop.media, stop.images || []),
       lat: Number(stop.lat || 0),
@@ -246,114 +265,117 @@ function toPayload() {
       meal: optionalI18n(stop.meal),
       hotel: optionalI18n(stop.hotel),
       transit: optionalI18n(stop.transit),
-      plan: stop.plan || '',
+      plan: stop.plan || "",
     })),
-  }
+  };
 }
 
 watch(
   () => form.stops,
   (stops) => {
     stops.forEach((stop: any) => {
-      if (!stop.primaryMedia) return
-      const nextLegacyImage = legacyImageForMedia(stop.primaryMedia, '')
+      if (!stop.primaryMedia) return;
+      const nextLegacyImage = legacyImageForMedia(stop.primaryMedia, "");
       if (nextLegacyImage !== stop.image) {
-        stop.image = nextLegacyImage
+        stop.image = nextLegacyImage;
       }
-    })
+    });
   },
   { deep: true },
-)
+);
 
 onMounted(async () => {
-  loading.value = true
+  loading.value = true;
   try {
     const [cityRes, homeRes] = await Promise.all([
       citiesApi.getCities({ page: 1, pageSize: 200 }),
       homeApi.getHomeConfig(),
-    ])
+    ]);
 
     cityOptions.value = (cityRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
       name: pickI18n(item.name),
-      nameZh: item.name?.zh || '',
-      nameEn: item.name?.en || '',
-    }))
+      nameZh: item.name?.zh || "",
+      nameEn: item.name?.en || "",
+    }));
 
     routeRegionOptions.value = homeRes.data.data.routeRegions?.length
       ? homeRes.data.data.routeRegions
-      : DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item }))
+      : DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item }));
 
     if (isEdit.value) {
-      const res = await routesApi.getRoute(route.params.id as string)
-      fillFromApi(res.data.data)
+      const res = await routesApi.getRoute(route.params.id as string);
+      fillFromApi(res.data.data);
     }
 
     if (!form.stops.length) {
-      addStop()
-      form.stops = []
-      activeWorkspace.value = 'hero'
+      addStop();
+      form.stops = [];
+      activeWorkspace.value = "hero";
     }
 
-    resetDirty()
+    resetDirty();
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '加载路线数据失败'))
-    router.push('/admin/routes')
+    ElMessage.error(extractErrorMessage(error, "加载路线数据失败"));
+    router.push("/admin/routes");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 
 async function handleSave() {
   try {
-    await formRef.value?.validate()
+    await formRef.value?.validate();
   } catch {
-    ElMessage.warning('请先补全必填项')
-    return
+    ElMessage.warning("请先补全必填项");
+    return;
   }
 
-  if (form.published && form.stops.some((stop: any) => isIncompleteVideoMedia(stop.primaryMedia))) {
-    ElMessage.warning('发布路线前，请补全所有视频文件和封面图')
-    return
+  if (
+    form.published &&
+    form.stops.some((stop: any) => isIncompleteVideoMedia(stop.primaryMedia))
+  ) {
+    ElMessage.warning("发布路线前，请补全所有视频文件和封面图");
+    return;
   }
 
   // ── Publish pre-check: only when switching to published ──
   if (form.published) {
-    const result = runPublishCheck('route', form)
+    const result = runPublishCheck("route", form);
 
     if (!result.canPublish) {
-      ElMessage.error(result.errors[0])
-      return
+      ElMessage.error(result.errors[0]);
+      return;
     }
 
     if (result.warnings.length) {
       try {
-        await ElMessageBox.confirm(result.warnings.join('\n'), '发布前提示', {
-          confirmButtonText: '继续发布',
-          cancelButtonText: '返回修改',
-          type: 'warning',
-        })
+        await ElMessageBox.confirm(result.warnings.join("\n"), "发布前提示", {
+          confirmButtonText: "继续发布",
+          cancelButtonText: "返回修改",
+          type: "warning",
+        });
       } catch {
-        return // user cancelled
+        return; // user cancelled
       }
     }
   }
 
-  saving.value = true
+  saving.value = true;
   try {
     if (isEdit.value) {
-      await routesApi.updateRoute(route.params.id as string, toPayload())
-      ElMessage.success('路线已更新')
+      await routesApi.updateRoute(route.params.id as string, toPayload());
+      ElMessage.success("路线已更新");
     } else {
-      await routesApi.createRoute(toPayload())
-      ElMessage.success('路线已创建')
+      await routesApi.createRoute(toPayload());
+      ElMessage.success("路线已创建");
     }
-    disableDirtyCheck()
-    router.push('/admin/routes')
+    disableDirtyCheck();
+    router.push("/admin/routes");
   } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, '保存失败'))
+    ElMessage.error(extractErrorMessage(error, "保存失败"));
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 </script>
@@ -366,10 +388,17 @@ async function handleSave() {
       :saving="saving"
       :dirty="isDirty"
       @save="handleSave"
+      @preview="mobilePreviewVisible = true"
     />
 
     <div class="editor-shell">
-      <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        class="editor-form"
+        label-position="top"
+      >
         <el-card shadow="never" class="section-card">
           <template #header>基础信息</template>
           <el-row :gutter="16">
@@ -399,7 +428,11 @@ async function handleSave() {
             </el-col>
             <el-col :span="8">
               <el-form-item label="路线地区">
-                <el-select v-model="form.routeRegionKey" clearable style="width: 100%">
+                <el-select
+                  v-model="form.routeRegionKey"
+                  clearable
+                  style="width: 100%"
+                >
                   <el-option
                     v-for="item in routeRegionOptions"
                     :key="item.key"
@@ -411,7 +444,11 @@ async function handleSave() {
             </el-col>
             <el-col :span="8">
               <el-form-item label="发布状态">
-                <el-switch v-model="form.published" active-text="已发布" inactive-text="草稿" />
+                <el-switch
+                  v-model="form.published"
+                  active-text="已发布"
+                  inactive-text="草稿"
+                />
               </el-form-item>
             </el-col>
           </el-row>
@@ -437,7 +474,11 @@ async function handleSave() {
             </el-select>
           </el-form-item>
           <div v-if="selectedCityCards.length" class="selected-grid">
-            <div v-for="city in selectedCityCards" :key="city.slug" class="selected-card">
+            <div
+              v-for="city in selectedCityCards"
+              :key="city.slug"
+              class="selected-card"
+            >
               <strong>{{ city.nameZh || city.name }}</strong>
               <span>{{ city.slug }}</span>
             </div>
@@ -482,9 +523,16 @@ async function handleSave() {
           <template #toolbar>
             <div class="workspace-actions" v-if="activeStop">
               <el-button :icon="Plus" @click="addStop">新增站点</el-button>
-              <el-button :icon="ArrowUp" @click="moveActiveStop(-1)">上移</el-button>
-              <el-button :icon="ArrowDown" @click="moveActiveStop(1)">下移</el-button>
-              <el-button type="danger" :icon="Delete" @click="removeStop(activeStopIndex)"
+              <el-button :icon="ArrowUp" @click="moveActiveStop(-1)"
+                >上移</el-button
+              >
+              <el-button :icon="ArrowDown" @click="moveActiveStop(1)"
+                >下移</el-button
+              >
+              <el-button
+                type="danger"
+                :icon="Delete"
+                @click="removeStop(activeStopIndex)"
                 >删除</el-button
               >
             </div>
@@ -530,17 +578,30 @@ async function handleSave() {
               />
             </el-form-item>
             <el-form-item label="站点图片集">
-              <ImageUpload v-model="activeStop.images" multiple :limit="10" module="routes" />
+              <ImageUpload
+                v-model="activeStop.images"
+                multiple
+                :limit="10"
+                module="routes"
+              />
             </el-form-item>
             <el-row :gutter="16">
               <el-col :span="12">
                 <el-form-item label="纬度">
-                  <el-input-number v-model="activeStop.lat" :precision="6" style="width: 100%" />
+                  <el-input-number
+                    v-model="activeStop.lat"
+                    :precision="6"
+                    style="width: 100%"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="经度">
-                  <el-input-number v-model="activeStop.lng" :precision="6" style="width: 100%" />
+                  <el-input-number
+                    v-model="activeStop.lng"
+                    :precision="6"
+                    style="width: 100%"
+                  />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -548,17 +609,29 @@ async function handleSave() {
               <I18nMarkdownEditor v-model="activeStop.story" :rows="6" />
             </el-form-item>
             <el-form-item label="文化解读">
-              <I18nMarkdownEditor v-model="activeStop.culturalStory" :rows="6" />
+              <I18nMarkdownEditor
+                v-model="activeStop.culturalStory"
+                :rows="6"
+              />
             </el-form-item>
             <el-form-item label="站点细节">
               <div class="detail-list">
-                <div v-for="(_, index) in activeStop.details" :key="index" class="detail-row">
+                <div
+                  v-for="(_, index) in activeStop.details"
+                  :key="index"
+                  class="detail-row"
+                >
                   <I18nInput v-model="activeStop.details[index]" />
-                  <el-button text type="danger" @click="removeDetail(activeStop, index)"
+                  <el-button
+                    text
+                    type="danger"
+                    @click="removeDetail(activeStop, index)"
                     >删除</el-button
                   >
                 </div>
-                <el-button :icon="Plus" @click="addDetail(activeStop)">新增细节</el-button>
+                <el-button :icon="Plus" @click="addDetail(activeStop)"
+                  >新增细节</el-button
+                >
               </div>
             </el-form-item>
             <el-form-item label="行程规划">
@@ -592,11 +665,17 @@ async function handleSave() {
 
       <FrontendPagePreview type="route" :model="form" />
     </div>
+
+    <FrontendPreviewDrawer
+      v-model="mobilePreviewVisible"
+      type="route"
+      :model="form"
+    />
   </div>
 </template>
 
 <style scoped>
-@import '@/assets/editor-common.css';
+@import "@/assets/editor-common.css";
 
 .link-row {
   display: flex;
