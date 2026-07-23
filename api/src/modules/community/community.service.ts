@@ -244,7 +244,7 @@ export class CommunityService {
       .andWhere('post.status = :status', {
         status: 'published' as CommunityPostStatus,
       })
-      .orderBy('save.created_at', 'DESC')
+      .orderBy('save.createdAt', 'DESC')
       .take(safeLimit)
       .getMany();
 
