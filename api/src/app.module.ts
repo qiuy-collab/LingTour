@@ -50,7 +50,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       useFactory: getDatabaseConfig,
     }),
 
-    // Redis cache (memory fallback)
+    // In-memory cache
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
