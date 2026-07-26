@@ -80,7 +80,7 @@ export default function RoutesPageClient({
         <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
 
         <div className="site-container relative">
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-start lg:gap-16">
+          <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-start lg:gap-16">
             <div className="min-w-0 max-w-3xl lg:col-span-8">
               <Reveal>
                 <div data-pastoral-kicker className="mb-6 inline-block border border-[var(--cinnabar)] px-3 py-1 text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)] sm:mb-8 sm:px-4 sm:text-[10px] sm:tracking-[0.3em] lg:mb-10">
@@ -101,7 +101,7 @@ export default function RoutesPageClient({
 
             <div className="relative w-full min-w-0 self-end lg:col-span-4 lg:max-w-none lg:self-start">
               <Reveal delay={300}>
-                <div className="group relative ml-auto aspect-[3/4] w-full -rotate-2 scrapbook-shadow lg:aspect-[3/4] lg:-rotate-3">
+                <div className="group relative ml-auto aspect-[4/3] w-full -rotate-2 scrapbook-shadow sm:aspect-[3/4] lg:aspect-[3/4] lg:-rotate-3">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"

@@ -74,7 +74,7 @@ export default function CulturePageClient({
     >
       <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container">
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
                 <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
@@ -95,7 +95,7 @@ export default function CulturePageClient({
 
             <div className="relative w-full min-w-0 self-end lg:col-span-5 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rounded-sm border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:border-8 lg:aspect-[4/5]">
+                <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden rounded-sm border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
