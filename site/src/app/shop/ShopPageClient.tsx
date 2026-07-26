@@ -196,7 +196,7 @@ export default function ShopPageClient({
           </div>
           <Link
             href="/shop/products"
-            className="text-xs font-bold uppercase tracking-widest text-[var(--cinnabar)] transition-colors hover:text-[var(--cinnabar-deep)]"
+            className="inline-flex min-h-11 items-center text-xs font-bold uppercase tracking-widest text-[var(--cinnabar)] transition-colors hover:text-[var(--cinnabar-deep)]"
           >
             {t("shop.atlas.viewAll")}
           </Link>
