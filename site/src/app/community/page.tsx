@@ -59,6 +59,9 @@ type Draft = {
 
 const LOCAL_STAMPS_KEY = "lingtour-community-stamps";
 
+/** Feed items rendered per page. */
+const PAGE_SIZE = 12;
+
 /**
  * Coerce a backend brief.channel (free-form string) to our typed `PostChannel`.
  * Falls back to "Field Notes" when the value isn't one of the known channels,
@@ -350,6 +353,17 @@ export default function CommunityPage() {
     return items;
   }, [filteredPosts, fieldBriefs]);
 
+  // The feed pulls 50 posts at once and mixes briefs in, which on a phone is
+  // a single column running past 28,000px. Render a window of it and let the
+  // reader ask for more.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const visibleItems = masonryItems.slice(0, visibleCount);
+  const hasMore = masonryItems.length > visibleCount;
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeChannel, sortMode, query]);
+
   const selectBrief = (brief: FieldBrief) => {
     setSelectedBrief(brief);
     const channel = coerceChannel(brief.channel);
@@ -591,9 +605,9 @@ export default function CommunityPage() {
             </button>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-20">
-            {masonryItems.length ? (
-              masonryItems.map((item, index) => {
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-6">
+            {visibleItems.length ? (
+              visibleItems.map((item, index) => {
                 if (item.type === "dispatch") {
                   return (
                     <div key={item.id} data-community-card className="break-inside-avoid">
@@ -654,6 +668,23 @@ export default function CommunityPage() {
               </div>
             )}
           </div>
+        )}
+
+        {hasMore ? (
+          <div className="flex flex-col items-center gap-3 pb-20 pt-4">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+              {visibleItems.length} / {masonryItems.length}
+            </p>
+            <button
+              type="button"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+              className="btn-outline px-8"
+            >
+              Load more notes
+            </button>
+          </div>
+        ) : (
+          <div className="pb-20" />
         )}
       </section>
 
