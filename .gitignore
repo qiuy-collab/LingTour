@@ -59,3 +59,8 @@ id_ed25519*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Impeccable machine-local state
+.impeccable/hook.cache.json
+.impeccable/live/server.json
+.impeccable/config.local.json
