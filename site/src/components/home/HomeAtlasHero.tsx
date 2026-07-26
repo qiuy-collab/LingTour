@@ -131,7 +131,7 @@ export function HomeAtlasHero({
         <div className="mt-10 grid gap-5 border-t border-white/22 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end lg:absolute lg:bottom-10 lg:left-[var(--space-gutter)] lg:right-[var(--space-gutter)] lg:mt-0 lg:border-[var(--line)]">
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {tags.map((label) => (
-              <span key={label} className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/54 lg:text-[var(--muted)]">
+              <span key={label} className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-white/64 sm:tracking-[0.18em] lg:text-[var(--muted)]">
                 {label}
               </span>
             ))}
@@ -141,7 +141,7 @@ export function HomeAtlasHero({
               {stats.slice(0, 4).map((stat) => (
                 <div data-home-stat key={`${stat.title}-${stat.body}`} className="min-w-0">
                   <p className="font-[family:var(--font-display)] text-2xl text-white lg:text-[var(--river-deep)]">{stat.title}</p>
-                  <p className="mt-1 max-w-[9rem] truncate font-mono text-[7px] uppercase tracking-[0.16em] text-white/44 lg:text-[var(--muted)]">{stat.body}</p>
+                  <p className="mt-1 max-w-[9rem] font-mono text-[10px] uppercase leading-snug tracking-[0.08em] text-white/60 sm:text-[11px] sm:tracking-[0.12em] lg:text-[var(--muted)]">{stat.body}</p>
                 </div>
               ))}
             </div>
