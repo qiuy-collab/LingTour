@@ -102,17 +102,27 @@ export function HomeEntryFilmstrip({ cards }: HomeEntryFilmstripProps) {
                   key={card.id}
                   type="button"
                   onClick={() => moveTo(index)}
-                  className={`h-2.5 w-2.5 rounded-full border transition-colors ${
-                    activeIndex === index
-                      ? "border-[var(--gold)] bg-[var(--gold)]"
-                      : "border-[var(--line)] bg-transparent hover:border-[var(--river-deep)]"
-                  }`}
+                  className="grid h-11 w-8 place-items-center"
                   aria-label={t("home.entryCards.goTo").replace("{number}", String(index + 1))}
                   aria-current={activeIndex === index ? "true" : undefined}
-                />
+                >
+                  {/* The dot stays 10px; the button around it carries the
+                      touch target, since these dots are the only way to move
+                      the strip on a phone. */}
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full border transition-colors ${
+                      activeIndex === index
+                        ? "border-[var(--gold)] bg-[var(--gold)]"
+                        : "border-[var(--line)] bg-transparent"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
-            <div className="hidden gap-2 opacity-0 transition-opacity group-hover/strip:opacity-100 sm:flex">
+            {/* Revealed on hover only where hovering exists. Gated on opacity
+                alone, these arrows stayed invisible on touch screens while
+                still taking keyboard focus. */}
+            <div className="hidden gap-2 transition-opacity sm:flex [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/strip:opacity-100">
               <button
                 type="button"
                 onClick={() => moveTo(Math.max(0, activeIndex - 1))}
