@@ -530,6 +530,28 @@ async function handleSave() {
   padding-bottom: 40px;
 }
 
+/* 本页的表单项没有包在 <el-form label-position="top"> 里（CityEdit、
+   RouteEdit、ProductEdit 都有），所以退回了默认的左侧内联标签。
+   Element Plus 的 .el-form-item__label 是 flex:none 不可压缩，在
+   1280px 笔记本上会把窄列里的输入框挤到接近零宽。这里补上顶部标签
+   布局，效果与其它编辑页一致。 */
+.editor-form :deep(.el-form-item) {
+  display: block;
+}
+
+.editor-form :deep(.el-form-item__label) {
+  display: block;
+  width: auto !important;
+  padding: 0 0 6px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.editor-form :deep(.el-form-item__content) {
+  margin-left: 0 !important;
+  min-width: 0;
+}
+
 .global-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

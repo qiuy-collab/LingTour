@@ -13,6 +13,8 @@ import type { CommunityBrief, CommunityBriefPayload } from '@/types/community-br
 import { extractErrorMessage } from '@/utils/i18n'
 import { formatDateTime } from '@/utils/format'
 import { prefersReducedMotion } from '@/utils/motion'
+import { readContentValue, toI18n } from '@/types/common'
+import I18nInput from '@/components/I18nInput.vue'
 
 const formRef = ref<FormInstance>()
 const listRef = ref<HTMLElement | null>(null)
@@ -37,8 +39,8 @@ const form = reactive<CommunityBriefPayload>({
 })
 
 const dialogTitle = computed(() => (editingId.value ? '编辑发帖引导' : '新增发帖引导'))
-const previewTitle = computed(() => form.title.zh || form.title.en || '引导标题')
-const previewPrompt = computed(() => form.prompt.zh || form.prompt.en || '引导用户记录什么？')
+const previewTitle = computed(() => readContentValue(form.title) || '引导标题')
+const previewPrompt = computed(() => readContentValue(form.prompt) || '引导用户记录什么？')
 
 const rules: FormRules<CommunityBriefPayload> = {
   slug: [
@@ -110,8 +112,8 @@ function openEdit(brief: CommunityBrief) {
   editingId.value = brief.id
   Object.assign(form, {
     slug: brief.slug,
-    title: { ...brief.title },
-    prompt: { ...brief.prompt },
+    title: toI18n(brief.title),
+    prompt: toI18n(brief.prompt),
     channel: brief.channel,
     location: brief.location || '',
     route: brief.route || '',
@@ -124,12 +126,14 @@ function openEdit(brief: CommunityBrief) {
 
 async function submitForm() {
   if (!(await formRef.value?.validate().catch(() => false))) return
-  if (!form.title.zh.trim() || !form.title.en.trim()) {
-    ElMessage.warning('请填写中英文标题')
+  const title = readContentValue(form.title).trim()
+  const prompt = readContentValue(form.prompt).trim()
+  if (!title) {
+    ElMessage.warning('请填写标题')
     return
   }
-  if (!form.prompt.zh.trim() || !form.prompt.en.trim()) {
-    ElMessage.warning('请填写中英文引导文案')
+  if (!prompt) {
+    ElMessage.warning('请填写引导文案')
     return
   }
 
@@ -138,8 +142,8 @@ async function submitForm() {
     const payload: CommunityBriefPayload = {
       ...form,
       slug: form.slug.trim(),
-      title: { zh: form.title.zh.trim(), en: form.title.en.trim() },
-      prompt: { zh: form.prompt.zh.trim(), en: form.prompt.en.trim() },
+      title: { zh: '', en: title },
+      prompt: { zh: '', en: prompt },
       location: form.location.trim(),
       route: form.route.trim(),
       mood: form.mood.trim(),
@@ -229,18 +233,12 @@ onBeforeUnmount(() => motionContext?.revert())
             <small class="field-hint">保存后尽量不要修改，用于稳定识别这条引导。</small>
           </el-form-item>
 
-          <div class="locale-grid">
-            <el-form-item label="中文标题"><el-input v-model="form.title.zh" /></el-form-item>
-            <el-form-item label="English title"><el-input v-model="form.title.en" /></el-form-item>
-          </div>
-          <div class="locale-grid">
-            <el-form-item label="中文引导文案">
-              <el-input v-model="form.prompt.zh" type="textarea" :rows="4" />
-            </el-form-item>
-            <el-form-item label="English prompt">
-              <el-input v-model="form.prompt.en" type="textarea" :rows="4" />
-            </el-form-item>
-          </div>
+          <el-form-item label="标题">
+            <I18nInput v-model="form.title" />
+          </el-form-item>
+          <el-form-item label="引导文案">
+            <I18nInput v-model="form.prompt" type="textarea" :rows="4" />
+          </el-form-item>
 
           <div class="meta-grid">
             <el-form-item label="社区栏目" prop="channel">
@@ -320,7 +318,10 @@ onBeforeUnmount(() => motionContext?.revert())
 
 .brief-list {
   min-height: 180px;
-  overflow: hidden;
+  /* 这些列固定宽度合计 976px。用 hidden 会在 1290px 以下把右侧的排序和
+     操作列直接裁掉且无法滚动，笔记本宽度下就点不到编辑/删除。改为横向
+     滚动：保留表格语义，不把中文压成竖排。 */
+  overflow-x: auto;
   border: 1px solid var(--lt-border-light);
   border-radius: var(--lt-radius-lg);
   background: var(--lt-bg-card);
@@ -332,6 +333,7 @@ onBeforeUnmount(() => motionContext?.revert())
   grid-template-columns: minmax(280px, 1.5fr) 120px 70px 100px 150px 150px;
   align-items: center;
   gap: 14px;
+  min-width: 976px;
 }
 
 .brief-table-head {
@@ -475,6 +477,7 @@ onBeforeUnmount(() => motionContext?.revert())
 
   .brief-row {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    min-width: 0;
     border: 1px solid var(--lt-border-light);
     border-radius: var(--lt-radius-lg);
     background: var(--lt-bg-card);

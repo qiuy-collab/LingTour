@@ -264,6 +264,7 @@ function moveItem(index: number, delta: -1 | 1) {
 }
 
 .image-preview-list {
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -271,8 +272,10 @@ function moveItem(index: number, delta: -1 | 1) {
 
 .image-preview-item {
   position: relative;
-  width: 120px;
-  height: 120px;
+  /* 上传方块曾是死的 120px，放进 el-col :span=4/8 这类窄列里会横向溢出。
+     改成可收缩，容器窄时自动缩到 88px。 */
+  width: clamp(88px, 100%, 120px);
+  aspect-ratio: 1;
   overflow: hidden;
   border: 1px solid var(--lt-border-color);
   border-radius: var(--lt-radius-md);
@@ -341,8 +344,10 @@ function moveItem(index: number, delta: -1 | 1) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 120px;
-  height: 120px;
+  /* 上传方块曾是死的 120px，放进 el-col :span=4/8 这类窄列里会横向溢出。
+     改成可收缩，容器窄时自动缩到 88px。 */
+  width: clamp(88px, 100%, 120px);
+  aspect-ratio: 1;
   border: 1px dashed var(--lt-border-color);
   border-radius: var(--lt-radius-md);
   background: var(--lt-bg-card);
