@@ -30,11 +30,18 @@ export class InterpretingService {
   async getPublicPageData() {
     const [serviceModes, profiles, faqs] = await Promise.all([
       this.modeRepo.find({ order: { sortOrder: 'ASC' } }),
-      this.profileRepo.find({ order: { sortOrder: 'ASC' } }),
+      this.profileRepo.find({
+        where: { status: 'active' },
+        order: { sortOrder: 'ASC' },
+      }),
       this.faqRepo.find({ order: { sortOrder: 'ASC' } }),
     ]);
 
-    return { service_modes: serviceModes, profiles, faqs };
+    return {
+      service_modes: serviceModes,
+      profiles: profiles.filter((profile) => Boolean(profile.avatar?.trim())),
+      faqs,
+    };
   }
 
   // ── Admin: Get all config ──
@@ -66,7 +73,11 @@ export class InterpretingService {
     });
     const saved = await this.modeRepo.save(mode);
     if (typeof data.sortOrder === 'number' && data.sortOrder !== sortOrder) {
-      return this.moveEntityToSortOrder(this.modeRepo, saved.id, data.sortOrder);
+      return this.moveEntityToSortOrder(
+        this.modeRepo,
+        saved.id,
+        data.sortOrder,
+      );
     }
     return saved;
   }
@@ -74,9 +85,15 @@ export class InterpretingService {
   async updateMode(id: string, data: Partial<ServiceMode>) {
     const mode = await this.findModeByIdAdmin(id);
     const requestedSortOrder = data.sortOrder;
-    Object.assign(mode, this.normalizeMode({ ...data, sortOrder: mode.sortOrder }, mode));
+    Object.assign(
+      mode,
+      this.normalizeMode({ ...data, sortOrder: mode.sortOrder }, mode),
+    );
     const saved = await this.modeRepo.save(mode);
-    if (typeof requestedSortOrder === 'number' && requestedSortOrder !== saved.sortOrder) {
+    if (
+      typeof requestedSortOrder === 'number' &&
+      requestedSortOrder !== saved.sortOrder
+    ) {
       return this.moveEntityToSortOrder(this.modeRepo, id, requestedSortOrder);
     }
     return saved;
@@ -117,7 +134,11 @@ export class InterpretingService {
     });
     const saved = await this.profileRepo.save(profile);
     if (typeof data.sortOrder === 'number' && data.sortOrder !== sortOrder) {
-      return this.moveEntityToSortOrder(this.profileRepo, saved.id, data.sortOrder);
+      return this.moveEntityToSortOrder(
+        this.profileRepo,
+        saved.id,
+        data.sortOrder,
+      );
     }
     return saved;
   }
@@ -473,17 +494,15 @@ export class InterpretingService {
     return (top?.sortOrder ?? -1) + 1;
   }
 
-  private async moveEntityToSortOrder<T extends { id: string; sortOrder: number }>(
-    repo: Repository<T>,
-    id: string,
-    requestedSortOrder: number,
-  ): Promise<T> {
+  private async moveEntityToSortOrder<
+    T extends { id: string; sortOrder: number },
+  >(repo: Repository<T>, id: string, requestedSortOrder: number): Promise<T> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const target = repo.target as EntityTarget<T>;
+      const target = repo.target;
       const items = await queryRunner.manager
         .createQueryBuilder<T>(target, 'item')
         .orderBy('item.sortOrder', 'ASC')
@@ -500,7 +519,7 @@ export class InterpretingService {
       await this.resequenceSortOrder(queryRunner.manager, target, items);
       await queryRunner.commitTransaction();
 
-      return queryRunner.manager.findOneOrFail(target as EntityTarget<T>, {
+      return queryRunner.manager.findOneOrFail(target, {
         where: { id } as any,
       });
     } catch (error) {
@@ -511,16 +530,14 @@ export class InterpretingService {
     }
   }
 
-  private async resequenceSortOrder<T extends { id: string; sortOrder: number }>(
-    manager: EntityManager,
-    target: EntityTarget<T>,
-    items: T[],
-  ) {
+  private async resequenceSortOrder<
+    T extends { id: string; sortOrder: number },
+  >(manager: EntityManager, target: EntityTarget<T>, items: T[]) {
     for (let index = 0; index < items.length; index += 1) {
       await manager
         .createQueryBuilder()
         .update(target)
-        .set({ sortOrder: items.length + index + 1 } as any)
+        .set({ sortOrder: items.length + index + 1 })
         .where('id = :id', { id: items[index].id })
         .execute();
     }
@@ -529,7 +546,7 @@ export class InterpretingService {
       await manager
         .createQueryBuilder()
         .update(target)
-        .set({ sortOrder: index } as any)
+        .set({ sortOrder: index })
         .where('id = :id', { id: items[index].id })
         .execute();
     }
