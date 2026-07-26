@@ -697,13 +697,16 @@ export default function CommunityPage() {
         }
       />
 
+      {/* Toast is anchored to both edges on phones. With only `left-1/2` set,
+          the shrink-to-fit rule caps its width at 50vw regardless of the
+          message, so a one-line prompt wrapped to four lines at 320px. */}
       {toast ? (
-        <div className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-[0_18px_50px_rgba(17,25,35,0.24)]">
+        <div className="fixed bottom-5 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-[0_18px_50px_rgba(17,25,35,0.24)] sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:justify-start sm:rounded-full">
           <span>{toast}</span>
           <button
             type="button"
             onClick={() => setToast(null)}
-            className="text-white/55 hover:text-white"
+            className="-my-3 inline-flex min-h-11 shrink-0 items-center px-1 text-white/55 hover:text-white"
           >
             {t("community.toast.close")}
           </button>
