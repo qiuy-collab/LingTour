@@ -38,7 +38,7 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href="/login?next=%2Fprofile%3Ftab%3Dnotes"
         onClick={onNavigate}
-        className="ml-2 grid h-9 w-9 place-items-center border border-[var(--line)] bg-white/60 transition hover:bg-white"
+        className="ml-2 grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 transition hover:bg-white"
         aria-label="Log in to open your traveler profile"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--ink)]">

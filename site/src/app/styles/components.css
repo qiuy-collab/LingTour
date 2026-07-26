@@ -248,6 +248,20 @@
   outline-offset: 3px;
 }
 
+/* Floor every button at the 44px touch minimum. Padding alone cannot
+   guarantee it: the compact variants and the fluid clamp above both land in
+   the low 40s once the label drops to 12px type. */
+.btn-primary,
+.btn-primary-compact,
+.btn-gold,
+.btn-outline,
+.btn-paper,
+.btn-paper-compact,
+.btn-ghost-dark,
+.btn-icon-dark {
+  min-height: 44px;
+}
+
 @keyframes slow-float {
   0%,
   100% {

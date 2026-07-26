@@ -313,7 +313,7 @@ function StopNoteButton({ onClick }: { onClick?: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="group inline-flex items-center gap-2 self-start font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--river-deep)]/55 transition-colors hover:text-[var(--river-deep)] hover:underline hover:underline-offset-4"
+      className="group inline-flex min-h-11 items-center gap-2 self-start font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--river-deep)]/55 transition-colors hover:text-[var(--river-deep)] hover:underline hover:underline-offset-4"
     >
       Note this stop
       <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
