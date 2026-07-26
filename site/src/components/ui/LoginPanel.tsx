@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, ApiRequestError } from "@/lib/api-client";
 import { countryOptions } from "@/lib/country-list";
+import { hydrateFavoritesFromServer } from "@/lib/favorites";
 import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
 import {
   AuthResponse,
@@ -92,6 +93,9 @@ export function LoginPanel() {
 
   function finishAuthentication(user: AuthResponse["user"]) {
     persistAuthUser(user);
+    // Pull down anything saved on another device and push up anything saved
+    // here while signed out. Navigation does not wait on it.
+    void hydrateFavoritesFromServer();
     router.replace(nextPath);
     router.refresh();
   }
@@ -124,6 +128,8 @@ export function LoginPanel() {
         localStorage.setItem("lingtour-token", data.access_token);
         persistAuthUser(data.user, { country, travelStyle });
         await updateCurrentUserProfile({ country, travelStyle });
+        // Carries anything saved before the account existed onto it.
+        void hydrateFavoritesFromServer();
         router.replace(nextPath);
         router.refresh();
       }
@@ -155,6 +161,7 @@ export function LoginPanel() {
       }
       const credential = await requestGoogleCredential(clientId);
       await signInWithGoogle(credential);
+      void hydrateFavoritesFromServer();
       router.replace(nextPath);
       router.refresh();
     } catch (err) {

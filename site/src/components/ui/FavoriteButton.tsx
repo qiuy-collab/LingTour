@@ -1,73 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  FAVORITES_EVENT,
+  pushFavorite,
+  readFavorites,
+  writeFavorites,
+  type FavoriteType,
+} from "@/lib/favorites";
 
 type FavoriteButtonProps = {
   id: string;
-  type: "route" | "product" | "city";
+  type: FavoriteType;
   title: string;
   image?: string;
   variant?: "light" | "dark";
 };
-
-type FavoriteItem = {
-  id: string;
-  type: "route" | "product" | "city";
-  title: string;
-};
-
-const storageKey = "lingtour-favorites";
-const tokenKey = "lingtour-token";
-
-function readFavorites(): FavoriteItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeFavorites(items: FavoriteItem[]) {
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(items));
-    window.dispatchEvent(new Event("lingtour-favorites"));
-  } catch {
-    // localStorage unavailable
-  }
-}
-
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(tokenKey);
-}
-
-async function syncFavoriteToServer(
-  action: "add" | "remove",
-  item: { id: string; type: string; title?: string; image?: string },
-) {
-  const token = getToken();
-  if (!token) return;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-  try {
-    if (action === "add") {
-      await fetch(`${apiBase}/auth/me/favorites`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ targetType: item.type, targetId: item.id, targetTitle: item.title || "", targetImage: item.image || "" }),
-      });
-    } else {
-      await fetch(`${apiBase}/auth/me/favorites/${item.type}/${item.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    }
-  } catch {
-    // Silently fail — localStorage is the source of truth for offline
-  }
-}
 
 export function FavoriteButton({ id, type, title, image, variant = "light" }: FavoriteButtonProps) {
   const [saved, setSaved] = useState(false);
@@ -80,11 +28,11 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
 
     syncSaved();
     window.addEventListener("storage", syncSaved);
-    window.addEventListener("lingtour-favorites", syncSaved);
+    window.addEventListener(FAVORITES_EVENT, syncSaved);
 
     return () => {
       window.removeEventListener("storage", syncSaved);
-      window.removeEventListener("lingtour-favorites", syncSaved);
+      window.removeEventListener(FAVORITES_EVENT, syncSaved);
     };
   }, [id, type]);
 
@@ -93,11 +41,11 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
     const exists = favorites.some((item) => item.id === id && item.type === type);
     const next = exists
       ? favorites.filter((item) => !(item.id === id && item.type === type))
-      : [...favorites, { id, type, title }];
+      : [...favorites, { id, type, title, image }];
     writeFavorites(next);
 
-    // Sync to server in background
-    syncFavoriteToServer(exists ? "remove" : "add", { id, type, title, image });
+    // Signed-out visitors keep a local-only list; the account merges on sign-in.
+    void pushFavorite(exists ? "remove" : "add", { id, type, title, image });
   }, [id, type, title, image]);
 
   return (
