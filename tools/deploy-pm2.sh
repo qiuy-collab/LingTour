@@ -60,6 +60,15 @@ echo "==> Building site"
 cd "$APP_DIR/site"
 npm run build
 
+echo "==> Building admin"
+cd "$APP_DIR/admin-frontend"
+npm run build
+
+test -f dist/index.html || {
+  echo "ERROR: admin-frontend/dist/index.html was not generated" >&2
+  exit 1
+}
+
 echo "==> Restarting PM2 services"
 cd "$APP_DIR"
 pm2 restart lingtour-api lingtour-site lingtour-admin --update-env
