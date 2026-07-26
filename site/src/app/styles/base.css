@@ -245,12 +245,19 @@ button {
   }
 }
 
+/* Keeping iOS from zooming the page when a field takes focus. This is a
+   touch concern, not a width one: tablets in portrait are 768px and wider,
+   so gating it on a phone breakpoint left their forms zooming on focus. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
 /* ── Mobile overflow & sizing guards ──────────────────────── */
 @media (max-width: 767px) {
-  body {
-    overflow-x: hidden;
-  }
-
   .site-container {
     padding-inline: max(1rem, env(safe-area-inset-left));
   }
@@ -267,13 +274,6 @@ button {
   /* Prevent images from blowing out of their containers */
   img {
     max-width: 100%;
-  }
-
-  /* Prevent iOS auto-zoom on focused inputs (needs ≥ 16px) */
-  input,
-  select,
-  textarea {
-    font-size: max(16px, 1em);
   }
 
   [data-favorite-button="true"] {
