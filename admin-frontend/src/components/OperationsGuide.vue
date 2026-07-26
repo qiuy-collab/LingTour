@@ -22,7 +22,7 @@ const steps = [
   {
     number: '02',
     title: '编辑内容',
-    description: '填写中英文内容并关联城市、路线、商品或服务。',
+    description: '使用中文界面填写英文前台内容，并关联城市、路线、商品或服务。',
     action: '管理城市',
     path: '/admin/cities',
   },

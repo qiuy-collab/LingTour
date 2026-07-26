@@ -57,7 +57,7 @@ const rules = {
     },
   ],
   "title.en": [
-    { required: true, message: "请输入路线英文标题", trigger: "blur" },
+    { required: true, message: "请输入路线标题", trigger: "blur" },
   ],
 };
 

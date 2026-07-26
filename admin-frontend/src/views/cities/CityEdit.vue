@@ -52,7 +52,7 @@ const rules = {
     },
   ],
   "name.en": [
-    { required: true, message: "请输入城市英文名称", trigger: "blur" },
+    { required: true, message: "请输入城市名称", trigger: "blur" },
   ],
 };
 
@@ -437,7 +437,7 @@ const selectedRouteCards = computed(() =>
               </el-tag>
             </div>
             <div class="inline-row">
-              <el-input v-model="newTag.en" placeholder="英文标签" />
+              <el-input v-model="newTag.en" placeholder="输入标签" />
               <el-button :icon="Plus" @click="addTag">添加</el-button>
             </div>
           </el-form-item>

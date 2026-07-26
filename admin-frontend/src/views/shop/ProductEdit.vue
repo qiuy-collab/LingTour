@@ -47,7 +47,7 @@ const rules = {
     },
   ],
   "name.en": [
-    { required: true, message: "请输入商品英文名称", trigger: "blur" },
+    { required: true, message: "请输入商品名称", trigger: "blur" },
   ],
   price: [{ required: true, message: "请输入价格", trigger: "blur" }],
 };
