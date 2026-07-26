@@ -17,6 +17,11 @@ import { gsap, motionEase, useGSAP } from "@/lib/motion";
 
 const initialFeatures = getMapFeatures();
 
+/** Guangdong's own width:height ratio, so the viewBox never letterboxes it. */
+const MAP_ASPECT = 1.43;
+const MAP_COMPACT_WIDTH = 420;
+const MAP_WIDE_WIDTH = 700;
+
 interface Props {
   cities?: Pick<
     Region,
@@ -44,8 +49,28 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   const [features] = useState<CityFeature[]>(initialFeatures);
   const [activeCode, setActiveCode] = useState<number>(defaultActiveCode);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [isCompact, setIsCompact] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const lastTouchedRef = useRef<number | null>(null);
   const mobilePanelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const compact = window.matchMedia("(max-width: 767px)");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => {
+      setIsCompact(compact.matches);
+      setReduceMotion(still.matches);
+    };
+
+    sync();
+    compact.addEventListener("change", sync);
+    still.addEventListener("change", sync);
+
+    return () => {
+      compact.removeEventListener("change", sync);
+      still.removeEventListener("change", sync);
+    };
+  }, []);
 
   const eventsByCity = useMemo(() => {
     const map = new Map<number, (typeof events)[number]>();
@@ -110,21 +135,31 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     fallbackCity.image;
 
   useEffect(() => {
+    if (reduceMotion) return;
+
     const timer = window.setInterval(() => {
       setSlideIndex((index) => index + 1);
     }, 3200);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [reduceMotion]);
 
+  // The projection preserves Guangdong's own aspect ratio, so a viewBox that
+  // does not match it letterboxes the map. Each breakpoint therefore gets a
+  // viewBox sized close to the real container width, which keeps one user unit
+  // roughly one CSS pixel and stops dots, labels, and strokes from collapsing
+  // into sub-pixel noise on phones.
   const mapData = useMemo(() => {
     if (!features.length) return null;
 
-    const projection = buildProjection(features, 1060, 640, {
-      left: 100,
-      right: 100,
-      top: 50,
-      bottom: 50,
+    const width = isCompact ? MAP_COMPACT_WIDTH : MAP_WIDE_WIDTH;
+    const height = Math.round(width / MAP_ASPECT);
+    const inset = isCompact ? 6 : 18;
+    const projection = buildProjection(features, width, height, {
+      left: inset,
+      right: inset,
+      top: inset,
+      bottom: inset,
     });
 
     return {
@@ -138,7 +173,14 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           : null,
       })),
     };
-  }, [features]);
+  }, [features, isCompact]);
+
+  // Marker geometry is in user units, so it has to track the viewBox in use:
+  // at 420 units across a ~330px phone container one unit is ~0.8px, which
+  // keeps a 4-unit dot legible and a 44px finger target ~18 units wide.
+  const dotRadius = isCompact ? 4 : 3;
+  const labelSize = isCompact ? 15 : 14;
+  const hitRadius = isCompact ? 18 : 14;
 
   const panelTitle = activeCity.name;
   const panelEyebrow = activeCity.label;
@@ -192,7 +234,11 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
         </div>
 
         <div className="relative">
-          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm md:absolute md:left-0 md:top-0 md:block md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:w-52">
+          {/* At lg the card overlaps only ~15% of the province (the north-west
+              hills, no showcased city), which is the intended scrapbook layer.
+              At md that same overlap swallows 31% including Zhanjiang and
+              Maoming, so the card stays in flow until there is room for it. */}
+          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm md:mb-6 md:block md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:absolute lg:left-0 lg:top-0 lg:mb-0 lg:w-52">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
@@ -251,11 +297,15 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
             </Reveal>
           </div>
 
-          <div className="relative z-10 h-[18rem] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] min-[430px]:h-[20rem] sm:h-[22rem] md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
-            <div className="pointer-events-auto h-full w-full opacity-60">
+          {/* Taller than the map's own 1.43 ratio, with the province pinned to
+              the top, so the scrapbook panel below can overlap the leftover
+              strip without covering Zhanjiang in the south-west corner. */}
+          <div className="relative z-10 aspect-[1.13/1] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] md:aspect-auto md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
+            <div className="pointer-events-auto h-full w-full opacity-80 md:opacity-60">
               {mapData ? (
                 <svg
                   viewBox={`0 0 ${mapData.width} ${mapData.height}`}
+                  preserveAspectRatio={isCompact ? "xMidYMin meet" : "xMidYMid meet"}
                   className="h-full w-full"
                   role="img"
                 >
@@ -293,6 +343,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         d={city.path}
                         stroke="#fff"
                         strokeWidth={isActive ? (hasEvent ? 2 : 1.5) : 1}
+                        vectorEffect="non-scaling-stroke"
                         opacity={1}
                         className="transition-all duration-500"
                         style={{
@@ -328,9 +379,18 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         key={`${city.adcode}-dot`}
                         className="transition-all duration-300"
                         style={{ cursor: "pointer" }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Show ${focusCity.name}`}
                         onMouseEnter={() => activateCity(city.adcode)}
                         onTouchStart={handleTouchStart}
                         onClick={() => handleTouchTap(city.adcode)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            openCity(city.adcode);
+                          }
+                        }}
                       >
                         {hasEvent ? (
                           <circle
@@ -340,30 +400,42 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                             fill="#b64235"
                             opacity="0.1"
                           >
-                            <animate
-                              attributeName="r"
-                              values={isActive ? "12;18;12" : "8;12;8"}
-                              dur="3s"
-                              repeatCount="indefinite"
-                            />
+                            {reduceMotion ? null : (
+                              <animate
+                                attributeName="r"
+                                values={isActive ? "12;18;12" : "8;12;8"}
+                                dur="3s"
+                                repeatCount="indefinite"
+                              />
+                            )}
                           </circle>
                         ) : null}
+                        {/* Transparent finger-sized target: the city polygons
+                            themselves are only a few pixels wide in the Pearl
+                            River Delta at phone widths. */}
                         <circle
                           cx={x}
                           cy={y}
-                          r={isActive ? 3 : 2}
+                          r={hitRadius}
+                          fill="transparent"
+                          pointerEvents="all"
+                        />
+                        <circle
+                          cx={x}
+                          cy={y}
+                          r={isActive ? dotRadius + 1.5 : dotRadius}
                           fill={isActive ? "#b64235" : "var(--river-deep)"}
                         />
                         <text
-                          x={x + 12}
-                          y={y + 4}
+                          x={x + dotRadius + 5}
+                          y={y + labelSize / 3}
                           className={`pointer-events-none select-none font-[family:var(--font-display)] italic transition-all duration-500 ${
                             isActive
                               ? "opacity-100 translate-x-2"
                               : "opacity-0 -translate-x-2"
                           }`}
                           style={{
-                            fontSize: "16px",
+                            fontSize: `${labelSize}px`,
                             fill: "var(--river-deep)",
                           }}
                         >
