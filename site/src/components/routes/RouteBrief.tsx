@@ -146,13 +146,13 @@ export function RouteBrief({ route }: Props) {
               </Link>
               <Link
                 href="#itinerary"
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
               >
                 Read the day
               </Link>
               <Link
                 href={route.citySlugs[0] ? `/culture/${route.citySlugs[0]}` : "/culture"}
-                className="font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
+                className="inline-flex min-h-11 items-center font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-[var(--river-deep)] underline-offset-4 hover:underline"
               >
                 Open city file
               </Link>

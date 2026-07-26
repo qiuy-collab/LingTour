@@ -140,7 +140,10 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         )}
       </div>
 
-      <div className="grid gap-x-6 gap-y-14 min-[560px]:grid-cols-2 md:gap-x-12 md:gap-y-20 lg:grid-cols-3">
+      {/* Two columns from the smallest width up. A single column put roughly
+          446px of page height behind every product, so a catalogue of 18 ran
+          past 8000px on a phone and grew without bound as stock was added. */}
+      <div className="grid grid-cols-2 gap-x-3 gap-y-8 min-[560px]:gap-x-6 min-[560px]:gap-y-14 md:gap-x-12 md:gap-y-20 lg:grid-cols-3">
         {filteredProducts.map((product, index) => (
           <div key={product.slug} data-registry-card>
             <StoreProductCard product={product} index={index} />

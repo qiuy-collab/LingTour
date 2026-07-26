@@ -292,7 +292,7 @@ function ImagePlate({ stop }: { stop: Stop }) {
           <button
             type="button"
             onClick={showNextFrame}
-            className="absolute bottom-3 right-3 z-20 grid h-9 w-9 place-items-center border border-black/10 bg-[var(--paper)]/94 text-lg leading-none text-[var(--river-deep)] backdrop-blur-[1px] transition hover:border-[var(--cinnabar)] hover:bg-white hover:text-[var(--cinnabar)]"
+            className="absolute bottom-3 right-3 z-20 grid h-11 w-11 place-items-center border border-black/10 bg-[var(--paper)]/94 text-lg leading-none text-[var(--river-deep)] backdrop-blur-[1px] transition hover:border-[var(--cinnabar)] hover:bg-white hover:text-[var(--cinnabar)]"
             aria-label={`Show next media for ${stop.stop}`}
           >
             <span aria-hidden>↻</span>

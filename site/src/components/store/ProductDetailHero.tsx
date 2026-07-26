@@ -358,13 +358,13 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               <div className="grid gap-3 border-t border-dashed border-[var(--river-deep)]/18 pt-5">
                 <Link
                   href="/routes"
-                  className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
+                  className="inline-flex min-h-11 items-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
                 >
                   Trace the route behind this object
                 </Link>
                 <Link
                   href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} belongs in the field archive because `)}`}
-                  className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
+                  className="inline-flex min-h-11 items-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
                 >
                   Send this object to the community desk
                 </Link>

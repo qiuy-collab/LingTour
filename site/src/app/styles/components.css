@@ -93,14 +93,20 @@
   transform: translateX(120%);
 }
 
+/* Button padding and tracking are fluid rather than fixed because this file
+   is unlayered: Tailwind v4 puts utilities in a cascade layer, and unlayered
+   rules beat every layer regardless of specificity. A `px-4` written on a
+   .btn-* element is therefore silently discarded, so the narrow-screen
+   sizing has to live here. */
+
 /* High-visibility primary button */
 .btn-primary {
   background-color: var(--river-deep);
   color: #ffffff !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding: 1.25rem 2.5rem;
+  letter-spacing: clamp(0.09em, 0.55vw, 0.2em);
+  padding: clamp(0.9rem, 3.4vw, 1.25rem) clamp(1.15rem, 5.5vw, 2.5rem);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   z-index: 1;
@@ -132,8 +138,8 @@
   color: #ffffff !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding: 1.25rem 2.5rem;
+  letter-spacing: clamp(0.09em, 0.55vw, 0.2em);
+  padding: clamp(0.9rem, 3.4vw, 1.25rem) clamp(1.15rem, 5.5vw, 2.5rem);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   z-index: 1;
@@ -153,8 +159,8 @@
   color: var(--river-deep) !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding: 1.25rem 2.5rem;
+  letter-spacing: clamp(0.09em, 0.55vw, 0.2em);
+  padding: clamp(0.9rem, 3.4vw, 1.25rem) clamp(1.15rem, 5.5vw, 2.5rem);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   background: transparent;
 }
@@ -171,8 +177,8 @@
   color: var(--river-deep) !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding: 1.25rem 2.5rem;
+  letter-spacing: clamp(0.09em, 0.55vw, 0.2em);
+  padding: clamp(0.9rem, 3.4vw, 1.25rem) clamp(1.15rem, 5.5vw, 2.5rem);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: 0 10px 28px rgba(20, 52, 61, 0.08);
 }
@@ -204,7 +210,7 @@
   color: #ffffff !important;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: clamp(0.09em, 0.55vw, 0.2em);
   transition: all 0.3s ease;
   backdrop-filter: blur(12px);
   box-shadow: 0 10px 30px rgba(17, 25, 35, 0.22);

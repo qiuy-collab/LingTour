@@ -152,7 +152,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                         <Link
                           key={route.slug}
                           href={`/routes/${route.slug}`}
-                          className="group/link flex items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
+                          className="group/link flex min-h-11 items-center gap-2 text-sm text-[var(--muted)] transition-all hover:translate-x-1 hover:text-[var(--cinnabar)]"
                         >
                           <span className="h-1 w-1 rounded-full bg-[var(--gold)]/40 group-hover/link:bg-[var(--cinnabar)]" />
                           <span className="handwritten overflow-hidden text-ellipsis whitespace-nowrap">

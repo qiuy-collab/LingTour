@@ -419,11 +419,11 @@ export function CheckoutClient() {
               <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
                 {t("checkout.page.body")}
               </p>
-              <div className="mt-7 flex items-center gap-3 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] sm:text-[11px] sm:tracking-[0.16em]">
                 <span className="text-[var(--cinnabar)]">01 Details</span>
-                <span className="h-px flex-1 bg-[var(--line)]" />
+                <span className="hidden h-px flex-1 bg-[var(--line)] min-[400px]:block" />
                 <span>02 Review</span>
-                <span className="h-px flex-1 bg-[var(--line)]" />
+                <span className="hidden h-px flex-1 bg-[var(--line)] min-[400px]:block" />
                 <span>03 Payment</span>
               </div>
             </div>
@@ -591,7 +591,11 @@ export function CheckoutClient() {
         </section>
 
         <aside className="min-w-0 border-t border-[var(--line)] pt-10 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0 xl:pl-14">
-          <div className="sticky top-24">
+          {/* Bounded so the summary can scroll internally. Without a max
+              height, a cart of four or more items pushes the submit button
+              below the fold of a pinned column, where it can never be
+              reached. */}
+          <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto overscroll-contain">
             <div className="border-y border-[var(--line)] py-7 sm:py-9">
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
                 {t("checkout.summary.title")}
