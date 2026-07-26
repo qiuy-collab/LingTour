@@ -5,6 +5,7 @@ import {
   registerDecorator,
   ValidationOptions,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 @ValidatorConstraint({ name: 'isI18nObject', async: false })
 export class IsI18nObjectConstraint implements ValidatorConstraintInterface {
@@ -57,6 +58,11 @@ export class IsI18nArrayConstraint implements ValidatorConstraintInterface {
 
 export function IsI18nArray(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
+    // The global pipe runs with enableImplicitConversion, which coerces the
+    // elements of an untyped array to []. Declaring the element type keeps the
+    // { en, zh } members intact instead of silently emptying them on save.
+    Type(() => Object)(object, propertyName);
+
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
