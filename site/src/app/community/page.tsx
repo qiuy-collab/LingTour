@@ -119,7 +119,7 @@ const draftFromBrief = (brief: FieldBrief | null): Draft => ({
 });
 
 export default function CommunityPage() {
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<LocalUser | null>(null);
   const [optimisticPosts, setOptimisticPosts] = useState<CommunityFeedPost[]>(
@@ -145,12 +145,12 @@ export default function CommunityPage() {
     loading,
     error,
     refetch,
-  } = useApiQuery(() => fetchCommunityFeed(locale, { limit: 50 }), [locale]);
+  } = useApiQuery(() => fetchCommunityFeed({ limit: 50 }), []);
 
   // Editorial briefs: independent fetch, won't block the main feed render.
   const { data: briefs } = useApiQuery(
-    () => fetchCommunityBriefs(locale),
-    [locale],
+    () => fetchCommunityBriefs(),
+    [],
   );
   const fieldBriefs = useMemo(() => briefs ?? [], [briefs]);
 
@@ -447,7 +447,6 @@ export default function CommunityPage() {
             avatar: user?.avatarUrl || "",
           },
         },
-        locale,
       );
 
       const nextPosts = [created, ...optimisticPosts];

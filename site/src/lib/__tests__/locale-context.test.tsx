@@ -1,57 +1,35 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { renderHook } from "@testing-library/react";
 import { LocaleProvider, useLocale } from "../locale-context";
+import { dictionary } from "@/translations";
 import type { ReactNode } from "react";
 
-function createWrapper(initialLocale?: "en" | "zh") {
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return (
-      <LocaleProvider initialLocale={initialLocale}>
-        {children}
-      </LocaleProvider>
-    );
-  };
+function Wrapper({ children }: { children: ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
 }
 
 describe("LocaleProvider", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    document.documentElement.removeAttribute("lang");
+  it("resolves a known copy key to its English string", () => {
+    const { result } = renderHook(() => useLocale(), { wrapper: Wrapper });
+    expect(result.current.t("common.nav.routes")).toBe("Routes");
   });
 
-  it("defaults to 'en' when no initialLocale provided", () => {
-    const { result } = renderHook(() => useLocale(), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current.locale).toBe("en");
+  it("returns a readable marker for an unknown key instead of throwing", () => {
+    const { result } = renderHook(() => useLocale(), { wrapper: Wrapper });
+    expect(result.current.t("does.not.exist")).toBe("Missing copy: does.not.exist");
   });
 
-  it("keeps the public storefront in English when an initial locale is provided", () => {
-    const { result } = renderHook(() => useLocale(), {
-      wrapper: createWrapper("zh"),
-    });
-    expect(result.current.locale).toBe("en");
+  it("works without a provider, so server-rendered leaves still get copy", () => {
+    const { result } = renderHook(() => useLocale());
+    expect(result.current.t("common.nav.shop")).toBe("Shop");
   });
 
-  it("keeps the public storefront in English when another locale is requested", () => {
-    const { result } = renderHook(() => useLocale(), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.setLocale("zh");
-    });
-
-    expect(result.current.locale).toBe("en");
-    expect(localStorage.getItem("lingtour-locale")).toBe("en");
-  });
-
-  it("t() returns translated string", () => {
-    const { result } = renderHook(() => useLocale(), {
-      wrapper: createWrapper("en"),
-    });
-    // t() should return a string (even if key not found, returns key)
-    const translated = result.current.t("nav.home");
-    expect(typeof translated).toBe("string");
+  it("ships a single English copy deck with no Chinese strings left behind", () => {
+    const values = Object.values(dictionary).filter(
+      (v): v is string => typeof v === "string",
+    );
+    expect(values.length).toBeGreaterThan(100);
+    const withHan = values.filter((v) => /[一-鿿]/.test(v));
+    expect(withHan).toEqual([]);
   });
 });

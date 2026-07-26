@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { notFound } from "next/navigation";
-import { useLocale } from "@/lib/locale-context";
 import { fetchRouteBySlug, fetchRouteCommunityPosts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
@@ -12,26 +11,17 @@ import { StickyComposeBar } from "@/components/routes/StickyComposeBar";
 import type { StoryRoute } from "@/data/routes";
 
 export function RouteDetailClient({ slug }: { slug: string }) {
-  const { locale, setLocale } = useLocale();
-  const { previewData, previewLocale, previewEnabled } = usePreviewBridge<StoryRoute>("route");
+  const { previewData, previewEnabled } = usePreviewBridge<StoryRoute>("route");
   const [composeTarget, setComposeTarget] = useState<RouteStopTarget | null>(null);
   const [hydrated, setHydrated] = useState(false);
-
-  const activeLocale = previewLocale ?? locale;
 
   useEffect(() => {
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (previewLocale && previewLocale !== locale) {
-      setLocale(previewLocale);
-    }
-  }, [locale, previewLocale, setLocale]);
-
   const { data: route, loading, error } = useApiQuery(
-    () => fetchRouteBySlug(slug, activeLocale),
-    [slug, activeLocale],
+    () => fetchRouteBySlug(slug),
+    [slug],
   );
 
   const lastRouteRef = useRef<StoryRoute | null>(null);
@@ -47,10 +37,9 @@ export function RouteDetailClient({ slug }: { slug: string }) {
         ? fetchRouteCommunityPosts({
             routeSlug: activeRoute.slug,
             routeTitle: activeRoute.title,
-            locale: activeLocale,
           })
         : Promise.resolve([]),
-    [activeRoute?.slug, activeRoute?.title, activeLocale],
+    [activeRoute?.slug, activeRoute?.title],
   );
 
   if (!hydrated) return <LoadingSpinner text="Opening the route..." />;

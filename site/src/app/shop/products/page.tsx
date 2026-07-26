@@ -7,7 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 export const revalidate = 60;
 
 export default async function ProductsPage() {
-  const products = await fetchStoreProductsServer("en");
+  const products = await fetchStoreProductsServer();
   const collections = Array.from(
     new Set(products.map((product) => product.collection ?? "").filter(Boolean)),
   );

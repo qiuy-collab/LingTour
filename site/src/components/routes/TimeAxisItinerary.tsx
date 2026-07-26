@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { useLocale } from "@/lib/locale-context";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { gsap, motionEase, ScrollTrigger, useGSAP } from "@/lib/motion";
 import type { MediaAsset } from "@/types/media";
@@ -325,7 +324,7 @@ function StopNoteButton({ onClick }: { onClick?: () => void }) {
 }
 
 function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string }) {
-  const { locale } = useLocale();
+  
   const frames = imageStackFor(stop);
   const leadFrame = frames[0];
   const supportFrames = frames.slice(1);
@@ -351,11 +350,11 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
           ) : null}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.06),rgba(17,25,35,0.28))]" />
           <div className="absolute left-6 top-6 border border-white/45 bg-white/85 px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-            {locale === "zh" ? "\u8def\u7ebf\u6536\u5c3e" : "Route Complete"}
+            {"Route Complete"}
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white lg:p-8">
             <p className="font-mono text-[9px] uppercase tracking-[0.32em] text-white/72">
-              {locale === "zh" ? "\u5df2\u5b8c\u6210" : "Completed"}
+              {"Completed"}
             </p>
             <h3 className="mt-3 font-[family:var(--font-display)] text-4xl leading-[1.02] lg:text-5xl">
               {routeTitle}
@@ -367,7 +366,7 @@ function RouteEpilogue({ stop, routeTitle }: { stop: Stop; routeTitle: string })
           <div>
             <div className="border-b border-[var(--line)] p-6 lg:p-8">
             <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-              {locale === "zh" ? "\u6700\u540e\u4e00\u7ad9" : "Final Stop"}
+              {"Final Stop"}
             </p>
             <p className="mt-3 font-[family:var(--font-display)] text-2xl leading-[1.18] text-[var(--river-deep)]">
               {stop.stop}

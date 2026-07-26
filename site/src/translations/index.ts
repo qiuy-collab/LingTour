@@ -7,32 +7,38 @@ import { shop } from "./shop";
 import { about } from "./about";
 import { account } from "./account";
 import { checkout } from "./checkout";
-import type { Locale } from "@/lib/locale";
 
 type DictValue = string | number | boolean | null | undefined;
 
-// Merge all module translations into one flat lookup
-const allModules = [common, home, culture, routes, interpreting, shop, about, account, checkout];
+// The storefront ships a single English copy deck. These modules are a central
+// place to edit UI strings, not a translation layer: body content comes from
+// the CMS and is authored in English there too.
+const allModules = [
+  common,
+  home,
+  culture,
+  routes,
+  interpreting,
+  shop,
+  about,
+  account,
+  checkout,
+];
 
-export const dictionaries: Record<Locale, Record<string, DictValue>> = {
-  en: {},
-  zh: {},
-};
+export const dictionary: Record<string, DictValue> = {};
 
 for (const mod of allModules) {
-  Object.assign(dictionaries.en, mod.en);
-  Object.assign(dictionaries.zh, mod.zh);
+  Object.assign(dictionary, mod.en);
 }
 
-/** Translate a key into the given locale. Falls back to English, then a readable missing-key label. */
-export function translate(key: string, locale: Locale): string {
-  const val = dictionaries[locale][key] ?? dictionaries.en[key];
+/** Look up a UI string. Returns a readable marker when the key is missing. */
+export function translate(key: string): string {
+  const val = dictionary[key];
   if (val !== undefined && val !== null) return String(val);
-  return `Missing translation: ${key}`;
+  return `Missing copy: ${key}`;
 }
 
-/** Get all translation keys for a locale (for debugging) */
-export function getKeys(locale: Locale): string[] {
-  return Object.keys(dictionaries[locale]);
+/** All copy keys, for debugging. */
+export function getKeys(): string[] {
+  return Object.keys(dictionary);
 }
-

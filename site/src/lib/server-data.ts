@@ -9,7 +9,6 @@
  */
 
 import { serverGet } from "./server-api";
-import type { Locale } from "./locale";
 import type { EventData, InterpretingData } from "./api-data";
 import type { CityCulture } from "@/data/culture";
 import type {
@@ -48,7 +47,6 @@ import {
 
 function pickLocalized(
   val: string | { en?: string; zh?: string } | undefined,
-  _locale: Locale,
   fallback = "",
 ): string {
   if (typeof val === "string") return val;
@@ -316,7 +314,7 @@ function mapCollection(c: ApiStoreCollection): StoreCollection {
 
 // EventData is imported from "./api-data" (see top of file)
 
-function mapEvent(raw: ApiEvent, locale: Locale): EventData {
+function mapEvent(raw: ApiEvent): EventData {
   const eventFallbackImage =
     raw.citySlug === "chaozhou"
       ? "/editorial/pottery-painting.jpg"
@@ -327,14 +325,14 @@ function mapEvent(raw: ApiEvent, locale: Locale): EventData {
   return {
     id: raw.id,
     slug: raw.slug,
-    title: pickLocalized(raw.title, locale),
+    title: pickLocalized(raw.title),
     date: raw.date,
     city: raw.city,
     citySlug: raw.citySlug,
     tags: raw.tags ?? [],
-    summary: pickLocalized(raw.summary, locale),
+    summary: pickLocalized(raw.summary),
     description: raw.description
-      ? pickLocalized(raw.description, locale)
+      ? pickLocalized(raw.description)
       : "",
     relatedRouteSlugs: raw.relatedRouteSlugs ?? [],
     image: raw.image || eventFallbackImage,
@@ -358,20 +356,18 @@ export interface HomeData {
 
 // 鈹€鈹€ Server-side fetch functions 鈹€鈹€
 
-export async function fetchRoutesServer(locale: Locale): Promise<StoryRoute[]> {
+export async function fetchRoutesServer(): Promise<StoryRoute[]> {
   const res = await serverGet<PaginatedResponse<ApiStoryRoute>>(
     "/public/routes",
-    { page: 1, limit: 50, lang: locale },
-    locale,
+    { page: 1, limit: 50 },
   );
   return res.data.map(mapRoute);
 }
 
-export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
+export async function fetchCitiesServer(): Promise<Region[]> {
   const res = await serverGet<PaginatedResponse<ApiCity>>(
     "/public/cities",
-    { page: 1, limit: 50, lang: locale },
-    locale,
+    { page: 1, limit: 50 },
   );
   return res.data
     .map((c) => {
@@ -409,12 +405,10 @@ export async function fetchCitiesServer(locale: Locale): Promise<Region[]> {
 }
 
 export async function fetchCityCulturesServer(
-  locale: Locale,
 ): Promise<CityCulture[]> {
   const res = await serverGet<PaginatedResponse<ApiCity>>(
     "/public/cities",
-    { page: 1, limit: 50, lang: locale },
-    locale,
+    { page: 1, limit: 50 },
   );
 
   return res.data
@@ -484,12 +478,12 @@ export async function fetchCityCulturesServer(
  * Server-side home data fetch 鈥?mirrors fetchHomeData from api-data.ts
  * but uses serverGet instead of the window-dependent apiGet.
  */
-export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
+export async function fetchHomeDataServer(): Promise<HomeData> {
   const [routesResult, citiesResult, homeConfigResult] =
     await Promise.allSettled([
-      fetchRoutesServer(locale),
-      fetchCitiesServer(locale),
-      serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }, locale),
+      fetchRoutesServer(),
+      fetchCitiesServer(),
+      serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
     ]);
 
   const routes = routesResult.status === "fulfilled" ? routesResult.value : [];
@@ -501,16 +495,16 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
 
   const hero: HomeHero = {
     image: homeConfig.hero?.image,
-    caption: pickLocalized(homeConfig.hero?.caption, locale),
+    caption: pickLocalized(homeConfig.hero?.caption),
     ctaImage: homeConfig.hero?.ctaImage,
     badge: homeConfig.hero?.badge
       ? {
           value: homeConfig.hero.badge.value ?? "",
-          label: pickLocalized(homeConfig.hero.badge.label, locale),
+          label: pickLocalized(homeConfig.hero.badge.label),
         }
       : undefined,
     interpretingLabel: homeConfig.hero?.interpretingLabel
-      ? pickLocalized(homeConfig.hero.interpretingLabel, locale)
+      ? pickLocalized(homeConfig.hero.interpretingLabel)
       : undefined,
     interpretingImage: homeConfig.hero?.interpretingImage,
     video: homeConfig.hero?.video?.url
@@ -518,10 +512,10 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
           url: homeConfig.hero.video.url,
           poster: homeConfig.hero.video.poster || undefined,
           title: homeConfig.hero.video.title
-            ? pickLocalized(homeConfig.hero.video.title, locale)
+            ? pickLocalized(homeConfig.hero.video.title)
             : undefined,
           description: homeConfig.hero.video.description
-            ? pickLocalized(homeConfig.hero.video.description, locale)
+            ? pickLocalized(homeConfig.hero.video.description)
             : undefined,
           duration: homeConfig.hero.video.duration || undefined,
           resolution: homeConfig.hero.video.resolution || undefined,
@@ -558,12 +552,12 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
       return {
         slug: linkedSlug || item.slug,
         title:
-          pickLocalized(item.title, locale) ||
+          pickLocalized(item.title) ||
           linkedCity?.label ||
           linkedCity?.name ||
           '',
         body:
-          pickLocalized(item.body, locale) || linkedCity?.summary || '',
+          pickLocalized(item.body) || linkedCity?.summary || '',
         href: item.href ?? `/culture/${linkedSlug || item.slug}`,
         image:
           item.image ||
@@ -595,8 +589,8 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
       },
     ]
   ).map((t) => ({
-    quote: pickLocalized(t.quote, locale),
-    name: pickLocalized(t.name, locale),
+    quote: pickLocalized(t.quote),
+    name: pickLocalized(t.name),
   }));
 
   const trustMetrics: TrustMetric[] = (
@@ -609,22 +603,22 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
     ]
   ).map((m) => ({
     value: m.value,
-    label: pickLocalized(m.label, locale),
+    label: pickLocalized(m.label),
   }));
 
   // heroStats: admin stores these as hero.stats (nested) or heroStats (top-level)
   const rawHeroStats = homeConfig.hero?.stats ?? homeConfig.heroStats ?? [];
   const heroStats: HomeHeroStat[] = rawHeroStats.map((s) => ({
-    title: pickLocalized(s.title, locale),
-    body: pickLocalized(s.description, locale),
+    title: pickLocalized(s.title),
+    body: pickLocalized(s.description),
   }));
 
   // entryCards: quick-access editorial links (e.g. "Explore Routes", "Book Interpreting")
   const homeEntryCards: HomeEntryCard[] =
     homeConfig.entryCards?.map((item) => ({
       id: item.id,
-      title: pickLocalized(item.title, locale),
-      body: pickLocalized(item.body, locale),
+      title: pickLocalized(item.title),
+      body: pickLocalized(item.body),
       href: item.href,
       image: item.image || undefined,
     })) ?? [];
@@ -636,13 +630,11 @@ export async function fetchHomeDataServer(locale: Locale): Promise<HomeData> {
  * Server-side store products fetch.
  */
 export async function fetchStoreProductsServer(
-  locale: Locale,
 ): Promise<StoreProduct[]> {
   try {
     const res = await serverGet<{ data: ApiStoreProduct[] }>(
       "/public/shop/products",
-      { page: 1, limit: 50, lang: locale },
-      locale,
+      { page: 1, limit: 50 },
     );
     return (res.data ?? []).map(mapProduct);
   } catch {
@@ -652,13 +644,11 @@ export async function fetchStoreProductsServer(
 
 export async function fetchStoreProductBySlugServer(
   slug: string,
-  locale: Locale,
 ): Promise<StoreProduct | null> {
   try {
     const res = await serverGet<{ product: ApiStoreProduct }>(
       `/public/shop/products/${slug}`,
-      { lang: locale },
-      locale,
+      { },
     );
     return res.product ? mapProduct(res.product) : null;
   } catch {
@@ -668,13 +658,11 @@ export async function fetchStoreProductBySlugServer(
 
 
 export async function fetchStoreCollectionsServer(
-  locale: Locale,
 ): Promise<StoreCollection[]> {
   try {
     const res = await serverGet<{ data: ApiStoreCollection[] }>(
       "/public/shop/collections",
-      { lang: locale },
-      locale,
+      { },
     );
     return (res.data ?? []).map(mapCollection);
   } catch {
@@ -685,10 +673,9 @@ export async function fetchStoreCollectionsServer(
  * Server-side routes fetch.
  */
 export async function fetchRoutesServerForHome(
-  locale: Locale,
 ): Promise<StoryRoute[]> {
   try {
-    return await fetchRoutesServer(locale);
+    return await fetchRoutesServer();
   } catch {
     return [];
   }
@@ -697,28 +684,25 @@ export async function fetchRoutesServerForHome(
 /**
  * Server-side events fetch.
  */
-export async function fetchEventsServer(locale: Locale): Promise<EventData[]> {
+export async function fetchEventsServer(): Promise<EventData[]> {
   try {
     const res = await serverGet<{ data: ApiEvent[] }>(
       "/public/events",
       { page: 1, limit: 50 },
-      locale,
     );
-    return (res.data ?? []).map((item) => mapEvent(item, locale));
+    return (res.data ?? []).map((item) => mapEvent(item));
   } catch {
     return [];
   }
 }
 
-export async function fetchInterpretingServer(
-  locale: Locale,
-): Promise<InterpretingData> {
+export async function fetchInterpretingServer(): Promise<InterpretingData> {
   try {
     const res = await serverGet<{
       service_modes: InterpretingData["serviceModes"];
       profiles: InterpretingData["profiles"];
       faqs: InterpretingData["faqs"];
-    }>("/public/interpreting", { lang: locale }, locale);
+    }>("/public/interpreting");
 
     return {
       serviceModes: res.service_modes ?? [],

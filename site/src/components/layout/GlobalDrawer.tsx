@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUI } from "@/lib/ui-context";
-import { useLocale } from "@/lib/locale-context";
 import {
   LocalUser,
   readStoredUser,
@@ -127,7 +126,6 @@ function logOut() {
 export function GlobalDrawer() {
   const { isDrawerOpen, closeDrawer } = useUI();
   const pathname = usePathname();
-  const { locale } = useLocale();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const [user, setUser] = useState<LocalUser | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -142,8 +140,8 @@ export function GlobalDrawer() {
   const selectedCart = cart.filter((item) => item.selected !== false);
   const selectedCartCount = selectedCart.reduce((sum, item) => sum + item.quantity, 0);
   const selectedCartTotal = selectedCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const countries = useMemo(() => countryOptions(locale), [locale]);
-  const displayCountry = user ? countryName(user.country, locale) : "";
+  const countries = useMemo(() => countryOptions(), []);
+  const displayCountry = user ? countryName(user.country) : "";
 
   // Don't render the marketing drawer inside the admin area.
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
@@ -269,7 +267,7 @@ export function GlobalDrawer() {
     let cancelled = false;
     void Promise.allSettled([
       refreshCurrentUserProfile(),
-      fetchSavedCommunityPosts(locale, 6),
+      fetchSavedCommunityPosts(6),
     ]).then(([profileResult, savedResult]) => {
       if (cancelled) return;
       if (profileResult.status === "fulfilled") {
@@ -285,7 +283,7 @@ export function GlobalDrawer() {
     return () => {
       cancelled = true;
     };
-  }, [isDrawerOpen, locale]);
+  }, [isDrawerOpen]);
 
   // Reload when drawer opens
   useEffect(() => {
@@ -340,7 +338,7 @@ export function GlobalDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className={`fixed right-0 top-0 z-[70] flex h-full w-full flex-col border-l border-white/20 bg-[rgba(242,238,230,0.4)] backdrop-blur-3xl shadow-[0_0_100px_rgba(17,25,35,0.1)] ${
+            className={`fixed right-0 top-0 z-[70] flex h-full w-full flex-col border-l border-[rgba(18,54,64,0.1)] bg-[linear-gradient(180deg,rgba(245,240,230,0.985),rgba(236,228,214,0.97))] backdrop-blur-xl shadow-[0_0_100px_rgba(17,25,35,0.12)] ${
               isEditingProfile ? "max-w-2xl" : "max-w-lg"
             }`}
           >
@@ -714,22 +712,68 @@ export function GlobalDrawer() {
                   </div>
                 </section>
               ) : (
-                <section className="relative rounded-3xl bg-white/30 border border-white/50 p-10 shadow-2xl overflow-hidden group">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.4),transparent)] pointer-events-none" />
-                  <p className="font-[family:var(--font-display)] text-4xl italic text-[var(--river-deep)] leading-tight">
-                    Establish your <br /> field registry.
-                  </p>
-                  <p className="mt-6 text-sm leading-relaxed text-[var(--muted)] font-light max-w-[25ch]">
-                    Synchronize routes, artifacts, and coordination requests across the province.
-                  </p>
-                  <Link
-                    href="/login"
-                    onClick={closeDrawer}
-                    className="group mt-10 relative flex h-14 w-full items-center justify-center overflow-hidden rounded-2xl bg-[var(--river-deep)] text-[10px] font-bold uppercase tracking-[0.3em] text-white transition-all shadow-2xl active:scale-95"
-                  >
-                    <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <span>Initiate Connection</span>
-                  </Link>
+                <section className="relative overflow-hidden border border-[rgba(18,54,64,0.1)] bg-[linear-gradient(180deg,rgba(255,251,245,0.96),rgba(245,238,226,0.96))] shadow-[0_24px_44px_rgba(17,25,35,0.1)]">
+                  <div className="absolute inset-0 bg-grain opacity-[0.05] pointer-events-none" />
+                  <div className="absolute right-6 top-6 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(185,138,70,0.14),transparent_70%)] blur-2xl pointer-events-none" />
+                  <div className="relative z-10 border-b border-[rgba(18,54,64,0.08)] px-8 py-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.38em] text-[var(--gold)]">
+                          Field Entry
+                        </p>
+                        <h3 className="mt-3 max-w-[8ch] font-[family:var(--font-display)] text-[2.45rem] italic leading-[0.94] tracking-[-0.03em] text-[var(--river-deep)]">
+                          Open your
+                          <br />
+                          traveler file.
+                        </h3>
+                      </div>
+                      <div className="hidden h-20 w-16 rotate-3 border-4 border-white/90 bg-[linear-gradient(180deg,rgba(182,66,53,0.12),rgba(18,54,64,0.03))] shadow-[0_18px_30px_rgba(17,25,35,0.08)] sm:block" />
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 space-y-6 px-8 py-7">
+                    <p className="max-w-[29ch] text-[0.98rem] leading-8 text-[rgba(56,82,96,0.88)]">
+                      Save routes, keep community notes, and hold your interpreting or checkout history in one clear place.
+                    </p>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {[
+                        ["Route saves", "Archive"],
+                        ["Field notes", "Signals"],
+                        ["Bookings", "Registry"],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="border border-[rgba(18,54,64,0.1)] bg-[rgba(255,255,255,0.78)] px-4 py-4 shadow-[0_10px_18px_rgba(17,25,35,0.04)]"
+                        >
+                          <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[rgba(56,82,96,0.7)]">
+                            {label}
+                          </p>
+                          <p className="mt-2 font-[family:var(--font-display)] text-xl italic text-[var(--river-deep)]">
+                            {value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                      <Link
+                        href="/login"
+                        onClick={closeDrawer}
+                        className="group relative flex min-h-14 items-center justify-center overflow-hidden rounded-sm bg-[var(--cinnabar)] px-6 text-[11px] font-bold uppercase tracking-[0.22em] text-white shadow-[0_18px_36px_rgba(182,66,53,0.24)] transition-all hover:bg-[#9e3329] active:scale-[0.99]"
+                      >
+                        <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.18),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
+                        <span className="relative z-10">Open Passport</span>
+                      </Link>
+                      <Link
+                        href="/community"
+                        onClick={closeDrawer}
+                        className="flex min-h-14 items-center justify-center rounded-sm border border-[rgba(18,54,64,0.18)] bg-[rgba(255,255,255,0.82)] px-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)] transition hover:border-[var(--cinnabar)] hover:bg-white"
+                      >
+                        Browse Notes
+                      </Link>
+                    </div>
+                  </div>
                 </section>
               )}
 
@@ -792,9 +836,14 @@ export function GlobalDrawer() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs italic text-[var(--muted)] opacity-40">
-                        Save a community note to pin it here.
-                      </p>
+                      <div className="border border-dashed border-[rgba(18,54,64,0.12)] bg-[rgba(255,255,255,0.35)] px-5 py-5">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                          Empty archive
+                        </p>
+                        <p className="mt-3 text-sm italic leading-relaxed text-[var(--muted)]">
+                          Save a community note to pin it here.
+                        </p>
+                      </div>
                     )}
                   </div>
 
@@ -831,7 +880,14 @@ export function GlobalDrawer() {
                         })}
                       </div>
                     ) : (
-                      <p className="text-xs text-[var(--muted)] italic opacity-40">Listening for active signals...</p>
+                      <div className="border border-dashed border-[rgba(18,54,64,0.12)] bg-[rgba(255,255,255,0.35)] px-5 py-5">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                          Quiet board
+                        </p>
+                        <p className="mt-3 text-sm italic leading-relaxed text-[var(--muted)]">
+                          Listening for active signals...
+                        </p>
+                      </div>
                     )}
                   </div>
 

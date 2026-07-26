@@ -1,4 +1,3 @@
-import type { Locale } from "@/lib/locale";
 
 export const COUNTRY_CODES = [
   "AF", "AX", "AL", "DZ", "AS", "AD", "AO", "AI", "AQ", "AG", "AR", "AM", "AW", "AU", "AT", "AZ",
@@ -41,9 +40,7 @@ const LEGACY_COUNTRY_ALIASES: Record<string, string> = {
   canada: "CA",
 };
 
-function displayLocale(locale?: Locale) {
-  return locale === "zh" ? "zh-CN" : "en";
-}
+const DISPLAY_LOCALE = "en";
 
 export function normalizeCountryCode(value?: string | null) {
   const raw = value?.trim();
@@ -53,19 +50,19 @@ export function normalizeCountryCode(value?: string | null) {
   return LEGACY_COUNTRY_ALIASES[raw.toLowerCase()] ?? "";
 }
 
-export function countryName(codeOrLegacy?: string | null, locale?: Locale) {
+export function countryName(codeOrLegacy?: string | null) {
   const code = normalizeCountryCode(codeOrLegacy);
   if (!code) return codeOrLegacy?.trim() || "";
 
   try {
-    return new Intl.DisplayNames([displayLocale(locale)], { type: "region" }).of(code) ?? code;
+    return new Intl.DisplayNames([DISPLAY_LOCALE], { type: "region" }).of(code) ?? code;
   } catch {
     return code;
   }
 }
 
-export function countryOptions(locale?: Locale) {
+export function countryOptions() {
   return COUNTRY_CODES
-    .map((code) => ({ code, label: countryName(code, locale) || code }))
-    .sort((a, b) => a.label.localeCompare(b.label, displayLocale(locale)));
+    .map((code) => ({ code, label: countryName(code) || code }))
+    .sort((a, b) => a.label.localeCompare(b.label, DISPLAY_LOCALE));
 }

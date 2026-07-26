@@ -20,20 +20,20 @@ import {
 const initialFeatures = getMapFeatures();
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const [hoveredRegion, setHoveredRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
   const [routeRegions, setRouteRegions] =
     useState<RouteRegion[]>(DEFAULT_ROUTE_REGIONS);
 
   useEffect(() => {
-    fetchRoutes(locale).then(setRoutes).catch(() => {});
-    fetchRouteRegions(locale)
+    fetchRoutes().then(setRoutes).catch(() => {});
+    fetchRouteRegions()
       .then((data) =>
         setRouteRegions(data.length ? data : DEFAULT_ROUTE_REGIONS),
       )
       .catch(() => setRouteRegions(DEFAULT_ROUTE_REGIONS));
-  }, [locale]);
+  }, []);
 
   const mapPaths = useMemo(() => {
     if (!initialFeatures.length) {

@@ -15,11 +15,10 @@ type BookingFormSnapshot = {
 };
 
 type Props = {
-  locale: "en" | "zh";
   prefillNeeds?: string;
 };
 
-export function BookingSection({ locale, prefillNeeds }: Props) {
+export function BookingSection({ prefillNeeds }: Props) {
   const [bookingStep, setBookingStep] = useState(0);
   const [bookingFastTrack, setBookingFastTrack] = useState(false);
   const [bookingForm, setBookingForm] = useState<BookingFormSnapshot>({
@@ -48,11 +47,11 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
 
   const bookingSummary = useMemo(
     () => [
-      bookingForm.city || (locale === "zh" ? "城市待定" : "City pending"),
-      bookingForm.date || (locale === "zh" ? "日期待定" : "Date pending"),
-      bookingForm.mode || (locale === "zh" ? "服务待定" : "Mode pending"),
+      bookingForm.city || "City pending",
+      bookingForm.date || "Date pending",
+      bookingForm.mode || "Mode pending",
     ],
-    [bookingForm.city, bookingForm.date, bookingForm.mode, locale],
+    [bookingForm.city, bookingForm.date, bookingForm.mode],
   );
 
   const bookingSteps = useMemo(
@@ -60,33 +59,33 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
       bookingFastTrack
         ? [
             {
-              title: locale === "zh" ? "基础信息" : "Your Details",
-              body: locale === "zh" ? "姓名 · 联系方式 · 城市" : "Name · Contact · City",
+              title: "Your Details",
+              body: "Name · Contact · City",
             },
             {
-              title: locale === "zh" ? "支付订金" : "Pay Deposit",
-              body: locale === "zh" ? "订金 · 匹配" : "Deposit · Matching",
+              title: "Pay Deposit",
+              body: "Deposit · Matching",
             },
           ]
         : [
             {
-              title: locale === "zh" ? "基础信息" : "Your Details",
-              body: locale === "zh" ? "姓名 · 联系方式 · 城市 · 日期" : "Name · Contact · City · Date",
+              title: "Your Details",
+              body: "Name · Contact · City · Date",
             },
             {
-              title: locale === "zh" ? "服务偏好" : "Service Needs",
-              body: locale === "zh" ? "方式 · 人数 · 路线" : "Mode · Group · Route",
+              title: "Service Needs",
+              body: "Mode · Group · Route",
             },
             {
-              title: locale === "zh" ? "最终确认" : "Review Brief",
-              body: locale === "zh" ? "需求摘要" : "Request Summary",
+              title: "Review Brief",
+              body: "Request Summary",
             },
             {
-              title: locale === "zh" ? "支付订金" : "Pay Deposit",
-              body: locale === "zh" ? "订金 · 匹配" : "Deposit · Matching",
+              title: "Pay Deposit",
+              body: "Deposit · Matching",
             },
           ],
-    [bookingFastTrack, locale],
+    [bookingFastTrack],
   );
 
   return (
@@ -94,16 +93,14 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
       <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)] sm:items-end lg:mb-14">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-            {locale === "zh" ? "预约" : "Booking desk"}
+            {"Booking desk"}
           </p>
           <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
-            {locale === "zh" ? "预约口译服务" : "Shape the day together"}
+            {"Shape the day together"}
           </h2>
         </div>
         <p className="max-w-md handwritten text-sm leading-7 text-[var(--muted)] sm:justify-self-end">
-          {locale === "zh"
-            ? "先留下出发信息，再一起把现场需求整理成清晰的执行简报。"
-            : "Leave the essentials first. We will turn the field details into a clear working brief with you."}
+          {"Leave the essentials first. We will turn the field details into a clear working brief with you."}
         </p>
       </div>
 
@@ -115,7 +112,7 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
             <div className="px-1 sm:px-0">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                  {locale === "zh" ? "需求草稿" : "Live field brief"}
+                  {"Live field brief"}
                 </p>
                 <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
@@ -168,19 +165,18 @@ export function BookingSection({ locale, prefillNeeds }: Props) {
             <div className="mb-6 flex items-end justify-between gap-4 px-1 sm:px-0">
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                  {locale === "zh" ? "口译预约" : "Interpreting request"}
+                  {"Interpreting request"}
                 </p>
                 <h3 className="mt-3 font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)] sm:text-4xl">
-                  {locale === "zh" ? "服务需求" : "Your working brief"}
+                  {"Your working brief"}
                 </h3>
               </div>
               <span className="hidden text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)] sm:block">
-                {locale === "zh" ? "约 3 分钟" : "About 3 minutes"}
+                {"About 3 minutes"}
               </span>
             </div>
 
             <MultiStepForm
-              locale={locale}
               prefillNeeds={prefillNeeds}
               requestedStep={bookingStep}
               onStepChange={handleBookingStepChange}

@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiPost, ApiRequestError } from "@/lib/api-client";
-import { useLocale } from "@/lib/locale-context";
 import { countryOptions } from "@/lib/country-list";
 import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
 import {
@@ -35,8 +34,7 @@ export function LoginPanel() {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { locale } = useLocale();
-  const countries = useMemo(() => countryOptions(locale), [locale]);
+  const countries = useMemo(() => countryOptions(), []);
   const nextPath = safeNextPath(searchParams.get("next"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

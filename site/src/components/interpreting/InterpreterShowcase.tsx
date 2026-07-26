@@ -20,10 +20,9 @@ export type InterpreterProfile = {
 type Props = {
   profiles: InterpreterProfile[];
   onSelectGuide: (needsText: string) => void;
-  locale?: "en" | "zh";
 };
 
-export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: Props) {
+export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
 
   const handleSelect = (profile: InterpreterProfile) => {
@@ -40,10 +39,10 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
       <div className="mb-8 opacity-60">
         <Reveal>
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-            {locale === "zh" ? "\u53e3\u8bd1\u5458\u7b49\u7ea7" : "Interpreter Levels"}
+            {"Interpreter Levels"}
           </p>
           <h2 className="mt-3 max-w-[13ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
-            {locale === "zh" ? "\u521d\u7ea7 \u00b7 \u4e2d\u7ea7 \u00b7 \u9ad8\u7ea7" : "Junior \u00b7 Mid-level \u00b7 Senior"}
+            {"Junior \u00b7 Mid-level \u00b7 Senior"}
           </h2>
         </Reveal>
       </div>
@@ -77,7 +76,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
 
                   <div className="absolute top-4 left-4 z-10">
                     <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-bold uppercase tracking-[0.2em] text-white">
-                      {locale === "zh" ? profile.levelZh ?? profile.level : profile.level ?? profile.levelZh}
+                      {profile.level ?? profile.levelZh}
                     </span>
                   </div>
 
@@ -128,7 +127,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide, locale = "en" }: 
                       isSelected ? "bg-[var(--cinnabar)]" : ""
                     ].join(" ")}
                   >
-                    <span>{locale === "zh" ? "\u9009\u62e9\u8be5\u7b49\u7ea7" : "Assign to Brief"}</span>
+                    <span>{"Assign to Brief"}</span>
                     <svg className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                       <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>

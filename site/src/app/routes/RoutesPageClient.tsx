@@ -26,15 +26,15 @@ interface RoutesPageClientProps {
 export default function RoutesPageClient({
   initialRoutes,
 }: RoutesPageClientProps) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const [search, setSearch] = useState("");
   const [culture, setCulture] = useState("");
   const [duration, setDuration] = useState("");
   const [audience, setAudience] = useState("");
-  const deferredSearch = useDeferredValue(search.trim().toLocaleLowerCase(locale));
+  const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const { data, loading, error, refetch } = useApiQuery(
-    () => fetchRoutes(locale),
-    [locale],
+    () => fetchRoutes(),
+    [],
     { initialData: initialRoutes },
   );
 
@@ -43,7 +43,7 @@ export default function RoutesPageClient({
     setCulture("");
     setDuration("");
     setAudience("");
-  }, [locale]);
+  }, []);
 
   if (loading && initialRoutes.length === 0) {
     return <LoadingSpinner text="Drawing the routes..." />;
@@ -60,7 +60,7 @@ export default function RoutesPageClient({
   const filteredRoutes = storyRoutes.filter((route) => {
     const searchable = [route.title, route.city, route.culture, route.duration, route.audience, route.summary]
       .join(" ")
-      .toLocaleLowerCase(locale);
+      .toLowerCase();
     return (
       (!deferredSearch || searchable.includes(deferredSearch)) &&
       (!culture || route.culture === culture) &&

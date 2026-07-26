@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
 import { notFound } from "next/navigation";
-import { useLocale } from "@/lib/locale-context";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
@@ -20,24 +18,17 @@ interface Props {
 }
 
 export function ProductDetailClient({ slug, initialProduct, initialProducts }: Props) {
-  const { locale, setLocale } = useLocale();
-  const { previewData, previewLocale, previewEnabled } = usePreviewBridge<StoreProduct>("product");
-  const activeLocale = previewLocale ?? locale;
-  useEffect(() => {
-    if (previewLocale && previewLocale !== locale) {
-      setLocale(previewLocale);
-    }
-  }, [locale, previewLocale, setLocale]);
+  const { previewData, previewEnabled } = usePreviewBridge<StoreProduct>("product");
 
   const { data: product, loading, error } = useApiQuery(
-    () => fetchStoreProductBySlug(slug, activeLocale),
-    [slug, activeLocale],
+    () => fetchStoreProductBySlug(slug),
+    [slug],
     { initialData: initialProduct },
   );
 
   const { data: allProducts } = useApiQuery(
-    () => fetchStoreProducts(activeLocale),
-    [activeLocale],
+    () => fetchStoreProducts(),
+    [],
     { initialData: initialProducts },
   );
 

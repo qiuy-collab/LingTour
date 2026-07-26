@@ -10,10 +10,10 @@ export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   const [homeData, products, routes, events] = await Promise.all([
-    fetchHomeDataServer("en"),
-    fetchStoreProductsServer("en"),
-    fetchRoutesServerForHome("en"),
-    fetchEventsServer("en"),
+    fetchHomeDataServer(),
+    fetchStoreProductsServer(),
+    fetchRoutesServerForHome(),
+    fetchEventsServer(),
   ]);
 
   return (

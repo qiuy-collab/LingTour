@@ -21,7 +21,7 @@ export default function ShopPageClient({
   initialCollections,
   initialProducts,
 }: ShopPageClientProps) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { previewData: previewCollection } =
     usePreviewBridge<StoreCollection>("collection");
 
@@ -30,7 +30,7 @@ export default function ShopPageClient({
     loading: colsLoading,
     error: colsError,
     refetch: refetchCollections,
-  } = useApiQuery(() => fetchStoreCollections(locale), [locale], {
+  } = useApiQuery(() => fetchStoreCollections(), [], {
     initialData: initialCollections,
   });
 
@@ -39,7 +39,7 @@ export default function ShopPageClient({
     loading: prodLoading,
     error: prodError,
     refetch: refetchProducts,
-  } = useApiQuery(() => fetchStoreProducts(locale), [locale], {
+  } = useApiQuery(() => fetchStoreProducts(), [], {
     initialData: initialProducts,
   });
 

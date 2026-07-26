@@ -10,7 +10,6 @@
  */
 
 import { headers } from "next/headers";
-import type { Locale } from "./locale";
 
 /**
  * Build the absolute API URL for a server-side request.
@@ -38,12 +37,10 @@ async function getServerBaseUrl(): Promise<string> {
  * Server-side GET request.
  *
  * Unlike the client `apiGet`, this does NOT depend on `window` or `localStorage`.
- * Locale is passed explicitly via `Accept-Language` header.
  */
 export async function serverGet<T = unknown>(
   endpoint: string,
   params?: Record<string, string | number | undefined>,
-  locale?: Locale,
 ): Promise<T> {
   const baseUrl = await getServerBaseUrl();
   const fullPath = `${baseUrl}${endpoint}`;
@@ -63,11 +60,9 @@ export async function serverGet<T = unknown>(
 
   const headersInit: Record<string, string> = {
     Accept: "application/json",
+    // The storefront is English-only.
+    "Accept-Language": "en",
   };
-
-  if (locale) {
-    headersInit["Accept-Language"] = locale;
-  }
 
   const response = await fetch(url.toString(), {
     headers: headersInit,

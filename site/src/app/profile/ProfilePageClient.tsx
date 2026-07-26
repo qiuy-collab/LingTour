@@ -68,11 +68,11 @@ function profileCompletion(user: LocalUser) {
   return Math.round((values.filter((value) => Boolean(value?.trim())).length / values.length) * 100);
 }
 
-function formatBookingDate(value: string, locale: string) {
+function formatBookingDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-GB", {
+    : new Intl.DateTimeFormat("en-GB", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -101,7 +101,7 @@ function EmptyArchive({ title, body, href, cta }: { title: string; body: string;
 }
 
 export function ProfilePageClient() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab") as ProfileTab | null;
@@ -129,7 +129,7 @@ export function ProfilePageClient() {
     bio: "",
     profileVisibility: "public" as ProfileVisibility,
   });
-  const countries = useMemo(() => countryOptions(locale), [locale]);
+  const countries = useMemo(() => countryOptions(), []);
   const savedRoutes = favorites.filter((item) => item.type !== "product");
   const savedProducts = favorites.filter((item) => item.type === "product");
   const productBySlug = new Map(storeProducts.map((product) => [product.slug, product]));
@@ -181,9 +181,9 @@ export function ProfilePageClient() {
     setCart(readCart());
     void Promise.allSettled([
       refreshCurrentUserProfile(),
-      fetchSavedCommunityPosts(locale, 24),
+      fetchSavedCommunityPosts(24),
       fetchTravelerInterpretingBookings(),
-      fetchStoreProducts(locale),
+      fetchStoreProducts(),
     ]).then(([profileResult, notesResult, bookingsResult, productsResult]) => {
       if (cancelled) return;
       if (profileResult.status === "rejected") {
@@ -202,7 +202,7 @@ export function ProfilePageClient() {
     return () => {
       cancelled = true;
     };
-  }, [locale, profilePath, router]);
+  }, [profilePath, router]);
 
   useEffect(() => {
     if (!ready) return;
@@ -315,7 +315,7 @@ export function ProfilePageClient() {
             </div>
           </div>
           <div data-pastoral-stamp className="border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
-            <p>{countryName(user.country, locale) || t("account.profile.locationUnset")}</p>
+            <p>{countryName(user.country) || t("account.profile.locationUnset")}</p>
             <p className="mt-2">{user.homeBase || user.email}</p>
             <p className="mt-4 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
               {t("account.profile.completion").replace("{number}", String(profileCompletion(user)))}
@@ -452,7 +452,7 @@ export function ProfilePageClient() {
                         </h2>
                       </div>
                       <time className="text-xs text-[var(--muted)]" dateTime={booking.serviceDate}>
-                        {formatBookingDate(booking.serviceDate, locale)}
+                        {formatBookingDate(booking.serviceDate)}
                       </time>
                     </div>
                     <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">

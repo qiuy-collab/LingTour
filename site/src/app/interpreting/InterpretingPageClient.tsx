@@ -88,7 +88,7 @@ interface InterpretingPageClientProps {
 export default function InterpretingPageClient({
   initialInterpretingData,
 }: InterpretingPageClientProps) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { previewData: previewService } =
     usePreviewBridge<ApiInterpretingMode>("service");
   const { previewData: previewInterpreter } =
@@ -101,7 +101,7 @@ export default function InterpretingPageClient({
     loading,
     error,
     refetch,
-  } = useApiQuery(() => fetchInterpreting(locale), [locale], {
+  } = useApiQuery(() => fetchInterpreting(), [], {
     initialData: initialInterpretingData,
   });
 
@@ -232,22 +232,14 @@ export default function InterpretingPageClient({
                     L
                   </div>
                   <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
-                    {locale === "zh"
-                      ? "LingTour 口译 / 现场协作"
-                      : "LingTour Interpreting / Field Coordination"}
+                    {"LingTour Interpreting / Field Coordination"}
                   </p>
                 </div>
 
                 <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.88] tracking-[-0.045em] sm:mb-8 lg:text-[7rem] xl:text-[8.25rem]">
-                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{locale === "zh" ? "广东" : "Guangdong"}</span></span>
-                  {locale === "zh" ? (
-                    <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">口译服务</span></span>
-                  ) : (
-                    <>
-                      <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Interpreter</span></span>
-                      <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Services</span></span>
-                    </>
-                  )}
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{"Guangdong"}</span></span>
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Interpreter</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Services</span></span>
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
@@ -260,13 +252,13 @@ export default function InterpretingPageClient({
                       href="#interpreting-booking"
                       className="btn-primary inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none active:scale-95 sm:w-auto sm:px-10 sm:py-5"
                     >
-                      {locale === "zh" ? "预约口译" : "Plan support"}
+                      {"Plan support"}
                     </a>
                     <a
                       href="#service-types"
                       className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none sm:w-auto sm:px-10 sm:py-5"
                     >
-                      {locale === "zh" ? "服务类型" : "Service types"}
+                      {"Service types"}
                     </a>
                   </div>
                 </div>
@@ -372,7 +364,6 @@ export default function InterpretingPageClient({
         <InterpreterShowcase
           profiles={showcaseProfiles}
           onSelectGuide={handleSelectGuide}
-          locale={locale}
         />
       ) : null}
 
@@ -381,22 +372,20 @@ export default function InterpretingPageClient({
           <div>
             <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                {locale === "zh" ? "组合参考价" : "Budget guide"}
+                {"Budget guide"}
               </p>
               <h2 className="mt-4 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:max-w-none">
-                {locale === "zh"
-                  ? "按服务与等级查看价格"
-                  : "Rates by Service & Level"}
+                {"Rates by Service & Level"}
               </h2>
               <p className="max-w-xs handwritten text-sm leading-6 text-[var(--muted)] sm:text-right">
-                {locale === "zh" ? "现场场景为主线，按经验等级选择。" : "Choose the field format first, then the experience level that fits the day."}
+                {"Choose the field format first, then the experience level that fits the day."}
               </p>
             </div>
 
             <div>
               <div className="space-y-4">
                 <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] px-5 pb-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
-                  <div className="p-4">{locale === "zh" ? "类型" : "Type"}</div>
+                  <div className="p-4">{"Type"}</div>
                   <div className="text-center">
                     {t("interpreting.levels.junior")}
                   </div>
@@ -469,10 +458,10 @@ export default function InterpretingPageClient({
             <Reveal>
               <div className="lg:sticky lg:top-28">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                  {locale === "zh" ? "服务答疑" : "Service notes"}
+                  {"Service notes"}
                 </p>
                 <h2 className="mt-4 max-w-[9ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl">
-                  {locale === "zh" ? "常见问题" : "Frequently asked questions"}
+                  {"Frequently asked questions"}
                 </h2>
               </div>
             </Reveal>
@@ -525,17 +514,17 @@ export default function InterpretingPageClient({
         </section>
       ) : null}
 
-      <BookingSection locale={locale} prefillNeeds={prefillNeeds} />
+      <BookingSection prefillNeeds={prefillNeeds} />
 
       <MobileStickyActions
         actions={[
           {
-            label: locale === "zh" ? "预约" : "Book",
+            label: "Book",
             href: "#interpreting-booking",
             variant: "primary",
           },
           {
-            label: locale === "zh" ? "价格" : "Pricing",
+            label: "Pricing",
             href: "#interpreting-pricing",
             variant: "secondary",
           },

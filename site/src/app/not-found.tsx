@@ -12,7 +12,7 @@ import { translate } from "@/translations";
  * notes, no demo language.
  */
 export default function NotFound() {
-  const t = (key: string) => translate(key, "en");
+  const t = (key: string) => translate(key);
 
   return (
     <main className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">

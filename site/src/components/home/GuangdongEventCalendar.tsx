@@ -8,7 +8,6 @@ import type { StoryRoute } from "@/data/routes";
 import { Reveal } from "@/components/ui/Reveal";
 
 const DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DAY_NAMES_ZH = ["日", "一", "二", "三", "四", "五", "六"];
 const MONTH_NAMES_EN = [
   "January",
   "February",
@@ -22,20 +21,6 @@ const MONTH_NAMES_EN = [
   "October",
   "November",
   "December",
-];
-const MONTH_NAMES_ZH = [
-  "1月",
-  "2月",
-  "3月",
-  "4月",
-  "5月",
-  "6月",
-  "7月",
-  "8月",
-  "9月",
-  "10月",
-  "11月",
-  "12月",
 ];
 
 function daysInMonth(year: number, month: number): number {
@@ -58,10 +43,9 @@ type Props = {
 };
 
 export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
-  const { locale, t } = useLocale();
-  const isZh = locale === "zh";
-  const dayNames = isZh ? DAY_NAMES_ZH : DAY_NAMES_EN;
-  const monthNames = isZh ? MONTH_NAMES_ZH : MONTH_NAMES_EN;
+  const { t } = useLocale();
+  const dayNames = DAY_NAMES_EN;
+  const monthNames = MONTH_NAMES_EN;
 
   const eventsByDate = useMemo(() => {
     const map: Record<string, EventData[]> = {};
@@ -283,10 +267,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                     {event.title}
                   </h4>
                   <p className="handwritten max-w-lg text-sm leading-relaxed text-[var(--muted)]">
-                    {event.summary ||
-                      (isZh
-                        ? t("home.calendar.eventFallbackZh")
-                        : t("home.calendar.eventFallbackEn"))}
+                    {event.summary || t("home.calendar.eventFallbackEn")}
                   </p>
                 </div>
               ))

@@ -47,13 +47,12 @@ export function mediaPoster(asset?: MediaAsset | null, fallback = ""): string {
   return asset.type === "video" ? asset.poster?.trim() || fallback : asset.url;
 }
 
-export function localizedMediaAlt(
+export function mediaAlt(
   asset: MediaAsset | null | undefined,
-  locale: "en" | "zh",
   fallback: string,
 ): string {
   if (typeof asset?.alt === "string") return asset.alt || fallback;
-  return asset?.alt?.[locale] || asset?.alt?.en || asset?.alt?.zh || fallback;
+  return asset?.alt?.en || fallback;
 }
 
 export function dedupeMedia(assets: MediaAsset[]): MediaAsset[] {

@@ -26,14 +26,14 @@ interface CulturePageClientProps {
 export default function CulturePageClient({
   initialCityCultures,
 }: CulturePageClientProps) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("");
   const [tag, setTag] = useState("");
-  const deferredSearch = useDeferredValue(search.trim().toLocaleLowerCase(locale));
+  const deferredSearch = useDeferredValue(search.trim().toLowerCase());
   const { data: cityCultures, loading, error, refetch } = useApiQuery(
-    () => fetchCities(locale),
-    [locale],
+    () => fetchCities(),
+    [],
     { initialData: initialCityCultures },
   );
 
@@ -41,7 +41,7 @@ export default function CulturePageClient({
     setSearch("");
     setRegion("");
     setTag("");
-  }, [locale]);
+  }, []);
 
   if (loading && initialCityCultures.length === 0) {
     return <LoadingSpinner text="Opening the city atlas..." />;
@@ -57,7 +57,7 @@ export default function CulturePageClient({
   const filteredCultures = cultures.filter((city) => {
     const searchable = [city.name, city.label, city.summary, city.narrative, ...city.tags]
       .join(" ")
-      .toLocaleLowerCase(locale);
+      .toLowerCase();
     return (
       (!deferredSearch || searchable.includes(deferredSearch)) &&
       (!region || city.label === region) &&

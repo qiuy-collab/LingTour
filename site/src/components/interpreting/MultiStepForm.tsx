@@ -22,7 +22,6 @@ type FormData = {
 };
 
 type Props = {
-  locale?: "en" | "zh";
   prefillNeeds?: string;
   prefillCity?: string;
   requestedStep?: number;
@@ -41,7 +40,6 @@ const inputClass =
   "rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-[15px] leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)]";
 
 function MultiStepFormInner({
-  locale = "en",
   prefillNeeds,
   prefillCity,
   requestedStep,
@@ -50,8 +48,7 @@ function MultiStepFormInner({
   onFastTrackChange,
 }: Props) {
   const { t } = useLocale();
-  const isZh = locale === "zh";
-  const weekdays = isZh ? ["日", "一", "二", "三", "四", "五", "六"] : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const [cities, setCities] = useState<string[]>(["Zhanjiang"]);
   const [step, setStep] = useState(0);
   const [fastTrack, setFastTrack] = useState(false);
@@ -77,7 +74,7 @@ function MultiStepFormInner({
   const calendarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchCities("en")
+    fetchCities()
       .then((data) => setCities(data.map((c) => c.name)))
       .catch(() => {
         // Keep the fallback city list when the request fails.
@@ -160,9 +157,7 @@ function MultiStepFormInner({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : isZh
-            ? "\u6682\u65f6\u65e0\u6cd5\u521b\u5efa\u8ba2\u91d1\u652f\u4ed8\u3002"
-            : "Could not create the deposit checkout right now.",
+          : "Could not create the deposit checkout right now.",
       );
     } finally {
       setSubmitting(false);
@@ -187,9 +182,7 @@ function MultiStepFormInner({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : isZh
-            ? "\u6682\u65f6\u65e0\u6cd5\u786e\u8ba4\u8ba2\u91d1\u652f\u4ed8\u3002"
-            : "Could not confirm the deposit payment.",
+          : "Could not confirm the deposit payment.",
       );
     } finally {
       setPaymentProcessing(false);
@@ -209,7 +202,7 @@ function MultiStepFormInner({
   const formatDate = (iso: string) => {
     if (!iso) return "";
     const d = new Date(`${iso}T00:00:00`);
-    return new Intl.DateTimeFormat(isZh ? "zh-CN" : "en-GB", {
+    return new Intl.DateTimeFormat("en-GB", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -239,19 +232,15 @@ function MultiStepFormInner({
           </svg>
         </div>
         <h3 className="mt-6 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] sm:text-3xl">
-          {isZh ? "\u8ba2\u91d1\u5df2\u652f\u4ed8" : "Deposit received"}
+          Deposit received
         </h3>
         <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
           {fastTrack
-            ? (isZh
-                ? "\u5feb\u901f\u9884\u7ea6\u548c\u8ba2\u91d1\u90fd\u5df2\u786e\u8ba4\uff0c\u6211\u4eec\u4f1a\u572812\u5c0f\u65f6\u5185\u56de\u590d\u4f60\u4e0b\u4e00\u6b65\u3002"
-                : "Your Fast Track request and deposit are in. We will reply within 12 hours with the quickest next-step plan.")
-            : (isZh
-                ? "\u9884\u7ea6\u9700\u6c42\u548c\u8ba2\u91d1\u90fd\u5df2\u786e\u8ba4\uff0c\u6211\u4eec\u4f1a\u5f00\u59cb\u5339\u914d\u53e3\u8bd1\u5458\u5e76\u572824\u5c0f\u65f6\u5185\u56de\u590d\u3002"
-                : "Your booking request and deposit are in. We will match the right interpreter and reply within 24 hours with the next step.")}
+            ? "Your Fast Track request and deposit are in. We will reply within 12 hours with the quickest next-step plan."
+            : "Your booking request and deposit are in. We will match the right interpreter and reply within 24 hours with the next step."}
         </p>
         <p className="mt-6 text-label text-[var(--gold)]">
-          {isZh ? "\u65f6\u6bb5\u5df2\u9501\u5b9a\uff0c\u6211\u4eec\u5f88\u5feb\u8054\u7cfb\u4f60\u3002" : "Slot secured. We will be in touch soon."}
+          Slot secured. We will be in touch soon.
         </p>
       </div>
     );
@@ -383,7 +372,7 @@ function MultiStepFormInner({
                         &lt;
                       </button>
                       <p className="text-sm font-medium text-[var(--ink)]">
-                        {new Intl.DateTimeFormat(isZh ? "zh-CN" : "en-US", { month: "long", year: "numeric" }).format(calendarMonth)}
+                        {new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(calendarMonth)}
                       </p>
                       <button
                         type="button"

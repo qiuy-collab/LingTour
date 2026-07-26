@@ -52,59 +52,6 @@ export const shop = {
     "shop.cta.eyebrow": "Gifting",
     "shop.cta.title": "Give something with a place inside it.",
     "shop.cta.button": "Browse all products",
-  },
+  }
 
-  zh: {
-    "shop.page.title": "文创商店",
-    "shop.page.subtitle": "围绕产地、工艺与故事线索挑选的路线关联器物。",
-    "shop.card.curatedObject": "精选好物",
-    "shop.image.pending": "商品图片正在归档",
-    "shop.image.catalogueNote": "器物档案已建立，摄影资料仍在整理中。",
-    "shop.page.viewAll": "全部商品",
-    "shop.page.collections": "系列",
-    "shop.page.sortBy": "排序",
-
-    "shop.detail.addToCart": "加入购物车",
-    "shop.detail.quantity": "数量",
-    "shop.detail.collection": "系列",
-    "shop.detail.tags": "标签",
-    "shop.detail.story": "物件背后的故事",
-    "shop.detail.details": "详情",
-    "shop.detail.relatedProducts": "同系列更多商品",
-    "shop.detail.provenance": "器物档案",
-    "shop.detail.category": "类别",
-    "shop.detail.material": "材质",
-    "shop.detail.materialPending": "材质信息待补充",
-    "shop.detail.collectionFallback": "LingTour 器物",
-    "shop.detail.routesCta": "相关路线",
-    "shop.detail.citiesCta": "相关城市",
-    "shop.detail.noteCta": "添加手记",
-
-    "shop.checkout.title": "结算",
-    "shop.checkout.submit": "创建订单",
-    "shop.checkout.note": "支付确认前，订单状态保持待处理。",
-
-    "shop.hero.quote": "器物也承载故事，尤其是那些仍然能回到具体地方去追溯的故事。",
-
-    "shop.atlas.eyebrow": "岭南文创·器物档案",
-    "shop.atlas.titlePrimary": "岭南",
-    "shop.atlas.titleItalic": "器物。",
-    "shop.atlas.lede": "手工、茶、木、陶、布——这些器物之所以被选中，是因为它们仍然带着路线、匠人，以及来处。",
-    "shop.atlas.crafted": "工艺",
-    "shop.atlas.collectionsEyebrow": "系列",
-    "shop.atlas.collectionsTitle": "按产地查看系列",
-    "shop.atlas.featuredEyebrow": "精选",
-    "shop.atlas.featuredTitle": "精选器物",
-    "shop.atlas.viewAll": "查看全部",
-
-    "shop.atlas.empty.collections.title": "暂无系列",
-    "shop.atlas.empty.collections.body":
-      "当前没有已发布的系列。",
-    "shop.atlas.empty.products.title": "暂无商品",
-    "shop.atlas.empty.products.body": "当前没有已发布的商品。",
-
-    "shop.cta.eyebrow": "送礼",
-    "shop.cta.title": "把一座地方，送到另一个人手里。",
-    "shop.cta.button": "浏览全部商品",
-  },
 };

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Locale } from "@/lib/locale";
 
 type PreviewType =
   | "city"
@@ -18,7 +17,6 @@ type PreviewEnvelope<T> = {
   channel: "lingtour-preview";
   key: string;
   type: PreviewType;
-  locale?: Locale;
   source?: string;
   data: T;
   timestamp: number;
@@ -26,9 +24,6 @@ type PreviewEnvelope<T> = {
 
 const STORAGE_PREFIX = "lingtour-preview:";
 
-function isLocale(value: unknown): value is Locale {
-  return value === "zh" || value === "en";
-}
 
 function readStoredPreview<T>(key: string): PreviewEnvelope<T> | null {
   if (typeof window === "undefined") return null;
@@ -79,21 +74,16 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
   }, [expectedType, previewEnabled, previewKey]);
 
   const [previewData, setPreviewData] = useState<T | null>(initialPreview?.data ?? null);
-  const [previewLocale, setPreviewLocale] = useState<Locale | null>(
-    initialPreview?.locale && isLocale(initialPreview.locale) ? initialPreview.locale : null,
-  );
 
   useEffect(() => {
     if (!previewEnabled) {
       setPreviewData(null);
-      setPreviewLocale(null);
       return;
     }
 
     const stored = readStoredPreview<T>(previewKey);
     if (stored && stored.type === expectedType) {
       setPreviewData(stored.data);
-      setPreviewLocale(stored.locale && isLocale(stored.locale) ? stored.locale : null);
     }
 
     const handleMessage = (event: MessageEvent) => {
@@ -105,7 +95,6 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
 
       persistPreview(previewKey, payload);
       setPreviewData(payload.data);
-      setPreviewLocale(payload.locale && isLocale(payload.locale) ? payload.locale : null);
     };
 
     window.addEventListener("message", handleMessage);
@@ -116,6 +105,5 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
     previewEnabled,
     previewKey,
     previewData,
-    previewLocale,
   };
 }

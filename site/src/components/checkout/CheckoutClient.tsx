@@ -73,7 +73,7 @@ function fillTemplate(
 export function CheckoutClient() {
   const searchParams = useSearchParams();
   const productSlug = searchParams.get("product");
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
 
   const [items, setItems] = useState<CheckoutItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +88,7 @@ export function CheckoutClient() {
     const storedUser = readStoredUser();
     setUser(storedUser);
     if (storedUser) {
-      const displayCountry = countryName(storedUser.country, locale);
+      const displayCountry = countryName(storedUser.country);
       setForm((current) => ({
         ...current,
         email: storedUser.email || current.email,
@@ -99,7 +99,7 @@ export function CheckoutClient() {
         phone: current.phone,
       }));
     }
-  }, [locale]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,7 +110,7 @@ export function CheckoutClient() {
         const selectedCart = storedCart.filter((item) => item.selected !== false);
 
         if (selectedCart.length > 0) {
-          const products = await fetchStoreProducts(locale);
+          const products = await fetchStoreProducts();
           const itemMap = new Map(products.map((item) => [item.slug, item]));
           const selectedItems = selectedCart.map((cartItem) => {
             const matchedProduct = itemMap.get(cartItem.slug);
@@ -144,7 +144,7 @@ export function CheckoutClient() {
         }
 
         if (productSlug) {
-          const product = await fetchStoreProductBySlug(productSlug, locale);
+          const product = await fetchStoreProductBySlug(productSlug);
           if (!cancelled && product) {
             setItems([{ ...product, quantity: 1 }]);
             setLoading(false);
@@ -152,7 +152,7 @@ export function CheckoutClient() {
           }
         }
 
-        const products = await fetchStoreProducts(locale);
+        const products = await fetchStoreProducts();
         if (!cancelled && products.length > 0) {
           setItems([{ ...products[0], quantity: 1 }]);
         }
@@ -167,7 +167,7 @@ export function CheckoutClient() {
     return () => {
       cancelled = true;
     };
-  }, [locale, productSlug, t]);
+  }, [productSlug, t]);
 
   const totals = useMemo(() => {
     if (items.length === 0) return { subtotal: 0, handling: 0, total: 0 };

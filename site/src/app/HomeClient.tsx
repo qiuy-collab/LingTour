@@ -38,7 +38,7 @@ export default function HomeClient({
   initialRoutes,
   initialEvents,
 }: HomeClientProps) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
   const { previewData: previewHome } =
     usePreviewBridge<Partial<HomeData>>("home");
   const { previewData: previewEvent } =
@@ -48,26 +48,26 @@ export default function HomeClient({
   // When locale changes client-side, useApiQuery re-fetches in the background
   // (stale-while-revalidate). Content is visible immediately from SSR.
   const { data: homeData, loading: homeLoading } = useApiQuery(
-    () => fetchHomeData(locale),
-    [locale],
+    () => fetchHomeData(),
+    [],
     { initialData: initialHomeData },
   );
 
   const { data: products } = useApiQuery(
-    () => fetchStoreProducts(locale),
-    [locale],
+    () => fetchStoreProducts(),
+    [],
     { initialData: initialProducts },
   );
 
   const { data: allRoutes } = useApiQuery(
-    () => fetchRoutes(locale),
-    [locale],
+    () => fetchRoutes(),
+    [],
     { initialData: initialRoutes },
   );
 
   const { data: events } = useApiQuery(
-    () => fetchEvents(locale),
-    [locale],
+    () => fetchEvents(),
+    [],
     { initialData: initialEvents },
   );
 

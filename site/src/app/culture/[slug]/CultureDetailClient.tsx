@@ -14,34 +14,27 @@ import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
 import type { CityCulture, CityCultureSection } from "@/data/culture";
 
 export function CultureDetailClient({ slug }: { slug: string }) {
-  const { locale, setLocale, t } = useLocale();
-  const { previewData, previewLocale, previewEnabled } = usePreviewBridge<CityCulture>("city");
-  const activeLocale = previewLocale ?? locale;
+  const { t } = useLocale();
+  const { previewData, previewEnabled } = usePreviewBridge<CityCulture>("city");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (previewLocale && previewLocale !== locale) {
-      setLocale(previewLocale);
-    }
-  }, [locale, previewLocale, setLocale]);
-
   const { data: city, loading, error } = useApiQuery(
-    () => fetchCityBySlug(slug, activeLocale),
-    [slug, activeLocale],
+    () => fetchCityBySlug(slug),
+    [slug],
   );
 
   const { data: cityCultures } = useApiQuery(
-    () => fetchCities(activeLocale),
-    [activeLocale],
+    () => fetchCities(),
+    [],
   );
 
   const { data: storyRoutes } = useApiQuery(
-    () => fetchRoutes(activeLocale),
-    [activeLocale],
+    () => fetchRoutes(),
+    [],
   );
 
   const activeCity = previewData ?? city;
@@ -234,7 +227,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
                   const idx = (cityCultures ?? []).findIndex((item) => item.slug === activeCity.slug);
                   const prev = idx > 0 ? (cityCultures ?? [])[idx - 1] : null;
                   const href = prev ? `/culture/${prev.slug}` : "/culture";
-                  const label = prev ? prev.name : (activeLocale === "zh" ? "全部城市" : "All cities");
+                  const label = prev ? prev.name : "All cities";
                   return (
                     <Link
                       href={href}
@@ -245,7 +238,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
                       </svg>
                       <div className="text-left">
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] group-hover:text-[var(--cinnabar)]">
-                          {activeLocale === "zh" ? "上一份档案" : "Previous Archive"}
+                          {"Previous Archive"}
                         </p>
                         <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{label}</p>
                       </div>
@@ -259,7 +252,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
                   const idx = (cityCultures ?? []).findIndex((item) => item.slug === activeCity.slug);
                   const next = idx < (cityCultures ?? []).length - 1 ? (cityCultures ?? [])[idx + 1] : null;
                   const href = next ? `/culture/${next.slug}` : "/culture";
-                  const label = next ? next.name : (activeLocale === "zh" ? "全部城市" : "All cities");
+                  const label = next ? next.name : "All cities";
                   return (
                     <Link
                       href={href}
@@ -267,7 +260,7 @@ export function CultureDetailClient({ slug }: { slug: string }) {
                     >
                       <div className="text-right">
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] group-hover:text-[var(--cinnabar)]">
-                          {activeLocale === "zh" ? "下一份档案" : "Next Archive"}
+                          {"Next Archive"}
                         </p>
                         <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{label}</p>
                       </div>

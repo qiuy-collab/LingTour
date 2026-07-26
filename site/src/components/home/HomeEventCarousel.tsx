@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useLocale } from "@/lib/locale-context";
 import type { EventData } from "@/lib/api-data";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -11,7 +10,7 @@ type Props = {
 };
 
 export function HomeEventCarousel({ events = [] }: Props) {
-  const { locale } = useLocale();
+  
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -56,7 +55,7 @@ export function HomeEventCarousel({ events = [] }: Props) {
           <div className="max-w-3xl">
             <div className="flex items-center gap-3">
               <span className="bg-[var(--cinnabar)] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
-                {locale === "zh" ? "近期推荐" : "Featured Event"}
+                {"Featured Event"}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">
                 {currentEvent.date} — {currentEvent.city}
@@ -76,13 +75,13 @@ export function HomeEventCarousel({ events = [] }: Props) {
                 href={`/routes?event=${currentEvent.id}`}
                 className="btn-primary kinetic-link px-8 py-4 text-xs"
               >
-                {locale === "zh" ? "探索关联路线" : "Explore Related Routes"}
+                {"Explore Related Routes"}
               </Link>
               <Link
                 href={`/culture/${currentEvent.citySlug}`}
                 className="btn-outline px-8 py-4 text-xs"
               >
-                {locale === "zh" ? "查看城市故事" : "View City Story"}
+                {"View City Story"}
               </Link>
             </div>
           </div>
