@@ -42,7 +42,19 @@ Thumbs.db
 
 # Local assistant/editor runtime
 .claude/
+.codex/
+.agents/
 conversations/
+projects/
+tmp/
+
+# Credentials — never commit private keys or deploy secrets
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*deploy_key*
+*server-key*
 
 # TypeScript
 *.tsbuildinfo
