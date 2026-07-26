@@ -47,10 +47,30 @@ export function readContentValue(val: unknown): string {
   return String(val)
 }
 
-/** 将后端返回的纯字符串或 I18nObject 统一转换为 I18nObject */
+/**
+ * 将后端返回的纯字符串或 I18nObject 统一转换为 I18nObject。
+ *
+ * 正文只维护一份英文，编辑器也只编辑 en。但后端保存 jsonb 字段时用的是
+ * Object.assign 整体替换，所以这里必须把记录里原有的 zh 原样带回来，
+ * 否则每保存一次就会把线上遗留的中文内容抹掉。
+ */
 export function toI18n(val: unknown): I18nObject {
   const content = readContentValue(val)
-  return { zh: '', en: content }
+  let legacyZh = ''
+
+  if (typeof val === 'string' && val.startsWith('{') && val.includes('"')) {
+    try {
+      val = JSON.parse(val)
+    } catch {
+      // 不是 JSON，按纯字符串处理
+    }
+  }
+  if (typeof val === 'object' && val !== null) {
+    const raw = (val as Record<string, unknown>).zh
+    if (typeof raw === 'string') legacyZh = raw
+  }
+
+  return { zh: legacyZh, en: content }
 }
 
 export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string {
