@@ -28,12 +28,8 @@ export class EnhanceAuditLogs1751300000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_new_values;`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_old_values;`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_new_values;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_old_values;`);
     await queryRunner.query(
       `ALTER TABLE audit_logs DROP COLUMN IF EXISTS new_values;`,
     );

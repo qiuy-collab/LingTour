@@ -44,9 +44,7 @@ export class AddCommunityBriefs1751500000000 implements MigrationInterface {
     await queryRunner.query(
       `DROP INDEX IF EXISTS idx_community_briefs_active;`,
     );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_community_briefs_slug;`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_community_briefs_slug;`);
     await queryRunner.query(`DROP TABLE IF EXISTS community_briefs;`);
   }
 }

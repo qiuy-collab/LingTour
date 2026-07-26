@@ -4,7 +4,10 @@ import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { HomeService } from './home.service';
 import { UpdateHomeConfigDto } from './dto/update-home-config.dto';
-import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Home')
 @Controller('api/v1')

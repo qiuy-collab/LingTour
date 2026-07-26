@@ -55,7 +55,7 @@ export async function collectReferencedMediaFilenames(
   const collector = new Set<string>();
 
   for (const query of MEDIA_REFERENCE_QUERIES) {
-    const rows = (await dataSource.query(query)) as Array<Record<string, unknown>>;
+    const rows = await dataSource.query(query);
     for (const row of rows) {
       for (const value of Object.values(row)) {
         for (const filename of extractUploadReferences(value)) {
@@ -73,7 +73,9 @@ export async function syncMediaLibraryRecords(
   filenames: string[],
   uploadRoot: string,
 ) {
-  const normalized = [...new Set(filenames.map((name) => normalizeStoredRelativePath(name)))];
+  const normalized = [
+    ...new Set(filenames.map((name) => normalizeStoredRelativePath(name))),
+  ];
 
   await dataSource.query(`DELETE FROM media_files WHERE module = 'seed'`);
 

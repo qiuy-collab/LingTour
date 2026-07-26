@@ -31,7 +31,10 @@ import {
   type OrderStatus,
   type PaymentStatus,
 } from './entities/order.entity';
-import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Orders')
 @Controller('api/v1')
@@ -83,7 +86,12 @@ export class OrdersController {
     @Query('status') status?: OrderStatus,
     @Query('paymentStatus') paymentStatus?: PaymentStatus,
   ) {
-    return this.ordersService.findAllAdmin(+page, +limit, status, paymentStatus);
+    return this.ordersService.findAllAdmin(
+      +page,
+      +limit,
+      status,
+      paymentStatus,
+    );
   }
 
   @Roles('admin', 'editor')

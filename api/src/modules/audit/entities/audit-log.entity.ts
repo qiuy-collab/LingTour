@@ -30,7 +30,12 @@ export class AuditLog {
   @Column({ type: 'varchar', length: 200, name: 'resource_id', nullable: true })
   resourceId: string;
 
-  @Column({ type: 'varchar', length: 500, name: 'resource_name', nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 500,
+    name: 'resource_name',
+    nullable: true,
+  })
   resourceName: string;
 
   @Column({ type: 'jsonb', nullable: true })

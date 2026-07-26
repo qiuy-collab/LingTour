@@ -49,17 +49,22 @@ export class HomeService {
           cultureHighlights: [],
           testimonials: [],
           featuredRouteSlugs: [],
-          routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<Record<string, unknown>>,
+          routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<
+            Record<string, unknown>
+          >,
         };
         config = await this.homeConfigRepo.save(
           this.homeConfigRepo.create(partial),
         );
       }
-      const normalizedRouteRegions = this.normalizeRouteRegions(config.routeRegions);
+      const normalizedRouteRegions = this.normalizeRouteRegions(
+        config.routeRegions,
+      );
       if (
         !Array.isArray(config.routeRegions) ||
         config.routeRegions.length === 0 ||
-        JSON.stringify(normalizedRouteRegions) !== JSON.stringify(config.routeRegions)
+        JSON.stringify(normalizedRouteRegions) !==
+          JSON.stringify(config.routeRegions)
       ) {
         config.routeRegions = normalizedRouteRegions;
         config = await this.homeConfigRepo.save(config);
@@ -87,7 +92,8 @@ export class HomeService {
 
     const normalized = value
       .map((item: any, index) => {
-        if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+        if (!item || typeof item !== 'object' || Array.isArray(item))
+          return null;
 
         const key = typeof item.key === 'string' ? item.key.trim() : '';
         const title = this.normalizeI18nObject(item.title);

@@ -43,7 +43,9 @@ export class AuditQueryDto {
   @IsString()
   endDate?: string;
 
-  @ApiPropertyOptional({ description: 'Search keyword in resource name or user name' })
+  @ApiPropertyOptional({
+    description: 'Search keyword in resource name or user name',
+  })
   @IsOptional()
   @IsString()
   keyword?: string;

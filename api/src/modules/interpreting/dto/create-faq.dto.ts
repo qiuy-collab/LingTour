@@ -8,11 +8,18 @@ export class CreateFaqDto {
   @Min(0)
   sortOrder: number;
 
-  @ApiProperty({ example: { en: 'Is this a tour guide service?', zh: '这是导览服务吗？' } })
+  @ApiProperty({
+    example: { en: 'Is this a tour guide service?', zh: '这是导览服务吗？' },
+  })
   @IsI18nObject()
   question: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'It is designed as cultural interpreting...', zh: '它更接近文化解读与陪伴支持。' } })
+  @ApiProperty({
+    example: {
+      en: 'It is designed as cultural interpreting...',
+      zh: '它更接近文化解读与陪伴支持。',
+    },
+  })
   @IsI18nObject()
   answer: { en: string; zh: string };
 

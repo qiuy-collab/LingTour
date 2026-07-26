@@ -26,7 +26,10 @@ import { UpdateCollectionDto } from './dto/update-collection.dto';
 import { SetFeaturedDto } from './dto/set-featured.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Shop')
 @Controller('api/v1')

@@ -12,7 +12,7 @@ export class UpdateCommunityStatusDto {
     description:
       'pending_review = 待审, published = 已发布, hidden = 已隐藏（不删除）',
   })
-  @IsIn(COMMUNITY_POST_STATUSES as unknown as string[])
+  @IsIn(COMMUNITY_POST_STATUSES)
   status: CommunityPostStatus;
 
   @ApiPropertyOptional({

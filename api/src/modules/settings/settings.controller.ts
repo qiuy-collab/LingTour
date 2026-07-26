@@ -4,7 +4,10 @@ import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SettingsService } from './settings.service';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
-import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Settings')
 @Controller('api/v1')

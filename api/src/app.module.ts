@@ -62,10 +62,12 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     }),
 
     // Rate limiting (global default: 60 requests per minute)
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 60,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
 
     // Serve uploaded files
     ServeStaticModule.forRoot({

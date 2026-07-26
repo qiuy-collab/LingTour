@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CommunityPostReactions1737220000000
-  implements MigrationInterface
-{
+export class CommunityPostReactions1737220000000 implements MigrationInterface {
   name = 'CommunityPostReactions1737220000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

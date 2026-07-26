@@ -17,4 +17,4 @@ export interface RouteRegion {
   adcodes: number[];
 }
 
-export const DEFAULT_ROUTE_REGIONS: RouteRegion[] = regionsData as RouteRegion[];
+export const DEFAULT_ROUTE_REGIONS: RouteRegion[] = regionsData;

@@ -128,7 +128,7 @@ export class AuditService {
     const last7DaysRow = await this.auditRepo
       .createQueryBuilder('al')
       .select('COUNT(*)::int', 'count')
-      .where('al.created_at >= NOW() - INTERVAL \'7 days\'')
+      .where("al.created_at >= NOW() - INTERVAL '7 days'")
       .getRawOne();
 
     const actionBreakdown = await this.auditRepo

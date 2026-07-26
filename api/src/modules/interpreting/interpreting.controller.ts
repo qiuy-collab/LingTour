@@ -32,7 +32,10 @@ import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { AuditInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 @ApiTags('Interpreting')
 @Controller('api/v1')
@@ -146,7 +149,10 @@ export class InterpretingController {
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)
   @AuditAction('update', 'service_mode')
-  async updateMode(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateModeDto) {
+  async updateMode(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateModeDto,
+  ) {
     return this.interpretingService.updateMode(id, body);
   }
 
@@ -259,7 +265,10 @@ export class InterpretingController {
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)
   @AuditAction('update', 'faq')
-  async updateFaq(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateFaqDto) {
+  async updateFaq(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateFaqDto,
+  ) {
     return this.interpretingService.updateFaq(id, body);
   }
 

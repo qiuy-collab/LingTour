@@ -1,9 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn } from 'class-validator';
-import {
-  ORDER_STATUSES,
-  type OrderStatus,
-} from '../entities/order.entity';
+import { ORDER_STATUSES, type OrderStatus } from '../entities/order.entity';
 
 /**
  * 管理员手动改履约状态。
@@ -14,8 +11,9 @@ export class UpdateOrderStatusDto {
   @ApiProperty({
     enum: ORDER_STATUSES,
     example: 'confirmed',
-    description: '订单履约状态（pending/confirmed/shipped/delivered/cancelled）',
+    description:
+      '订单履约状态（pending/confirmed/shipped/delivered/cancelled）',
   })
-  @IsIn(ORDER_STATUSES as unknown as string[])
+  @IsIn(ORDER_STATUSES)
   status: OrderStatus;
 }

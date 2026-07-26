@@ -8,7 +8,9 @@ const DEFAULT_ROUTE_REGIONS = JSON.stringify([
       zh: '广州 / 深圳 / 佛山 / 珠海 / 中山等',
       en: 'Guangzhou / Shenzhen / Foshan / Zhuhai and beyond',
     },
-    adcodes: [440100, 440300, 440400, 440600, 440700, 441200, 441300, 441900, 442000],
+    adcodes: [
+      440100, 440300, 440400, 440600, 440700, 441200, 441300, 441900, 442000,
+    ],
   },
   {
     key: 'chaoshan-coast',

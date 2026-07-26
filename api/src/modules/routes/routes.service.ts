@@ -299,7 +299,9 @@ export class RoutesService {
       };
 
       await queryRunner.manager.update(StoryRoute, id, scalarUpdates);
-      const saved = await queryRunner.manager.findOneByOrFail(StoryRoute, { id });
+      const saved = await queryRunner.manager.findOneByOrFail(StoryRoute, {
+        id,
+      });
 
       // Replace stops
       if (dto.stops !== undefined) {

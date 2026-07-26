@@ -1,11 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsBoolean,
-  IsOptional,
-  Min,
-  IsIn,
-} from 'class-validator';
+import { IsInt, IsBoolean, IsOptional, Min, IsIn } from 'class-validator';
 import {
   IsI18nObject,
   IsI18nArray,
@@ -17,19 +11,27 @@ export class CreateModeDto {
   @Min(0)
   sortOrder: number;
 
-  @ApiProperty({ example: { en: 'City companion interpreting', zh: '城市同行口译' } })
+  @ApiProperty({
+    example: { en: 'City companion interpreting', zh: '城市同行口译' },
+  })
   @IsI18nObject()
   title: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'From RMB 680 / half day', zh: '半天 RMB 680 起' } })
+  @ApiProperty({
+    example: { en: 'From RMB 680 / half day', zh: '半天 RMB 680 起' },
+  })
   @IsI18nObject()
   price: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'Best for independent visitors', zh: '适合独立游客' } })
+  @ApiProperty({
+    example: { en: 'Best for independent visitors', zh: '适合独立游客' },
+  })
   @IsI18nObject()
   bestFor: { en: string; zh: string };
 
-  @ApiProperty({ example: { en: 'For travelers who want...', zh: '需要英语支持的旅客...' } })
+  @ApiProperty({
+    example: { en: 'For travelers who want...', zh: '需要英语支持的旅客...' },
+  })
   @IsI18nObject()
   body: { en: string; zh: string };
 

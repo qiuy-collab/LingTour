@@ -12,7 +12,9 @@ export function resolveJwtSecret(configService: ConfigService): string {
       throw new Error('JWT_SECRET must be configured in production');
     }
     if (configuredSecret === 'dev-secret') {
-      throw new Error('Refusing to use the development JWT secret in production');
+      throw new Error(
+        'Refusing to use the development JWT secret in production',
+      );
     }
   }
 
@@ -22,9 +24,7 @@ export function resolveJwtSecret(configService: ConfigService): string {
 export function resolveJwtExpiration(
   configService: ConfigService,
 ): JwtSignOptions['expiresIn'] {
-  return (
-    configService.get<string>('jwt.expiration')?.trim() ||
+  return (configService.get<string>('jwt.expiration')?.trim() ||
     process.env.JWT_EXPIRATION?.trim() ||
-    '24h'
-  ) as JwtSignOptions['expiresIn'];
+    '24h') as JwtSignOptions['expiresIn'];
 }

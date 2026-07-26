@@ -39,18 +39,10 @@ export class AddAuditLogs1751100000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_user_id;`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_resource;`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_action;`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_audit_logs_created_at;`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_user_id;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_resource;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_action;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_audit_logs_created_at;`);
     await queryRunner.query(`DROP TABLE IF EXISTS audit_logs;`);
   }
 }

@@ -36,7 +36,10 @@ import {
   COMMUNITY_POST_STATUSES,
   type CommunityPostStatus,
 } from './entities/community-post.entity';
-import { AuditInterceptor as AuditLogInterceptor, AuditAction } from '../../common/interceptors/audit.interceptor';
+import {
+  AuditInterceptor as AuditLogInterceptor,
+  AuditAction,
+} from '../../common/interceptors/audit.interceptor';
 
 interface AuthenticatedRequest extends Request {
   user?: { sub?: string; email?: string; role?: string };
@@ -121,7 +124,10 @@ export class CommunityController {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    const result = await this.uploadService.storeUploadedFile(file, 'community');
+    const result = await this.uploadService.storeUploadedFile(
+      file,
+      'community',
+    );
     return { url: result.url };
   }
 

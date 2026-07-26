@@ -68,7 +68,8 @@ function inferExtension(url: string, contentType: string | null): string {
   if (loweredType.includes('gif')) return '.gif';
   if (loweredType.includes('svg')) return '.svg';
   if (loweredType.includes('avif')) return '.avif';
-  if (loweredType.includes('jpeg') || loweredType.includes('jpg')) return '.jpg';
+  if (loweredType.includes('jpeg') || loweredType.includes('jpg'))
+    return '.jpg';
 
   try {
     const pathname = new URL(url).pathname;
@@ -102,12 +103,21 @@ async function ensureMediaTracked(
        uploaded_by = EXCLUDED.uploaded_by,
        entity_type = EXCLUDED.entity_type,
        url = EXCLUDED.url`,
-    [filename, originalName, mimeType, sizeBytes, module, buildPublicUploadUrl(filename)],
+    [
+      filename,
+      originalName,
+      mimeType,
+      sizeBytes,
+      module,
+      buildPublicUploadUrl(filename),
+    ],
   );
 }
 
 async function trackExistingUpload(uploadUrl: string, module: string) {
-  const filename = normalizeStoredRelativePath(uploadUrl.replace(/^\/uploads\//, ''));
+  const filename = normalizeStoredRelativePath(
+    uploadUrl.replace(/^\/uploads\//, ''),
+  );
   const absolutePath = join(
     process.cwd(),
     process.env.UPLOAD_DIR ?? './uploads',
@@ -120,7 +130,12 @@ async function trackExistingUpload(uploadUrl: string, module: string) {
   return buildPublicUploadUrl(filename);
 }
 
-async function importImage(url: string, module: string, hint: string, context: Context) {
+async function importImage(
+  url: string,
+  module: string,
+  hint: string,
+  context: Context,
+) {
   const safeModule = sanitizeUploadModule(module);
   if (!safeModule) {
     throw new Error(`Unsupported upload module: ${module}`);
@@ -140,7 +155,9 @@ async function importImage(url: string, module: string, hint: string, context: C
   const hash = createHash('sha1').update(url).digest('hex').slice(0, 12);
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to download ${url}: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Failed to download ${url}: ${response.status} ${response.statusText}`,
+    );
   }
 
   const contentType = response.headers.get('content-type');
@@ -180,7 +197,12 @@ async function resolveImageSet(
 ) {
   const imageSource = plan.image ?? currentImage;
   const gallerySources = plan.gallery?.length ? plan.gallery : currentGallery;
-  const nextImage = await importImage(imageSource, 'shop', `${slug}-cover`, context);
+  const nextImage = await importImage(
+    imageSource,
+    'shop',
+    `${slug}-cover`,
+    context,
+  );
 
   const resolvedGallery: string[] = [];
   for (let index = 0; index < gallerySources.length; index += 1) {
@@ -216,19 +238,14 @@ async function main() {
 
   try {
     for (const plan of PRODUCT_IMAGE_PLANS) {
-      const rows = (await AppDataSource.query(
+      const rows = await AppDataSource.query(
         `SELECT id, slug, image, gallery
            FROM store_products
           WHERE slug = $1
             AND deleted_at IS NULL
           LIMIT 1`,
         [plan.slug],
-      )) as Array<{
-        id: string;
-        slug: string;
-        image: string;
-        gallery: string[] | null;
-      }>;
+      );
 
       const product = rows[0];
       if (!product) {
@@ -236,7 +253,9 @@ async function main() {
         continue;
       }
 
-      const currentGallery = Array.isArray(product.gallery) ? product.gallery : [];
+      const currentGallery = Array.isArray(product.gallery)
+        ? product.gallery
+        : [];
       const { nextImage, nextGallery } = await resolveImageSet(
         product.slug,
         plan,
@@ -261,7 +280,9 @@ async function main() {
       }
     }
 
-    console.log(`\napply=${apply} downloads=${context.downloads} reused=${context.reused}`);
+    console.log(
+      `\napply=${apply} downloads=${context.downloads} reused=${context.reused}`,
+    );
   } finally {
     await AppDataSource.destroy();
   }

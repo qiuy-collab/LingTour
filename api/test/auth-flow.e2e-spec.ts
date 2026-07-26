@@ -111,9 +111,7 @@ describeIfDb('Auth Flow E2E', () => {
     });
 
     it('should return 401 when accessing protected endpoint without token', async () => {
-      await request(app.getHttpServer())
-        .get('/api/v1/auth/me')
-        .expect(401);
+      await request(app.getHttpServer()).get('/api/v1/auth/me').expect(401);
     });
 
     it('should return 401 when using an invalid token', async () => {

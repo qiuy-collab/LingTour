@@ -152,7 +152,11 @@ export class OrdersService {
       const pi = await this.stripe!.paymentIntents.create({
         amount: Math.round(input.depositAmount * 100),
         currency: (input.currency ?? 'sgd').toLowerCase(),
-        metadata: { orderNo: saved.orderNo, orderId: saved.id, type: 'interpreting-deposit' },
+        metadata: {
+          orderNo: saved.orderNo,
+          orderId: saved.id,
+          type: 'interpreting-deposit',
+        },
         automatic_payment_methods: { enabled: true },
       });
       stripeClientSecret = pi.client_secret!;
@@ -177,7 +181,9 @@ export class OrdersService {
    */
   async handleStripeWebhook(signature: string, rawBody: Buffer) {
     let event: any;
-    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET');
+    const webhookSecret = this.configService.get<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
 
     if (this.isStripeEnabled && webhookSecret) {
       try {
@@ -187,7 +193,9 @@ export class OrdersService {
           webhookSecret,
         );
       } catch (err) {
-        throw new BadRequestException(`Webhook signature verification failed: ${err}`);
+        throw new BadRequestException(
+          `Webhook signature verification failed: ${err}`,
+        );
       }
     } else {
       // Sandbox mode: parse raw body directly
@@ -266,7 +274,7 @@ export class OrdersService {
         if (error instanceof NotFoundException) throw error;
         if (attempt === 3) throw error;
         // Wait before retrying (exponential backoff)
-        await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
+        await new Promise((res) => setTimeout(res, 50 * Math.pow(2, attempt)));
       }
     }
     // Unreachable — the loop always returns or throws on attempt 3
@@ -297,7 +305,7 @@ export class OrdersService {
       } catch (error) {
         if (error instanceof NotFoundException) throw error;
         if (attempt === 3) throw error;
-        await new Promise(res => setTimeout(res, 50 * Math.pow(2, attempt)));
+        await new Promise((res) => setTimeout(res, 50 * Math.pow(2, attempt)));
       }
     }
     throw new Error('markPaymentFailed: exhausted retries');
@@ -394,9 +402,7 @@ export class OrdersService {
       if (!order) throw new NotFoundException(`Order ${id} not found`);
 
       if (order.paymentStatus !== 'paid') {
-        throw new BadRequestException(
-          'Only paid orders can be refunded',
-        );
+        throw new BadRequestException('Only paid orders can be refunded');
       }
 
       order.paymentStatus = 'refunded';

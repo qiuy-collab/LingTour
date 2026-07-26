@@ -85,7 +85,9 @@ function createMockRepo() {
               filtered = filtered.filter((e) => e.action === w.params.action);
             }
             if (w.params?.resource) {
-              filtered = filtered.filter((e) => e.resource === w.params.resource);
+              filtered = filtered.filter(
+                (e) => e.resource === w.params.resource,
+              );
             }
             if (w.params?.userId) {
               filtered = filtered.filter((e) => e.userId === w.params.userId);
@@ -120,9 +122,15 @@ function createMockRepo() {
                   Date.now() - new Date(e.createdAt).getTime() <
                     7 * 24 * 60 * 60 * 1000,
               );
-              return Promise.resolve({ total: store.length, count: recent.length });
+              return Promise.resolve({
+                total: store.length,
+                count: recent.length,
+              });
             }
-            return Promise.resolve({ total: store.length, count: store.length });
+            return Promise.resolve({
+              total: store.length,
+              count: store.length,
+            });
           }
           return Promise.resolve({ total: store.length, count: store.length });
         }),
@@ -397,7 +405,8 @@ describe('AuditService', () => {
     it('should mask passwordHash fields', () => {
       const input = {
         email: 'admin@test.com',
-        passwordHash: '$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ12',
+        passwordHash:
+          '$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ12',
       };
 
       const masked = AuditInterceptor.maskSensitive(input);
@@ -453,7 +462,7 @@ describe('AuditService', () => {
         { password: 'pass2', name: 'User 2' },
       ];
 
-      const masked = AuditInterceptor.maskSensitive(input as any);
+      const masked = AuditInterceptor.maskSensitive(input);
 
       expect(masked[0].password).toBe('***');
       expect(masked[0].name).toBe('User 1');

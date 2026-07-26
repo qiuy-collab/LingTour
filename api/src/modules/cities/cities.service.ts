@@ -80,7 +80,9 @@ export class CitiesService {
 
     return {
       ...city,
-      routes: routes.map((routeRow: { slug: string }) => ({ slug: routeRow.slug })),
+      routes: routes.map((routeRow: { slug: string }) => ({
+        slug: routeRow.slug,
+      })),
     };
   }
 
@@ -116,7 +118,10 @@ export class CitiesService {
        ORDER BY l.sort_order ASC`,
       [city.id],
     );
-    return { ...city, routeSlugs: routes.map((routeRow: { slug: string }) => routeRow.slug) } as City;
+    return {
+      ...city,
+      routeSlugs: routes.map((routeRow: { slug: string }) => routeRow.slug),
+    } as City;
   }
 
   async create(dto: CreateCityDto): Promise<City> {
@@ -183,7 +188,11 @@ export class CitiesService {
       }
 
       if (dto.routeSlugs?.length) {
-        await this.replaceRouteLinks(queryRunner.manager, saved.id, dto.routeSlugs);
+        await this.replaceRouteLinks(
+          queryRunner.manager,
+          saved.id,
+          dto.routeSlugs,
+        );
       }
 
       await queryRunner.commitTransaction();
@@ -222,7 +231,8 @@ export class CitiesService {
         routeSlugs: _routeSlugsFromDto,
         ...scalarUpdates
       } = dto;
-      const normalizedScalarUpdates = this.normalizeCityScalarUpdates(scalarUpdates);
+      const normalizedScalarUpdates =
+        this.normalizeCityScalarUpdates(scalarUpdates);
       await queryRunner.manager.update(City, id, normalizedScalarUpdates);
       const saved = await queryRunner.manager.findOneOrFail(City, {
         where: { id },

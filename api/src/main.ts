@@ -85,7 +85,9 @@ async function bootstrap() {
         operationsSorter: 'alpha',
       },
     });
-    logger.log(`Swagger docs at http://localhost:${configService.get<number>('PORT', 3001)}/api/docs`);
+    logger.log(
+      `Swagger docs at http://localhost:${configService.get<number>('PORT', 3001)}/api/docs`,
+    );
   }
 
   app.useGlobalPipes(
