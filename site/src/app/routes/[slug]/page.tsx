@@ -1,7 +1,11 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api-data";
+import { fetchRouteBySlugServer } from "@/lib/server-data";
 
 const SEEDED_ROUTE_SLUGS = ["southern-sea-table"];
+
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const slugSet = new Set(SEEDED_ROUTE_SLUGS);
@@ -16,6 +20,32 @@ export async function generateStaticParams() {
   }
 
   return Array.from(slugSet).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const route = await fetchRouteBySlugServer(slug);
+  if (!route) return {};
+
+  const title = `${route.title} | LingTour Guangdong`;
+  const description =
+    route.summary?.trim() ||
+    `A ${route.duration} story route through ${route.city}, guided stop by stop.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      images: route.image ? [{ url: route.image }] : undefined,
+    },
+  };
 }
 
 export default async function RouteDetailPage({

@@ -364,6 +364,17 @@ export async function fetchRoutesServer(): Promise<StoryRoute[]> {
   return res.data.map(mapRoute);
 }
 
+export async function fetchRouteBySlugServer(
+  slug: string,
+): Promise<StoryRoute | null> {
+  try {
+    const res = await serverGet<ApiStoryRoute>(`/public/routes/${slug}`, {});
+    return res?.slug ? mapRoute(res) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchCitiesServer(): Promise<Region[]> {
   const res = await serverGet<PaginatedResponse<ApiCity>>(
     "/public/cities",
@@ -404,6 +415,66 @@ export async function fetchCitiesServer(): Promise<Region[]> {
     .filter(hasVisibleRegionContent);
 }
 
+function mapCityCulture(c: ApiCity): CityCulture {
+  const cityFallbackImage =
+    c.slug === "chaozhou"
+      ? "/editorial/pottery-workshop.jpg"
+      : c.slug === "zhanjiang"
+        ? "/editorial/guangdong-coast-boat.jpg"
+        : "/editorial/guangdong-coast-rocky.jpg";
+  const primaryMedia = resolvePrimaryMedia(c.heroMedia, c.heroImage);
+  const galleryMedia = resolveMediaGallery(c.galleryMedia, c.galleryImages ?? []);
+  const gallery = [
+    ...galleryMedia.map((asset) => mediaPoster(asset)),
+    mediaPoster(primaryMedia),
+    cityFallbackImage,
+  ].filter((image): image is string => Boolean(image?.trim()));
+
+  return sanitizeCityCulture({
+    slug: c.slug,
+    name: c.name,
+    adcode: c.adcode ?? 0,
+    label: c.regionLabel,
+    summary: c.editorIntro ?? "",
+    narrative: c.heroNarrative,
+    image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
+    primaryMedia,
+    gallery,
+    galleryMedia,
+    tags: c.tags ?? [],
+    food: c.foodTitle,
+    foodDescription: c.foodDescription ?? "",
+    routeSlugs: c.routes?.map((r) => r.slug) ?? [],
+    relatedCitySlugs: c.relatedCitySlugs ?? [],
+    foodImages: c.foodImages ?? [],
+    sections:
+      c.sections?.map((s) => {
+        const sectionMedia = resolvePrimaryMedia(s.primaryMedia, s.image);
+        const media = resolveMediaGallery(s.media, s.images ?? []);
+        const images = [
+          ...media.map((asset) => mediaPoster(asset)),
+          mediaPoster(sectionMedia),
+          s.breathImage,
+          cityFallbackImage,
+        ].filter((image): image is string => Boolean(image?.trim()));
+
+        return {
+          title: s.title,
+          body: s.body,
+          image: mediaPoster(sectionMedia, images[0] || cityFallbackImage),
+          primaryMedia: sectionMedia,
+          images,
+          media,
+          stat:
+            [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
+            undefined,
+          breathImage: s.breathImage ?? mediaPoster(sectionMedia, cityFallbackImage),
+          breathQuote: s.breathQuote ?? undefined,
+        };
+      }) ?? [],
+  });
+}
+
 export async function fetchCityCulturesServer(
 ): Promise<CityCulture[]> {
   const res = await serverGet<PaginatedResponse<ApiCity>>(
@@ -411,67 +482,20 @@ export async function fetchCityCulturesServer(
     { page: 1, limit: 50 },
   );
 
-  return res.data
-    .map((c) => {
-      const cityFallbackImage =
-        c.slug === "chaozhou"
-          ? "/editorial/pottery-workshop.jpg"
-          : c.slug === "zhanjiang"
-            ? "/editorial/guangdong-coast-boat.jpg"
-            : "/editorial/guangdong-coast-rocky.jpg";
-      const primaryMedia = resolvePrimaryMedia(c.heroMedia, c.heroImage);
-      const galleryMedia = resolveMediaGallery(c.galleryMedia, c.galleryImages ?? []);
-      const gallery = [
-        ...galleryMedia.map((asset) => mediaPoster(asset)),
-        mediaPoster(primaryMedia),
-        cityFallbackImage,
-      ].filter((image): image is string => Boolean(image?.trim()));
+  return res.data.map(mapCityCulture).filter(hasVisibleCityContent);
+}
 
-      return sanitizeCityCulture({
-        slug: c.slug,
-        name: c.name,
-        adcode: c.adcode ?? 0,
-        label: c.regionLabel,
-        summary: c.editorIntro ?? "",
-        narrative: c.heroNarrative,
-        image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
-        primaryMedia,
-        gallery,
-        galleryMedia,
-        tags: c.tags ?? [],
-        food: c.foodTitle,
-        foodDescription: c.foodDescription ?? "",
-        routeSlugs: c.routes?.map((r) => r.slug) ?? [],
-        relatedCitySlugs: c.relatedCitySlugs ?? [],
-        foodImages: c.foodImages ?? [],
-        sections:
-          c.sections?.map((s) => {
-            const sectionMedia = resolvePrimaryMedia(s.primaryMedia, s.image);
-            const media = resolveMediaGallery(s.media, s.images ?? []);
-            const images = [
-              ...media.map((asset) => mediaPoster(asset)),
-              mediaPoster(sectionMedia),
-              s.breathImage,
-              cityFallbackImage,
-            ].filter((image): image is string => Boolean(image?.trim()));
-
-            return {
-              title: s.title,
-              body: s.body,
-              image: mediaPoster(sectionMedia, images[0] || cityFallbackImage),
-              primaryMedia: sectionMedia,
-              images,
-              media,
-              stat:
-                [s.statLabel, s.statValue].filter(Boolean).join(" / ") ||
-                undefined,
-              breathImage: s.breathImage ?? mediaPoster(sectionMedia, cityFallbackImage),
-              breathQuote: s.breathQuote ?? undefined,
-            };
-          }) ?? [],
-      });
-    })
-    .filter(hasVisibleCityContent);
+export async function fetchCityCultureBySlugServer(
+  slug: string,
+): Promise<CityCulture | null> {
+  try {
+    const res = await serverGet<ApiCity>(`/public/cities/${slug}`, {});
+    if (!res?.slug) return null;
+    const city = mapCityCulture(res);
+    return hasVisibleCityContent(city) ? city : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

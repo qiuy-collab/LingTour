@@ -1,7 +1,11 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { fetchCities } from "@/lib/api-data";
+import { fetchCityCultureBySlugServer } from "@/lib/server-data";
 
 const SEEDED_CITY_SLUGS = ["zhanjiang"];
+
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const slugSet = new Set(SEEDED_CITY_SLUGS);
@@ -16,6 +20,33 @@ export async function generateStaticParams() {
   }
 
   return Array.from(slugSet).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const city = await fetchCityCultureBySlugServer(slug);
+  if (!city) return {};
+
+  const title = `${city.name} | Culture & Cities | LingTour Guangdong`;
+  const description =
+    city.summary?.trim() ||
+    city.narrative?.trim() ||
+    `${city.name} in Guangdong — its food, craft, and living memory, read on the ground.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      images: city.image ? [{ url: city.image }] : undefined,
+    },
+  };
 }
 
 export default async function CityCulturePage({

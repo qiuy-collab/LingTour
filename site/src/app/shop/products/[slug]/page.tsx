@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { fetchStoreProducts } from "@/lib/api-data";
 import {
   fetchStoreProductBySlugServer,
@@ -22,6 +23,33 @@ export async function generateStaticParams() {
   }
 
   return Array.from(slugSet).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await fetchStoreProductBySlugServer(slug);
+  if (!product) return {};
+
+  const title = `${product.name} | Shop | LingTour Guangdong`;
+  const description =
+    product.story?.trim() ||
+    product.materialNotes?.trim() ||
+    `${product.name} from the ${product.collection} collection, made in Guangdong.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: product.image ? [{ url: product.image }] : undefined,
+    },
+  };
 }
 
 export default async function ProductDetailPage({
