@@ -35,26 +35,33 @@ export class UpdateHomeConfigDto {
   @ContainsOnlyMediaLibraryPaths()
   hero?: Record<string, unknown>;
 
+  // @Type(() => Object) is load-bearing on every free-form object array below.
+  // Without it, the global ValidationPipe's enableImplicitConversion turns each
+  // element into [] and the PUT silently wipes the section.
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @Type(() => Object)
   trustMetrics?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @Type(() => Object)
   @ContainsOnlyMediaLibraryPaths()
   entryCards?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @Type(() => Object)
   @ContainsOnlyMediaLibraryPaths()
   cultureHighlights?: Array<Record<string, unknown>>;
 
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
+  @Type(() => Object)
   @ContainsOnlyMediaLibraryPaths()
   testimonials?: Array<Record<string, unknown>>;
 
