@@ -526,7 +526,7 @@ export default function CommunityPage() {
                 type="button"
                 onClick={() => setActiveChannel(channel)}
                 aria-pressed={activeChannel === channel}
-                className={`min-h-10 shrink-0 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all sm:px-5 sm:text-xs ${
+                className={`min-h-11 shrink-0 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all sm:px-5 sm:text-xs ${
                   activeChannel === channel
                     ? "bg-[var(--river-deep)] text-white shadow-md"
                     : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
@@ -556,7 +556,7 @@ export default function CommunityPage() {
                   type="button"
                   onClick={() => setSortMode(mode)}
                   aria-pressed={sortMode === mode}
-                  className={`min-h-9 shrink-0 rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition active:scale-[0.97] ${
+                  className={`min-h-11 shrink-0 rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition active:scale-[0.97] ${
                     sortMode === mode
                       ? "bg-[var(--river-deep)] text-white"
                       : "text-[var(--muted)] hover:text-[var(--cinnabar)]"

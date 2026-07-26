@@ -73,7 +73,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
 
               <Link
                 href={`/shop/products/${product.slug}`}
-                className="lt-action-primary inline-flex min-h-9 shrink-0 items-center gap-2 border border-[var(--river-deep)] px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition-colors"
+                className="lt-action-primary inline-flex min-h-11 shrink-0 items-center gap-2 border border-[var(--river-deep)] px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition-colors"
               >
                 {t("common.btn.enter")}
                 <span aria-hidden>→</span>

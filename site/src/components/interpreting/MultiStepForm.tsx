@@ -549,7 +549,7 @@ function MultiStepFormInner({
             setStep(next);
             onStepChange?.(next, fastTrack);
           }}
-          className={`w-full text-left text-[14px] transition sm:w-auto ${step === 0 ? "cursor-not-allowed text-[var(--muted)]/40" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
+          className={`flex min-h-11 w-full items-center text-left text-[14px] transition sm:w-auto ${step === 0 ? "cursor-not-allowed text-[var(--muted)]/40" : "text-[var(--muted)] hover:text-[var(--ink)]"}`}
           disabled={step === 0}
         >
           {t("interpreting.flow.back")}

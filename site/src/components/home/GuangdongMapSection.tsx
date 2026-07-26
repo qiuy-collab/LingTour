@@ -411,7 +411,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 <Link
                   href={`/culture/${activeCity.slug}`}
                   aria-label={`Open ${activeCity.name} story`}
-                  className="shrink-0 text-xl leading-none text-[var(--cinnabar)] transition-transform duration-300 hover:translate-x-1"
+                  className="-my-3 -mr-3 shrink-0 py-3 pl-4 pr-3 text-xl leading-none text-[var(--cinnabar)] transition-transform duration-300 hover:translate-x-1"
                 >
                   →
                 </Link>
@@ -432,7 +432,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                     type="button"
                     aria-pressed={isActive}
                     onClick={() => activateCity(city.adcode)}
-                    className={`snap-start whitespace-nowrap border-b pb-2 text-left transition-colors ${
+                    className={`flex min-h-11 snap-start items-center whitespace-nowrap border-b pb-2 text-left transition-colors ${
                       isActive
                         ? "border-[var(--cinnabar)] text-[var(--river-deep)]"
                         : "border-[var(--line)] text-[var(--muted)]"

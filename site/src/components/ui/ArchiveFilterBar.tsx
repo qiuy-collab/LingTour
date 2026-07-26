@@ -70,7 +70,7 @@ export function ArchiveFilterBar({
             <button
               type="button"
               onClick={onClear}
-              className="inline-flex min-h-10 items-center rounded-full px-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
+              className="inline-flex min-h-11 items-center rounded-full px-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
             >
               {clearLabel}
             </button>
@@ -119,7 +119,7 @@ export function ArchiveFilterBar({
                   type="button"
                   onClick={() => group.onChange("")}
                   aria-pressed={!group.value}
-                  className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                  className={`min-h-11 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
                     !group.value
                       ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                       : "border-[var(--line)] bg-white/55 text-[var(--river-deep)] hover:border-[var(--river-deep)]"
@@ -133,7 +133,7 @@ export function ArchiveFilterBar({
                     type="button"
                     onClick={() => group.onChange(option.value)}
                     aria-pressed={group.value === option.value}
-                    className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                    className={`min-h-11 shrink-0 rounded-full border px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] transition-colors ${
                       group.value === option.value
                         ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                         : "border-[var(--line)] bg-white/55 text-[var(--river-deep)] hover:border-[var(--river-deep)]"

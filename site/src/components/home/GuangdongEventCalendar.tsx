@@ -171,7 +171,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
             <div className="flex gap-4">
               <button
                 onClick={prevMonth}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
               >
                 <svg
                   className="h-4 w-4"
@@ -189,7 +189,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
               </button>
               <button
                 onClick={nextMonth}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
               >
                 <svg
                   className="h-4 w-4"
@@ -223,7 +223,9 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
             ))}
             {weeks.flat().map((day, index) => {
               if (day === null)
-                return <div key={`empty-${index}`} className="aspect-square" />;
+                return (
+                  <div key={`empty-${index}`} className="aspect-square min-h-11" />
+                );
 
               const key = dateKey(year, month, day);
               const hasEvent = Boolean(eventsByDate[key]?.length);
@@ -234,7 +236,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                 <button
                   key={key}
                   onClick={() => setSelectedDate(key)}
-                  className={`group relative flex aspect-square flex-col items-center justify-center transition-all duration-500 ${
+                  className={`group relative flex aspect-square min-h-11 flex-col items-center justify-center transition-all duration-500 ${
                     isSelected
                       ? "text-[var(--cinnabar)]"
                       : "text-[var(--river-deep)] hover:bg-white/40"

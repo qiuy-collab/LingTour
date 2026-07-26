@@ -109,7 +109,7 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
       data-favorite-id={id}
       data-favorite-type={type}
       data-favorite-title={title}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition ${
+      className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition sm:px-4 ${
         isDark
           ? "btn-ghost-dark"
           : "border-[var(--line)] bg-white/82 text-[var(--ink)] hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
@@ -125,7 +125,9 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
           strokeLinejoin="round"
         />
       </svg>
-      <span data-favorite-label>{saved ? "Saved" : "Save"}</span>
+      <span data-favorite-label className="hidden sm:inline">
+        {saved ? "Saved" : "Save"}
+      </span>
     </button>
   );
 }

@@ -123,7 +123,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="grid h-10 w-10 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
+          className="grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
           aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}

@@ -184,7 +184,7 @@ export default function HomeClient({
             </div>
             <Link
               href="/shop"
-              className="group flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)]"
+              className="group flex min-h-11 items-center gap-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)]"
             >
               <span>{t("home.shop.exploreCollection")}</span>
               <div className="w-10 h-px bg-[var(--river-deep)]/30 transition-all group-hover:w-16 group-hover:bg-[var(--cinnabar)]" />

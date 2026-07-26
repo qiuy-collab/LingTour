@@ -39,9 +39,13 @@ export function SiteFooter() {
 
         <div className="flex flex-col gap-8">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{t("common.nav.routes")}</p>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm font-medium text-white/70">
+          <div className="grid grid-cols-2 gap-x-8 text-sm font-medium text-white/70">
             {siteNavigation.slice(1).map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-[var(--gold)]">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex min-h-11 items-center transition hover:text-[var(--gold)]"
+              >
                 {t(FOOTER_NAV_LABEL_KEY[item.href] ?? "common.nav.routes")}
               </Link>
             ))}

@@ -307,7 +307,7 @@ export function ProfilePageClient() {
               <button
                 type="button"
                 onClick={() => selectTab("settings")}
-                className="mt-5 inline-flex min-h-10 items-center gap-3 border border-white/22 px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/82 transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
+                className="mt-5 inline-flex min-h-11 items-center gap-3 border border-white/22 px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-white/82 transition-colors hover:border-[var(--gold)] hover:text-[var(--gold)]"
               >
                 {t("account.profile.edit")}
                 <span aria-hidden>→</span>
@@ -342,7 +342,7 @@ export function ProfilePageClient() {
               }}
               type="button"
               onClick={() => selectTab(tab.key)}
-              className={`min-h-10 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
+              className={`min-h-11 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
                 activeTab === tab.key
                   ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                   : "border-[var(--line)] bg-white/58 text-[var(--muted)] hover:border-[var(--river-deep)] hover:text-[var(--river-deep)]"

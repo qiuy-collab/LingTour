@@ -303,7 +303,7 @@ export function LoginPanel() {
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-1 top-1/2 min-h-10 -translate-y-1/2 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
+                className="absolute right-1 top-1/2 min-h-11 min-w-11 -translate-y-1/2 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "Hide" : "Show"}
@@ -354,7 +354,7 @@ export function LoginPanel() {
             {copy.alt}{" "}
             <button
               type="button"
-              className="font-semibold text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/35 underline-offset-4 transition hover:text-[var(--cinnabar-deep)]"
+              className="-my-3 inline-flex min-h-11 items-center px-1 font-semibold text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/35 underline-offset-4 transition hover:text-[var(--cinnabar-deep)]"
               onClick={() => switchMode(mode === "login" ? "signup" : "login")}
             >
               {copy.altLink}

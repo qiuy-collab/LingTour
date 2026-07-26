@@ -70,7 +70,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
             aria-label="Close post detail"
           >
             x
