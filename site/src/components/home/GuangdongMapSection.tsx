@@ -282,13 +282,13 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 <div className="grid grid-cols-2 gap-2 pt-1 md:pt-2">
                   <Link
                     href={`/culture/${activeCity.slug}`}
-                    className="border border-[var(--river-deep)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white md:py-3"
+                    className="grid min-h-11 place-items-center border border-[var(--river-deep)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white md:py-3"
                   >
                     Story
                   </Link>
                   <Link
                     href={`/interpreting?city=${activeCity.slug}`}
-                    className="bg-[var(--cinnabar)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)] md:py-3"
+                    className="grid min-h-11 place-items-center bg-[var(--cinnabar)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)] md:py-3"
                   >
                     Book
                   </Link>
