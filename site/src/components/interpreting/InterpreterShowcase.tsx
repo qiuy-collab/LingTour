@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { placeholderFor } from "@/lib/placeholders";
 import { Reveal } from "@/components/ui/Reveal";
 
 export type InterpreterProfile = {
@@ -63,14 +64,20 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                 ].join(" ")}
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
-                  <div
+                  <img
+                    src={profile.image || placeholderFor("portrait")}
+                    alt={`${profile.name}, LingTour interpreter`}
+                    onError={(event) => {
+                      const image = event.currentTarget;
+                      image.onerror = null;
+                      image.src = placeholderFor("portrait");
+                    }}
                     className={[
-                      "absolute inset-0 bg-cover bg-center transition-all duration-1000",
+                      "absolute inset-0 h-full w-full object-cover object-center transition-all duration-1000",
                       isSelected
                         ? "scale-105 grayscale-0"
                         : "grayscale group-hover:scale-110 group-hover:grayscale-0",
                     ].join(" ")}
-                    style={{ backgroundImage: `url(${profile.image})` }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[var(--river-deep)]/80 via-transparent to-transparent opacity-60" />
 
