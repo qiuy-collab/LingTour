@@ -46,6 +46,14 @@ export const PAYMENT_STATUSES = [
 ] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
+export type OrderItemSnapshot = {
+  productId: string;
+  productName: string;
+  productImage: string;
+  quantity: number;
+  unitPrice: number;
+};
+
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
@@ -89,6 +97,21 @@ export class Order {
   @Column({ type: 'numeric', precision: 10, scale: 2, name: 'total_amount' })
   totalAmount: number;
 
+  @Column({ type: 'jsonb', default: () => "'[]'::jsonb" })
+  items: OrderItemSnapshot[];
+
+  @Column({ type: 'numeric', precision: 10, scale: 2, default: 0 })
+  subtotal: number;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    name: 'handling_amount',
+    default: 0,
+  })
+  handlingAmount: number;
+
   @Column({
     type: 'varchar',
     length: 20,
@@ -99,6 +122,36 @@ export class Order {
 
   @Column({ type: 'varchar', length: 100, name: 'payment_id', nullable: true })
   paymentId: string | null;
+
+  @Index({ unique: true })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    name: 'stripe_payment_intent_id',
+    nullable: true,
+    unique: true,
+  })
+  stripePaymentIntentId: string | null;
+
+  @Index({ unique: true })
+  @Column({
+    type: 'uuid',
+    name: 'booking_submission_id',
+    nullable: true,
+    unique: true,
+  })
+  bookingSubmissionId: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+    name: 'order_type',
+    default: 'shop',
+  })
+  orderType: 'shop' | 'interpreting_deposit';
+
+  @Column({ type: 'varchar', length: 10, default: 'SGD' })
+  currency: string;
 
   /**
    * 支付完成时间（来自支付回调）。

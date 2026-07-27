@@ -3,13 +3,11 @@ import {
   IsString,
   IsOptional,
   IsUUID,
-  IsNumber,
   IsArray,
   ValidateNested,
   IsEmail,
   IsInt,
   Min,
-  IsPositive,
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -23,11 +21,6 @@ export class OrderItemDto {
   @IsInt()
   @Min(1)
   quantity: number;
-
-  @ApiProperty({ example: 32.0 })
-  @IsNumber()
-  @IsPositive()
-  unitPrice: number;
 }
 
 export class ShippingAddressDto {
@@ -68,15 +61,9 @@ export class ShippingAddressDto {
 }
 
 export class CreateOrderDto {
-  @ApiPropertyOptional({ description: 'User ID (null for guest)' })
-  @IsOptional()
-  @IsUUID()
-  userId?: string;
-
-  @ApiPropertyOptional({ description: 'Required for guest checkout' })
-  @IsOptional()
+  @ApiProperty({ description: 'Contact email for checkout' })
   @IsEmail()
-  guestEmail?: string;
+  guestEmail: string;
 
   @ApiProperty({ type: [OrderItemDto] })
   @IsArray()

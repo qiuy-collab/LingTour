@@ -59,11 +59,8 @@ export class OrdersController {
     @Headers('stripe-signature') signature: string,
     @Req() req: Request,
   ) {
-    const rawBody = (req as any).rawBody;
-    return this.ordersService.handleStripeWebhook(
-      signature,
-      rawBody ?? Buffer.from(JSON.stringify(req.body ?? {})),
-    );
+    const rawBody = (req as any).rawBody as Buffer | undefined;
+    return this.ordersService.handleStripeWebhook(signature, rawBody);
   }
 
   // ── Admin ──

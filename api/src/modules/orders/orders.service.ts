@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import {
@@ -15,6 +15,8 @@ import {
 import { CreateOrderDto } from './dto/create-order.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationsService } from '../notifications/notifications.service';
+import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
+import { StoreProduct } from '../shop/entities/store-product.entity';
 
 /**
  * 订单履约状态机：从 ← 到的合法迁移。
@@ -35,6 +37,8 @@ export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
+    @InjectRepository(StoreProduct)
+    private readonly productRepo: Repository<StoreProduct>,
     private readonly configService: ConfigService,
     private readonly notificationsService: NotificationsService,
   ) {
@@ -53,80 +57,167 @@ export class OrdersService {
    * 创建时强制为 status=pending / paymentStatus=unpaid。
    */
   async createOrder(dto: CreateOrderDto) {
-    if (!dto.userId && !dto.guestEmail) {
-      throw new BadRequestException('Either userId or guestEmail is required');
+    if (!dto.guestEmail) {
+      throw new BadRequestException('Contact email is required');
+    }
+    if (!dto.items.length) {
+      throw new BadRequestException('At least one order item is required');
     }
 
-    const totalAmount = dto.items.reduce(
-      (sum, item) => sum + item.quantity * item.unitPrice,
-      0,
-    );
+    const quantities = new Map<string, number>();
+    for (const item of dto.items) {
+      quantities.set(
+        item.productId,
+        (quantities.get(item.productId) ?? 0) + item.quantity,
+      );
+    }
 
-    const order = this.orderRepo.create({
-      orderNo: this.generateOrderNo(),
-      userId: dto.userId ?? null,
-      guestEmail: dto.guestEmail ?? null,
-      status: 'pending',
-      paymentStatus: 'unpaid',
-      totalAmount,
-      paymentMethod: dto.paymentMethod ?? 'stripe',
-      shippingAddr: dto.shippingAddress as unknown as Record<string, any>,
+    const products = await this.productRepo.find({
+      where: {
+        id: In([...quantities.keys()]),
+        published: true,
+      },
+    });
+    if (products.length !== quantities.size) {
+      throw new BadRequestException('One or more products are unavailable');
+    }
+
+    const currencies = new Set(products.map((product) => product.currency));
+    if (currencies.size !== 1) {
+      throw new BadRequestException('All order items must use one currency');
+    }
+    const currency = [...currencies][0].toUpperCase();
+    const items = products.map((product) => {
+      const quantity = quantities.get(product.id)!;
+      if (product.stock < quantity) {
+        throw new BadRequestException(
+          `Insufficient stock for product "${product.slug}"`,
+        );
+      }
+      return {
+        productId: product.id,
+        productName: product.name.en || product.name.zh,
+        productImage: product.image,
+        quantity,
+        unitPrice: Number(product.price),
+      };
     });
 
-    const saved = await this.orderRepo.save(order);
+    const subtotalCents = items.reduce(
+      (sum, item) => sum + Math.round(item.unitPrice * 100) * item.quantity,
+      0,
+    );
+    const handlingCents = Math.max(800, Math.round(subtotalCents * 0.06));
+    const totalCents = subtotalCents + handlingCents;
+
+    const checkout = await this.orderRepo.manager.transaction(
+      async (manager) => {
+        const order = manager.create(Order, {
+          orderNo: this.generateOrderNo(),
+          userId: null,
+          guestEmail: dto.guestEmail,
+          status: 'pending',
+          paymentStatus: 'unpaid',
+          items,
+          subtotal: subtotalCents / 100,
+          handlingAmount: handlingCents / 100,
+          totalAmount: totalCents / 100,
+          currency,
+          orderType: 'shop',
+          paymentMethod: dto.paymentMethod ?? 'stripe',
+          shippingAddr: dto.shippingAddress as unknown as Record<string, any>,
+        });
+        const saved = await manager.save(Order, order);
+
+        let stripeClientSecret: string;
+        if (this.isStripeEnabled) {
+          const paymentIntent = await this.stripe!.paymentIntents.create(
+            {
+              amount: totalCents,
+              currency: currency.toLowerCase(),
+              metadata: {
+                orderNo: saved.orderNo,
+                orderId: saved.id,
+                type: 'shop',
+              },
+              automatic_payment_methods: { enabled: true },
+            },
+            { idempotencyKey: `shop-order:${saved.id}` },
+          );
+          if (!paymentIntent.client_secret) {
+            throw new BadRequestException(
+              'Stripe checkout could not be created',
+            );
+          }
+          saved.stripePaymentIntentId = paymentIntent.id;
+          await manager.save(Order, saved);
+          stripeClientSecret = paymentIntent.client_secret;
+        } else {
+          stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
+        }
+
+        return { saved, stripeClientSecret };
+      },
+    );
 
     await this.notificationsService.notifyStaff({
       type: 'order',
-      title: `新订单 ${saved.orderNo}`,
-      body: `金额 S$${Number(saved.totalAmount).toFixed(2)}，请及时确认付款与履约信息。`,
+      title: `新订单 ${checkout.saved.orderNo}`,
+      body: `金额 ${currency} ${Number(checkout.saved.totalAmount).toFixed(2)}，请及时确认付款与履约信息。`,
       resourceType: 'order',
-      resourceId: saved.id,
-      link: `/admin/orders/${saved.id}`,
+      resourceId: checkout.saved.id,
+      link: `/admin/orders/${checkout.saved.id}`,
     });
 
-    // Create Stripe PaymentIntent if configured, otherwise sandbox
-    let stripeClientSecret: string;
-    if (this.isStripeEnabled) {
-      const pi = await this.stripe!.paymentIntents.create({
-        amount: Math.round(totalAmount * 100), // cents
-        currency: 'sgd',
-        metadata: { orderNo: saved.orderNo, orderId: saved.id },
-        automatic_payment_methods: { enabled: true },
-      });
-      stripeClientSecret = pi.client_secret!;
-    } else {
-      stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
-    }
-
     return {
-      orderId: saved.id,
-      orderNo: saved.orderNo,
-      totalAmount: saved.totalAmount,
-      status: saved.status,
-      paymentStatus: saved.paymentStatus,
-      stripeClientSecret,
+      orderId: checkout.saved.id,
+      orderNo: checkout.saved.orderNo,
+      subtotal: checkout.saved.subtotal,
+      handlingAmount: checkout.saved.handlingAmount,
+      totalAmount: checkout.saved.totalAmount,
+      currency,
+      status: checkout.saved.status,
+      paymentStatus: checkout.saved.paymentStatus,
+      stripeClientSecret: checkout.stripeClientSecret,
     };
   }
 
-  async createInterpretingDeposit(input: {
-    name: string;
-    contact: string;
-    city: string;
-    serviceDate: string;
-    supportMode: string;
-    groupSize?: string | null;
-    routeOrNeed?: string | null;
-    depositAmount: number;
-    currency?: string;
-  }) {
-    const order = this.orderRepo.create({
+  async createInterpretingDeposit(
+    input: {
+      bookingSubmissionId: string;
+      name: string;
+      contact: string;
+      city: string;
+      serviceDate: string;
+      supportMode: string;
+      groupSize?: string | null;
+      routeOrNeed?: string | null;
+      depositAmount: number;
+      currency?: string;
+    },
+    manager: EntityManager,
+  ) {
+    const webhookSecret = this.configService.get<string>(
+      'STRIPE_WEBHOOK_SECRET',
+    );
+    if (!this.isStripeEnabled || !webhookSecret) {
+      throw new BadRequestException(
+        'Deposit payment is temporarily unavailable',
+      );
+    }
+
+    const currency = (input.currency ?? 'SGD').toUpperCase();
+    const order = manager.create(Order, {
       orderNo: this.generateOrderNo(),
       userId: null,
       guestEmail: this.deriveGuestEmail(input.contact),
       status: 'pending',
       paymentStatus: 'unpaid',
       totalAmount: input.depositAmount,
-      paymentMethod: 'deposit',
+      paymentMethod: 'stripe',
+      bookingSubmissionId: input.bookingSubmissionId,
+      orderType: 'interpreting_deposit',
+      currency,
       shippingAddr: {
         recipientName: input.name,
         street: 'Interpreting deposit request',
@@ -139,102 +230,177 @@ export class OrdersService {
         supportMode: input.supportMode,
         groupSize: input.groupSize ?? '',
         routeOrNeed: input.routeOrNeed ?? '',
-        currency: input.currency ?? 'SGD',
+        currency,
         serviceType: 'interpreting-deposit',
       },
     });
 
-    const saved = await this.orderRepo.save(order);
-
-    // Create Stripe PaymentIntent if configured, otherwise sandbox
-    let stripeClientSecret: string;
-    if (this.isStripeEnabled) {
-      const pi = await this.stripe!.paymentIntents.create({
+    const saved = await manager.save(Order, order);
+    const pi = await this.stripe!.paymentIntents.create(
+      {
         amount: Math.round(input.depositAmount * 100),
-        currency: (input.currency ?? 'sgd').toLowerCase(),
+        currency: currency.toLowerCase(),
         metadata: {
           orderNo: saved.orderNo,
           orderId: saved.id,
+          bookingSubmissionId: input.bookingSubmissionId,
           type: 'interpreting-deposit',
         },
         automatic_payment_methods: { enabled: true },
-      });
-      stripeClientSecret = pi.client_secret!;
-    } else {
-      stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
+      },
+      { idempotencyKey: `interpreting-deposit:${saved.id}` },
+    );
+
+    if (!pi.client_secret) {
+      throw new BadRequestException('Stripe checkout could not be created');
     }
+
+    saved.stripePaymentIntentId = pi.id;
+    await manager.save(Order, saved);
 
     return {
       orderId: saved.id,
       orderNo: saved.orderNo,
       totalAmount: saved.totalAmount,
-      currency: input.currency ?? 'SGD',
+      currency,
       status: saved.status,
       paymentStatus: saved.paymentStatus,
-      stripeClientSecret,
+      stripeClientSecret: pi.client_secret,
     };
   }
 
   /**
-   * Stripe webhook 回调入口。
-   * 当 STRIPE_WEBHOOK_SECRET 配置时验证签名，否则直接解析 body。
+   * Stripe webhook callback. Payment state changes require both configured
+   * Stripe credentials and a valid signature over the original raw body.
    */
-  async handleStripeWebhook(signature: string, rawBody: Buffer) {
-    let event: any;
+  async handleStripeWebhook(signature: string, rawBody?: Buffer) {
     const webhookSecret = this.configService.get<string>(
       'STRIPE_WEBHOOK_SECRET',
     );
+    if (!this.isStripeEnabled || !webhookSecret || !signature || !rawBody) {
+      throw new BadRequestException('Stripe webhook is not configured');
+    }
 
-    if (this.isStripeEnabled && webhookSecret) {
-      try {
-        event = this.stripe!.webhooks.constructEvent(
-          rawBody,
-          signature,
-          webhookSecret,
-        );
-      } catch (err) {
-        throw new BadRequestException(
-          `Webhook signature verification failed: ${err}`,
-        );
-      }
+    let event: Stripe.Event;
+    try {
+      event = this.stripe!.webhooks.constructEvent(
+        rawBody,
+        signature,
+        webhookSecret,
+      );
+    } catch (err) {
+      throw new BadRequestException(
+        `Webhook signature verification failed: ${err}`,
+      );
+    }
+
+    if (
+      event.type !== 'payment_intent.succeeded' &&
+      event.type !== 'payment_intent.payment_failed'
+    ) {
+      return { received: true, event: event.type, status: 'acknowledged' };
+    }
+
+    const paymentIntent = event.data.object as Stripe.PaymentIntent;
+    const order = await this.orderRepo.findOne({
+      where: { stripePaymentIntentId: paymentIntent.id },
+    });
+    if (!order) {
+      throw new NotFoundException('PaymentIntent is not linked to an order');
+    }
+
+    this.verifyPaymentIntent(order, paymentIntent);
+
+    if (event.type === 'payment_intent.succeeded') {
+      await this.markVerifiedPaymentPaid(paymentIntent);
     } else {
-      // Sandbox mode: parse raw body directly
-      try {
-        event = JSON.parse(rawBody.toString());
-      } catch {
-        event = { type: 'unknown', data: {} };
+      await this.markPaymentFailed(
+        order.orderNo,
+        paymentIntent.last_payment_error?.message ?? 'Payment failed',
+      );
+    }
+
+    return {
+      received: true,
+      event: event.type,
+      status: 'processed',
+      orderNo: order.orderNo,
+    };
+  }
+
+  private verifyPaymentIntent(
+    order: Order,
+    paymentIntent: Stripe.PaymentIntent,
+  ): void {
+    const expectedAmount = Math.round(Number(order.totalAmount) * 100);
+    const receivedAmount = paymentIntent.amount_received || paymentIntent.amount;
+    const expectedCurrency = order.currency.toLowerCase();
+
+    if (
+      paymentIntent.metadata.orderId !== order.id ||
+      paymentIntent.metadata.orderNo !== order.orderNo
+    ) {
+      throw new BadRequestException('PaymentIntent metadata does not match order');
+    }
+    if (
+      order.orderType === 'interpreting_deposit' &&
+      (!order.bookingSubmissionId ||
+        paymentIntent.metadata.type !== 'interpreting-deposit' ||
+        paymentIntent.metadata.bookingSubmissionId !== order.bookingSubmissionId)
+    ) {
+      throw new BadRequestException(
+        'PaymentIntent metadata does not match interpreting booking',
+      );
+    }
+    if (receivedAmount !== expectedAmount) {
+      throw new BadRequestException('PaymentIntent amount does not match order');
+    }
+    if (paymentIntent.currency.toLowerCase() !== expectedCurrency) {
+      throw new BadRequestException('PaymentIntent currency does not match order');
+    }
+  }
+
+  private async markVerifiedPaymentPaid(
+    paymentIntent: Stripe.PaymentIntent,
+  ): Promise<Order> {
+    return this.orderRepo.manager.transaction(async (manager) => {
+      const order = await manager.findOne(Order, {
+        where: { stripePaymentIntentId: paymentIntent.id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!order) {
+        throw new NotFoundException('PaymentIntent is not linked to an order');
       }
-    }
 
-    const eventType = event.type ?? 'unknown';
-    const data = event?.data?.object ?? {};
-    const orderNo: string | undefined =
-      data.metadata?.orderNo ?? data.metadata?.order_no;
-    const paymentId: string | undefined = data.id;
+      this.verifyPaymentIntent(order, paymentIntent);
+      if (order.paymentStatus !== 'paid') {
+        order.paymentStatus = 'paid';
+        order.paymentId = paymentIntent.id;
+        order.paidAt = new Date();
+        order.paymentFailureReason = null;
+        if (order.status === 'pending') order.status = 'confirmed';
+        await manager.save(Order, order);
+      }
 
-    if (eventType === 'payment_intent.succeeded' && orderNo) {
-      await this.markPaid(orderNo, paymentId ?? `sandbox_${uuidv4()}`);
-      return {
-        received: true,
-        event: eventType,
-        status: 'processed',
-        orderNo,
-      };
-    }
+      if (order.orderType === 'interpreting_deposit') {
+        if (!order.bookingSubmissionId) {
+          throw new BadRequestException('Deposit order is not linked to a booking');
+        }
+        const booking = await manager.findOne(BookingSubmission, {
+          where: { id: order.bookingSubmissionId },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!booking) {
+          throw new NotFoundException('Deposit booking is not linked to an order');
+        }
+        if (booking.status === 'deposit_pending') {
+          booking.status = 'deposit_paid';
+          await manager.save(BookingSubmission, booking);
+        }
+      }
 
-    if (eventType === 'payment_intent.payment_failed' && orderNo) {
-      const reason: string | undefined =
-        data.last_payment_error?.message ?? 'Payment failed';
-      await this.markPaymentFailed(orderNo, reason);
-      return {
-        received: true,
-        event: eventType,
-        status: 'processed',
-        orderNo,
-      };
-    }
-
-    return { received: true, event: eventType, status: 'acknowledged' };
+      return order;
+    });
   }
 
   /**
@@ -294,8 +460,12 @@ export class OrdersService {
             throw new NotFoundException(`Order "${orderNo}" not found`);
           }
 
-          if (order.paymentStatus === 'failed') {
-            return order; // Idempotent
+          if (
+            order.paymentStatus === 'failed' ||
+            order.paymentStatus === 'paid' ||
+            order.paymentStatus === 'refunded'
+          ) {
+            return order;
           }
 
           order.paymentStatus = 'failed';

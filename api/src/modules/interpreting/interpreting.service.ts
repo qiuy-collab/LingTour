@@ -39,7 +39,7 @@ export class InterpretingService {
 
     return {
       service_modes: serviceModes,
-      profiles: profiles.filter((profile) => Boolean(profile.avatar?.trim())),
+      profiles,
       faqs,
     };
   }
@@ -335,61 +335,53 @@ export class InterpretingService {
 
   async submitBookingWithDeposit(dto: CreateBookingDto) {
     const depositAmount = this.calculateDepositAmount(dto);
-    const booking = this.bookingRepo.create({
-      name: dto.name,
-      contact: dto.contact,
-      city: dto.city,
-      serviceDate: dto.serviceDate,
-      supportMode: dto.supportMode,
-      groupSize: dto.groupSize ?? null,
-      routeOrNeed: dto.routeOrNeed ?? null,
-      status: 'deposit_pending',
+    const checkout = await this.dataSource.transaction(async (manager) => {
+      const booking = manager.create(BookingSubmission, {
+        name: dto.name,
+        contact: dto.contact,
+        city: dto.city,
+        serviceDate: dto.serviceDate,
+        supportMode: dto.supportMode,
+        groupSize: dto.groupSize ?? null,
+        routeOrNeed: dto.routeOrNeed ?? null,
+        status: 'deposit_pending',
+      });
+      const saved = await manager.save(BookingSubmission, booking);
+      const depositOrder = await this.ordersService.createInterpretingDeposit(
+        {
+          bookingSubmissionId: saved.id,
+          name: dto.name,
+          contact: dto.contact,
+          city: dto.city,
+          serviceDate: dto.serviceDate,
+          supportMode: dto.supportMode,
+          groupSize: dto.groupSize ?? null,
+          routeOrNeed: dto.routeOrNeed ?? null,
+          depositAmount,
+          currency: 'SGD',
+        },
+        manager,
+      );
+
+      return { booking: saved, depositOrder };
     });
 
-    const saved = await this.bookingRepo.save(booking);
-    await this.notifyNewBooking(saved.id, dto);
-    const depositOrder = await this.ordersService.createInterpretingDeposit({
-      name: dto.name,
-      contact: dto.contact,
-      city: dto.city,
-      serviceDate: dto.serviceDate,
-      supportMode: dto.supportMode,
-      groupSize: dto.groupSize ?? null,
-      routeOrNeed: dto.routeOrNeed ?? null,
-      depositAmount,
-      currency: 'SGD',
-    });
+    await this.notifyNewBooking(checkout.booking.id, dto);
 
     return {
-      bookingId: saved.id,
-      created_at: saved.createdAt,
-      status: saved.status,
+      bookingId: checkout.booking.id,
+      created_at: checkout.booking.createdAt,
+      status: checkout.booking.status,
       message:
         'Booking request received. Secure the interpreter slot with the deposit below.',
       deposit: {
-        orderNo: depositOrder.orderNo,
-        amount: depositOrder.totalAmount,
-        currency: depositOrder.currency,
-        status: depositOrder.status,
+        orderNo: checkout.depositOrder.orderNo,
+        amount: checkout.depositOrder.totalAmount,
+        currency: checkout.depositOrder.currency,
+        status: checkout.depositOrder.status,
         paymentLabel: this.describeDeposit(dto),
-        stripeClientSecret: depositOrder.stripeClientSecret,
+        stripeClientSecret: checkout.depositOrder.stripeClientSecret,
       },
-    };
-  }
-
-  async confirmBookingDeposit(id: string, orderNo: string, paymentId: string) {
-    const booking = await this.findBookingByIdAdmin(id);
-    const paidOrder = await this.ordersService.confirmOrder(orderNo, paymentId);
-    booking.status = 'deposit_paid';
-    const saved = await this.bookingRepo.save(booking);
-
-    return {
-      bookingId: saved.id,
-      bookingStatus: saved.status,
-      orderNo: paidOrder.orderNo,
-      paymentId: paidOrder.paymentId,
-      message:
-        'Deposit paid. Your interpreter request is now in the matching queue.',
     };
   }
 

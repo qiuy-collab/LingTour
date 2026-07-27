@@ -23,7 +23,6 @@ import { SetProfilesDto } from './dto/set-profiles.dto';
 import { SetFaqsDto } from './dto/set-faqs.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
-import { ConfirmBookingDepositDto } from './dto/confirm-booking-deposit.dto';
 import { CreateModeDto } from './dto/create-mode.dto';
 import { UpdateModeDto } from './dto/update-mode.dto';
 import { CreateProfileDto } from './dto/create-profile.dto';
@@ -65,20 +64,6 @@ export class InterpretingController {
   })
   async submitBookingWithDeposit(@Body() dto: CreateBookingDto) {
     return this.interpretingService.submitBookingWithDeposit(dto);
-  }
-
-  @Public()
-  @Post('public/bookings/:id/confirm-deposit')
-  @ApiOperation({ summary: 'Confirm interpreting booking deposit payment' })
-  async confirmBookingDeposit(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: ConfirmBookingDepositDto,
-  ) {
-    return this.interpretingService.confirmBookingDeposit(
-      id,
-      dto.orderNo,
-      dto.paymentId,
-    );
   }
 
   // ── Admin: Config ──
