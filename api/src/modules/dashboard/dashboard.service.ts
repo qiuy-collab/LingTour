@@ -17,7 +17,7 @@ export class DashboardService {
       pendingBookings,
       pendingOrders,
     ] = await Promise.all([
-      this.countTable('users'),
+      this.countTable('users', "role = 'traveler'"),
       this.countTable('cities', 'published = true'),
       this.countTable('story_routes', 'published = true'),
       this.countTable('store_products', 'published = true'),
