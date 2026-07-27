@@ -549,23 +549,6 @@ export async function createInterpretingDepositCheckout(
   );
 }
 
-export async function confirmInterpretingDeposit(
-  bookingId: string,
-  orderNo: string,
-  paymentId: string,
-): Promise<{
-  bookingId: string;
-  bookingStatus: string;
-  orderNo: string;
-  paymentId: string;
-  message: string;
-}> {
-  return apiPost(`/public/bookings/${bookingId}/confirm-deposit`, {
-    orderNo,
-    paymentId,
-  });
-}
-
 export async function fetchTravelerInterpretingBookings(): Promise<
   TravelerInterpretingBooking[]
 > {

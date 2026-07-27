@@ -4,10 +4,10 @@ import { memo, useEffect, useRef, useState } from "react";
 
 import {
   createInterpretingDepositCheckout,
-  confirmInterpretingDeposit,
   fetchCities,
   type InterpretingDepositCheckout,
 } from "@/lib/api-data";
+import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
 import { formatCurrency } from "@/lib/region-currency";
 import { useLocale } from "@/lib/locale-context";
 
@@ -63,7 +63,6 @@ function MultiStepFormInner({
   });
   const [depositSession, setDepositSession] = useState<InterpretingDepositCheckout | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
@@ -164,31 +163,6 @@ function MultiStepFormInner({
     }
   };
 
-  const payDepositNow = async () => {
-    if (!depositSession || paymentProcessing) return;
-
-    setPaymentProcessing(true);
-    setErrorMessage("");
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      await confirmInterpretingDeposit(
-        depositSession.bookingId,
-        depositSession.deposit.orderNo,
-        `pi_sandbox_${depositSession.deposit.orderNo}_paid`,
-      );
-      handleSubmit();
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not confirm the deposit payment.",
-      );
-    } finally {
-      setPaymentProcessing(false);
-    }
-  };
-
   const daysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
@@ -232,15 +206,15 @@ function MultiStepFormInner({
           </svg>
         </div>
         <h3 className="mt-6 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] sm:text-3xl">
-          Deposit received
+          Payment submitted
         </h3>
         <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
           {fastTrack
-            ? "Your Fast Track request and deposit are in. We will reply within 12 hours with the quickest next-step plan."
-            : "Your booking request and deposit are in. We will match the right interpreter and reply within 24 hours with the next step."}
+            ? "Your Fast Track payment was submitted securely. We will confirm the deposit after Stripe verification and reply within 12 hours."
+            : "Your payment was submitted securely. We will confirm the deposit after Stripe verification and reply within 24 hours."}
         </p>
         <p className="mt-6 text-label text-[var(--gold)]">
-          Slot secured. We will be in touch soon.
+          Payment pending Stripe verification.
         </p>
       </div>
     );
@@ -508,17 +482,13 @@ function MultiStepFormInner({
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-sm border border-[var(--line)] bg-[var(--paper)]/72 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">{t("interpreting.flow.cardEnding")}</p>
-                      <p className="mt-1 text-[15px] text-[var(--ink)]">Visa •••• 4242</p>
-                    </div>
-                    <div className="flex gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)]">
-                      <span className="rounded-full border border-[var(--line)] bg-white px-3 py-1">Visa</span>
-                      <span className="rounded-full border border-[var(--line)] bg-white px-3 py-1">MC</span>
-                    </div>
-                  </div>
+                <div className="mt-5">
+                  <StripePaymentForm
+                    clientSecret={depositSession.deposit.stripeClientSecret}
+                    orderNo={depositSession.deposit.orderNo}
+                    onSuccess={handleSubmit}
+                    onError={setErrorMessage}
+                  />
                 </div>
               </div>
             ) : (
@@ -545,18 +515,15 @@ function MultiStepFormInner({
         </button>
 
         {((fastTrack && step === 1) || (!fastTrack && step === 3)) ? (
-          <button
-            type="button"
-            onClick={payDepositNow}
-            disabled={!depositSession || paymentProcessing}
-            className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
-              depositSession && !paymentProcessing
-                ? "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
-                : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
-            }`}
-          >
-            {paymentProcessing ? t("interpreting.flow.processingDeposit") : t("interpreting.flow.payDeposit")}
-          </button>
+          depositSession ? null : (
+            <button
+              type="button"
+              disabled
+              className="w-full cursor-not-allowed rounded-full bg-[var(--line)] px-6 py-3 text-[14px] font-semibold text-[var(--muted)] sm:w-auto"
+            >
+              {t("interpreting.flow.payDeposit")}
+            </button>
+          )
         ) : fastTrack ? (
           <button
             type="button"

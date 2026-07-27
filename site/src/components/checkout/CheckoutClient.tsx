@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiPost } from "@/lib/api-client";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
-import { readStoredUser, type LocalUser } from "@/lib/auth-client";
+import { readStoredUser } from "@/lib/auth-client";
 import { readCart } from "@/lib/cart";
 import { formatCurrency } from "@/lib/region-currency";
 import { countryName } from "@/lib/country-list";
@@ -81,12 +81,10 @@ export function CheckoutClient() {
   const [error, setError] = useState<string | null>(null);
   const [orderResult, setOrderResult] = useState<CheckoutResponse | null>(null);
   const [paymentComplete, setPaymentComplete] = useState(false);
-  const [user, setUser] = useState<LocalUser | null>(null);
   const [form, setForm] = useState<CheckoutForm>(INITIAL_FORM);
 
   useEffect(() => {
     const storedUser = readStoredUser();
-    setUser(storedUser);
     if (storedUser) {
       const displayCountry = countryName(storedUser.country);
       setForm((current) => ({
@@ -237,12 +235,10 @@ export function CheckoutClient() {
 
     try {
       const payload = {
-        userId: user?.id || undefined,
-        guestEmail: user?.id ? undefined : form.email.trim(),
+        guestEmail: form.email.trim(),
         items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
-          unitPrice: item.price,
         })),
         shippingAddress: {
           recipientName: form.recipientName.trim(),

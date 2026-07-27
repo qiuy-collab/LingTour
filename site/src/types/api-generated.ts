@@ -561,23 +561,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/public/bookings/{id}/confirm-deposit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Confirm interpreting booking deposit payment */
-        post: operations["InterpretingController_confirmBookingDeposit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/interpreting": {
         parameters: {
             query?: never;
@@ -1712,12 +1695,6 @@ export interface components {
              */
             fastTrack: boolean;
         };
-        ConfirmBookingDepositDto: {
-            /** @example LTABC1234 */
-            orderNo: string;
-            /** @example pi_mock_LTABC1234_paid_001 */
-            paymentId: string;
-        };
         ServiceModeItemDto: {
             /** @example 0 */
             sortOrder: number;
@@ -1818,15 +1795,13 @@ export interface components {
              * @example contacted
              * @enum {string}
              */
-            status: "new" | "read" | "contacted" | "confirmed" | "cancelled";
+            status: "new" | "read" | "contacted" | "confirmed" | "completed" | "cancelled";
         };
         OrderItemDto: {
             /** @example uuid-of-product */
             productId: string;
             /** @example 1 */
             quantity: number;
-            /** @example 32 */
-            unitPrice: number;
         };
         ShippingAddressDto: {
             /** @example John Smith */
@@ -1845,10 +1820,8 @@ export interface components {
             phone?: string;
         };
         CreateOrderDto: {
-            /** @description User ID (null for guest) */
-            userId?: string;
-            /** @description Required for guest checkout */
-            guestEmail?: string;
+            /** @description Contact email for checkout */
+            guestEmail: string;
             items: components["schemas"]["OrderItemDto"][];
             shippingAddress: components["schemas"]["ShippingAddressDto"];
             /** @default stripe */
@@ -2812,29 +2785,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CreateBookingDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    InterpretingController_confirmBookingDeposit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConfirmBookingDepositDto"];
             };
         };
         responses: {
