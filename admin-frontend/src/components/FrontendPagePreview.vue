@@ -61,6 +61,7 @@ const frameReloadKey = ref(0);
 let postTimer: ReturnType<typeof setTimeout> | null = null;
 let loadTimeout: ReturnType<typeof setTimeout> | null = null;
 let resizeObserver: ResizeObserver | null = null;
+let popupWindow: Window | null = null;
 let burstTimers: Array<ReturnType<typeof setTimeout>> = [];
 
 const shellWidth = ref(0);
@@ -351,24 +352,28 @@ const scaledFrameHeight = computed(() =>
   Math.round(desktopHeight.value * previewScale.value),
 );
 
+function createPreviewEnvelope() {
+  return {
+    channel: "lingtour-preview" as const,
+    key: previewKey.value,
+    type: props.type,
+    locale: editorLocale.value,
+    source: previewSource,
+    data: previewPayload.value,
+    timestamp: Date.now(),
+  };
+}
+
+function postPreviewTo(target: Window | null) {
+  if (!target || target.closed) return;
+  target.postMessage(createPreviewEnvelope(), previewOrigin);
+}
+
 function postPreview() {
-  if (!iframeLoaded.value) return;
-
-  const frame = iframeRef.value?.contentWindow;
-  if (!frame) return;
-
-  frame.postMessage(
-    {
-      channel: "lingtour-preview",
-      key: previewKey.value,
-      type: props.type,
-      locale: editorLocale.value,
-      source: previewSource,
-      data: previewPayload.value,
-      timestamp: Date.now(),
-    },
-    previewOrigin,
-  );
+  if (iframeLoaded.value) {
+    postPreviewTo(iframeRef.value?.contentWindow ?? null);
+  }
+  postPreviewTo(popupWindow);
 }
 
 function postPreviewBurst() {
@@ -389,6 +394,24 @@ function schedulePostPreview() {
   postTimer = setTimeout(() => {
     postPreviewBurst();
   }, 180);
+}
+
+function handlePreviewMessage(event: MessageEvent) {
+  if (event.origin !== previewOrigin || event.source !== popupWindow) return;
+  const payload = event.data as Record<string, unknown> | undefined;
+  if (!payload || payload.channel !== "lingtour-preview-ready") return;
+  if (payload.key !== previewKey.value || payload.type !== props.type) return;
+  postPreviewTo(popupWindow);
+}
+
+function openPreviewWindow() {
+  const popup = window.open(
+    iframeSrcWithReload.value,
+    `lingtour-preview-${previewSessionId}`,
+  );
+  if (!popup) return;
+  popupWindow = popup;
+  popup.focus();
 }
 
 function startLoadTimeout() {
@@ -427,7 +450,11 @@ watch(iframeSrc, () => {
 });
 
 onMounted(() => {
-  if (!frameShellRef.value || typeof ResizeObserver === "undefined") return;
+  window.addEventListener("message", handlePreviewMessage);
+  if (!frameShellRef.value || typeof ResizeObserver === "undefined") {
+    startLoadTimeout();
+    return;
+  }
 
   shellWidth.value = frameShellRef.value.clientWidth;
   resizeObserver = new ResizeObserver((entries) => {
@@ -440,6 +467,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("message", handlePreviewMessage);
   if (postTimer) clearTimeout(postTimer);
   if (loadTimeout) clearTimeout(loadTimeout);
   burstTimers.forEach((timer) => clearTimeout(timer));
@@ -456,9 +484,9 @@ onBeforeUnmount(() => {
       </div>
       <div class="toolbar-actions">
         <span class="toolbar-locale-hint">未保存内容会实时同步</span>
-        <a :href="iframeSrcWithReload" target="_blank" rel="noreferrer"
-          >打开新窗口</a
-        >
+        <button type="button" class="preview-window-link" @click="openPreviewWindow">
+          打开新窗口
+        </button>
       </div>
     </div>
 
@@ -544,10 +572,18 @@ onBeforeUnmount(() => {
   color: var(--lt-text-secondary);
 }
 
-.toolbar-actions a {
+.preview-window-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: var(--lt-primary);
+  font: inherit;
   font-size: 12px;
-  text-decoration: none;
+  cursor: pointer;
+}
+
+.preview-window-link:hover {
+  text-decoration: underline;
 }
 
 .preview-frame-shell {

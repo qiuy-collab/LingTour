@@ -22,6 +22,12 @@ type PreviewEnvelope<T> = {
   timestamp: number;
 };
 
+type PreviewReadyEnvelope = {
+  channel: "lingtour-preview-ready";
+  key: string;
+  type: PreviewType;
+};
+
 const STORAGE_PREFIX = "lingtour-preview:";
 
 
@@ -86,7 +92,19 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
       setPreviewData(stored.data);
     }
 
+    const trustedSender =
+      window.parent !== window ? window.parent : window.opener;
+    if (trustedSender && previewSource) {
+      const ready: PreviewReadyEnvelope = {
+        channel: "lingtour-preview-ready",
+        key: previewKey,
+        type: expectedType,
+      };
+      trustedSender.postMessage(ready, previewSource);
+    }
+
     const handleMessage = (event: MessageEvent) => {
+      if (!trustedSender || event.source !== trustedSender) return;
       const payload = event.data as PreviewEnvelope<T> | undefined;
       if (!payload || payload.channel !== "lingtour-preview") return;
       if (payload.type !== expectedType || payload.key !== previewKey) return;
