@@ -484,7 +484,7 @@ async function handleUpload(event: Event) {
     ).length;
     if (failedCount === 0) {
       ElMessage.success(`${totalCount} 个文件已上传至媒体库`);
-    } else if (completedCount - failedCount > 0) {
+    } else if (completedCount > 0) {
       ElMessage.warning(
         `${totalCount - failedCount} 个上传成功，${failedCount} 个失败`,
       );
