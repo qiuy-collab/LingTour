@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import { useLocale } from "@/lib/locale-context";
@@ -51,7 +51,12 @@ export function FieldKit<TChannel extends string>({
   const [imageUploading, setImageUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const submittingRef = useRef(false);
   const locked = !isLoggedIn;
+
+  submittingRef.current = submitting;
 
   useEffect(() => {
     if (initialBrief) {
@@ -76,12 +81,46 @@ export function FieldKit<TChannel extends string>({
 
   useEffect(() => {
     if (!isOpen) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (!submittingRef.current) onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-  }, [isOpen]);
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previous;
+      previouslyFocused?.focus();
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -169,6 +208,8 @@ export function FieldKit<TChannel extends string>({
       <button
         type="button"
         aria-label="Close field note kit"
+        aria-hidden="true"
+        tabIndex={-1}
         className="absolute inset-0 bg-[var(--night)]/50 backdrop-blur-[2px]"
         onClick={() => {
           if (!submitting) onClose();
@@ -177,6 +218,7 @@ export function FieldKit<TChannel extends string>({
 
       <Reveal delay={0} className={`relative z-10 my-auto w-full ${compact ? "max-w-2xl" : "max-w-[42rem]"}`}>
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="field-kit-title"
@@ -219,11 +261,12 @@ export function FieldKit<TChannel extends string>({
                 </h2>
               </div>
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
                 aria-label="Close field note kit"
-                className="flex h-10 w-10 items-center justify-center border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)] disabled:opacity-40"
+                className="flex h-11 w-11 items-center justify-center border border-[var(--line)] text-xl text-[var(--muted)] transition-colors hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)] disabled:opacity-40"
               >
                 ×
               </button>
@@ -274,7 +317,7 @@ export function FieldKit<TChannel extends string>({
                         key={channel}
                         onClick={() => setActiveChannel(channel)}
                         aria-pressed={activeChannel === channel}
-                        className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                        className={`min-h-11 rounded-full px-4 py-2 text-xs font-bold transition-all ${
                           locked
                             ? "cursor-not-allowed bg-white/30 text-[var(--muted)] opacity-50"
                             : activeChannel === channel
@@ -365,7 +408,7 @@ export function FieldKit<TChannel extends string>({
                     <button
                       type="button"
                       onClick={() => setImage(null)}
-                      className="h-8 self-end rounded-full border border-[var(--line)] px-3 text-[10px] font-bold uppercase text-[var(--muted)] transition-all hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
+                      className="min-h-11 self-end rounded-full border border-[var(--line)] px-3 text-[10px] font-bold uppercase text-[var(--muted)] transition-all hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
                     >
                       Remove
                     </button>

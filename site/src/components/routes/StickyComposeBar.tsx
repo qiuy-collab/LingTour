@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { FieldKit } from "@/components/community/FieldKit";
 import { readStoredUser, type LocalUser } from "@/lib/auth-client";
@@ -51,12 +52,14 @@ export function StickyComposeBar({
   composeTarget,
   onClearTarget,
 }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<LocalUser | null>(null);
   const [syncedPosts, setSyncedPosts] = useState<CommunityFeedPost[]>([]);
   const isLoggedIn = Boolean(user);
+  const loginPath = `/login?next=${encodeURIComponent(`/routes/${routeSlug}`)}`;
 
   useEffect(() => {
     const sync = () => setUser(readStoredUser());
@@ -91,9 +94,9 @@ export function StickyComposeBar({
       setError(null);
     } else if (composeTarget && !isLoggedIn) {
       setOpen(false);
-      setError(AUTH_PROMPTS.connectGoogleToRoutePublish);
+      router.push(loginPath);
     }
-  }, [composeTarget, isLoggedIn]);
+  }, [composeTarget, isLoggedIn, loginPath, router]);
 
   const postingContext = composeTarget
     ? `${routeTitle} · Stop ${composeTarget.index + 1} · ${composeTarget.name}`
@@ -220,7 +223,7 @@ export function StickyComposeBar({
           type="button"
           onClick={() => {
             if (!isLoggedIn) {
-              setError(AUTH_PROMPTS.connectGoogleToRoutePublish);
+              router.push(loginPath);
               return;
             }
             setOpen(true);
@@ -246,7 +249,7 @@ export function StickyComposeBar({
               {posts.length} {posts.length === 1 ? "note" : "notes"}
             </span>
             <span className="inline-flex items-center gap-2 bg-[var(--cinnabar)] px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-white">
-              {isLoggedIn ? "Leave Note" : "Connect Google"}
+              {isLoggedIn ? "Leave Note" : "Log in to note"}
               <span aria-hidden>↗</span>
             </span>
           </div>
