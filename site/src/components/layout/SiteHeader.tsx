@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
 import { siteNavigation } from "@/data/navigation";
 import { AccountNavLink } from "@/components/layout/AccountNavLink";
@@ -34,15 +34,60 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const mobilePanelRef = useRef<HTMLDivElement | null>(null);
+
+  const closeMenu = useCallback(() => {
+    setIsOpen(false);
+    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+  }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => {
+      mobilePanelRef.current?.querySelector<HTMLElement>("a[href], button:not([disabled])")?.focus();
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMenu();
+        return;
+      }
+      if (event.key !== "Tab" || !headerRef.current) return;
+
+      const focusable = Array.from(
+        headerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [isOpen]);
+  }, [closeMenu, isOpen]);
 
   // The admin area renders its own chrome — don't double up the public header.
   if (pathname?.startsWith("/admin")) {
@@ -55,7 +100,7 @@ export function SiteHeader() {
   const rightNavigation = siteNavigation.filter((item) => ["/shop", "/community"].includes(item.href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
+    <header ref={headerRef} className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
       <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 md:grid-cols-[1fr_auto_1fr]">
         <nav className="hidden items-center justify-start gap-1 md:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
@@ -122,10 +167,12 @@ export function SiteHeader() {
         </div>
 
         <button
+          ref={menuButtonRef}
           type="button"
           className="grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
           aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
           aria-expanded={isOpen}
+          aria-controls="site-mobile-navigation"
           onClick={() => setIsOpen((open) => !open)}
         >
           <span className="grid gap-1.5">
@@ -137,11 +184,18 @@ export function SiteHeader() {
       </Container>
 
       {isOpen ? (
-        <div className="fixed inset-0 top-[4.6rem] z-40 bg-black/30 md:hidden" onClick={() => setIsOpen(false)} />
+        <div aria-hidden="true" className="fixed inset-0 top-[4.6rem] z-40 bg-black/30 md:hidden" onClick={closeMenu} />
       ) : null}
 
       {isOpen ? (
-        <div className="relative z-50 max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden">
+        <div
+          ref={mobilePanelRef}
+          id="site-mobile-navigation"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+          className="relative z-50 max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden"
+        >
           <Container className="grid gap-4 py-4">
             <div className="grid gap-2">
               <p className="px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
