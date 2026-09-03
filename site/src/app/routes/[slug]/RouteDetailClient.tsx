@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { notFound } from "next/navigation";
 import { fetchRouteBySlug, fetchRouteCommunityPosts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
@@ -10,18 +10,20 @@ import { TimeAxisItinerary, type RouteStopTarget } from "@/components/routes/Tim
 import { StickyComposeBar } from "@/components/routes/StickyComposeBar";
 import type { StoryRoute } from "@/data/routes";
 
-export function RouteDetailClient({ slug }: { slug: string }) {
+export function RouteDetailClient({
+  slug,
+  initialRoute,
+}: {
+  slug: string;
+  initialRoute: StoryRoute | null;
+}) {
   const { previewData, previewEnabled } = usePreviewBridge<StoryRoute>("route");
   const [composeTarget, setComposeTarget] = useState<RouteStopTarget | null>(null);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   const { data: route, loading, error } = useApiQuery(
     () => fetchRouteBySlug(slug),
     [slug],
+    { initialData: initialRoute, revalidateOnMount: false },
   );
 
   const lastRouteRef = useRef<StoryRoute | null>(null);
@@ -42,7 +44,6 @@ export function RouteDetailClient({ slug }: { slug: string }) {
     [activeRoute?.slug, activeRoute?.title],
   );
 
-  if (!hydrated) return <LoadingSpinner text="Opening the route..." />;
   if (previewEnabled && !activeRoute) return <LoadingSpinner text="Loading preview..." />;
   if (loading && !activeRoute) return <LoadingSpinner text="Opening the route..." />;
 

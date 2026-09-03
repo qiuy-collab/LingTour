@@ -103,6 +103,7 @@ export default function InterpretingPageClient({
     refetch,
   } = useApiQuery(() => fetchInterpreting(), [], {
     initialData: initialInterpretingData,
+    revalidateOnMount: false,
   });
 
   const [prefillNeeds, setPrefillNeeds] = useState<string | undefined>(

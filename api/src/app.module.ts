@@ -15,6 +15,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { I18nInterceptor } from './common/interceptors/i18n.interceptor';
+import { PublicContentCacheModule } from './common/cache/public-content-cache.module';
+import { PublicContentCacheInterceptor } from './common/cache/public-content-cache.interceptor';
 
 // Modules
 import { AuthModule } from './modules/auth/auth.module';
@@ -75,6 +77,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
       serveRoot: '/uploads',
     }),
 
+    // Public content caching is explicit at read boundaries only. It never
+    // intercepts authenticated, payment, order, preview, or mutation traffic.
+    PublicContentCacheModule,
+
     // Feature modules
     AuthModule,
     UsersModule,
@@ -112,6 +118,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PublicContentCacheInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

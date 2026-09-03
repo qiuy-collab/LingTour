@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
@@ -11,37 +10,44 @@ import { Reveal } from "@/components/ui/Reveal";
 import { CityArchivalBook } from "@/components/culture/CityArchivalBook";
 import { RelatedCitiesHub } from "@/components/culture/RelatedCitiesHub";
 import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
+import type { StoryRoute } from "@/data/routes";
 import type { CityCulture, CityCultureSection } from "@/data/culture";
 
-export function CultureDetailClient({ slug }: { slug: string }) {
+type CultureDetailClientProps = {
+  slug: string;
+  initialCity: CityCulture | null;
+  initialCityCultures: CityCulture[];
+  initialRoutes: StoryRoute[];
+};
+
+export function CultureDetailClient({
+  slug,
+  initialCity,
+  initialCityCultures,
+  initialRoutes,
+}: CultureDetailClientProps) {
   const { t } = useLocale();
   const { previewData, previewEnabled } = usePreviewBridge<CityCulture>("city");
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   const { data: city, loading, error } = useApiQuery(
     () => fetchCityBySlug(slug),
     [slug],
+    { initialData: initialCity, revalidateOnMount: false },
   );
 
   const { data: cityCultures } = useApiQuery(
     () => fetchCities(),
     [],
+    { initialData: initialCityCultures, revalidateOnMount: false },
   );
 
   const { data: storyRoutes } = useApiQuery(
     () => fetchRoutes(),
     [],
+    { initialData: initialRoutes, revalidateOnMount: false },
   );
 
-  const activeCity = previewData ?? city;
-
-  if (!hydrated) {
-    return <LoadingSpinner text="" />;
-  }
+  const activeCity = previewData ?? city ?? initialCity;
 
   if (previewEnabled && !activeCity) {
     return <LoadingSpinner text="Loading preview..." />;

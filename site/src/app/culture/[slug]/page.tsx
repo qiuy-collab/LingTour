@@ -1,9 +1,14 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import type { Metadata } from "next";
 import { fetchCities } from "@/lib/api-data";
-import { fetchCityCultureBySlugServer } from "@/lib/server-data";
+import {
+  fetchCityCultureBySlugServer,
+  fetchCityCulturesServer,
+  fetchRoutesServer,
+} from "@/lib/server-data";
 
 const SEEDED_CITY_SLUGS = ["zhanjiang"];
+const getCity = cache(fetchCityCultureBySlugServer);
 
 export const revalidate = 60;
 
@@ -28,7 +33,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const city = await fetchCityCultureBySlugServer(slug);
+  const city = await getCity(slug);
   if (!city) return {};
 
   const title = `${city.name} | Culture & Cities | LingTour Guangdong`;
@@ -55,10 +60,20 @@ export default async function CityCulturePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const [initialCity, initialCityCultures, initialRoutes] = await Promise.all([
+    getCity(slug),
+    fetchCityCulturesServer(),
+    fetchRoutesServer(),
+  ]);
   const { CultureDetailClient } = await import("./CultureDetailClient");
   return (
     <Suspense fallback={null}>
-      <CultureDetailClient slug={slug} />
+      <CultureDetailClient
+        slug={slug}
+        initialCity={initialCity}
+        initialCityCultures={initialCityCultures}
+        initialRoutes={initialRoutes}
+      />
     </Suspense>
   );
 }

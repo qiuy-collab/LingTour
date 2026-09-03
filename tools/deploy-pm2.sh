@@ -45,6 +45,36 @@ fi
 
 git merge --ff-only "$REMOTE/$BRANCH"
 
+echo "==> Starting Redis public-content cache"
+if command -v docker >/dev/null 2>&1 && [ -f "$APP_DIR/docker-compose.prod.yml" ]; then
+  docker compose -f "$APP_DIR/docker-compose.prod.yml" up -d redis
+elif command -v redis-server >/dev/null 2>&1; then
+  systemctl enable --now redis-server
+else
+  echo "ERROR: Redis is required for public-content caching" >&2
+  exit 1
+fi
+
+redis_ping() {
+  if command -v redis-cli >/dev/null 2>&1; then
+    redis-cli -h 127.0.0.1 ping
+  else
+    docker compose -f "$APP_DIR/docker-compose.prod.yml" exec -T redis redis-cli ping
+  fi
+}
+
+for attempt in $(seq 1 12); do
+  if redis_ping 2>/dev/null | grep -qx 'PONG'; then
+    break
+  fi
+  sleep 1
+done
+
+redis_ping | grep -qx 'PONG' || {
+  echo "ERROR: Redis health check failed" >&2
+  exit 1
+}
+
 echo "==> Building API"
 cd "$APP_DIR/api"
 # Avoid stale incremental build cache producing declarations without JS output.

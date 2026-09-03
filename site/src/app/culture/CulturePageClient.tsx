@@ -34,7 +34,7 @@ export default function CulturePageClient({
   const { data: cityCultures, loading, error, refetch } = useApiQuery(
     () => fetchCities(),
     [],
-    { initialData: initialCityCultures },
+    { initialData: initialCityCultures, revalidateOnMount: false },
   );
 
   useEffect(() => {

@@ -1,9 +1,10 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import type { Metadata } from "next";
 import { fetchRoutes } from "@/lib/api-data";
 import { fetchRouteBySlugServer } from "@/lib/server-data";
 
 const SEEDED_ROUTE_SLUGS = ["southern-sea-table"];
+const getRoute = cache(fetchRouteBySlugServer);
 
 export const revalidate = 60;
 
@@ -28,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const route = await fetchRouteBySlugServer(slug);
+  const route = await getRoute(slug);
   if (!route) return {};
 
   const title = `${route.title} | LingTour Guangdong`;
@@ -54,10 +55,11 @@ export default async function RouteDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const initialRoute = await getRoute(slug);
   const { RouteDetailClient } = await import("./RouteDetailClient");
   return (
     <Suspense fallback={null}>
-      <RouteDetailClient slug={slug} />
+      <RouteDetailClient slug={slug} initialRoute={initialRoute} />
     </Suspense>
   );
 }

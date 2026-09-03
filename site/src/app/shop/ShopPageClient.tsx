@@ -32,6 +32,7 @@ export default function ShopPageClient({
     refetch: refetchCollections,
   } = useApiQuery(() => fetchStoreCollections(), [], {
     initialData: initialCollections,
+    revalidateOnMount: false,
   });
 
   const {
@@ -41,6 +42,7 @@ export default function ShopPageClient({
     refetch: refetchProducts,
   } = useApiQuery(() => fetchStoreProducts(), [], {
     initialData: initialProducts,
+    revalidateOnMount: false,
   });
 
   if (colsLoading && prodLoading && initialCollections.length === 0 && initialProducts.length === 0) {

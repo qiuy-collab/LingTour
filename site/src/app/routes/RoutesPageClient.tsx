@@ -35,7 +35,7 @@ export default function RoutesPageClient({
   const { data, loading, error, refetch } = useApiQuery(
     () => fetchRoutes(),
     [],
-    { initialData: initialRoutes },
+    { initialData: initialRoutes, revalidateOnMount: false },
   );
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import {
@@ -25,15 +25,18 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
   const [routeRegions, setRouteRegions] =
     useState<RouteRegion[]>(DEFAULT_ROUTE_REGIONS);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  useEffect(() => {
-    fetchRoutes().then(setRoutes).catch(() => {});
-    fetchRouteRegions()
+  const loadMenuData = useCallback(() => {
+    if (hasLoaded) return;
+    setHasLoaded(true);
+    void fetchRoutes().then(setRoutes).catch(() => {});
+    void fetchRouteRegions()
       .then((data) =>
         setRouteRegions(data.length ? data : DEFAULT_ROUTE_REGIONS),
       )
       .catch(() => setRouteRegions(DEFAULT_ROUTE_REGIONS));
-  }, []);
+  }, [hasLoaded]);
 
   const mapPaths = useMemo(() => {
     if (!initialFeatures.length) {
@@ -53,7 +56,11 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
   }, []);
 
   return (
-    <div className="group/routes relative">
+    <div
+      className="group/routes relative"
+      onMouseEnter={loadMenuData}
+      onFocusCapture={loadMenuData}
+    >
       <Link
         href="/routes"
         className={`px-3 py-3 text-sm transition ${

@@ -23,13 +23,13 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
   const { data: product, loading, error } = useApiQuery(
     () => fetchStoreProductBySlug(slug),
     [slug],
-    { initialData: initialProduct },
+    { initialData: initialProduct, revalidateOnMount: false },
   );
 
   const { data: allProducts } = useApiQuery(
     () => fetchStoreProducts(),
     [],
-    { initialData: initialProducts },
+    { initialData: initialProducts, revalidateOnMount: false },
   );
 
   const activeProduct = previewData ?? product ?? initialProduct;
