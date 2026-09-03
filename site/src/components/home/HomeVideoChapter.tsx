@@ -11,21 +11,61 @@ type HomeVideoChapterProps = {
 export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
   const scope = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [paused, setPaused] = useState(false);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [saveData, setSaveData] = useState(false);
+  const [wantsManualPlayback, setWantsManualPlayback] = useState(false);
+  const [paused, setPaused] = useState(true);
   const filmUrl = video?.url?.trim() || "";
   const poster = video?.poster;
+  const shouldLoadVideo =
+    (hasEnteredViewport && !reduceMotion && !saveData) || wantsManualPlayback;
+  const shouldAutoPlay = hasEnteredViewport && !reduceMotion && !saveData;
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduceMotion.matches) {
-      videoRef.current?.pause();
-      setPaused(true);
-    }
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean };
+    }).connection;
+    const sync = () => {
+      setReduceMotion(still.matches);
+      setSaveData(Boolean(connection?.saveData));
+    };
+
+    sync();
+    still.addEventListener("change", sync);
+    return () => still.removeEventListener("change", sync);
   }, []);
+
+  useEffect(() => {
+    const section = scope.current;
+    if (!section || !('IntersectionObserver' in window)) {
+      setHasEnteredViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setHasEnteredViewport(true);
+      observer.disconnect();
+    });
+    observer.observe(section);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (shouldAutoPlay || wantsManualPlayback) {
+      void videoRef.current?.play().catch(() => undefined);
+    }
+  }, [shouldAutoPlay, wantsManualPlayback]);
 
   const togglePlayback = () => {
     const element = videoRef.current;
-    if (!element) return;
+    if (!shouldLoadVideo || !element) {
+      setWantsManualPlayback(true);
+      return;
+    }
     if (element.paused) {
       void element.play();
     } else {
@@ -101,13 +141,13 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
           <video
             ref={videoRef}
             data-home-film
-            src={filmUrl}
+            src={shouldLoadVideo ? filmUrl : undefined}
             poster={poster}
-            autoPlay
+            autoPlay={shouldAutoPlay}
             muted
             loop
             playsInline
-            preload="metadata"
+            preload={shouldLoadVideo ? "metadata" : "none"}
             onPlay={() => setPaused(false)}
             onPause={() => setPaused(true)}
             aria-label={video?.title || "Guangzhou skyline film"}

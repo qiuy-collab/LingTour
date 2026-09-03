@@ -502,10 +502,12 @@ export async function fetchCityCultureBySlugServer(
  * Server-side home data fetch 鈥?mirrors fetchHomeData from api-data.ts
  * but uses serverGet instead of the window-dependent apiGet.
  */
-export async function fetchHomeDataServer(): Promise<HomeData> {
+export async function fetchHomeDataServer(
+  routesPromise: Promise<StoryRoute[]> = fetchRoutesServer(),
+): Promise<HomeData> {
   const [routesResult, citiesResult, homeConfigResult] =
     await Promise.allSettled([
-      fetchRoutesServer(),
+      routesPromise,
       fetchCitiesServer(),
       serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
     ]);

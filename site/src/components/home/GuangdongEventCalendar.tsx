@@ -291,9 +291,13 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
               >
                 <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] min-[620px]:block min-[620px]:-rotate-2 min-[620px]:p-4 min-[620px]:group-hover:rotate-0 lg:p-6">
                   <div className="relative aspect-square overflow-hidden min-[620px]:mb-5 min-[620px]:aspect-[3/4] lg:mb-8">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${relatedRoute.image})` }}
+                    <img
+                      src={relatedRoute.image}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1000 group-hover:scale-110"
                     />
                     <div className="absolute left-1/2 top-[-0.5rem] z-20 h-8 w-24 -translate-x-1/2 -rotate-3 bg-[var(--paper)]/60 backdrop-blur-sm" />
                   </div>

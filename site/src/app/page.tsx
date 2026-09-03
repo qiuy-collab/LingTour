@@ -9,10 +9,11 @@ import HomeClient from "./HomeClient";
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
+  const routesPromise = fetchRoutesServerForHome();
   const [homeData, products, routes, events] = await Promise.all([
-    fetchHomeDataServer(),
+    fetchHomeDataServer(routesPromise),
     fetchStoreProductsServer(),
-    fetchRoutesServerForHome(),
+    routesPromise,
     fetchEventsServer(),
   ]);
 

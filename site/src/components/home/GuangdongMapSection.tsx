@@ -51,6 +51,8 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   const [slideIndex, setSlideIndex] = useState(0);
   const [isCompact, setIsCompact] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement | null>(null);
   const lastTouchedRef = useRef<number | null>(null);
   const mobilePanelRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,6 +72,22 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
       compact.removeEventListener("change", sync);
       still.removeEventListener("change", sync);
     };
+  }, []);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || !('IntersectionObserver' in window)) {
+      setIsSectionVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsSectionVisible(entry.isIntersecting),
+      { threshold: 0.01 },
+    );
+    observer.observe(section);
+
+    return () => observer.disconnect();
   }, []);
 
   const eventsByCity = useMemo(() => {
@@ -135,14 +153,14 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
     fallbackCity.image;
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (!isSectionVisible || reduceMotion || activeGallery.length < 2) return;
 
     const timer = window.setInterval(() => {
       setSlideIndex((index) => index + 1);
     }, 3200);
 
     return () => window.clearInterval(timer);
-  }, [reduceMotion]);
+  }, [activeGallery.length, isSectionVisible, reduceMotion]);
 
   // The projection preserves Guangdong's own aspect ratio, so a viewBox that
   // does not match it letterboxes the map. Each breakpoint therefore gets a
@@ -217,7 +235,10 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
   );
 
   return (
-    <section className="relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-14 lg:pb-40 lg:pt-24">
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-14 lg:pb-40 lg:pt-24"
+    >
       <div className="site-container relative z-10">
         <div className="mb-8 sm:mb-12 lg:mb-20">
           <Reveal>
@@ -249,9 +270,8 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                     <img
                       src={activeImage}
                       alt={activeCity.name}
-                      loading="eager"
-                      decoding="sync"
-                      fetchPriority="high"
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
                     />
                   ) : (
@@ -465,7 +485,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 <img
                   src={activeImage}
                   alt={activeCity.name}
-                  loading="eager"
+                  loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
                 />

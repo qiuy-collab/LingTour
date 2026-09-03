@@ -44,31 +44,30 @@ export default function HomeClient({
   const { previewData: previewEvent } =
     usePreviewBridge<EventData>("event");
 
-  // Server-fetched data is used as initialData.
-  // When locale changes client-side, useApiQuery re-fetches in the background
-  // (stale-while-revalidate). Content is visible immediately from SSR.
+  // SSR data renders immediately. Avoid duplicating the same public API requests
+  // after hydration; preview updates continue to arrive through usePreviewBridge.
   const { data: homeData, loading: homeLoading } = useApiQuery(
     () => fetchHomeData(),
     [],
-    { initialData: initialHomeData },
+    { initialData: initialHomeData, revalidateOnMount: false },
   );
 
   const { data: products } = useApiQuery(
     () => fetchStoreProducts(),
     [],
-    { initialData: initialProducts },
+    { initialData: initialProducts, revalidateOnMount: false },
   );
 
   const { data: allRoutes } = useApiQuery(
     () => fetchRoutes(),
     [],
-    { initialData: initialRoutes },
+    { initialData: initialRoutes, revalidateOnMount: false },
   );
 
   const { data: events } = useApiQuery(
     () => fetchEvents(),
     [],
-    { initialData: initialEvents },
+    { initialData: initialEvents, revalidateOnMount: false },
   );
 
   // Only show loading spinner if we have NO initial data at all
@@ -274,9 +273,8 @@ export default function HomeClient({
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
-                    loading="eager"
-                    decoding="sync"
-                    fetchPriority="high"
+                    loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.035]"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.04),rgba(8,18,24,0.62))]" />
@@ -321,9 +319,13 @@ export default function HomeClient({
         {/* FINAL CTA: THE DEPARTURE LOG */}
         <section className="site-container pb-20 lg:pb-28">
           <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--river-deep)] px-6 py-16 text-white shadow-[0_28px_90px_rgba(17,25,35,0.2)] sm:px-8 sm:py-20 lg:px-24 lg:py-28">
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-15 grayscale"
-              style={{ backgroundImage: `url(${ctaImage})` }}
+            <img
+              src={ctaImage}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover opacity-15 grayscale"
             />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,18,24,0.96),rgba(8,18,24,0.7)_58%,rgba(8,18,24,0.28))]" />
             <div className="relative z-10 max-w-4xl">

@@ -77,6 +77,52 @@ describe("useApiQuery", () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it("keeps initial data without revalidating on mount when requested", async () => {
+    const fetcher = vi.fn().mockResolvedValue({ name: "fresh" });
+    const { result } = renderHook(() =>
+      useApiQuery(fetcher, [], {
+        initialData: { name: "server" },
+        revalidateOnMount: false,
+      }),
+    );
+
+    expect(result.current.data).toEqual({ name: "server" });
+    expect(result.current.loading).toBe(false);
+
+    await Promise.resolve();
+    expect(fetcher).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.refetch();
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ name: "fresh" });
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it("revalidates initial data after a dependency changes", async () => {
+    const fetcher = vi.fn().mockResolvedValue({ name: "fresh" });
+    const { result, rerender } = renderHook(
+      ({ dep }) =>
+        useApiQuery(fetcher, [dep], {
+          initialData: { name: "server" },
+          revalidateOnMount: false,
+        }),
+      { initialProps: { dep: "first" } },
+    );
+
+    await Promise.resolve();
+    expect(fetcher).not.toHaveBeenCalled();
+
+    rerender({ dep: "second" });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ name: "fresh" });
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it("refetch triggers a new request", async () => {
     let counter = 0;
     const fetcher = vi.fn().mockImplementation(async () => {

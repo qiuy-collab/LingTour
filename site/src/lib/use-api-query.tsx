@@ -19,6 +19,8 @@ export interface UseApiQueryOptions {
   retryDelay?: number;
   /** When false, skip the fetch entirely (default: true) */
   enabled?: boolean;
+  /** When false, keep supplied initial data through hydration without re-fetching it. */
+  revalidateOnMount?: boolean;
 }
 
 type Fetcher<T> = () => Promise<T>;
@@ -42,8 +44,10 @@ export function useApiQuery<T>(
     retryCount = 2,
     retryDelay = 1000,
     enabled = true,
+    revalidateOnMount = true,
   } = options;
   const initialData = (options as { initialData?: T | null }).initialData ?? null;
+  const skipInitialRevalidation = initialData !== null && !revalidateOnMount;
 
   const [data, setData] = useState<T | null>(initialData);
   const [loading, setLoading] = useState(enabled && !initialData);
@@ -52,6 +56,7 @@ export function useApiQuery<T>(
 
   const mountedRef = useRef(true);
   const fetcherRef = useRef(fetcher);
+  const initialDepsRef = useRef(deps);
 
   useEffect(() => {
     fetcherRef.current = fetcher;
@@ -65,6 +70,15 @@ export function useApiQuery<T>(
     mountedRef.current = true;
 
     if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
+    const dependenciesChanged =
+      deps.length !== initialDepsRef.current.length ||
+      deps.some((dependency, index) => !Object.is(dependency, initialDepsRef.current[index]));
+
+    if (version === 0 && skipInitialRevalidation && !dependenciesChanged) {
       setLoading(false);
       return;
     }
