@@ -20,7 +20,7 @@ export class PublicContentCacheService implements OnModuleDestroy {
         })
       : null;
 
-    this.redis?.on('error', (error) => {
+    this.redis?.on('error', (error: Error) => {
       this.logger.warn(`Public cache unavailable: ${error.message}`);
     });
   }
@@ -99,9 +99,10 @@ export class PublicContentCacheService implements OnModuleDestroy {
     if (this.generation) return this.generation;
     const key = `${this.namespace}:generation`;
     const current = await redis.get(key);
-    this.generation = current ?? '1';
-    if (!current) await redis.set(key, this.generation, 'NX');
-    return this.generation;
+    const generation = current ?? '1';
+    if (!current) await redis.set(key, generation, 'NX');
+    this.generation = generation;
+    return generation;
   }
 
   private key(generation: string, requestKey: string): string {

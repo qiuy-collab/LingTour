@@ -75,8 +75,10 @@ redis_ping | grep -qx 'PONG' || {
   exit 1
 }
 
-echo "==> Building API"
+echo "==> Installing API dependencies"
 cd "$APP_DIR/api"
+npm ci
+
 # Avoid stale incremental build cache producing declarations without JS output.
 rm -f tsconfig.build.tsbuildinfo
 npm run build
