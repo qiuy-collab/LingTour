@@ -106,7 +106,7 @@ test -f dist/index.html || {
 
 echo "==> Restarting PM2 services"
 cd "$APP_DIR"
-pm2 restart lingtour-api lingtour-site lingtour-admin --update-env
+pm2 restart ecosystem.config.js --only lingtour-api,lingtour-site,lingtour-admin --update-env
 pm2 save
 
 echo "==> Health checks"
