@@ -42,14 +42,36 @@ fi
 
 git merge --ff-only "$REMOTE/$BRANCH"
 
-echo "==> Building and starting Docker services"
-docker compose -f "$COMPOSE_FILE" --env-file .env up -d --build
+echo "==> Building Docker images"
+docker compose -f "$COMPOSE_FILE" --env-file .env build
 
-echo "==> Container status"
+printf '%s\n' "==> Running database migrations against the configured host database"
+docker compose -f "$COMPOSE_FILE" --env-file .env run --rm --no-deps api \
+  npx typeorm migration:run -d dist/database/data-source.js
+
+printf '%s\n' "==> Starting Docker services"
+docker compose -f "$COMPOSE_FILE" --env-file .env up -d --remove-orphans
+
+echo "==> Waiting for container health"
+for attempt in $(seq 1 30); do
+  unhealthy=$(docker compose -f "$COMPOSE_FILE" --env-file .env ps --format json | \
+    grep -E '"Health":"(starting|unhealthy)"' || true)
+  if [ -z "$unhealthy" ]; then
+    break
+  fi
+  sleep 2
+done
+
 docker compose -f "$COMPOSE_FILE" --env-file .env ps
 
-echo "==> Health checks"
-# nginx is intentionally bound to host port 8088 for safe migration behind the existing host proxy.
+if docker compose -f "$COMPOSE_FILE" --env-file .env ps --format json | \
+  grep -E '"Health":"unhealthy"' >/dev/null; then
+  echo "ERROR: Docker service health check failed" >&2
+  exit 1
+fi
+
+printf '%s\n' "==> Health checks"
+# nginx is intentionally bound to loopback port 8088 behind the existing host TLS proxy.
 curl -fsS --max-time 20 http://127.0.0.1:8088/ >/dev/null
 curl -fsS --max-time 20 -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
 printf '\n'
@@ -58,3 +80,4 @@ curl -fsS -o /dev/null -w 'admin-via-docker-nginx:%{http_code}\n' --max-time 20 
 curl -fsS -o /dev/null -w 'api-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
 
 echo "==> Docker deploy complete"
+echo "==> PM2 remains untouched; switch host Nginx only after these checks pass."

@@ -1,6 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+ARG VITE_MEDIA_ORIGIN=https://api.lingfengtranstour.cn
+ARG VITE_SITE_ORIGIN=https://lingfengtranstour.cn
+ENV VITE_MEDIA_ORIGIN=$VITE_MEDIA_ORIGIN
+ENV VITE_SITE_ORIGIN=$VITE_SITE_ORIGIN
+
 COPY admin-frontend/package.json admin-frontend/package-lock.json ./
 RUN npm ci
 
