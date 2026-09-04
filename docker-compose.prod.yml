@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:172.19.0.1"
     environment:
       NODE_ENV: production
       PORT: 8000
