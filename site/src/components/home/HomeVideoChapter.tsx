@@ -62,10 +62,16 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
 
   const togglePlayback = () => {
     const element = videoRef.current;
-    if (!shouldLoadVideo || !element) {
+    if (!element) return;
+
+    if (!shouldLoadVideo) {
       setWantsManualPlayback(true);
+      element.src = filmUrl;
+      element.load();
+      void element.play().catch(() => undefined);
       return;
     }
+
     if (element.paused) {
       void element.play();
     } else {
