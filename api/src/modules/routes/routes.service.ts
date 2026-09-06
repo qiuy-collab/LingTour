@@ -209,6 +209,7 @@ export class RoutesService {
           queryRunner.manager.create(RouteStop, {
             routeId: saved.id,
             sortOrder: s.sortOrder,
+            isFeatured: s.isFeatured ?? false,
             time: s.time,
             stopName: s.stopName,
             story: s.story,
@@ -311,6 +312,7 @@ export class RoutesService {
             queryRunner.manager.create(RouteStop, {
               routeId: id,
               sortOrder: s.sortOrder,
+              isFeatured: s.isFeatured ?? false,
               time: s.time,
               stopName: s.stopName,
               story: s.story,

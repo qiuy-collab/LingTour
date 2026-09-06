@@ -26,6 +26,12 @@ export class CreateStopDto {
   @Min(0)
   sortOrder: number;
 
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @Type(() => Object)
+  @IsBoolean()
+  isFeatured?: boolean;
+
   @ApiProperty({ example: '08:00' })
   @IsString()
   @MaxLength(20)

@@ -27,6 +27,9 @@ export class RouteStop {
   @Column({ type: 'int', name: 'sort_order' })
   sortOrder: number;
 
+  @Column({ type: 'boolean', name: 'is_featured', default: false })
+  isFeatured: boolean;
+
   @Column({ type: 'varchar', length: 20 })
   time: string;
 
