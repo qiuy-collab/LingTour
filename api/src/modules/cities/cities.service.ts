@@ -107,10 +107,10 @@ export class CitiesService {
       page < 1 ||
       !Number.isInteger(limit) ||
       limit < 1 ||
-      limit > 100
+      limit > 200
     ) {
       throw new BadRequestException(
-        'page must be positive and limit must be between 1 and 100',
+        'page must be positive and limit must be between 1 and 200',
       );
     }
     const status: FindOptionsWhere<City> =

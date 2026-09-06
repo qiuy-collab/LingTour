@@ -454,10 +454,15 @@ describe('CitiesService', () => {
       expect(where[1].name.getSql('city.name')).toContain("->>'en'");
     });
 
+    it('supports the existing 200-city option loaders', async () => {
+      await service.findAllAdmin(1, 200);
+      expect(cityRepo.findAndCount).toHaveBeenCalledWith(expect.objectContaining({ take: 200 }));
+    });
+
     it.each([
       [0, 20],
       [1, 0],
-      [1, 101],
+      [1, 201],
       [1.2, 10],
       [NaN, 10],
     ])('rejects invalid pagination %s/%s', async (page, limit) => {
