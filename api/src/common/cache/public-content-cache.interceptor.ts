@@ -34,6 +34,11 @@ export class PublicContentCacheInterceptor implements NestInterceptor {
       );
     }
 
+    if (/^\/api\/v1\/public\/cities(?:\/|$)/.test(request.path)) {
+      response.setHeader('Cache-Control', 'no-store');
+      return next.handle();
+    }
+
     if (!this.isCacheablePublicRequest(request)) return next.handle();
 
     const ttlSeconds = request.path.includes('/events') || request.path.endsWith('/home')

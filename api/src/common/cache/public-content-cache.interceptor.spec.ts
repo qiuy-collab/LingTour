@@ -46,6 +46,18 @@ describe('PublicContentCacheInterceptor', () => {
     expect(res.headers.get('X-Content-Cache')).toBe('HIT');
   });
 
+  it('never serves cached city content after unpublishing', async () => {
+    const cache = { get: jest.fn(), set: jest.fn(), invalidateAll: jest.fn() };
+    const interceptor = new PublicContentCacheInterceptor(cache as never);
+    const { context, res } = contextFor('/api/v1/public/cities/shaoguan');
+    const handler = { handle: jest.fn(() => of({ contentMarkdown: 'Current text' })) };
+    await lastValueFrom(interceptor.intercept(context, handler));
+    expect(cache.get).not.toHaveBeenCalled();
+    expect(cache.set).not.toHaveBeenCalled();
+    expect(handler.handle).toHaveBeenCalled();
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
+  });
+
   it('does not cache booking requests or invalidate for them', async () => {
     const cache = {
       get: jest.fn(),

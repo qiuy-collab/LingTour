@@ -41,6 +41,9 @@ export class City {
   @Column({ type: 'jsonb', name: 'editor_intro' })
   editorIntro: { en: string; zh: string };
 
+  @Column({ type: 'text', name: 'content_markdown', default: '' })
+  contentMarkdown: string;
+
   @Column({ type: 'jsonb', name: 'gallery_images', default: [] })
   galleryImages: string[];
 
@@ -65,6 +68,9 @@ export class City {
   @Index()
   @Column({ type: 'boolean', default: false })
   published: boolean;
+
+  @Column({ type: 'timestamptz', name: 'published_at', nullable: true })
+  publishedAt: Date | null;
 
   @DeleteDateColumn({ type: 'timestamptz', name: 'deleted_at' })
   deletedAt: Date | null;

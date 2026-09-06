@@ -2,9 +2,17 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  ILike,
+  Raw,
+  Repository,
+} from 'typeorm';
 import { City } from './entities/city.entity';
 import { CityCultureSection } from './entities/city-section.entity';
 import { CreateCityDto } from './dto/create-city.dto';
@@ -91,14 +99,47 @@ export class CitiesService {
   async findAllAdmin(
     page = 1,
     limit = 20,
+    q?: string,
+    published?: boolean,
   ): Promise<{ data: City[]; total: number; page: number; pageSize: number }> {
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 100
+    ) {
+      throw new BadRequestException(
+        'page must be positive and limit must be between 1 and 100',
+      );
+    }
+    const status: FindOptionsWhere<City> =
+      published === undefined ? {} : { published };
+    const keyword = q?.trim();
+    const pattern = `%${keyword?.replace(/[\\%_]/g, '\\$&')}%`;
+    const where: FindOptionsWhere<City> | FindOptionsWhere<City>[] = keyword
+      ? [
+          { ...status, slug: ILike(pattern) },
+          {
+            ...status,
+            name: Raw(
+              (alias) => {
+                const column = alias.split('.').map((part) => `"${part}"`).join('.');
+                return `(${column}->>'en' ILIKE :q OR ${column}->>'zh' ILIKE :q)`;
+              },
+              { q: pattern },
+            ),
+          },
+        ]
+      : status;
     const [data, total] = await this.cityRepository.findAndCount({
+      where,
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
       withDeleted: true,
     });
-    return { data, total, page: +page, pageSize: +limit };
+    return { data, total, page, pageSize: limit };
   }
 
   async findByIdAdmin(id: string): Promise<City> {
@@ -125,6 +166,11 @@ export class CitiesService {
   }
 
   async create(dto: CreateCityDto): Promise<City> {
+    const contentMarkdown =
+      dto.contentMarkdown === undefined ? '' : dto.contentMarkdown;
+    this.validateMarkdown(contentMarkdown);
+    if (dto.published) this.validatePublication(dto.name, contentMarkdown);
+
     // Check slug uniqueness
     const existing = await this.cityRepository.findOne({
       where: { slug: dto.slug },
@@ -143,7 +189,7 @@ export class CitiesService {
         slug: dto.slug,
         name: this.normalizeI18nObject(dto.name),
         regionLabel: this.normalizeI18nObject(dto.regionLabel),
-        heroImage: dto.heroImage,
+        heroImage: dto.heroImage ?? '',
         heroMedia: dto.heroMedia ?? null,
         heroNarrative: this.normalizeI18nObject(dto.heroNarrative),
         tags: this.normalizeI18nArray(dto.tags),
@@ -156,6 +202,8 @@ export class CitiesService {
         relatedCitySlugs: dto.relatedCitySlugs ?? [],
         adcode: dto.adcode,
         published: dto.published ?? false,
+        contentMarkdown,
+        publishedAt: dto.published ? new Date() : null,
       });
 
       const saved = await queryRunner.manager.save(city);
@@ -207,6 +255,27 @@ export class CitiesService {
 
   async update(id: string, dto: UpdateCityDto): Promise<City> {
     const city = await this.findByIdAdmin(id);
+    const {
+      sections: _sectionsFromDto,
+      routeSlugs: _routeSlugsFromDto,
+      ...scalarUpdates
+    } = dto;
+    const normalizedScalarUpdates = this.normalizeCityScalarUpdates(
+      scalarUpdates,
+      city,
+    );
+    const contentMarkdown =
+      dto.contentMarkdown === undefined
+        ? city.contentMarkdown
+        : dto.contentMarkdown;
+    if (dto.contentMarkdown !== undefined)
+      this.validateMarkdown(contentMarkdown);
+    if (dto.published ?? city.published) {
+      this.validatePublication(
+        normalizedScalarUpdates.name ?? city.name,
+        contentMarkdown,
+      );
+    }
 
     // Check slug uniqueness (exclude self)
     if (dto.slug && dto.slug !== city.slug) {
@@ -226,14 +295,16 @@ export class CitiesService {
     try {
       // Apply scalar fields only — sections are managed explicitly below to avoid
       // OneToMany cascade conflicting with the delete-and-recreate approach.
-      const {
-        sections: _sectionsFromDto,
-        routeSlugs: _routeSlugsFromDto,
-        ...scalarUpdates
-      } = dto;
-      const normalizedScalarUpdates =
-        this.normalizeCityScalarUpdates(scalarUpdates);
-      await queryRunner.manager.update(City, id, normalizedScalarUpdates);
+      if (Object.keys(normalizedScalarUpdates).length) {
+        await queryRunner.manager.update(City, id, normalizedScalarUpdates);
+      }
+      if (dto.published === true) {
+        // Set once atomically, including when two publish requests overlap.
+        await queryRunner.manager.query(
+          'UPDATE cities SET published_at = COALESCE(published_at, CURRENT_TIMESTAMP) WHERE id = $1',
+          [id],
+        );
+      }
       const saved = await queryRunner.manager.findOneOrFail(City, {
         where: { id },
       });
@@ -285,15 +356,11 @@ export class CitiesService {
   }
 
   async publish(id: string): Promise<City> {
-    const city = await this.findByIdAdmin(id);
-    city.published = true;
-    return this.cityRepository.save(city);
+    return this.update(id, { published: true });
   }
 
   async unpublish(id: string): Promise<City> {
-    const city = await this.findByIdAdmin(id);
-    city.published = false;
-    return this.cityRepository.save(city);
+    return this.update(id, { published: false });
   }
 
   async softDelete(id: string): Promise<void> {
@@ -343,34 +410,68 @@ export class CitiesService {
     }
   }
 
+  private validateMarkdown(content: unknown): asserts content is string {
+    if (typeof content !== 'string' || content.length > 200000) {
+      throw new BadRequestException(
+        'contentMarkdown must be a string of at most 200000 characters',
+      );
+    }
+  }
+
+  private validatePublication(
+    name: { en?: string } | undefined,
+    content: unknown,
+  ): void {
+    this.validateMarkdown(content);
+    if (typeof name?.en !== 'string' || !name.en.trim() || !content.trim()) {
+      throw new BadRequestException(
+        'Publishing requires a nonblank English name and contentMarkdown',
+      );
+    }
+  }
+
   private normalizeCityScalarUpdates(
     scalarUpdates: Partial<CreateCityDto>,
-  ): Partial<CreateCityDto> {
-    return {
-      ...scalarUpdates,
-      name: scalarUpdates.name
-        ? this.normalizeI18nObject(scalarUpdates.name)
-        : undefined,
-      regionLabel: scalarUpdates.regionLabel
-        ? this.normalizeI18nObject(scalarUpdates.regionLabel)
-        : undefined,
-      heroNarrative: scalarUpdates.heroNarrative
-        ? this.normalizeI18nObject(scalarUpdates.heroNarrative)
-        : undefined,
-      tags:
-        scalarUpdates.tags !== undefined
-          ? this.normalizeI18nArray(scalarUpdates.tags)
-          : undefined,
-      editorIntro: scalarUpdates.editorIntro
-        ? this.normalizeI18nObject(scalarUpdates.editorIntro)
-        : undefined,
-      foodTitle: scalarUpdates.foodTitle
-        ? this.normalizeI18nObject(scalarUpdates.foodTitle)
-        : undefined,
-      foodDescription: scalarUpdates.foodDescription
-        ? this.normalizeI18nObject(scalarUpdates.foodDescription)
-        : undefined,
-    };
+    city: City,
+  ): Partial<City> {
+    const updates: Partial<City> = {};
+    const textKeys = [
+      'name',
+      'regionLabel',
+      'heroNarrative',
+      'editorIntro',
+      'foodTitle',
+      'foodDescription',
+    ] as const;
+    for (const key of textKeys) {
+      if (scalarUpdates[key] !== undefined) {
+        updates[key] = this.normalizeI18nObject({
+          ...city[key],
+          ...scalarUpdates[key],
+        });
+      }
+    }
+    const otherKeys = [
+      'slug',
+      'heroImage',
+      'heroMedia',
+      'galleryImages',
+      'galleryMedia',
+      'foodImages',
+      'relatedCitySlugs',
+      'adcode',
+      'published',
+      'contentMarkdown',
+    ] as const;
+    for (const key of otherKeys) {
+      if (scalarUpdates[key] !== undefined) {
+        Object.assign(updates, { [key]: scalarUpdates[key] });
+      }
+    }
+    if (scalarUpdates.tags !== undefined) {
+      updates.tags = this.normalizeI18nArray(scalarUpdates.tags);
+    }
+    return updates;
   }
 
   private normalizeI18nArray(

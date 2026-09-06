@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  ParseBoolPipe,
   Header,
   UseInterceptors,
 } from '@nestjs/common';
@@ -39,7 +40,7 @@ export class CitiesController {
 
   @Public()
   @Get('public/cities')
-  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+  @Header('Cache-Control', 'no-store')
   @ApiOperation({ summary: 'Get published cities (public)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -49,7 +50,7 @@ export class CitiesController {
 
   @Public()
   @Get('public/cities/:slug')
-  @Header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+  @Header('Cache-Control', 'no-store')
   @ApiOperation({ summary: 'Get city detail by slug (public)' })
   async findBySlug(@Param('slug') slug: string) {
     return this.citiesService.findBySlugPublished(slug);
@@ -63,8 +64,16 @@ export class CitiesController {
   @ApiOperation({ summary: 'Get all cities (admin)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  async findAllAdmin(@Query('page') page = 1, @Query('limit') limit = 20) {
-    return this.citiesService.findAllAdmin(+page, +limit);
+  @ApiQuery({ name: 'q', required: false, type: String })
+  @ApiQuery({ name: 'published', required: false, type: Boolean })
+  async findAllAdmin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+    @Query('q') q?: string,
+    @Query('published', new ParseBoolPipe({ optional: true }))
+    published?: boolean,
+  ) {
+    return this.citiesService.findAllAdmin(+page, +limit, q, published);
   }
 
   @Roles('admin', 'editor')
