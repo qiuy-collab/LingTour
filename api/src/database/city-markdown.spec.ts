@@ -128,8 +128,8 @@ describe('legacy city Markdown migration', () => {
     expect(
       markdown.match(/!\[[^\n]*\]\(<\/uploads\/shared.jpg>\)/g),
     ).toHaveLength(1);
-    expect(markdown).toContain('Distinct alt');
-    expect(markdown).toContain('[City gallery](</uploads/shared.jpg>)');
+    expect(markdown).not.toContain('Distinct alt');
+    expect(markdown).not.toContain('City gallery\n\n');
     expect(markdown).toContain('![City gallery](</uploads/unique.jpg>)');
   });
 

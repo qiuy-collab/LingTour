@@ -86,10 +86,10 @@ function join(parts: string[]): string {
         mediaCaptions.set(key, new Set([caption]));
         return part;
       }
-      if (captions.has(caption)) return '';
-      // Keep distinct legacy alt/caption metadata without rendering media twice.
+      // The legacy fields remain in the database. Rendering a second caption
+      // without its already-deduplicated media creates orphan prose, so omit it.
       captions.add(caption);
-      return caption;
+      return '';
     })
     .filter((part) => part.trim())
     .join('\n\n');
