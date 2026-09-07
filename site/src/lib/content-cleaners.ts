@@ -53,7 +53,8 @@ export function sanitizeCityCulture(city: CityCulture): CityCulture {
 export function hasVisibleCityContent(city: CityCulture) {
   return Boolean(
     hasMeaningfulText(city.name) &&
-      (hasMeaningfulText(city.summary) ||
+      (hasMeaningfulText(city.contentMarkdown) ||
+        hasMeaningfulText(city.summary) ||
         hasMeaningfulText(city.narrative) ||
         city.routeSlugs.length > 0 ||
         city.gallery.length > 0 ||

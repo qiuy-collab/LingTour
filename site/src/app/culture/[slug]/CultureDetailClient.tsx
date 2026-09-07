@@ -6,281 +6,75 @@ import { useLocale } from "@/lib/locale-context";
 import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
-import { Reveal } from "@/components/ui/Reveal";
-import { CityArchivalBook } from "@/components/culture/CityArchivalBook";
+import { MarkdownRenderer } from "@/components/culture/MarkdownRenderer";
+import { MediaFrame } from "@/components/ui/MediaFrame";
 import { RelatedCitiesHub } from "@/components/culture/RelatedCitiesHub";
 import { RelatedRouteHub } from "@/components/culture/RelatedRouteHub";
 import type { StoryRoute } from "@/data/routes";
-import type { CityCulture, CityCultureSection } from "@/data/culture";
+import type { CityCulture } from "@/data/culture";
 
 type CultureDetailClientProps = {
   slug: string;
   initialCity: CityCulture | null;
   initialCityCultures: CityCulture[];
   initialRoutes: StoryRoute[];
+  previewOnly?: boolean;
 };
 
-export function CultureDetailClient({
-  slug,
-  initialCity,
-  initialCityCultures,
-  initialRoutes,
-}: CultureDetailClientProps) {
+export function CultureDetailClient({ slug, initialCity, initialCityCultures, initialRoutes, previewOnly = false }: CultureDetailClientProps) {
   const { t } = useLocale();
   const { previewData, previewEnabled } = usePreviewBridge<CityCulture>("city");
+  const { data: city, loading, error } = useApiQuery(() => fetchCityBySlug(slug), [slug], {
+    initialData: initialCity, revalidateOnMount: false, enabled: !previewOnly,
+  });
+  const { data: cities } = useApiQuery(() => fetchCities(), [], { initialData: initialCityCultures, revalidateOnMount: previewOnly });
+  const { data: routes } = useApiQuery(() => fetchRoutes(), [], { initialData: initialRoutes, revalidateOnMount: previewOnly });
+  const activeCity = previewData ?? city;
 
-  const { data: city, loading, error } = useApiQuery(
-    () => fetchCityBySlug(slug),
-    [slug],
-    { initialData: initialCity, revalidateOnMount: false },
-  );
+  if (previewOnly && !previewData) return <LoadingSpinner text="Loading preview..." />;
+  if (previewEnabled && !previewData) return <LoadingSpinner text="Loading preview..." />;
+  if (loading && !activeCity) return <LoadingSpinner text="Opening the city..." />;
+  if (error && !activeCity) return <ErrorState title="City file unavailable" message="This city's archive can't be reached right now. Please try again shortly." />;
+  if (!activeCity) notFound();
 
-  const { data: cityCultures } = useApiQuery(
-    () => fetchCities(),
-    [],
-    { initialData: initialCityCultures, revalidateOnMount: false },
-  );
-
-  const { data: storyRoutes } = useApiQuery(
-    () => fetchRoutes(),
-    [],
-    { initialData: initialRoutes, revalidateOnMount: false },
-  );
-
-  const activeCity = previewData ?? city ?? initialCity;
-
-  if (previewEnabled && !activeCity) {
-    return <LoadingSpinner text="Loading preview..." />;
-  }
-
-  if (loading && !activeCity) {
-    return <LoadingSpinner text="" />;
-  }
-
-  if (error && !activeCity) {
-    return (
-      <ErrorState
-        title="City file unavailable"
-        message="This city's archive can't be reached right now. Please try again shortly."
-      />
-    );
-  }
-
-  // The fetch finished successfully but returned no city for this slug, so
-  // render the framework's not-found page instead of silently bouncing.
-  if (!activeCity) {
-    notFound();
-  }
-
-  const relatedRoutes = (storyRoutes ?? []).filter((route) =>
-    activeCity.routeSlugs.includes(route.slug),
-  );
-  const showRoutes = relatedRoutes.length > 0;
-  const linkedRoute = relatedRoutes[0] ?? null;
-
-  const coverChapter: CityCultureSection = {
-    title: activeCity.label || "Field Cover",
-    body: activeCity.summary,
-    image: activeCity.image,
-    primaryMedia: activeCity.primaryMedia,
-    images: activeCity.gallery,
-    media: activeCity.galleryMedia,
-    stat: `City Atlas / Registry ${activeCity.adcode}`,
-    breathImage: activeCity.gallery?.[0],
-    breathQuote: activeCity.narrative,
-  };
-
-  const foodChapter: CityCultureSection | null = activeCity.foodImages.length > 0
-    ? {
-        title: activeCity.food || "Local Flavours",
-        body: activeCity.foodDescription,
-        image: activeCity.foodImages[0],
-        images: activeCity.foodImages,
-        stat: "Local Flavours",
-        breathImage: activeCity.foodImages[1] ?? activeCity.foodImages[0],
-      }
-    : null;
-
-  const bookSections: CityCultureSection[] = [
-    coverChapter,
-    ...activeCity.sections,
-    ...(foodChapter ? [foodChapter] : []),
-  ];
+  const relatedRoutes = (routes ?? []).filter(route => activeCity.routeSlugs.includes(route.slug));
+  const index = (cities ?? []).findIndex(item => item.slug === activeCity.slug);
+  const previous = index > 0 ? cities?.[index - 1] : undefined;
+  const next = index >= 0 ? cities?.[index + 1] : undefined;
 
   return (
-    <div className="min-h-screen bg-[var(--background)] bg-grain">
-      <section
-        id="section-masthead"
-        className="relative bg-[var(--paper-deep)] bg-grain"
-      >
-        <div className="site-container py-10 lg:py-14">
-          <Reveal>
-            <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_15rem] sm:items-end lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <span className="h-px w-10 bg-[var(--cinnabar)]" />
-                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    City Atlas / {activeCity.label}
-                  </p>
-                </div>
-                <h1 className="mt-3 font-[family:var(--font-display)] text-5xl leading-[0.95] tracking-tight text-[var(--river-deep)] md:text-6xl lg:text-7xl">
-                  {activeCity.name}
-                </h1>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {activeCity.tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className="border border-[var(--line)] bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-6 flex flex-wrap gap-4">
-                  <Link
-                    href={`/community?compose=1&location=${encodeURIComponent(activeCity.name)}&channel=Culture%20Desk&title=${encodeURIComponent(activeCity.name)}&note=${encodeURIComponent(`City note from ${activeCity.name}: `)}`}
-                    className="btn-outline px-5 py-3 text-[11px]"
-                  >
-                    Post city note
-                  </Link>
-                </div>
-              </div>
-
-              <div className="grid gap-4 self-start lg:self-end">
-                <div className="-rotate-1 border border-[var(--line)] bg-white px-4 py-3 scrapbook-shadow justify-self-start lg:justify-self-end">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-[var(--gold)]">Registry</p>
-                  <p className="font-[family:var(--font-display)] text-xl text-[var(--river-deep)]">
-                    {activeCity.adcode}
-                  </p>
-                </div>
-                {linkedRoute ? (
-                  <Link
-                    href={`/routes/${linkedRoute.slug}`}
-                    className="group border border-[var(--line)] bg-white/90 p-4 scrapbook-shadow transition-all hover:-rotate-1 hover:border-[var(--cinnabar)] lg:max-w-[22rem]"
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                      Linked Route
-                    </p>
-                    <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
-                      {linkedRoute.title}
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <span className="bg-[var(--river-deep)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white">
-                        {linkedRoute.culture}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
-                        {linkedRoute.duration}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-[var(--muted)] line-clamp-2">
-                      {linkedRoute.summary}
-                    </p>
-                    <p className="mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition group-hover:translate-x-1">
-                      <span>Open linked route</span>
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </p>
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-          </Reveal>
+    <div className="min-h-screen bg-[var(--background)]">
+      <header id="section-masthead" className="site-container pb-10 pt-8 sm:pb-14 lg:pt-14">
+        <Link href="/culture" className="inline-flex min-h-11 items-center text-sm text-[var(--river-deep)] underline underline-offset-4">All cities</Link>
+        <div className="mt-5 max-w-4xl">
+          <p className="text-sm text-[var(--muted)]">{activeCity.label}</p>
+          <h1 className="mt-3 text-balance font-[family:var(--font-display)] text-[clamp(2.75rem,7vw,5.5rem)] leading-[1.05] text-[var(--river-deep)]">{activeCity.name}</h1>
+          {activeCity.summary && !activeCity.contentMarkdown?.includes(activeCity.summary) && <p className="mt-6 max-w-[65ch] text-lg leading-[1.75] text-[var(--river-deep)]">{activeCity.summary}</p>}
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
+            {activeCity.publishedAt && <time dateTime={activeCity.publishedAt}>{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(activeCity.publishedAt))}</time>}
+            {activeCity.tags.length > 0 && <span>{activeCity.tags.join(" / ")}</span>}
+            <Link href={`/community?compose=1&location=${encodeURIComponent(activeCity.name)}&channel=Culture%20Desk&title=${encodeURIComponent(activeCity.name)}&note=${encodeURIComponent(`City note from ${activeCity.name}: `)}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline underline-offset-4">Post city note</Link>
+          </div>
         </div>
+      </header>
 
-        <div id="section-chapters" className="pb-10 lg:pb-14">
-          <CityArchivalBook
-            cityName={activeCity.name}
-            sections={bookSections}
-            fallbackImage={activeCity.image}
-            showIntro={false}
-            immersive
-          />
-        </div>
+      <article id="section-chapters" aria-label={`${activeCity.name} city archive`} className="site-container pb-16 sm:pb-24">
+        {activeCity.primaryMedia && !activeCity.contentMarkdown?.includes(activeCity.primaryMedia.url) && (
+          <div className="mx-auto mb-10 aspect-[16/9] max-w-5xl overflow-hidden bg-[var(--paper)]">
+            <MediaFrame asset={activeCity.primaryMedia} alt={activeCity.name} mode={activeCity.primaryMedia.type === "video" ? "interactive" : "image"} eager />
+          </div>
+        )}
+        <MarkdownRenderer content={activeCity.contentMarkdown ?? ""} />
+      </article>
 
-        <div
-          id="section-cities"
-          className="site-container border-t border-[var(--line)]/60 pt-10 lg:pt-14"
-        >
-          <Reveal>
-            <p className="mb-4 text-label text-[var(--cinnabar)]">
-              {activeCity.name}
-            </p>
-            <h2 className="max-w-4xl font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] md:text-5xl">
-              {showRoutes ? t("culture.detail.routeLinks") : t("culture.detail.nearbyCities")}
-            </h2>
-          </Reveal>
-
-          {showRoutes ? (
-            <RelatedRouteHub
-              routes={relatedRoutes}
-              cityAdcode={activeCity.adcode}
-              cityName={activeCity.name}
-              cities={cityCultures ?? []}
-            />
-          ) : (
-            <RelatedCitiesHub allCities={cityCultures ?? []} currentCity={activeCity} />
-          )}
-        </div>
+      <section id="section-cities" className="site-container border-t border-[var(--line)] py-12 sm:py-16">
+        <h2 className="text-balance font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] sm:text-4xl">{relatedRoutes.length ? t("culture.detail.routeLinks") : t("culture.detail.nearbyCities")}</h2>
+        {relatedRoutes.length ? <RelatedRouteHub routes={relatedRoutes} cityAdcode={activeCity.adcode} cityName={activeCity.name} cities={cities ?? []} /> : <RelatedCitiesHub allCities={cities ?? []} currentCity={activeCity} />}
       </section>
-
-      <section className="border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain py-16">
-        <div className="site-container">
-          <Reveal>
-            <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
-              <div className="w-full sm:w-auto">
-                {(() => {
-                  const idx = (cityCultures ?? []).findIndex((item) => item.slug === activeCity.slug);
-                  const prev = idx > 0 ? (cityCultures ?? [])[idx - 1] : null;
-                  const href = prev ? `/culture/${prev.slug}` : "/culture";
-                  const label = prev ? prev.name : "All cities";
-                  return (
-                    <Link
-                      href={href}
-                      className="group flex min-h-28 w-full items-center gap-6 border-8 border-white bg-white p-5 scrapbook-shadow transition-all hover:rotate-1 hover:border-[var(--cinnabar)] active:scale-[0.98] sm:w-auto sm:p-6"
-                    >
-                      <svg className="h-6 w-6 shrink-0 text-[var(--cinnabar)] transition-transform group-hover:-translate-x-2" viewBox="0 0 24 24" fill="none">
-                        <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <div className="text-left">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] group-hover:text-[var(--cinnabar)]">
-                          {"Previous Archive"}
-                        </p>
-                        <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{label}</p>
-                      </div>
-                    </Link>
-                  );
-                })()}
-              </div>
-
-              <div className="w-full sm:w-auto">
-                {(() => {
-                  const idx = (cityCultures ?? []).findIndex((item) => item.slug === activeCity.slug);
-                  const next = idx < (cityCultures ?? []).length - 1 ? (cityCultures ?? [])[idx + 1] : null;
-                  const href = next ? `/culture/${next.slug}` : "/culture";
-                  const label = next ? next.name : "All cities";
-                  return (
-                    <Link
-                      href={href}
-                      className="group flex min-h-28 w-full items-center justify-end gap-6 border-8 border-white bg-white p-5 scrapbook-shadow transition-all -rotate-1 hover:rotate-0 hover:border-[var(--cinnabar)] active:scale-[0.98] sm:w-auto sm:p-6"
-                    >
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] group-hover:text-[var(--cinnabar)]">
-                          {"Next Archive"}
-                        </p>
-                        <p className="mt-1 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)]">{label}</p>
-                      </div>
-                      <svg className="h-6 w-6 shrink-0 text-[var(--cinnabar)] transition-transform group-hover:translate-x-2" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12H19M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
-                  );
-                })()}
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <nav aria-label="City archives" className="site-container flex flex-wrap justify-between gap-6 border-t border-[var(--line)] py-8">
+        <Link href={previous ? `/culture/${previous.slug}` : "/culture"} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline underline-offset-4">{previous ? `Previous: ${previous.name}` : "All cities"}</Link>
+        {next && <Link href={`/culture/${next.slug}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline underline-offset-4">Next: {next.name}</Link>}
+      </nav>
     </div>
   );
 }

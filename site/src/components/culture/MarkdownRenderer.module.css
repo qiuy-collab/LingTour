@@ -1,0 +1,52 @@
+.prose {
+  width: 100%;
+  max-width: 70ch;
+  margin-inline: auto;
+  color: var(--river-deep);
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.prose > :first-child { margin-top: 0; }
+.prose p { margin-block: 1.3em; text-wrap: pretty; }
+.prose :is(h2, h3, h4, h5, h6) {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+  text-wrap: balance;
+  line-height: 1.15;
+  margin-block: 2em .7em;
+  scroll-margin-top: 7rem;
+}
+.prose h2 { font-size: clamp(1.9rem, 4vw, 3.15rem); }
+.prose h3 { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+.prose :is(h4, h5, h6) { font-size: 1.35rem; }
+.prose figure { margin: 2.5rem 0; }
+.prose img { display: block; max-width: 100%; height: auto; margin-inline: auto; }
+.prose blockquote {
+  margin: 2rem 0;
+  padding: 1.25rem clamp(1rem, 3vw, 2rem);
+  background: var(--paper);
+  border-block: 1px solid var(--line);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-style: italic;
+  line-height: 1.55;
+}
+.prose blockquote p { margin: 0; }
+.prose :is(ul, ol) { padding-inline-start: 1.5em; margin-block: 1.25em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { padding-inline-start: .2em; margin-block: .4em; }
+.prose :global(.task-list-item) { list-style: none; }
+.prose input { accent-color: var(--river-deep); margin-inline-end: .65em; }
+.prose a { text-decoration: underline; text-underline-offset: .2em; }
+.prose a:hover { color: var(--cinnabar); }
+.prose :is(a, [tabindex]):focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 4px; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin-block: 2.5rem; }
+.tableScroll { overflow-x: auto; max-width: 100%; margin-block: 2rem; }
+.prose table { width: 100%; border-collapse: collapse; font-size: .9em; line-height: 1.55; }
+.prose :is(th, td) { border: 1px solid var(--line); padding: .75rem 1rem; min-width: 8rem; text-align: left; }
+.prose th { background: var(--paper); font-weight: 700; }
+.prose pre { max-width: 100%; overflow-x: auto; padding: 1rem; background: var(--paper); line-height: 1.65; margin-block: 1.5rem; }
+.prose code { font-family: monospace; font-size: .88em; }
+.prose :not(pre) > code { background: var(--paper); padding: .12em .3em; }

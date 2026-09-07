@@ -28,6 +28,8 @@ export type CityCulture = {
   label: string;
   summary: string;
   narrative: string;
+  contentMarkdown?: string;
+  publishedAt?: string | null;
   image: string;
   primaryMedia?: MediaAsset | null;
   gallery: string[];

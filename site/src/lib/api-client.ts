@@ -110,6 +110,7 @@ export async function apiClient<T = unknown>(
   try {
     response = await fetch(url.toString(), {
       ...rest,
+      ...(/^\/public\/cities(?:\/|$)/.test(endpoint) ? { cache: "no-store" as const } : {}),
       headers,
       body: requestBody,
     });

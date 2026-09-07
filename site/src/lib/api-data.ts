@@ -10,7 +10,7 @@
  * The storefront is English-only; no locale is negotiated.
  */
 
-import { apiGet, apiPost } from "./api-client";
+import { apiGet, apiPost, ApiRequestError } from "./api-client";
 import type {
   Region,
   RegionSlug,
@@ -69,6 +69,7 @@ export function clearCache(): void {
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ Internal API response types 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 interface ApiRouteStop {
+  isFeatured?: boolean;
   id: string;
   sortOrder: number;
   time: string;
@@ -121,6 +122,8 @@ interface ApiCitySection {
 }
 
 interface ApiCity {
+  contentMarkdown: string;
+  publishedAt: string | null;
   id: string;
   slug: string;
   name: string;
@@ -289,13 +292,14 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
 
       return {
         time: s.time,
+        isFeatured: s.isFeatured,
         stop: s.stopName,
         plan: s.plan ?? "",
         story: s.story,
         details: s.details ?? [],
         culturalStory: s.culturalStory,
-        lat: s.lat ?? 0,
-        lng: s.lng ?? 0,
+        lat: s.lat ?? null,
+        lng: s.lng ?? null,
         placeDetail: s.placeDetail,
         meal: s.meal ?? undefined,
         hotel: s.hotel ?? undefined,
@@ -333,6 +337,8 @@ function mapCity(apiCity: ApiCity): CityCulture {
     adcode: apiCity.adcode ?? 0,
     label: apiCity.regionLabel,
     summary: apiCity.editorIntro ?? "",
+    contentMarkdown: apiCity.contentMarkdown ?? "",
+    publishedAt: apiCity.publishedAt,
     narrative: apiCity.heroNarrative,
     image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
     primaryMedia,
@@ -599,8 +605,9 @@ export async function fetchCityBySlug(
     const res = await apiGet<ApiCity>(`/public/cities/${slug}`, {
     });
     return mapCity(res);
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.statusCode === 404) return null;
+    throw error;
   }
 }
 

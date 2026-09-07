@@ -13,6 +13,8 @@
 # testing
 /coverage
 
+/public/maplibre/
+
 # next.js
 /.next/
 /out/

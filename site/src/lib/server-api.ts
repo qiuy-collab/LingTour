@@ -42,6 +42,12 @@ async function getServerBaseUrl(): Promise<string> {
  *
  * Unlike the client `apiGet`, this does NOT depend on `window` or `localStorage`.
  */
+export class ServerApiError extends Error {
+  constructor(public statusCode: number, message: string) {
+    super(message);
+  }
+}
+
 export async function serverGet<T = unknown>(
   endpoint: string,
   params?: Record<string, string | number | undefined>,
@@ -70,11 +76,14 @@ export async function serverGet<T = unknown>(
 
   const response = await fetch(url.toString(), {
     headers: headersInit,
-    next: { revalidate: 60 }, // ISR: revalidate every 60 seconds
+    ...(/^\/public\/cities(?:\/|$)/.test(endpoint)
+      ? { cache: "no-store" as const }
+      : { next: { revalidate: 60 } }),
   });
 
   if (!response.ok) {
-    throw new Error(
+    throw new ServerApiError(
+      response.status,
       `API ${endpoint} returned ${response.status}: ${response.statusText}`,
     );
   }

@@ -1,4 +1,5 @@
 import { cache, Suspense } from "react";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { fetchCities } from "@/lib/api-data";
 import {
@@ -65,6 +66,7 @@ export default async function CityCulturePage({
     fetchCityCulturesServer(),
     fetchRoutesServer(),
   ]);
+  if (!initialCity) notFound();
   const { CultureDetailClient } = await import("./CultureDetailClient");
   return (
     <Suspense fallback={null}>

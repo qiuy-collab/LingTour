@@ -5,9 +5,9 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const isExport = process.env.NEXT_PHASE === "phase-production-build" || process.env.NEXT_BUILD === "1";
 const isStandalone = process.env.NEXT_OUTPUT === "standalone";
 const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
-const apiOrigin = apiBase.startsWith("http")
-  ? new URL(apiBase).origin
-  : process.env.INTERNAL_API_ORIGIN ?? "https://api.lingfengtranstour.cn";
+const apiOrigin = new URL(apiBase.startsWith("http")
+  ? apiBase
+  : process.env.INTERNAL_API_ORIGIN ?? "https://api.lingfengtranstour.cn").origin;
 
 const nextConfig: NextConfig = {
   output: isStandalone ? "standalone" : isExport ? "export" : undefined,

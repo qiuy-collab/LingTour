@@ -8,7 +8,7 @@
  * Returns the same `HomeData` shape so the client component can consume it directly.
  */
 
-import { serverGet } from "./server-api";
+import { serverGet, ServerApiError } from "./server-api";
 import type { EventData, InterpretingData } from "./api-data";
 import type { CityCulture } from "@/data/culture";
 import type {
@@ -64,6 +64,7 @@ interface PaginatedResponse<T> {
 }
 
 interface ApiRouteStop {
+  isFeatured?: boolean;
   id: string;
   sortOrder: number;
   time: string;
@@ -116,6 +117,8 @@ interface ApiCitySection {
 }
 
 interface ApiCity {
+  contentMarkdown: string;
+  publishedAt: string | null;
   id: string;
   slug: string;
   name: string;
@@ -262,6 +265,7 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
 
         return {
           time: s.time,
+          isFeatured: s.isFeatured,
           stop: s.stopName,
           plan: s.plan ?? "",
           story: s.story,
@@ -271,8 +275,8 @@ function mapRoute(apiRoute: ApiStoryRoute): StoryRoute {
           primaryMedia,
           images,
           media,
-          lat: s.lat ?? 0,
-          lng: s.lng ?? 0,
+          lat: s.lat ?? null,
+          lng: s.lng ?? null,
           meal: s.meal ?? undefined,
           hotel: s.hotel ?? undefined,
           transit: s.transit ?? undefined,
@@ -436,6 +440,8 @@ function mapCityCulture(c: ApiCity): CityCulture {
     adcode: c.adcode ?? 0,
     label: c.regionLabel,
     summary: c.editorIntro ?? "",
+    contentMarkdown: c.contentMarkdown ?? "",
+    publishedAt: c.publishedAt,
     narrative: c.heroNarrative,
     image: mediaPoster(primaryMedia, gallery[0] || cityFallbackImage),
     primaryMedia,
@@ -493,8 +499,9 @@ export async function fetchCityCultureBySlugServer(
     if (!res?.slug) return null;
     const city = mapCityCulture(res);
     return hasVisibleCityContent(city) ? city : null;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof ServerApiError && error.statusCode === 404) return null;
+    throw error;
   }
 }
 
