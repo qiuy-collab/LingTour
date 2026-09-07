@@ -9,12 +9,14 @@ export interface DirtyFormOptions {
   beforeUnload?: boolean
   /** Whether to show route leave warning (default: true) */
   routeLeave?: boolean
+  /** Snapshot after mount (disable when the caller explicitly initializes from async data). */
+  initializeOnMount?: boolean
   /** Custom warning message */
   message?: string
 }
 
 export function useDirtyForm(options: DirtyFormOptions) {
-  const { form, beforeUnload = true, routeLeave = true, message = '当前页面有未保存的修改，确定离开吗？' } = options
+  const { form, beforeUnload = true, routeLeave = true, initializeOnMount = true, message = '当前页面有未保存的修改，确定离开吗？' } = options
 
   const isDirty = ref(false)
   const snapshot = ref<string>('')
@@ -58,11 +60,13 @@ export function useDirtyForm(options: DirtyFormOptions) {
 
   onMounted(() => {
     // Delay snapshot to allow form to be populated from API
-    setTimeout(() => {
-      if (isEnabled.value) {
-        takeSnapshot()
-      }
-    }, 500)
+    if (initializeOnMount) {
+      setTimeout(() => {
+        if (isEnabled.value) {
+          takeSnapshot()
+        }
+      }, 500)
+    }
 
     if (beforeUnload) {
       window.addEventListener('beforeunload', handleBeforeUnload)

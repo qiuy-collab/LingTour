@@ -30,6 +30,8 @@ export interface City {
   tags?: any[]
   editorIntro: any
   editorIntroEn?: string
+  contentMarkdown: string
+  publishedAt?: string | null
   galleryImages?: string[]
   galleryMedia?: MediaAsset[]
   foodTitle: any
@@ -37,7 +39,7 @@ export interface City {
   foodDescription: any
   foodDescriptionEn?: string
   foodImages?: string[]
-  adcode?: number
+  adcode?: number | null
   sections?: CitySection[]
   published?: boolean
   status?: 'draft' | 'published'
@@ -53,18 +55,19 @@ export interface CityFormData {
   slug: string
   name: I18nObject
   regionLabel: I18nObject
-  adcode?: number
+  adcode?: number | null
   heroImage: string
   heroMedia?: MediaAsset | null
-  heroNarrative: I18nObject
+  heroNarrative?: I18nObject
   tags: I18nObject[]
   editorIntro: I18nObject
-  galleryImages: string[]
+  contentMarkdown: string
+  galleryImages?: string[]
   galleryMedia?: MediaAsset[]
-  foodTitle: I18nObject
-  foodDescription: I18nObject
-  foodImages: string[]
-  sections: CitySection[]
+  foodTitle?: I18nObject
+  foodDescription?: I18nObject
+  foodImages?: string[]
+  sections?: CitySection[]
   published?: boolean
   status?: 'draft' | 'published'
   routeSlugs?: string[]

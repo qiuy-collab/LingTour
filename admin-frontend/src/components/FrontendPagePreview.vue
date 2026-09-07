@@ -88,6 +88,19 @@ function list(values: unknown) {
 }
 
 function buildCityPreview() {
+  function text(value: unknown, fallback = "") {
+    const content = typeof value === "string" ? value : value && typeof value === "object" ? (value as Record<string, unknown>).en : undefined;
+    return typeof content === "string" ? content : fallback;
+  }
+  function media(value: any) {
+    if (!value || typeof value !== "object") return undefined;
+    return {
+      ...value,
+      url: resolveMediaUrl(value.url),
+      poster: value.poster ? resolveMediaUrl(value.poster) : undefined,
+      alt: text(value.alt),
+    };
+  }
   const sections = list(props.model.sections).map(
     (section: any, index: number) => {
       const statParts = [
@@ -98,6 +111,9 @@ function buildCityPreview() {
         title: text(section?.title, `Section ${index + 1}`),
         body: text(section?.body),
         image: resolveMediaUrl(section?.image),
+        primaryMedia: media(section?.primaryMedia),
+        media: list(section?.media).map(media),
+        images: list(section?.images).map(resolveMediaUrl),
         stat: statParts.join(" / "),
         breathImage: resolveMediaUrl(section?.breathImage),
         breathQuote: text(section?.breathQuote),
@@ -111,8 +127,12 @@ function buildCityPreview() {
     adcode: Number(props.model.adcode || 0),
     label: text(props.model.regionLabel, "Preview Label"),
     summary: text(props.model.editorIntro),
+    contentMarkdown: typeof props.model.contentMarkdown === "string" ? props.model.contentMarkdown : "",
+    publishedAt: props.model.publishedAt ?? null,
     narrative: text(props.model.heroNarrative),
     image: resolveMediaUrl(props.model.heroImage),
+    primaryMedia: media(props.model.heroMedia),
+    galleryMedia: list(props.model.galleryMedia).map(media),
     gallery: list(props.model.galleryImages).map((item) =>
       resolveMediaUrl(item),
     ),
@@ -150,20 +170,34 @@ function buildRoutePreview() {
     mapViewBox: "0 0 900 600",
     itinerary: list(props.model.stops).map((stop: any) => ({
       time: stop?.time || "",
+      isFeatured: Boolean(stop?.isFeatured),
       stop: text(stop?.stopName, "Preview Stop"),
-      plan: "",
+      plan: stop?.plan || "",
       story: text(stop?.story),
       details: list(stop?.details)
         .map((detail) => text(detail))
         .filter(Boolean),
       culturalStory: text(stop?.culturalStory),
-      lat: Number(stop?.lat || 0),
-      lng: Number(stop?.lng || 0),
+      lat: stop?.lat == null ? null : Number(stop.lat),
+      lng: stop?.lng == null ? null : Number(stop.lng),
       placeDetail: undefined,
       meal: text(stop?.meal) || undefined,
       hotel: text(stop?.hotel) || undefined,
       transit: text(stop?.transit) || undefined,
       image: resolveMediaUrl(stop?.image) || undefined,
+      primaryMedia: stop?.primaryMedia ? {
+        ...stop.primaryMedia,
+        url: resolveMediaUrl(stop.primaryMedia.url),
+        poster: stop.primaryMedia.poster ? resolveMediaUrl(stop.primaryMedia.poster) : undefined,
+        alt: text(stop.primaryMedia.alt),
+      } : undefined,
+      images: list(stop?.images).map(resolveMediaUrl),
+      media: list(stop?.media).map((asset: any) => ({
+        ...asset,
+        url: resolveMediaUrl(asset.url),
+        poster: asset.poster ? resolveMediaUrl(asset.poster) : undefined,
+        alt: text(asset.alt),
+      })),
     })),
   };
 }
@@ -320,7 +354,7 @@ const iframePath = computed(() => {
   // own path produces a real static-server 404 before the preview bridge can
   // receive its payload. These seeded pages are guaranteed build outputs and
   // act only as shells; previewPayload replaces their content immediately.
-  if (props.type === "city") return "/culture/zhanjiang/";
+  if (props.type === "city") return "/preview/city/";
   if (props.type === "route") return "/routes/southern-sea-table/";
   if (props.type === "product")
     return "/shop/products/volcanic-soil-bowl/";
@@ -397,11 +431,15 @@ function schedulePostPreview() {
 }
 
 function handlePreviewMessage(event: MessageEvent) {
-  if (event.origin !== previewOrigin || event.source !== popupWindow) return;
+  if (event.origin !== previewOrigin) return;
+  const target = event.source === iframeRef.value?.contentWindow
+    ? iframeRef.value.contentWindow
+    : event.source === popupWindow ? popupWindow : null;
+  if (!target) return;
   const payload = event.data as Record<string, unknown> | undefined;
   if (!payload || payload.channel !== "lingtour-preview-ready") return;
   if (payload.key !== previewKey.value || payload.type !== props.type) return;
-  postPreviewTo(popupWindow);
+  postPreviewTo(target);
 }
 
 function openPreviewWindow() {

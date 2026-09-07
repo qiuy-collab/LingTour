@@ -76,6 +76,11 @@ function chunkNameForElementModule(id: string) {
 
 function chunkNameForModule(id: string) {
   if (id.includes('node_modules')) {
+    const normalizedId = id.replace(/\\/g, '/')
+    // Keep the culture editor and language engines out of the shared login bundle.
+    if (/\/node_modules\/(?:md-editor-v3|@codemirror\/|@lezer\/|@vavt\/|markdown-it)/.test(normalizedId)) {
+      return 'vendor-markdown'
+    }
     const elementChunkName = chunkNameForElementModule(id)
     if (elementChunkName) {
       return elementChunkName
@@ -141,8 +146,11 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            return chunkNameForModule(id)
+          codeSplitting: {
+            groups: [
+              { name: 'vendor-preload', test: /vite\/preload-helper/, priority: 100 },
+              { name: (id) => chunkNameForModule(id) ?? null },
+            ],
           },
         },
       },

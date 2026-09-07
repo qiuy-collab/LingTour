@@ -14,6 +14,8 @@ export interface RouteStop {
   id?: string
   sortOrder: number
   time: string
+  isFeatured?: boolean
+  plan?: string
   stopName: any
   story: any
   culturalStory: any
@@ -22,8 +24,8 @@ export interface RouteStop {
   primaryMedia?: MediaAsset | null
   images?: string[]
   media?: MediaAsset[]
-  lat?: number
-  lng?: number
+  lat?: number | null
+  lng?: number | null
   meal?: any
   hotel?: any
   transit?: any

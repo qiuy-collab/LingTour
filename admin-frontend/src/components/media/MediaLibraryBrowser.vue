@@ -434,7 +434,19 @@ async function handleUpload(event: Event) {
   const inputFiles = input.files;
   if (!inputFiles || inputFiles.length === 0) return;
 
+  if (uploading.value) return;
   const filesArr = Array.from(inputFiles);
+  // File-picker accept is only a hint; pasted/renamed files still need validation.
+  const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const invalidImage = filesArr.find(file =>
+    (props.mediaType === 'image' || file.type.startsWith('image/')) &&
+    (!imageTypes.includes(file.type) || file.size > 10 * 1024 * 1024 || !file.size),
+  );
+  if (invalidImage) {
+    ElMessage.error(`“${invalidImage.name}”不符合要求，请使用 10 MB 以内的 JPG、PNG、WebP 或 GIF 图片`);
+    input.value = '';
+    return;
+  }
   uploading.value = true;
   uploadProgress.value = 0;
   const totalCount = filesArr.length;
@@ -604,7 +616,7 @@ onBeforeUnmount(() => {
         </el-input>
 
         <el-button
-          v-if="orphanCount > 0"
+          v-if="!isPickerMode && orphanCount > 0"
           :type="showOrphans ? 'warning' : 'default'"
           size="small"
           @click="toggleOrphanView"

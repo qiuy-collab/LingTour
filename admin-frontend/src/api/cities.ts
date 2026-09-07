@@ -9,7 +9,8 @@ export const citiesApi = {
       params: {
         page: params.page,
         limit: params.pageSize,
-        q: params.keyword || undefined,
+        q: params.keyword?.trim() || undefined,
+        rawI18n: true,
         published:
           params.status === 'published'
             ? true
@@ -37,22 +38,22 @@ export const citiesApi = {
 
   /** 新增城市 */
   createCity(data: CityFormData) {
-    return request.post<ApiResponse<City>>('/cities', data)
+    return request.post<ApiResponse<City>>('/cities', data, { params: { rawI18n: true } })
   },
 
   /** 更新城市 */
   updateCity(id: string, data: Partial<CityFormData>) {
-    return request.put<ApiResponse<City>>(`/cities/${id}`, data)
+    return request.put<ApiResponse<City>>(`/cities/${id}`, data, { params: { rawI18n: true } })
   },
 
   /** 发布城市 */
   publishCity(id: string) {
-    return request.patch<ApiResponse<City>>(`/cities/${id}/publish`)
+    return request.patch<ApiResponse<City>>(`/cities/${id}/publish`, undefined, { params: { rawI18n: true } })
   },
 
   /** 下架城市 */
   unpublishCity(id: string) {
-    return request.patch<ApiResponse<City>>(`/cities/${id}/unpublish`)
+    return request.patch<ApiResponse<City>>(`/cities/${id}/unpublish`, undefined, { params: { rawI18n: true } })
   },
 
   /** 删除城市 */

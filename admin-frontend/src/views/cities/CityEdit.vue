@@ -1,708 +1,373 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import type { FormInstance } from "element-plus";
-import { ArrowDown, ArrowUp, Delete, Plus } from "@element-plus/icons-vue";
-import { citiesApi } from "@/api/cities";
-import { routesApi } from "@/api/routes";
-import { toI18n } from "@/types/common";
-import { extractErrorMessage } from "@/utils/i18n";
-import { useDirtyForm } from "@/composables/useDirtyForm";
-import type { CityFormData } from "@/types/city";
-import I18nInput from "@/components/I18nInput.vue";
-import I18nMarkdownEditor from "@/components/I18nMarkdownEditor.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
-import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
-import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
-import FrontendPreviewDrawer from "@/components/editor/FrontendPreviewDrawer.vue";
-import EditorPageHeader from "@/components/editor/EditorPageHeader.vue";
-import EditorWorkspace from "@/components/editor/EditorWorkspace.vue";
-import {
-  GUANGDONG_ADCODE_OPTIONS,
-  formatAdcodeLabel,
-} from "@/constants/guangdongRegions";
-import {
-  isIncompleteVideoMedia,
-  legacyImageForMedia,
-  resolveMediaGallery,
-  resolvePrimaryMedia,
-} from "@/types/media";
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { citiesApi } from '@/api/cities'
+import { routesApi } from '@/api/routes'
+import { pickI18n, type I18nObject } from '@/types/common'
+import { extractErrorMessage } from '@/utils/i18n'
+import { useDirtyForm } from '@/composables/useDirtyForm'
+import type { City, CityFormData } from '@/types/city'
+import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import MediaAssetInput from '@/components/media/MediaAssetInput.vue'
+import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
+import FrontendPreviewDrawer from '@/components/editor/FrontendPreviewDrawer.vue'
+import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
+import { GUANGDONG_ADCODE_OPTIONS, formatAdcodeLabel } from '@/constants/guangdongRegions'
+import { isIncompleteVideoMedia, legacyImageForMedia, resolvePrimaryMedia } from '@/types/media'
 
-const router = useRouter();
-const route = useRoute();
-const isEdit = computed(() => Boolean(route.params.id));
-const loading = ref(false);
-const saving = ref(false);
-const mobilePreviewVisible = ref(false);
-const formRef = ref<FormInstance>();
-const activeChapter = ref("overview");
+const router = useRouter()
+const route = useRoute()
+const savedId = ref(typeof route.params.id === 'string' ? route.params.id : '')
+const loading = ref(true)
+const saving = ref(false)
+const publishing = ref(false)
+const uploading = ref(false)
+const busy = computed(() => loading.value || saving.value || publishing.value || uploading.value)
+const mobilePreviewVisible = ref(false)
+const formRef = ref<FormInstance>()
+const published = ref(false)
+const publishedAt = ref<string | null>(null)
+const savedAt = ref('')
+const saveError = ref('')
+const loadError = ref('')
+const newTag = ref('')
+const routeOptions = ref<Array<{ slug: string; title: string }>>([])
+const cityOptions = ref<Array<{ slug: string; name: string }>>([])
+const optionsError = ref('')
+// Legacy article structures are read for the real preview only and never submitted.
+const legacy = ref<Partial<City>>({})
 
-const routeOptions = ref<
-  Array<{ id: string; slug: string; title: string; cityName: string }>
->([]);
-
-const rules = {
-  slug: [
-    { required: true, message: "请输入 Slug", trigger: "blur" },
-    {
-      pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/,
-      message: "Slug 必须是 kebab-case 格式",
-      trigger: "blur",
-    },
-  ],
-  "name.en": [
-    { required: true, message: "请输入城市名称", trigger: "blur" },
-  ],
-};
-
-const form = reactive<any>({
-  slug: "",
-  name: { zh: "", en: "" },
-  regionLabel: { zh: "", en: "" },
-  adcode: undefined,
-  heroImage: "",
+const form = reactive<CityFormData & { heroMedia: NonNullable<CityFormData['heroMedia']> | null }>({
+  slug: '',
+  name: { zh: '', en: '' },
+  regionLabel: { zh: '', en: '' },
+  adcode: null,
+  heroImage: '',
   heroMedia: null,
-  heroNarrative: { zh: "", en: "" },
   tags: [],
-  editorIntro: { zh: "", en: "" },
-  galleryImages: [],
-  galleryMedia: [],
-  foodTitle: { zh: "", en: "" },
-  foodDescription: { zh: "", en: "" },
-  foodImages: [],
-  sections: [],
-  status: "draft",
+  editorIntro: { zh: '', en: '' },
+  contentMarkdown: '',
   routeSlugs: [],
   relatedCitySlugs: [],
-});
-
-const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form });
-
-const newTag = reactive({ zh: "", en: "" });
-
-function normalizeI18nValue(value: unknown) {
-  return toI18n(value);
+})
+const { isDirty, resetDirty } = useDirtyForm({ form, initializeOnMount: false })
+const previewModel = computed(() => ({ ...legacy.value, ...form, publishedAt: publishedAt.value }))
+const rules: FormRules = {
+  slug: [
+    { required: true, message: '请输入 Slug', trigger: 'blur' },
+    { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case 格式', trigger: 'blur' },
+  ],
+  'name.en': [{ required: true, whitespace: true, message: '请输入城市名称', trigger: 'blur' }],
+  contentMarkdown: [{ max: 200000, message: '正文不能超过 200000 字符', trigger: 'change' }],
 }
+const saveState = computed(() => isDirty.value ? '未保存' : savedAt.value ? `已保存 ${formatTime(savedAt.value)}` : '新草稿')
 
-function normalizeTagList(value: unknown) {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => normalizeI18nValue(item))
-    .filter((item) => item.zh.trim() || item.en.trim());
+function formatTime(value: string) {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN')
 }
-
-function normalizeSection(section: any, index: number) {
-  return {
-    id: section.id || `section-${index}`,
-    title: normalizeI18nValue(section.title),
-    body: normalizeI18nValue(section.body),
-    image: section.image || "",
-    primaryMedia: resolvePrimaryMedia(
-      section.primaryMedia,
-      section.image || "",
-    ),
-    images: Array.isArray(section.images) ? section.images : [],
-    media: resolveMediaGallery(section.media, section.images || []),
-    statLabel: normalizeI18nValue(section.statLabel),
-    statValue: normalizeI18nValue(section.statValue),
-    breathImage: section.breathImage || "",
-    breathQuote: normalizeI18nValue(section.breathQuote),
-    sortOrder: section.sortOrder ?? index,
-  };
+function cityI18n(value: unknown): I18nObject {
+  if (typeof value === 'string') return { en: value, zh: '' }
+  const data = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+  return { en: typeof data.en === 'string' ? data.en : '', zh: typeof data.zh === 'string' ? data.zh : '' }
 }
-
+function normalizeTags(value: unknown): I18nObject[] {
+  return Array.isArray(value) ? value.map(cityI18n).filter(tag => tag.en.trim() || tag.zh.trim()) : []
+}
 function addTag() {
-  if (!newTag.en.trim()) return;
-  form.tags.push({ zh: "", en: newTag.en.trim() });
-  newTag.en = "";
+  if (!newTag.value.trim() || busy.value) return
+  form.tags.push({ zh: '', en: newTag.value.trim() })
+  newTag.value = ''
 }
-
-function removeTag(index: number) {
-  form.tags.splice(index, 1);
-}
-
-function addSection() {
-  form.sections.push({
-    id: `section-${Date.now()}`,
-    title: { zh: "", en: "" },
-    body: { zh: "", en: "" },
-    image: "",
-    primaryMedia: null,
-    images: [],
-    media: [],
-    statLabel: { zh: "", en: "" },
-    statValue: { zh: "", en: "" },
-    breathImage: "",
-    breathQuote: { zh: "", en: "" },
-    sortOrder: form.sections.length,
-  });
-  activeChapter.value = `section-${form.sections.length - 1}`;
-}
-
-function removeSection(index: number) {
-  form.sections.splice(index, 1);
-  reindexSections();
-  if (form.sections.length === 0) {
-    activeChapter.value = "overview";
-    return;
-  }
-  activeChapter.value = `section-${Math.min(index, form.sections.length - 1)}`;
-}
-
-function moveSection(index: number, delta: -1 | 1) {
-  const target = index + delta;
-  if (target < 0 || target >= form.sections.length) return;
-  [form.sections[index], form.sections[target]] = [
-    form.sections[target],
-    form.sections[index],
-  ];
-  reindexSections();
-}
-
-function reindexSections() {
-  form.sections.forEach((section: any, index: number) => {
-    section.sortOrder = index;
-  });
-}
-
-const chapterTabs = computed(() => [
-  { key: "overview", label: "概览" },
-  { key: "intro", label: "导语" },
-  ...form.sections.map((section: any, index: number) => ({
-    key: `section-${index}`,
-    label:
-      section.title?.zh?.trim() ||
-      section.title?.en?.trim() ||
-      `章节 ${index + 1}`,
-    badge: `#${index + 1}`,
-  })),
-  { key: "food", label: "风味" },
-]);
-
-const activeSectionIndex = computed(() => {
-  const match = /^section-(\d+)$/.exec(activeChapter.value);
-  return match ? Number(match[1]) : -1;
-});
-
-const activeSection = computed(() =>
-  activeSectionIndex.value >= 0
-    ? form.sections[activeSectionIndex.value]
-    : null,
-);
-
-const isSectionChapter = computed(() => activeSectionIndex.value >= 0);
-
-function moveActiveSection(delta: -1 | 1) {
-  if (activeSectionIndex.value < 0) return;
-  const currentIndex = activeSectionIndex.value;
-  moveSection(currentIndex, delta);
-  const targetIndex = currentIndex + delta;
-  if (targetIndex >= 0 && targetIndex < form.sections.length) {
-    activeChapter.value = `section-${targetIndex}`;
-  }
-}
-
-async function loadRouteOptions() {
-  const res = await routesApi.getRoutes({ page: 1, pageSize: 200 });
-  routeOptions.value = (res.data.data.data || []).map((item: any) => ({
-    id: item.id,
-    slug: item.slug,
-    title: item.title?.zh || item.title?.en || item.slug,
-    cityName: item.cityName?.zh || item.cityName?.en || "",
-  }));
-}
-
-function fillFromApi(data: any) {
-  Object.assign(form, {
-    slug: data.slug || "",
-    name: toI18n(data.name),
-    regionLabel: toI18n(data.regionLabel),
-    adcode: data.adcode ?? undefined,
-    heroImage: data.heroImage || "",
-    heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ""),
-    heroNarrative: toI18n(data.heroNarrative),
-    tags: normalizeTagList(data.tags),
-    editorIntro: toI18n(data.editorIntro),
+function fillFromApi(data: City) {
+  legacy.value = {
+    heroNarrative: data.heroNarrative,
     galleryImages: data.galleryImages || [],
-    galleryMedia: resolveMediaGallery(
-      data.galleryMedia,
-      data.galleryImages || [],
-    ),
-    foodTitle: toI18n(data.foodTitle),
-    foodDescription: toI18n(data.foodDescription),
+    galleryMedia: data.galleryMedia || [],
+    foodTitle: data.foodTitle,
+    foodDescription: data.foodDescription,
     foodImages: data.foodImages || [],
-    sections: (data.sections || []).map((section: any, index: number) =>
-      normalizeSection(section, index),
-    ),
-    status: data.published ? "published" : "draft",
-    routeSlugs:
-      data.routeSlugs || data.routes?.map((item: any) => item.slug) || [],
+    sections: data.sections || [],
+  }
+  Object.assign(form, {
+    slug: data.slug || '',
+    name: cityI18n(data.name),
+    regionLabel: cityI18n(data.regionLabel),
+    adcode: data.adcode ?? null,
+    heroImage: data.heroImage || '',
+    heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ''),
+    tags: normalizeTags(data.tags),
+    editorIntro: cityI18n(data.editorIntro),
+    contentMarkdown: typeof data.contentMarkdown === 'string' ? data.contentMarkdown : '',
+    routeSlugs: data.routeSlugs || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
-  });
+  })
+  published.value = Boolean(data.published)
+  publishedAt.value = data.publishedAt ?? null
+  savedAt.value = data.updatedAt || data.createdAt || ''
 }
-
-function toPayload() {
-  const heroMedia = resolvePrimaryMedia(form.heroMedia, form.heroImage);
+function toPayload(): CityFormData {
+  const heroMedia = resolvePrimaryMedia(form.heroMedia, form.heroImage)
+  // Explicit allowlist: never send publication state or legacy sections/food.
   return {
     slug: form.slug,
-    name: form.name,
-    regionLabel: form.regionLabel,
-    adcode: form.adcode,
+    name: { ...form.name },
+    regionLabel: { ...form.regionLabel },
+    adcode: form.adcode ?? null,
     heroImage: legacyImageForMedia(heroMedia, form.heroImage),
     heroMedia,
-    heroNarrative: form.heroNarrative,
-    tags: normalizeTagList(form.tags),
-    editorIntro: form.editorIntro,
-    galleryImages: form.galleryImages,
-    galleryMedia: resolveMediaGallery(form.galleryMedia, form.galleryImages),
-    foodTitle: form.foodTitle,
-    foodDescription: form.foodDescription,
-    foodImages: form.foodImages,
-    published: form.status === "published",
-    routeSlugs: form.routeSlugs,
-    relatedCitySlugs: form.relatedCitySlugs,
-    sections: form.sections.map((section: any, index: number) => ({
-      title: normalizeI18nValue(section.title),
-      body: normalizeI18nValue(section.body),
-      image: legacyImageForMedia(section.primaryMedia, section.image || ""),
-      primaryMedia: resolvePrimaryMedia(
-        section.primaryMedia,
-        section.image || "",
-      ),
-      images: section.images || [],
-      media: resolveMediaGallery(section.media, section.images || []),
-      statLabel: normalizeI18nValue(section.statLabel),
-      statValue: normalizeI18nValue(section.statValue),
-      breathImage: section.breathImage || "",
-      breathQuote: normalizeI18nValue(section.breathQuote),
-      sortOrder: index,
-    })),
-  };
-}
-
-watch(
-  () => form.heroMedia,
-  (value) => {
-    if (!value) return;
-    const nextLegacyImage = legacyImageForMedia(value, "");
-    if (nextLegacyImage !== form.heroImage) {
-      form.heroImage = nextLegacyImage;
-    }
-  },
-  { deep: true },
-);
-
-watch(
-  () => form.sections,
-  (sections) => {
-    sections.forEach((section: any) => {
-      if (!section.primaryMedia) return;
-      const nextLegacyImage = legacyImageForMedia(section.primaryMedia, "");
-      if (nextLegacyImage !== section.image) {
-        section.image = nextLegacyImage;
-      }
-    });
-  },
-  { deep: true },
-);
-
-onMounted(async () => {
-  loading.value = true;
-  try {
-    await loadRouteOptions();
-    if (isEdit.value) {
-      const res = await citiesApi.getCity(route.params.id as string);
-      fillFromApi(res.data.data);
-    }
-    resetDirty();
-  } catch (err: any) {
-    ElMessage.error(extractErrorMessage(err, "加载城市数据失败"));
-    router.push("/admin/cities");
-  } finally {
-    loading.value = false;
+    tags: normalizeTags(form.tags),
+    editorIntro: { ...form.editorIntro },
+    contentMarkdown: form.contentMarkdown,
+    routeSlugs: [...(form.routeSlugs || [])],
+    relatedCitySlugs: [...(form.relatedCitySlugs || [])],
   }
-});
+}
+watch(() => form.heroMedia, value => {
+  form.heroImage = legacyImageForMedia(value, '')
+}, { deep: true })
 
+async function loadOptions() {
+  optionsError.value = ''
+  const [routes, cities] = await Promise.allSettled([
+    routesApi.getRoutes({ page: 1, pageSize: 200 }),
+    citiesApi.getCities({ page: 1, pageSize: 100 }),
+  ])
+  if (routes.status === 'fulfilled') {
+    routeOptions.value = (routes.value.data.data.data || []).map((item: { slug: string; title: unknown }) => ({
+      slug: item.slug, title: pickI18n(item.title, 'en') || item.slug,
+    }))
+  }
+  if (cities.status === 'fulfilled') {
+    cityOptions.value = (cities.value.data.data.data || []).map((item: City) => ({
+      slug: item.slug, name: pickI18n(item.name, 'en') || item.slug,
+    }))
+  }
+  if (routes.status === 'rejected' || cities.status === 'rejected') optionsError.value = '部分关联选项加载失败，已有链接会保留。'
+}
+async function loadCity() {
+  loading.value = true
+  loadError.value = ''
+  try {
+    if (savedId.value) {
+      const response = await citiesApi.getCity(savedId.value)
+      fillFromApi(response.data.data)
+    }
+    await nextTick()
+    resetDirty()
+  } catch (error) {
+    loadError.value = extractErrorMessage(error, '加载城市数据失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+onMounted(() => { void loadCity(); void loadOptions() })
+
+async function validate(requireBody: boolean) {
+  try { await formRef.value?.validate() } catch {
+    ElMessage.warning('请检查名称、Slug 和正文长度')
+    return false
+  }
+  if (requireBody && !form.contentMarkdown.trim()) {
+    ElMessage.warning('发布前请填写 Markdown 正文')
+    return false
+  }
+  if (requireBody && isIncompleteVideoMedia(form.heroMedia)) {
+    ElMessage.warning('发布前请补全封面视频文件和封面图')
+    return false
+  }
+  return true
+}
+async function persist(): Promise<boolean> {
+  saving.value = true
+  saveError.value = ''
+  try {
+    const response = savedId.value
+      ? await citiesApi.updateCity(savedId.value, toPayload())
+      : await citiesApi.createCity(toPayload())
+    const data = response.data.data
+    savedId.value = data.id
+    published.value = Boolean(data.published)
+    publishedAt.value = data.publishedAt ?? null
+    savedAt.value = data.updatedAt || new Date().toISOString()
+    await nextTick()
+    resetDirty()
+    return true
+  } catch (error) {
+    saveError.value = extractErrorMessage(error, '保存失败，编辑内容已保留，请重试')
+    ElMessage.error(saveError.value)
+    return false
+  } finally {
+    saving.value = false
+  }
+}
+async function syncEditorAddress() {
+  if (savedId.value && route.params.id !== savedId.value) await router.replace(`/admin/cities/${savedId.value}/edit`)
+}
 async function handleSave() {
-  try {
-    await formRef.value?.validate();
-  } catch {
-    ElMessage.warning("请检查必填项");
-    return;
-  }
-
-  if (
-    form.status === "published" &&
-    (isIncompleteVideoMedia(form.heroMedia) ||
-      form.sections.some((section: any) =>
-        isIncompleteVideoMedia(section.primaryMedia),
-      ))
-  ) {
-    ElMessage.warning("发布城市内容前，请补全所有视频文件和封面图");
-    return;
-  }
-
-  saving.value = true;
-  try {
-    if (isEdit.value) {
-      await citiesApi.updateCity(route.params.id as string, toPayload());
-      ElMessage.success("城市更新成功");
-    } else {
-      await citiesApi.createCity(toPayload() as CityFormData);
-      ElMessage.success("城市创建成功");
-    }
-    disableDirtyCheck();
-    router.push("/admin/cities");
-  } catch (error: any) {
-    ElMessage.error(extractErrorMessage(error, "保存失败"));
-  } finally {
-    saving.value = false;
+  if (busy.value || loadError.value || !(await validate(published.value))) return
+  if (await persist()) {
+    ElMessage.success(published.value ? '已保存，已发布页面同步更新' : '草稿已保存，尚未发布')
+    await syncEditorAddress()
   }
 }
-
-const selectedRouteCards = computed(() =>
-  form.routeSlugs
-    .map((slug: string) =>
-      routeOptions.value.find((item) => item.slug === slug),
-    )
-    .filter(Boolean),
-);
+async function handlePublish() {
+  if (busy.value || loadError.value || !(await validate(true))) return
+  try {
+    await ElMessageBox.confirm('将保存当前内容并发布到前台，确定继续吗？', '发布城市内容', {
+      confirmButtonText: '保存并发布', cancelButtonText: '取消', type: 'warning',
+    })
+  } catch { return }
+  publishing.value = true
+  try {
+    if (!(await persist())) return
+    const response = await citiesApi.publishCity(savedId.value)
+    published.value = true
+    publishedAt.value = response.data.data.publishedAt ?? null
+    saveError.value = ''
+    ElMessage.success('城市内容已发布')
+  } catch (error) {
+    saveError.value = extractErrorMessage(error, '草稿已保存，但发布失败，请重试发布')
+    ElMessage.error(saveError.value)
+  } finally {
+    publishing.value = false
+  }
+  await syncEditorAddress()
+}
+async function handleUnpublish() {
+  if (busy.value || !savedId.value) return
+  try {
+    await ElMessageBox.confirm('撤回后前台将不可访问。当前未保存的编辑内容会保留。', '撤回发布', {
+      confirmButtonText: '撤回发布', cancelButtonText: '取消', type: 'warning',
+    })
+  } catch { return }
+  publishing.value = true
+  try {
+    const response = await citiesApi.unpublishCity(savedId.value)
+    published.value = false
+    publishedAt.value = response.data.data.publishedAt ?? null
+    saveError.value = ''
+    ElMessage.success('已撤回发布，内容现在为草稿')
+  } catch (error) {
+    saveError.value = extractErrorMessage(error, '撤回发布失败，请重试')
+    ElMessage.error(saveError.value)
+  } finally {
+    publishing.value = false
+  }
+}
 </script>
 
 <template>
-  <div class="edit-page" v-loading="loading">
+  <div class="edit-page culture-editor" v-loading="loading">
     <EditorPageHeader
-      :title="isEdit ? '编辑城市' : '新增城市'"
+      :title="savedId ? '编辑城市文化' : '新增城市文化'"
       back-to="/admin/cities"
-      :saving="saving"
+      :saving="saving || publishing"
       :dirty="isDirty"
+      :save-label="published ? '保存修改' : '保存草稿'"
       @save="handleSave"
       @preview="mobilePreviewVisible = true"
-    />
-
-    <div class="editor-shell">
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        class="editor-form"
-        label-position="top"
-      >
-        <el-card shadow="never" class="section-card">
-          <template #header>基础信息</template>
-          <el-row :gutter="16">
-            <el-col :span="12">
-              <el-form-item label="Slug" prop="slug">
-                <el-input v-model="form.slug" placeholder="zhanjiang" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="地图地区">
-                <el-select
-                  v-model="form.adcode"
-                  filterable
-                  clearable
-                  placeholder="选择广东地图对应地区"
-                  style="width: 100%"
-                >
-                  <el-option
-                    v-for="option in GUANGDONG_ADCODE_OPTIONS"
-                    :key="option.adcode"
-                    :label="formatAdcodeLabel(option.adcode)"
-                    :value="option.adcode"
-                  />
-                </el-select>
-                <div class="form-hint-text">
-                  首页地图和路线地区高亮都依赖这个地区编码。
-                </div>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-form-item label="城市名称" prop="name.en">
-            <I18nInput v-model="form.name" />
-          </el-form-item>
-          <el-form-item label="地区标签">
-            <I18nInput v-model="form.regionLabel" />
-          </el-form-item>
-          <el-form-item label="标签">
-            <div class="tag-list">
-              <el-tag
-                v-for="(tag, index) in form.tags"
-                :key="index"
-                closable
-                @close="removeTag(Number(index))"
-              >
-                {{ tag.en || tag.zh }}
-              </el-tag>
-            </div>
-            <div class="inline-row">
-              <el-input v-model="newTag.en" placeholder="输入标签" />
-              <el-button :icon="Plus" @click="addTag">添加</el-button>
-            </div>
-          </el-form-item>
-        </el-card>
-
-        <EditorWorkspace
-          v-model="activeChapter"
-          title="城市内容"
-          :active-label="
-            chapterTabs.find((chapter) => chapter.key === activeChapter)
-              ?.label || '基础信息'
-          "
-          :tabs="chapterTabs"
-        >
-          <template #toolbar>
-            <div class="chapter-actions">
-              <el-button
-                size="small"
-                type="primary"
-                :icon="Plus"
-                @click="addSection"
-                >新增章节</el-button
-              >
-              <el-button
-                size="small"
-                :icon="ArrowUp"
-                :disabled="!isSectionChapter || activeSectionIndex === 0"
-                @click="moveActiveSection(-1)"
-              >
-                上移
-              </el-button>
-              <el-button
-                size="small"
-                :icon="ArrowDown"
-                :disabled="
-                  !isSectionChapter ||
-                  activeSectionIndex === form.sections.length - 1
-                "
-                @click="moveActiveSection(1)"
-              >
-                下移
-              </el-button>
-              <el-button
-                size="small"
-                type="danger"
-                :icon="Delete"
-                :disabled="!isSectionChapter"
-                @click="removeSection(activeSectionIndex)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-
-          <div v-if="activeChapter === 'overview'" class="workspace-panel">
-            <div class="panel-title">Overview（图文）</div>
-            <el-form-item label="Overview 主媒体">
-              <MediaAssetInput
-                v-model="form.heroMedia"
-                :legacy-image="form.heroImage"
-                module="cities"
-                entity-type="city"
-              />
-            </el-form-item>
-            <el-form-item label="Overview 文案">
-              <I18nMarkdownEditor v-model="form.heroNarrative" :rows="6" />
-            </el-form-item>
-          </div>
-
-          <div v-else-if="activeChapter === 'intro'" class="workspace-panel">
-            <div class="panel-title">Intro（图文）</div>
-            <el-form-item label="Intro 正文">
-              <I18nMarkdownEditor v-model="form.editorIntro" :rows="8" />
-            </el-form-item>
-            <el-form-item label="Intro 图片组">
-              <ImageUpload
-                v-model="form.galleryImages"
-                multiple
-                :limit="12"
-                module="cities"
-              />
-            </el-form-item>
-          </div>
-
-          <div
-            v-else-if="isSectionChapter && activeSection"
-            class="workspace-panel"
-          >
-            <div class="panel-title">
-              {{
-                activeSection.title?.zh?.trim() ||
-                activeSection.title?.en?.trim() ||
-                `Section ${activeSectionIndex + 1}`
-              }}
-            </div>
-            <el-form-item label="Section 主媒体">
-              <MediaAssetInput
-                v-model="activeSection.primaryMedia"
-                :legacy-image="activeSection.image"
-                module="cities"
-                entity-type="city-section"
-              />
-            </el-form-item>
-            <el-form-item label="Section 图片集">
-              <ImageUpload
-                v-model="activeSection.images"
-                multiple
-                :limit="10"
-                module="cities"
-              />
-            </el-form-item>
-            <el-form-item label="Section 标题">
-              <I18nInput v-model="activeSection.title" />
-            </el-form-item>
-            <el-form-item label="Section 正文">
-              <I18nMarkdownEditor v-model="activeSection.body" :rows="8" />
-            </el-form-item>
-            <el-row :gutter="12">
-              <el-col :span="12">
-                <el-form-item label="数据标签">
-                  <I18nInput v-model="activeSection.statLabel" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="数据内容">
-                  <I18nInput v-model="activeSection.statValue" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-form-item label="呼吸图">
-              <ImageUpload
-                v-model="activeSection.breathImage"
-                module="cities"
-              />
-            </el-form-item>
-            <el-form-item label="引语">
-              <I18nInput
-                v-model="activeSection.breathQuote"
-                type="textarea"
-                :rows="3"
-              />
-            </el-form-item>
-          </div>
-
-          <div v-else-if="activeChapter === 'food'" class="workspace-panel">
-            <div class="panel-title">Food（图文）</div>
-            <el-form-item label="Food 标题">
-              <I18nInput v-model="form.foodTitle" />
-            </el-form-item>
-            <el-form-item label="Food 正文">
-              <I18nMarkdownEditor v-model="form.foodDescription" :rows="6" />
-            </el-form-item>
-            <el-form-item label="Food 图片组">
-              <ImageUpload
-                v-model="form.foodImages"
-                multiple
-                :limit="10"
-                module="cities"
-              />
-            </el-form-item>
-          </div>
-        </EditorWorkspace>
-
-        <el-card shadow="never" class="section-card">
-          <template #header>关联路线</template>
-          <el-form-item label="选择现有路线">
-            <el-select
-              v-model="form.routeSlugs"
-              multiple
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="直接选择已配置路线"
-              style="width: 100%"
-            >
-              <el-option
-                v-for="routeItem in routeOptions"
-                :key="routeItem.slug"
-                :label="`${routeItem.title} (${routeItem.slug})`"
-                :value="routeItem.slug"
-              />
-            </el-select>
-            <div class="form-hint-text">
-              这里决定城市页下方关联路线，以及路线和城市之间的互相联动。
-            </div>
-          </el-form-item>
-          <div v-if="selectedRouteCards.length" class="selected-grid">
-            <div
-              v-for="routeItem in selectedRouteCards"
-              :key="routeItem.slug"
-              class="selected-card"
-            >
-              <strong>{{ routeItem.title }}</strong>
-              <span>{{ routeItem.cityName || routeItem.slug }}</span>
-            </div>
-          </div>
-          <div v-else class="empty-hint">还没有关联路线</div>
-        </el-card>
-
-        <el-card shadow="never" class="section-card">
-          <template #header>发布状态</template>
-          <el-form-item label="状态">
-            <el-radio-group v-model="form.status">
-              <el-radio label="draft">草稿</el-radio>
-              <el-radio label="published">已发布</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-card>
-      </el-form>
-
-      <FrontendPagePreview type="city" :model="form" />
+    >
+      <template #actions>
+        <el-button v-if="published" :disabled="busy" @click="handleUnpublish">撤回发布</el-button>
+        <el-button v-else :disabled="busy || Boolean(loadError)" :loading="publishing" @click="handlePublish">发布</el-button>
+      </template>
+    </EditorPageHeader>
+    <div class="publication-status" role="status">
+      <el-tag :type="published ? 'success' : 'info'">{{ published ? '已发布' : '草稿' }}</el-tag>
+      <span>{{ saveState }}</span>
+      <span v-if="publishedAt">发布时间 {{ formatTime(publishedAt) }}</span>
+      <span v-if="published">保存修改会更新已发布页面</span>
     </div>
-
-    <FrontendPreviewDrawer
-      v-model="mobilePreviewVisible"
-      type="city"
-      :model="form"
-    />
+    <el-alert v-if="saveError" :title="saveError" type="error" show-icon :closable="false" class="editor-alert" />
+    <div v-if="loadError" class="load-error">
+      <el-alert :title="loadError" type="error" show-icon :closable="false" />
+      <el-button @click="loadCity">重新加载</el-button>
+    </div>
+    <el-form v-else ref="formRef" :model="form" :rules="rules" :disabled="busy" :inert="saving || publishing" label-position="top" @submit.prevent="handleSave">
+      <section class="metadata-section" aria-label="基础信息">
+        <el-form-item label="城市名称（英文）" prop="name.en" class="title-field">
+          <el-input v-model="form.name.en" placeholder="输入城市名称" />
+        </el-form-item>
+        <el-form-item label="摘要（英文）">
+          <el-input v-model="form.editorIntro.en" type="textarea" :rows="3" placeholder="简要介绍这座城市的文化与旅行亮点" />
+        </el-form-item>
+        <div class="metadata-grid">
+          <div>
+            <el-form-item label="Slug" prop="slug"><el-input v-model="form.slug" placeholder="zhanjiang" /></el-form-item>
+            <el-form-item label="地区标签（英文）"><el-input v-model="form.regionLabel.en" /></el-form-item>
+            <el-form-item label="地图地区">
+              <el-select v-model="form.adcode" filterable clearable placeholder="选择广东地图对应地区">
+                <el-option v-for="option in GUANGDONG_ADCODE_OPTIONS" :key="option.adcode" :label="formatAdcodeLabel(option.adcode)" :value="option.adcode" />
+              </el-select>
+            </el-form-item>
+          </div>
+          <el-form-item label="封面媒体">
+            <MediaAssetInput v-model="form.heroMedia" :legacy-image="form.heroImage" module="cities" entity-type="city" :entity-id="savedId || undefined" />
+          </el-form-item>
+        </div>
+        <el-form-item label="标签（英文）">
+          <div class="tags-field">
+            <div v-if="form.tags.length" class="tag-list">
+              <el-tag v-for="(tag, index) in form.tags" :key="index" :closable="!busy" @close="form.tags.splice(index, 1)">{{ tag.en || tag.zh }}</el-tag>
+            </div>
+            <div class="tag-input"><el-input v-model="newTag" placeholder="输入标签" @keydown.enter.prevent="addTag" /><el-button :icon="Plus" @click="addTag">添加</el-button></div>
+          </div>
+        </el-form-item>
+      </section>
+      <el-alert v-if="legacy.sections?.length && !form.contentMarkdown" title="此记录保留旧版章节。填写 Markdown 正文后，前台将优先展示新正文；保存不会删除旧章节或风味内容。" type="info" show-icon :closable="false" />
+      <el-form-item prop="contentMarkdown" class="markdown-form-item">
+        <MarkdownEditor v-model="form.contentMarkdown" :disabled="saving || publishing" :entity-id="savedId || undefined" @save="handleSave" @uploading-change="uploading = $event">
+          <template #preview><FrontendPagePreview type="city" :model="previewModel" mobile-mode /></template>
+        </MarkdownEditor>
+      </el-form-item>
+      <section class="metadata-section" aria-label="关联内容">
+        <h3>关联内容</h3>
+        <div v-if="optionsError" class="options-error"><span>{{ optionsError }}</span><el-button link @click="loadOptions">重试</el-button></div>
+        <div class="metadata-grid">
+          <el-form-item label="关联路线">
+            <el-select v-model="form.routeSlugs" multiple filterable collapse-tags collapse-tags-tooltip placeholder="选择现有路线">
+              <el-option v-for="item in routeOptions" :key="item.slug" :label="`${item.title} (${item.slug})`" :value="item.slug" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="关联城市">
+            <el-select v-model="form.relatedCitySlugs" multiple filterable collapse-tags collapse-tags-tooltip placeholder="选择关联城市">
+              <el-option v-for="item in cityOptions.filter(item => item.slug !== form.slug)" :key="item.slug" :label="`${item.name} (${item.slug})`" :value="item.slug" />
+            </el-select>
+          </el-form-item>
+        </div>
+      </section>
+    </el-form>
+    <FrontendPreviewDrawer v-model="mobilePreviewVisible" type="city" :model="previewModel" />
   </div>
 </template>
 
 <style scoped>
-@import "@/assets/editor-common.css";
-
-.chapter-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-  flex-shrink: 0;
-}
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.inline-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 8px;
-}
-
-.form-hint-text {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 6px;
-  line-height: 1.5;
-}
-
-.empty-hint {
-  color: #c0c4cc;
-  text-align: center;
-  padding: 18px 0 4px;
-}
-
-@media (max-width: 1100px) {
-  .chapter-actions {
-    justify-content: flex-start;
-  }
-  .inline-row {
-    grid-template-columns: 1fr;
-  }
+@import '@/assets/editor-common.css';
+.culture-editor { min-width: 0; }
+.publication-status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; color: var(--lt-text-secondary); font-size: 12px; }
+.metadata-section { padding: 24px; background: var(--lt-bg-card); border: 1px solid var(--lt-border-light); border-radius: var(--lt-radius-md); }
+.metadata-section h3 { margin: 0 0 20px; font-size: 16px; color: var(--lt-text-primary); }
+.metadata-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
+.metadata-grid > * { min-width: 0; }
+.metadata-section :deep(.el-select) { width: 100%; }
+.title-field :deep(.el-input__inner) { font-size: 25px; font-weight: 600; min-height: 48px; }
+.title-field :deep(.el-input__wrapper) { box-shadow: none; border-bottom: 1px solid var(--lt-border-color); border-radius: 0; padding-inline: 0; }
+.title-field :deep(.el-input__wrapper.is-focus) { border-color: var(--lt-primary); }
+.tags-field { width: 100%; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tag-input { display: grid; grid-template-columns: minmax(0, 360px) auto; gap: 8px; justify-content: start; }
+.markdown-form-item :deep(.el-form-item__content) { display: block; min-width: 0; }
+.editor-alert { margin-bottom: 16px; }
+.load-error, .options-error { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.options-error { color: var(--lt-text-secondary); font-size: 13px; margin-bottom: 16px; }
+@media (max-width: 767px) {
+  .metadata-section { padding: 16px; }
+  .metadata-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .culture-editor :deep(.el-button) { min-height: 44px; }
+  .metadata-section :deep(input), .metadata-section :deep(textarea) { font-size: 16px; }
+  .tag-input { grid-template-columns: minmax(0, 1fr) auto; }
 }
 </style>

@@ -92,6 +92,7 @@ function createStop() {
     id: `stop-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
     sortOrder: form.stops.length,
     time: "",
+    isFeatured: form.stops.length === 0,
     stopName: { zh: "", en: "" },
     story: { zh: "", en: "" },
     culturalStory: { zh: "", en: "" },
@@ -100,8 +101,8 @@ function createStop() {
     primaryMedia: null,
     images: [],
     media: [],
-    lat: 0,
-    lng: 0,
+    lat: null,
+    lng: null,
     meal: { zh: "", en: "" },
     hotel: { zh: "", en: "" },
     transit: { zh: "", en: "" },
@@ -217,6 +218,7 @@ function fillFromApi(data: any) {
       id: stop.id || `stop-${index}`,
       sortOrder: stop.sortOrder ?? index,
       time: stop.time || "",
+      isFeatured: Boolean(stop.isFeatured),
       stopName: toI18n(stop.stopName),
       story: toI18n(stop.story),
       culturalStory: toI18n(stop.culturalStory),
@@ -225,8 +227,8 @@ function fillFromApi(data: any) {
       primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: Array.isArray(stop.images) ? stop.images : [],
       media: resolveMediaGallery(stop.media, stop.images || []),
-      lat: stop.lat ?? 0,
-      lng: stop.lng ?? 0,
+      lat: stop.lat ?? null,
+      lng: stop.lng ?? null,
       meal: toI18n(stop.meal),
       hotel: toI18n(stop.hotel),
       transit: toI18n(stop.transit),
@@ -252,6 +254,7 @@ function toPayload() {
     stops: form.stops.map((stop: any, index: number) => ({
       sortOrder: index,
       time: stop.time,
+      isFeatured: Boolean(stop.isFeatured),
       stopName: stop.stopName,
       story: optionalI18n(stop.story),
       culturalStory: optionalI18n(stop.culturalStory),
@@ -260,8 +263,8 @@ function toPayload() {
       primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: stop.images || [],
       media: resolveMediaGallery(stop.media, stop.images || []),
-      lat: Number(stop.lat || 0),
-      lng: Number(stop.lng || 0),
+      lat: stop.lat == null ? null : Number(stop.lat),
+      lng: stop.lng == null ? null : Number(stop.lng),
       meal: optionalI18n(stop.meal),
       hotel: optionalI18n(stop.hotel),
       transit: optionalI18n(stop.transit),
@@ -288,7 +291,7 @@ onMounted(async () => {
   loading.value = true;
   try {
     const [cityRes, homeRes] = await Promise.all([
-      citiesApi.getCities({ page: 1, pageSize: 200 }),
+      citiesApi.getCities({ page: 1, pageSize: 100 }),
       homeApi.getHomeConfig(),
     ]);
 
@@ -567,6 +570,9 @@ async function handleSave() {
                 </el-form-item>
               </el-col>
             </el-row>
+            <el-form-item label="展示层级">
+              <el-switch v-model="activeStop.isFeatured" active-text="重点站：完整展开" inactive-text="普通站：紧凑展示" />
+            </el-form-item>
             <el-form-item label="站点主媒体">
               <MediaAssetInput
                 v-model="activeStop.primaryMedia"
