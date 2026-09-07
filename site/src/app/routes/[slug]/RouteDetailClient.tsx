@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { fetchRouteBySlug, fetchRouteCommunityPosts } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
 import { ErrorState, LoadingSpinner, useApiQuery } from "@/lib/use-api-query";
+import { RouteMap } from "@/components/routes/RouteMap";
 import { RouteBrief } from "@/components/routes/RouteBrief";
 import { TimeAxisItinerary, type RouteStopTarget } from "@/components/routes/TimeAxisItinerary";
 import { StickyComposeBar } from "@/components/routes/StickyComposeBar";
@@ -71,6 +72,7 @@ export function RouteDetailClient({
           stops={activeRoute.itinerary}
           routeStory={activeRoute.story}
           routeTitle={activeRoute.title}
+          routeMap={<RouteMap stops={activeRoute.itinerary} routeTitle={activeRoute.title} />}
           onAddStopNote={(stop, index) =>
             setComposeTarget({ index, time: stop.time, name: stop.stop })
           }

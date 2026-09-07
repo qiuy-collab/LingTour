@@ -30,15 +30,16 @@ export type StoryRoute = {
   mapViewBox: string;
   itinerary: {
     time: string;
+    isFeatured?: boolean;
     stop: string;
     plan?: string;
     story: string;
     details: string[];
     culturalStory: string;
     /** Geographic coordinate (latitude). */
-    lat: number;
+    lat: number | null;
     /** Geographic coordinate (longitude). */
-    lng: number;
+    lng: number | null;
     placeDetail?: string;
     meal?: string;
     hotel?: string;
