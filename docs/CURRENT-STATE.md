@@ -336,3 +336,20 @@ Deferred owner decisions:
 
 - `projects/proj-1780224029807-y96lg8` (9 tracked files) and `.impeccable/` (3 tracked files) are tracked tool artifacts. Untracking needs `git rm --cached` + `.gitignore` entries; deliberately not executed to keep this batch free of index changes.
 - `tmp/server-key` remains per §10 (ACL-locked duplicate of the working SSH key); handle from an elevated shell. Never commit it.
+
+## 13. 2026-09-07 housekeeping committed; origin diverged
+
+The §12 batch is no longer uncommitted. Committed the same day after explicit user approval of §12's deferred decisions, using exact pathspec commits so the 21 foreign staged files were never included:
+
+- `db90951` `docs: add repository guides and changelog` — README, CHANGELOG (its Unreleased section was also extended with the culture-md three-layer refactor, the route-detail map, and the testimonial fallback), AGENT/AGENTS/CLAUDE, `docs/development.md`, `docs/release.md`, this file.
+- `c488ad3` `docs: reorganize docs into backend and archive` — 20 files: 11 pure renames into `docs/backend/` and `docs/archive/`, 2 renames that gained archive headers, the untracked prompt document added, and six `docs/v1/*` duplicate snapshots deleted (recoverable from this commit's parent). Empty `docs/archive/v1/` shells removed from disk.
+- `94c1ced` `docs: replace scaffold READMEs` (root); the admin repository equivalent `75de4cf` was committed first per the dual-repo rule; both copies hash-identical.
+- `aa5000b` + `ca6a035` `chore: untrack local tool working directories` — `projects/` and `.impeccable/` (12 files, 5459 lines) removed from the index only; files remain on disk and are now ignored via `.gitignore` rules `projects/` and `.impeccable/`. The split exists because a pathspec partial commit records working-tree content and cannot carry `rm --cached` deletions; `ca6a035` completes them through a temporary-index plumbing commit.
+
+Unchanged per decision: `tmp/server-key` (never commit), `BT-DEPLOY-PATHS.md`, `ecosystem.config.js`, nginx configs (in place, indexed from `docs/release.md`).
+
+Origin divergence discovered immediately after, read-only, not integrated:
+
+- Root `main` is ahead 5 / behind 7; admin `main` ahead 1 / behind 1. The remote-only commits are collaborator `qiuy-collab` (2026-09-06 12:49 → 2026-09-07 19:04): culture Markdown persistence/rendering with a publication lifecycle, admin city Markdown authoring, itinerary editorial emphasis, and `site/src/components/mapcn/{map.tsx,LICENSE}` — the mapcn route map the user referenced exists on origin/main, not on the local branch.
+- 15 files overlap between the remote changes and this workspace's uncommitted WIP (admin `CityEdit.vue`/`city.ts`, api cities entity/DTO/service and cache interceptor, site culture detail client, `TimeAxisItinerary`, `api-data.ts`, `server-api.ts`, `server-data.ts`, package manifests); the 8 newly committed guide documents also differ from origin.
+- Consequence: pull/rebase/merge and push require an owner decision on integration strategy and were not executed. The 21 foreign staged files remain staged and untouched.
