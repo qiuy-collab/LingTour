@@ -72,9 +72,12 @@ export class JwtAuthGuard implements CanActivate {
       .find((entry) => entry.startsWith('lingtour_session='))
       ?.slice('lingtour_session='.length);
 
-    return cookieToken
-      ? { token: decodeURIComponent(cookieToken), source: 'cookie' }
-      : {};
+    if (!cookieToken) return {};
+    try {
+      return { token: decodeURIComponent(cookieToken), source: 'cookie' };
+    } catch {
+      return {};
+    }
   }
 
   private isUnsafeMethod(method?: string): boolean {
