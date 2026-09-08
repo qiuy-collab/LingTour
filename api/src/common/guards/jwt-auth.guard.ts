@@ -30,10 +30,14 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractTokenFromHeader(request);
+    const { token, source } = this.extractToken(request);
 
     if (!token) {
       throw new UnauthorizedException('Missing authentication token');
+    }
+
+    if (source === 'cookie' && this.isUnsafeMethod(request.method)) {
+      this.assertSameOrigin(request);
     }
 
     try {
@@ -52,8 +56,46 @@ export class JwtAuthGuard implements CanActivate {
     }
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractToken(request: Request): {
+    token?: string;
+    source?: 'bearer' | 'cookie';
+  } {
+    const [type, bearerToken] = request.headers.authorization?.split(' ') ?? [];
+    if (type === 'Bearer' && bearerToken) {
+      return { token: bearerToken, source: 'bearer' };
+    }
+
+    const cookieHeader = request.headers.cookie ?? '';
+    const cookieToken = cookieHeader
+      .split(';')
+      .map((entry) => entry.trim())
+      .find((entry) => entry.startsWith('lingtour_session='))
+      ?.slice('lingtour_session='.length);
+
+    return cookieToken
+      ? { token: decodeURIComponent(cookieToken), source: 'cookie' }
+      : {};
+  }
+
+  private isUnsafeMethod(method?: string): boolean {
+    return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(
+      (method ?? 'GET').toUpperCase(),
+    );
+  }
+
+  private assertSameOrigin(request: Request): void {
+    const origin = request.headers.origin;
+    if (!origin) {
+      throw new UnauthorizedException('Missing Origin for cookie-authenticated request');
+    }
+
+    const configured = this.configService.get<string>('frontendUrl')?.trim();
+    const expectedOrigin = configured
+      ? new URL(configured).origin
+      : `${request.headers['x-forwarded-proto'] ?? request.protocol}://${request.headers['x-forwarded-host'] ?? request.headers.host}`;
+
+    if (origin !== expectedOrigin) {
+      throw new UnauthorizedException('Cross-origin cookie request rejected');
+    }
   }
 }
