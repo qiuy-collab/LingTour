@@ -35,7 +35,7 @@ jobs:
           cache: npm
           cache-dependency-path: api/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit --skipLibCheck
+      - run: npx tsc --noEmit --skipLibCheck --project tsconfig.build.json
       - run: npm test -- --passWithNoTests
         env:
           DB_HOST: localhost
