@@ -1,6 +1,6 @@
 "use client";
 
-import { apiGet, apiPatch, apiPost } from "@/lib/api-client";
+import { apiGet, apiPatch, apiPost, ApiRequestError } from "@/lib/api-client";
 
 export type ProfileVisibility = "public" | "community" | "private";
 
@@ -45,8 +45,8 @@ export type AuthUser = {
 };
 
 export type AuthResponse = {
-  access_token: string;
-  expires_in: string;
+  access_token?: string;
+  expires_in?: string;
   user: AuthUser;
 };
 
@@ -61,7 +61,29 @@ export type UpdateProfileInput = {
   profileVisibility?: ProfileVisibility;
 };
 
-function toLocalUser(
+export type SessionAction = "login" | "register" | "google";
+
+async function createSession<TPayload extends object>(action: SessionAction, payload: TPayload): Promise<AuthResponse> {
+  const response = await fetch("/api/auth/session", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ action, payload }),
+  });
+
+  const data = await response.json().catch(() => ({ message: response.statusText }));
+  if (!response.ok) {
+    throw new ApiRequestError({ statusCode: response.status, message: String(data?.message || response.statusText) });
+  }
+
+  return data as AuthResponse;
+}
+
+export async function clearSession() {
+  await fetch("/api/auth/session", { method: "DELETE", credentials: "same-origin" });
+}
+
+export function toLocalUser(
   user: AuthUser,
   overrides: Partial<LocalUser> = {},
 ): LocalUser {
@@ -101,7 +123,6 @@ export function clearStoredAuth() {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem("lingtour-user");
-    window.localStorage.removeItem("lingtour-token");
   } finally {
     window.dispatchEvent(new Event("lingtour-auth"));
   }
@@ -117,13 +138,28 @@ export function persistAuthUser(
   return localUser;
 }
 
+export async function signInWithPassword(email: string, password: string) {
+  const data = await createSession("login", { email, password });
+  persistAuthUser(data.user);
+  return data;
+}
+
+export async function registerWithPassword(payload: {
+  name: string;
+  email: string;
+  password: string;
+}) {
+  const data = await createSession("register", payload);
+  persistAuthUser(data.user);
+  return data;
+}
+
 export async function signInWithGoogle(credential: string, name?: string) {
-  const data = await apiPost<AuthResponse>("/auth/google", {
+  const data = await createSession("google", {
     credential,
     name: name || "Google Traveler",
   });
 
-  window.localStorage.setItem("lingtour-token", data.access_token);
   persistAuthUser(data.user);
   return data;
 }

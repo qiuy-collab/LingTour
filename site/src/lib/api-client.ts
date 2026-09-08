@@ -2,7 +2,7 @@
  * Unified API Client for LingTour frontend.
  *
  * - Reads NEXT_PUBLIC_API_URL from environment
- * - Injects JWT Bearer token from localStorage (lingtour-token)
+ * - Uses the first-party HttpOnly session cookie for authentication
  * - Uniform error handling
  */
 
@@ -99,18 +99,12 @@ export async function apiClient<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("lingtour-token");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-  }
-
   let response: Response;
   try {
     response = await fetch(url.toString(), {
       ...rest,
       ...(/^\/public\/cities(?:\/|$)/.test(endpoint) ? { cache: "no-store" as const } : {}),
+      credentials: "same-origin",
       headers,
       body: requestBody,
     });
