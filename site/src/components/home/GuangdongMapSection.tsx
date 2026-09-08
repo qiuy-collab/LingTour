@@ -8,6 +8,7 @@ import {
   buildProjection,
   featureToPath,
   type CityFeature,
+  type Position,
 } from "@/lib/map-projection";
 import type { EventData } from "@/lib/api-data";
 import type { Region } from "@/types/content";
@@ -21,6 +22,40 @@ const initialFeatures = getMapFeatures();
 const MAP_ASPECT = 1.43;
 const MAP_COMPACT_WIDTH = 420;
 const MAP_WIDE_WIDTH = 700;
+
+/**
+ * Decorative route arcs anchor on real city centroids (adcode order matters)
+ * and reuse the province projection, so they stay fully inside the viewBox at
+ * every breakpoint instead of reusing stale pixel coordinates that clipped.
+ */
+const MAP_ROUTE_ANCHORS: number[][] = [
+  [440800, 440900, 440700, 440300, 440500, 445100],
+  [440800, 445300, 441800, 440200, 441400],
+];
+
+function buildSmoothPath(points: Position[]): string {
+  if (points.length < 2) return "";
+  const commands = [`M${points[0][0].toFixed(1)} ${points[0][1].toFixed(1)}`];
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const previous = points[i - 1] ?? points[i];
+    const start = points[i];
+    const end = points[i + 1];
+    const next = points[i + 2] ?? end;
+    const tension = 0.18;
+    const controlA: Position = [
+      start[0] + (end[0] - previous[0]) * tension,
+      start[1] + (end[1] - previous[1]) * tension,
+    ];
+    const controlB: Position = [
+      end[0] - (next[0] - start[0]) * tension,
+      end[1] - (next[1] - start[1]) * tension,
+    ];
+    commands.push(
+      `C${controlA[0].toFixed(1)} ${controlA[1].toFixed(1)} ${controlB[0].toFixed(1)} ${controlB[1].toFixed(1)} ${end[0].toFixed(1)} ${end[1].toFixed(1)}`,
+    );
+  }
+  return commands.join(" ");
+}
 
 interface Props {
   cities?: Pick<
@@ -180,6 +215,20 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
       bottom: inset,
     });
 
+    const centroidByAdcode = new Map(
+      features
+        .map((feature) => [feature.properties.adcode, feature.properties.centroid] as const)
+        .filter((entry): entry is readonly [number, Position] => Boolean(entry[1])),
+    );
+    const routePaths = MAP_ROUTE_ANCHORS.map((anchors) =>
+      buildSmoothPath(
+        anchors
+          .map((adcode) => centroidByAdcode.get(adcode))
+          .filter((centroid): centroid is Position => Boolean(centroid))
+          .map((centroid) => projection.point(centroid)),
+      ),
+    ).filter(Boolean);
+
     return {
       width: projection.width,
       height: projection.height,
@@ -190,6 +239,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           ? projection.point(feature.properties.centroid)
           : null,
       })),
+      routePaths,
     };
   }, [features, isCompact]);
 
@@ -336,20 +386,17 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                   />
 
                   <g opacity="0.6">
-                    <path
-                      d="M120 528 C250 438 380 492 512 408 S760 346 908 246"
-                      fill="none"
-                      stroke="#444b54"
-                      strokeWidth="1"
-                      strokeDasharray="6 6"
-                    />
-                    <path
-                      d="M92 382 C244 330 302 244 420 236 S648 196 918 114"
-                      fill="none"
-                      stroke="#444b54"
-                      strokeWidth="1"
-                      strokeDasharray="6 6"
-                    />
+                    {mapData.routePaths.map((routePath, index) => (
+                      <path
+                        key={routePath.slice(0, 24) || index}
+                        d={routePath}
+                        fill="none"
+                        stroke="#444b54"
+                        strokeWidth="1"
+                        strokeDasharray="6 6"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    ))}
                   </g>
 
                   {mapData.paths.map((city) => {

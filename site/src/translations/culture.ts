@@ -11,7 +11,7 @@ export const culture = {
     "culture.detail.relatedRoutesDesc": "Story routes through {city}",
     "culture.detail.readRoute": "Route details",
     "culture.detail.routeMap": "Route map",
-    "culture.detail.routeCoverage": "Linked route coverage",
+    "culture.detail.routeCoverage": "No route selected yet.",
     "culture.detail.routeMapLabel": "Guangdong map showing cities on the selected route",
     "culture.detail.selectedRoute": "Selected route",
     "culture.detail.noRelatedRoutes": "No linked routes",
@@ -39,7 +39,7 @@ export const culture = {
     "culture.atlas.archiveLabel": "Archive No.",
     "culture.atlas.archiveCode": "GD-020-0755",
     "culture.atlas.empty.title": "No city records",
-    "culture.atlas.empty.body": "No published city profiles are available.",
+    "culture.atlas.empty.body": "No city records on file yet.",
     "culture.atlas.openArchive": "Open archive",
     "culture.filter.searchLabel": "Search city archives",
     "culture.filter.searchPlaceholder": "City, region, craft, or food...",
@@ -53,7 +53,7 @@ export const culture = {
     "culture.filter.emptyBody": "Try another cultural thread or clear the current filters.",
 
     "culture.cta.eyebrow": "Start with a thread",
-    "culture.cta.title": "The best journeys begin with one detail that refuses to leave you.",
+    "culture.cta.title": "Pick a thread and follow it through the city.",
     "culture.cta.button": "Browse routes",
   }
 

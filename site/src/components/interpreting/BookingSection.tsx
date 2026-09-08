@@ -96,7 +96,7 @@ export function BookingSection({ prefillNeeds }: Props) {
             {"Booking desk"}
           </p>
           <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
-            {"Shape the day together"}
+            {"Tell us about your day."}
           </h2>
         </div>
         <p className="max-w-md handwritten text-sm leading-7 text-[var(--muted)] sm:justify-self-end">

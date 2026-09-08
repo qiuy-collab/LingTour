@@ -4,7 +4,7 @@ import RoutesPageClient from "./RoutesPageClient";
 export const revalidate = 60;
 
 export default async function RoutesPage() {
-  const routes = await fetchRoutesServer();
+  const routes = await fetchRoutesServer().catch(() => []);
 
   return <RoutesPageClient initialRoutes={routes} />;
 }

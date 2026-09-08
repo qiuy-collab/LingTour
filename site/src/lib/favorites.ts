@@ -26,16 +26,16 @@ type ServerFavorite = {
 };
 
 const STORAGE_KEY = "lingtour-favorites";
-const TOKEN_KEY = "lingtour-token";
+const USER_KEY = "lingtour-user";
 export const FAVORITES_EVENT = "lingtour-favorites";
 
 function apiBase() {
   return process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 }
 
-function token(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+function hasSessionHint(): boolean {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.localStorage.getItem(USER_KEY));
 }
 
 export function readFavorites(): FavoriteItem[] {
@@ -64,8 +64,7 @@ export async function pushFavorite(
   action: "add" | "remove",
   item: FavoriteItem,
 ): Promise<boolean> {
-  const auth = token();
-  if (!auth) return false;
+  if (!hasSessionHint()) return false;
 
   try {
     const res =
@@ -74,8 +73,8 @@ export async function pushFavorite(
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${auth}`,
             },
+            credentials: "same-origin",
             body: JSON.stringify({
               targetType: item.type,
               targetId: item.id,
@@ -85,7 +84,7 @@ export async function pushFavorite(
           })
         : await fetch(
             `${apiBase()}/auth/me/favorites/${item.type}/${item.id}`,
-            { method: "DELETE", headers: { Authorization: `Bearer ${auth}` } },
+            { method: "DELETE", credentials: "same-origin" },
           );
     return res.ok;
   } catch {
@@ -101,14 +100,13 @@ export async function pushFavorite(
  * Items that exist only locally are pushed up so both sides converge.
  */
 export async function hydrateFavoritesFromServer(): Promise<FavoriteItem[]> {
-  const auth = token();
   const local = readFavorites();
-  if (!auth) return local;
+  if (!hasSessionHint()) return local;
 
   let remote: FavoriteItem[];
   try {
     const res = await fetch(`${apiBase()}/auth/me/favorites`, {
-      headers: { Authorization: `Bearer ${auth}` },
+      credentials: "same-origin",
     });
     if (!res.ok) return local;
     const body = (await res.json()) as { items?: ServerFavorite[] };

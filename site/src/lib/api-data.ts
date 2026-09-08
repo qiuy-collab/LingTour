@@ -875,16 +875,28 @@ export async function fetchHomeData(): Promise<HomeData> {
     body: pickLocalized(s.description),
   }));
 
+  // Testimonials: CMS-first. When the admin has not authored any yet, fall back to the
+  // two seeded field-note quotes so the home section never renders empty.
+  const cmsTestimonials = (homeConfig.testimonials ?? [])
+    .map((item) => ({
+      quote: pickLocalized(item.quote),
+      name: pickLocalized(item.name),
+    }))
+    .filter((item) => item.quote && item.name);
+
   const homeData: HomeData = {
     hero,
     heroStats,
     regionShowcase,
     featuredRoutes,
     cultureHighlights,
-    testimonials: (homeConfig.testimonials ?? []).map((item) => ({
-      quote: pickLocalized(item.quote),
-      name: pickLocalized(item.name),
-    })),
+    testimonials:
+      cmsTestimonials.length > 0
+        ? cmsTestimonials
+        : [
+            { quote: "I left understanding why every dish mattered.", name: "Lina, Singapore" },
+            { quote: "The tea ceremony changed how I think about time.", name: "James K., Australia" },
+          ],
     trustMetrics: homeConfig.trustMetrics?.map((item) => ({
       value: item.value,
       label: pickLocalized(item.label),

@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// Keep the hook inert without running it for every document and RSC navigation.
-export function proxy() {
+export function proxy(request: NextRequest) {
+  if (!request.cookies.has("lingtour_session")) {
+    const login = new URL("/login", request.url);
+    login.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    return NextResponse.redirect(login);
+  }
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ["/__lingtour_proxy_disabled__"],
-};
+export const config = { matcher: ["/profile/:path*"] };

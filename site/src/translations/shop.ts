@@ -44,13 +44,13 @@ export const shop = {
 
     "shop.atlas.empty.collections.title": "No collections",
     "shop.atlas.empty.collections.body":
-      "No published collections are available.",
+      "No collections on the shelf yet.",
     "shop.atlas.empty.products.title": "No products",
     "shop.atlas.empty.products.body":
-      "No published products are available.",
+      "No objects on the shelf yet.",
 
     "shop.cta.eyebrow": "Gifting",
-    "shop.cta.title": "Give something with a place inside it.",
+    "shop.cta.title": "A gift that names its place.",
     "shop.cta.button": "Browse all products",
   }
 

@@ -100,7 +100,7 @@ function EmptyArchive({ title, body, href, cta }: { title: string; body: string;
   );
 }
 
-export function ProfilePageClient() {
+export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
   const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,8 +109,8 @@ export function ProfilePageClient() {
   const profilePath = `/profile${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const tabRefs = useRef<Partial<Record<ProfileTab, HTMLButtonElement | null>>>({});
-  const [user, setUser] = useState<LocalUser | null>(null);
-  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<LocalUser | null>(initialUser);
+  const [ready, setReady] = useState(true);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedNotes, setSavedNotes] = useState<CommunityFeedPost[]>([]);
@@ -167,15 +167,7 @@ export function ProfilePageClient() {
   }
 
   useEffect(() => {
-    const token = window.localStorage.getItem("lingtour-token");
-    if (!token) {
-      clearStoredAuth();
-      router.replace(`/login?next=${encodeURIComponent(profilePath)}`);
-      return;
-    }
-
     let cancelled = false;
-    setReady(false);
     setBookingsReady(false);
     setFavorites(readFavorites());
     setCart(readCart());

@@ -5,7 +5,9 @@ import {
   writeFavorites,
 } from "../favorites";
 
-const TOKEN_KEY = "lingtour-token";
+const USER_KEY = "lingtour-user";
+
+const signedInUser = JSON.stringify({ id: "u1", accountId: "u1", name: "Traveler", email: "traveler@example.com" });
 
 function serverReturns(items: unknown[]) {
   return vi.fn(async (url: string, init?: RequestInit) => {
@@ -38,7 +40,7 @@ describe("favorites store", () => {
   });
 
   it("merges the account's items with the ones saved in this browser", async () => {
-    localStorage.setItem(TOKEN_KEY, "t");
+    localStorage.setItem(USER_KEY, signedInUser);
     writeFavorites([{ id: "local-only", type: "product", title: "Local" }]);
     vi.stubGlobal(
       "fetch",
@@ -54,7 +56,7 @@ describe("favorites store", () => {
   });
 
   it("does not duplicate an item both sides already have", async () => {
-    localStorage.setItem(TOKEN_KEY, "t");
+    localStorage.setItem(USER_KEY, signedInUser);
     writeFavorites([{ id: "shared", type: "city", title: "Shared" }]);
     vi.stubGlobal(
       "fetch",
@@ -69,7 +71,7 @@ describe("favorites store", () => {
   });
 
   it("pushes browser-only items up so both sides converge", async () => {
-    localStorage.setItem(TOKEN_KEY, "t");
+    localStorage.setItem(USER_KEY, signedInUser);
     writeFavorites([{ id: "local-only", type: "product", title: "Local" }]);
     const fetchSpy = serverReturns([]);
     vi.stubGlobal("fetch", fetchSpy);
@@ -85,7 +87,7 @@ describe("favorites store", () => {
   });
 
   it("keeps the local list when the account cannot be reached", async () => {
-    localStorage.setItem(TOKEN_KEY, "t");
+    localStorage.setItem(USER_KEY, signedInUser);
     writeFavorites([{ id: "a", type: "route", title: "A" }]);
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
 

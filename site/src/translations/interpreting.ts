@@ -108,8 +108,8 @@ const copy = {
   "interpreting.requestChecklist.3": "Any special interests: food, history, shopping, nature",
   "interpreting.routeFit.title": "Route fit",
   "interpreting.routeFit.body": "Your interpreter can prepare around the route in advance, so the day starts with shared context.",
-  "interpreting.cta.title": "Ready to hear Guangdong more clearly?",
-  "interpreting.cta.subtitle": "Travel with confidence, context, and a local voice beside you.",
+  "interpreting.cta.title": "Hear Guangdong more clearly.",
+  "interpreting.cta.subtitle": "Interpreting that keeps pace with the day you planned.",
   "interpreting.cta.button": "Plan interpreting",
   "interpreting.cta.alt": "Not sure yet? Start with the story routes first.",
 

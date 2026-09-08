@@ -116,7 +116,7 @@ export default function RoutesPageClient({
                       Dispatch
                     </span>
                   </div>
-                  <div className="handwritten absolute bottom-3 left-4 text-sm text-[var(--gold)] lg:bottom-auto lg:left-auto lg:top-1/2 lg:-right-12 lg:origin-bottom-right lg:-rotate-90 lg:whitespace-nowrap lg:text-2xl">
+                  <div className="handwritten absolute bottom-3 left-4 text-sm text-[var(--gold)] sm:text-base lg:bottom-5 lg:left-auto lg:right-5 lg:text-xl">
                     {t("routes.atlas.archiveBadge")}
                   </div>
                 </div>

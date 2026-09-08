@@ -61,6 +61,4 @@ id_ed25519*
 next-env.d.ts
 
 # Impeccable machine-local state
-.impeccable/hook.cache.json
-.impeccable/live/server.json
-.impeccable/config.local.json
+.impeccable/
