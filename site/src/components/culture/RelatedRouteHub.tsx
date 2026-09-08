@@ -35,73 +35,65 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props)
     return {
       width: projection.width,
       height: projection.height,
-      paths: features.map((f: CityFeature) => ({
-        adcode: f.properties.adcode,
-        path: featureToPath(f, projection.point),
+      paths: features.map((feature: CityFeature) => ({
+        adcode: feature.properties.adcode,
+        path: featureToPath(feature, projection.point),
       })),
     };
   }, [features]);
 
   if (routes.length === 0) {
-    return (
-      <p className="mt-8 text-sm text-[var(--muted)]">
-        {t("culture.detail.noRelatedRoutes")}
-      </p>
-    );
+    return <p className="mt-8 text-sm text-[var(--muted)]">{t("culture.detail.noRelatedRoutes")}</p>;
   }
 
   return (
-    <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_0.9fr]">
-      {/* Left: Route cards */}
-      <div className="grid gap-8">
+    <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,.8fr)] lg:gap-16">
+      <div className="grid gap-7">
         {routes.map((route, idx) => (
           <Reveal key={route.slug} delay={idx * 80}>
             <Link
               href={`/routes/${route.slug}`}
-              className={`group relative flex gap-4 border border-[var(--line)] bg-white p-4 transition-all duration-500 scrapbook-shadow hover:border-[var(--cinnabar)] sm:gap-8 sm:p-6 ${idx % 2 === 0 ? '-rotate-1 hover:rotate-0' : 'rotate-1 hover:rotate-0'}`}
+              className="group grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border-b border-[var(--line)] pb-7 transition-colors hover:border-[var(--gold)] sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-6"
               onMouseEnter={() => setHoveredRouteIdx(idx)}
               onMouseLeave={() => setHoveredRouteIdx(null)}
               onFocus={() => setHoveredRouteIdx(idx)}
               onBlur={() => setHoveredRouteIdx(null)}
             >
-              <div
-                className="image-sheen h-28 w-[7.5rem] shrink-0 border-4 border-white bg-cover bg-center scrapbook-shadow sm:w-40"
-                style={{ backgroundImage: `url(${route.image})` }}
-              />
-              <div className="flex flex-1 flex-col min-w-0">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="bg-[var(--river-deep)] px-2.5 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
-                    {route.culture}
-                  </span>
-                  <span className="text-[11px] font-medium tracking-wider text-[var(--muted)]">{route.duration}</span>
-                </div>
-                <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+              <div className="aspect-[4/5] overflow-hidden border-4 border-white bg-[var(--paper)] scrapbook-shadow sm:aspect-[5/4]">
+                <div
+                  className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.04]"
+                  style={{ backgroundImage: `url(${route.image})` }}
+                />
+              </div>
+              <div className="min-w-0 py-1">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                  {route.culture}
+                </p>
+                <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-[1.02] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
                   {route.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)] line-clamp-2">
-                  {route.summary}
-                </p>
-                <p className="mt-4 flex items-center gap-2 pt-3 text-sm font-bold tracking-widest text-[var(--cinnabar)] uppercase transition group-hover:translate-x-1">
-                  <span>{t("culture.detail.readRoute")}</span>
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </p>
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">{route.summary}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold uppercase tracking-[0.16em]">
+                  <span className="text-[var(--muted)]">{route.duration}</span>
+                  <span className="text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4">
+                    {t("culture.detail.readRoute")}
+                  </span>
+                </div>
               </div>
             </Link>
           </Reveal>
         ))}
       </div>
 
-      {/* Right: Micro map */}
-      <div className="hidden lg:block">
+      <aside className="hidden lg:block">
         <div className="sticky top-28">
-          <p className="text-label text-[var(--cinnabar)]">{t("culture.detail.routeMap")}</p>
-          <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
-            {activeRoute?.title || t("culture.detail.routeCoverage")}
+          <h3 className="font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)]">
+            {activeRoute?.title || "Routes through this city"}
           </h3>
-          <div className="relative mt-8 overflow-hidden border-8 border-white bg-white scrapbook-shadow -rotate-1">
-            <div className="absolute inset-0 bg-grain opacity-[0.05] pointer-events-none" />
+          <p className="mt-3 max-w-[30ch] text-sm leading-6 text-[var(--muted)]">
+            Select a route to see the places it connects.
+          </p>
+          <div className="relative mt-7 overflow-hidden border-[0.5rem] border-white bg-white scrapbook-shadow">
             {mapData ? (
               <div className="relative p-4">
                 <svg
@@ -127,37 +119,28 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props)
                   })}
                 </svg>
 
-                {/* Route tooltip on hover */}
-                {hoveredRouteIdx !== null && routes[hoveredRouteIdx] && (
+                {hoveredRouteIdx !== null && routes[hoveredRouteIdx] ? (
                   <motion.div
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="mx-4 mb-4 border border-[var(--line)] bg-white p-4 shadow-[var(--shadow-soft)]"
+                    className="mt-3 border-t border-[var(--line)] pt-3"
                   >
-                    <p className="text-label text-[var(--cinnabar)]">{t("culture.detail.selectedRoute")}</p>
-                    <p className="mt-2 font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
+                    <p className="font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
                       {routes[hoveredRouteIdx].title}
                     </p>
                     <p className="mt-1 text-xs text-[var(--muted)]">
-                      {routes[hoveredRouteIdx].itinerary.length} stops · {routes[hoveredRouteIdx].duration}
+                      {routes[hoveredRouteIdx].itinerary.length} stops / {routes[hoveredRouteIdx].duration}
                     </p>
-                    <div className="mt-3 grid gap-1">
-                      {routes[hoveredRouteIdx].itinerary.slice(0, 3).map((stop) => (
-                        <p key={stop.stop} className="text-xs leading-5 text-[var(--ink)]">
-                          <span className="text-[var(--cinnabar)]">{stop.time}</span> — {stop.stop}
-                        </p>
-                      ))}
-                    </div>
                   </motion.div>
-                )}
+                ) : null}
               </div>
             ) : (
               <div className="grid h-48 place-items-center text-xs text-[var(--muted)]">Map</div>
             )}
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }

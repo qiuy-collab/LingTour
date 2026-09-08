@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { LoginPanel } from "@/components/ui/LoginPanel";
 
 export const metadata: Metadata = {
-  title: "Log in | LingTour Guangdong",
-  description: "Access your saved LingTour routes, bookings, collection, and traveler profile.",
+  title: "Welcome back | LingTour Guangdong",
+  description: "Sign in to return to your saved LingTour routes, field notes, and bookings.",
 };
 
 export default function LoginPage() {

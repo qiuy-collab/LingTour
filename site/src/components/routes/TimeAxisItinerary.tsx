@@ -76,40 +76,27 @@ function StopContext({ stop }: { stop: Stop }) {
 
   return (
     <div data-route-context className="grid gap-6 text-sm leading-7 text-[var(--ink)]">
-      {story ? (
-        <section>
-          <h4 className="font-semibold text-[var(--river-deep)]">Story</h4>
-          <p className="mt-2 whitespace-pre-line">{story}</p>
-        </section>
-      ) : null}
-      {culture ? (
-        <section>
-          <h4 className="font-semibold text-[var(--river-deep)]">Cultural context</h4>
-          <p className="mt-2 whitespace-pre-line">{culture}</p>
-        </section>
-      ) : null}
+      {story ? <p className="whitespace-pre-line">{story}</p> : null}
+      {culture ? <p className="whitespace-pre-line">{culture}</p> : null}
       {stop.details?.length ? (
-        <section>
-          <h4 className="font-semibold text-[var(--river-deep)]">What to notice</h4>
-          <ul className="mt-2 list-disc space-y-2 pl-4 marker:text-[var(--muted)]">
-            {stop.details.map((detail, index) => (
-              <li key={index} className="whitespace-pre-line pl-1">{detail}</li>
-            ))}
-          </ul>
-        </section>
+        <ul className="grid gap-2 border-t border-[var(--line)] pt-4">
+          {stop.details.map((detail, index) => (
+            <li key={index} className="grid grid-cols-[0.5rem_minmax(0,1fr)] gap-3 whitespace-pre-line">
+              <span aria-hidden="true" className="mt-[0.58rem] h-1.5 w-1.5 rounded-full bg-[var(--jade)]" />
+              <span>{detail}</span>
+            </li>
+          ))}
+        </ul>
       ) : null}
       {practical.length ? (
-        <section>
-          <h4 className="font-semibold text-[var(--river-deep)]">Practical notes</h4>
-          <dl className="mt-3 grid gap-3">
-            {practical.map(({ label, value }) => (
-              <div key={label} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-3">
-                <dt className="text-[var(--muted)]">{label}</dt>
-                <dd className="whitespace-pre-line">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+        <dl className="grid gap-3 border-t border-[var(--line)] pt-4">
+          {practical.map(({ label, value }) => (
+            <div key={label} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-3">
+              <dt className="text-[var(--muted)]">{label}</dt>
+              <dd className="whitespace-pre-line">{value}</dd>
+            </div>
+          ))}
+        </dl>
       ) : null}
     </div>
   );
@@ -287,7 +274,7 @@ function StopNode({
       data-featured={featured}
       id={`stop-${index}`}
       aria-labelledby={headingId}
-      className={`relative grid min-w-0 scroll-mt-28 gap-y-4 pl-7 last:pb-0 lg:grid-cols-2 lg:gap-x-20 lg:pl-0 ${featured ? "pb-12 lg:pb-16" : "pb-8 lg:pb-10"}`}
+      className={`relative grid min-w-0 scroll-mt-28 gap-y-4 pl-7 last:pb-0 lg:grid-cols-2 lg:gap-x-20 lg:pl-0 ${featured ? "border-b border-[var(--line)] pb-12 lg:pb-16" : "pb-8 lg:pb-10"}`}
     >
       <span
         data-route-dot
@@ -322,8 +309,8 @@ function StopNode({
             <StopContext stop={stop} />
           ) : (
             <details data-route-additional className="border-t border-[var(--line)]">
-              <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-[var(--river-deep)] hover:underline hover:underline-offset-4">
-                Additional context<span className="sr-only"> for {stop.stop}</span>
+              <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-[var(--river-deep)] underline decoration-[var(--line)] underline-offset-4 hover:decoration-[var(--river-deep)]">
+                More from this place<span className="sr-only">: {stop.stop}</span>
               </summary>
               <div className="pb-2 pt-3">
                 <StopContext stop={stop} />
@@ -350,8 +337,8 @@ export function TimeAxisItinerary({ stops, routeStory, routeTitle, routeMap, onA
       <div className="site-container">
         <div className="mx-auto max-w-6xl">
           <header data-route-header className="mb-10 max-w-3xl text-left lg:mb-12">
-            <h2 className="font-[family:var(--font-display)] text-4xl leading-[1.15] text-[var(--river-deep)] lg:text-5xl">
-              What you will experience today.
+            <h2 className="text-balance font-[family:var(--font-display)] text-4xl leading-[1.08] text-[var(--river-deep)] lg:text-5xl">
+              A day shaped by place.
             </h2>
             {briefStory ? (
               <p className="mt-5 max-w-2xl whitespace-pre-line text-base leading-[1.8] text-[var(--ink)] lg:text-lg">

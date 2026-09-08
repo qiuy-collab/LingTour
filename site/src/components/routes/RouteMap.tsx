@@ -67,9 +67,11 @@ export function RouteMap({ stops, routeTitle }: Props) {
       className="flex h-[480px] min-w-0 flex-col overflow-hidden bg-[var(--paper)] text-[var(--river-deep)]"
     >
       <header className="shrink-0 px-5 pb-3 pt-5 lg:px-6">
-        <h3 id={titleId} className="font-[family:var(--font-display)] text-2xl leading-tight">Route overview</h3>
+        <h3 id={titleId} className="font-[family:var(--font-display)] text-2xl leading-tight">Route sketch</h3>
         <p className="mt-1 text-sm leading-5 text-[var(--muted)]">
-          {geometry.points.length} of {stops.length} stops located
+          {geometry.points.length === stops.length
+            ? "A quiet outline of the day."
+            : `${geometry.points.length} of ${stops.length} stops are located.`}
         </p>
       </header>
       <div className="relative min-h-0 flex-1">
@@ -110,11 +112,9 @@ export function RouteMap({ stops, routeTitle }: Props) {
                   <div className="min-w-0 break-words">
                     <span className="font-bold">{stop.stop}</span>
                     {stop.time ? <span> ({stop.time})</span> : null}
-                    <span className="block text-xs leading-5 text-[var(--muted)]">
-                      {coordinates
-                        ? `${coordinates[1].toFixed(4)}° latitude, ${coordinates[0].toFixed(4)}° longitude`
-                        : "Location not recorded"}
-                    </span>
+                    {!coordinates ? (
+                      <span className="block text-xs leading-5 text-[var(--muted)]">Location not recorded</span>
+                    ) : null}
                   </div>
                 </li>
               );
@@ -123,8 +123,8 @@ export function RouteMap({ stops, routeTitle }: Props) {
         </div>
       </div>
       <figcaption id={captionId} className="shrink-0 border-t border-[var(--line)] px-5 py-3 text-xs leading-5 text-[var(--muted)] lg:px-6">
-        Schematic route, not navigation. Lines join consecutive recorded stops, not roads.
-        {geometry.missingCount > 0 ? " Missing locations leave gaps." : ""}
+        A visual reading of the route, not turn-by-turn navigation.
+        {geometry.missingCount > 0 ? " Stops without a recorded location remain off the line." : ""}
       </figcaption>
     </figure>
   );

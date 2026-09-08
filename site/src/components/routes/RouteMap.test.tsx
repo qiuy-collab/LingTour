@@ -45,9 +45,9 @@ describe("RouteMap", () => {
     render(<RouteMap stops={stops} routeTitle="Test itinerary" />);
     expect(screen.queryByTestId("map-canvas")).not.toBeInTheDocument();
     expect(screen.getByText("Market")).toBeInTheDocument();
-    expect(screen.getByText("23.0000° latitude, 113.0000° longitude")).toBeInTheDocument();
+    expect(screen.queryByText("23.0000° latitude, 113.0000° longitude")).not.toBeInTheDocument();
     expect(screen.getByText("Location not recorded")).toBeInTheDocument();
-    expect(screen.getByText(/Schematic route, not navigation/)).toBeInTheDocument();
+    expect(screen.getByText(/A visual reading of the route/)).toBeInTheDocument();
 
     act(() => enterViewport());
     expect(screen.getByTestId("map-canvas")).toBeInTheDocument();

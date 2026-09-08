@@ -67,13 +67,13 @@ describe("TimeAxisItinerary", () => {
     itinerary([ordinary]);
     const article = screen.getByRole("article", { name: ordinary.stop });
     const content = within(article);
-    const summary = content.getByText("Additional context");
+    const summary = content.getByText("More from this place");
     const disclosure = summary.closest("details")!;
     const remaining = [ordinary.story, ordinary.culturalStory, ...ordinary.details,
       ordinary.placeDetail!, ordinary.meal!, ordinary.hotel!, ordinary.transit!];
 
     expect(summary.tagName).toBe("SUMMARY");
-    expect(summary).toHaveTextContent(`Additional context for ${ordinary.stop}`);
+    expect(summary).toHaveTextContent(`More from this place: ${ordinary.stop}`);
     expect(disclosure).not.toHaveAttribute("open");
     expect(content.getByText(ordinary.plan!)).toBeVisible();
     for (const text of remaining) expect(content.getByText(text)).not.toBeVisible();
@@ -221,7 +221,7 @@ describe("TimeAxisItinerary", () => {
     const onAddStopNote = vi.fn();
     itinerary([first, second], { onAddStopNote });
     const content = within(screen.getByRole("article", { name: "Village school" }));
-    fireEvent.click(content.getByText("Additional context"));
+    fireEvent.click(content.getByText("More from this place"));
     fireEvent.click(content.getByRole("button", { name: /Show next media/ }));
     fireEvent.click(content.getByRole("button", { name: "Note this stop" }));
     expect(onAddStopNote).toHaveBeenCalledExactlyOnceWith(second, 1);

@@ -76,52 +76,30 @@ export default function RoutesPageClient({
       className="min-h-screen bg-[var(--paper-deep)] bg-grain"
       motionKey={filteredRoutes.map((route) => route.slug).join("|")}
     >
-      <section className="relative overflow-hidden pb-14 pt-16 sm:pb-16 sm:pt-20 lg:pb-32 lg:pt-40">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-[var(--sandstone)] opacity-20 -skew-x-12 translate-x-1/4" />
-
+      <section className="relative overflow-hidden border-b border-[var(--line)] py-8 sm:py-10 lg:py-14">
         <div className="site-container relative">
-          <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-start lg:gap-16">
-            <div className="min-w-0 max-w-3xl lg:col-span-8">
-              <Reveal>
-                <div data-pastoral-kicker className="mb-6 inline-block border border-[var(--cinnabar)] px-3 py-1 text-[8px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)] sm:mb-8 sm:px-4 sm:text-[10px] sm:tracking-[0.3em] lg:mb-10">
-                  {t("routes.atlas.eyebrow")}
-                </div>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] mix-blend-multiply lg:text-[clamp(2.75rem,7vw,6rem)]">
-                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("routes.atlas.titlePrimary")}</span></span>
-                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("routes.atlas.titleItalic")}</span></span>
-                </h1>
-                <div className="mt-5 flex flex-col items-start gap-4 sm:mt-8 lg:mt-16 lg:flex-row lg:gap-8">
-                  <div className="hidden h-24 w-px bg-[var(--line)] md:block" />
-                  <p data-pastoral-subtitle className="max-w-xl text-[13px] leading-6 text-[var(--muted)] sm:text-base sm:leading-relaxed lg:text-xl">
-                    {t("routes.atlas.lede")}
-                  </p>
-                </div>
-              </Reveal>
-            </div>
+          <div className="grid items-center gap-8 sm:grid-cols-[minmax(12rem,0.78fr)_minmax(0,1.2fr)] sm:gap-10 lg:grid-cols-[minmax(19rem,0.86fr)_minmax(0,1.14fr)] lg:gap-16">
+            <Reveal className="order-2 sm:order-1">
+              <div className="relative aspect-[4/3] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.75rem] lg:border-[0.9rem]">
+                <div
+                  data-pastoral-hero-media
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none"
+                  style={{ backgroundImage: `url(${heroImage})` }}
+                  role="img"
+                  aria-label="Landscape from a Guangdong route"
+                />
+              </div>
+            </Reveal>
 
-            <div className="relative w-full min-w-0 self-end lg:col-span-4 lg:max-w-none lg:self-start">
-              <Reveal delay={300}>
-                <div className="group relative ml-auto aspect-[4/3] w-full -rotate-2 scrapbook-shadow sm:aspect-[3/4] lg:aspect-[3/4] lg:-rotate-3">
-                  <div
-                    data-pastoral-hero-media
-                    className="absolute inset-0 bg-cover bg-center grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
-                    style={{ backgroundImage: `url(${heroImage})` }}
-                  />
-                  <div className="absolute inset-0 border-[1rem] border-white shadow-inner" />
-
-                  <div className="absolute -bottom-8 -right-4 hidden h-40 w-40 place-items-center rounded-full border-2 border-dashed border-[var(--cinnabar)]/30 bg-[radial-gradient(circle,rgba(182,66,53,0.12)_0%,rgba(182,66,53,0.03)_45%,transparent_70%)] text-center text-[10px] font-bold uppercase tracking-[0.35em] text-[var(--cinnabar)]/45 animate-spin-slow lg:grid">
-                    <span className="leading-relaxed">
-                      Field
-                      <br />
-                      Dispatch
-                    </span>
-                  </div>
-                  <div className="handwritten absolute bottom-3 left-4 text-sm text-[var(--gold)] sm:text-base lg:bottom-5 lg:left-auto lg:right-5 lg:text-xl">
-                    {t("routes.atlas.archiveBadge")}
-                  </div>
-                </div>
-              </Reveal>
-            </div>
+            <Reveal className="order-1 min-w-0 sm:order-2">
+              <h1 className="max-w-[11ch] text-balance font-[family:var(--font-display)] text-[clamp(2.65rem,7vw,5.75rem)] leading-[0.96] tracking-[-0.04em] text-[var(--river-deep)]">
+                <span className="block overflow-hidden pb-2"><span data-pastoral-title className="block">Guangdong</span></span>
+                <span className="block overflow-hidden pb-2"><span data-pastoral-title className="block">routes to inhabit.</span></span>
+              </h1>
+              <p data-pastoral-subtitle className="mt-5 max-w-[58ch] text-pretty text-base leading-8 text-[var(--muted)] sm:mt-6 lg:text-lg">
+                {t("routes.atlas.lede")}
+              </p>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -168,23 +146,20 @@ export default function RoutesPageClient({
           />
         ) : null}
         {storyRoutes.length === 0 ? (
-          <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-              {t("routes.atlas.eyebrow")}
-            </p>
-            <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+          <div className="mx-auto max-w-2xl border border-[var(--line)] bg-white/70 p-8 sm:p-10">
+            <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
               {t("routes.atlas.empty.title")}
-            </h3>
-            <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
+            </h2>
+            <p className="mt-4 max-w-[55ch] text-base leading-7 text-[var(--muted)]">
               {t("routes.atlas.empty.body")}
             </p>
           </div>
         ) : filteredRoutes.length === 0 ? (
           <div className="mx-auto max-w-xl py-16 text-center">
-            <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+            <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
               {t("routes.filter.emptyTitle")}
-            </h3>
-            <p className="handwritten mt-4 text-base text-[var(--muted)]">
+            </h2>
+            <p className="mt-4 text-base leading-7 text-[var(--muted)]">
               {t("routes.filter.emptyBody")}
             </p>
             <button
@@ -195,114 +170,64 @@ export default function RoutesPageClient({
                 setDuration("");
                 setAudience("");
               }}
-              className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] underline underline-offset-4"
+              className="mt-7 min-h-11 text-sm font-semibold text-[var(--river-deep)] underline decoration-[var(--line)] underline-offset-4 hover:decoration-[var(--river-deep)]"
             >
               {t("routes.filter.clear")}
             </button>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-10 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-14 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
             <AnimatePresence initial={false} mode="popLayout">
-            {filteredRoutes.map((route, i) => {
-              const cardImage = route.image || placeholderFor("hero");
-              return (
-                <motion.div
-                  key={route.slug}
-                  className="w-[82vw] max-w-[25rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
-                  layout
-                  initial={false}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 12 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Link
-                    href={`/routes/${route.slug}`}
-                    className="group block"
-                    data-pastoral-card
+              {filteredRoutes.map((route, index) => {
+                const cardImage = route.image || placeholderFor("hero");
+                return (
+                  <motion.div
+                    key={route.slug}
+                    className="w-[82vw] max-w-[25rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
+                    layout
+                    initial={false}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <article
-                      className={`relative flex flex-col transition-all duration-500 hover:-translate-y-3 ${
-                        i % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
-                      }`}
-                    >
-                      <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[16/10] sm:border-[0.85rem]">
-                        <div
-                          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110 filter contrast-[1.05] brightness-[0.9] saturate-[0.85]"
-                          style={{ backgroundImage: `url(${cardImage})` }}
-                        />
-                        <div className="absolute inset-0 bg-black/5" />
-
-                        <div className="absolute top-4 right-4 z-10 flex flex-col items-center">
-                          <div className="bg-[var(--cinnabar)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg -rotate-6">
-                            {route.duration}
-                          </div>
-                          <div className="w-px h-6 bg-white/40 mt-1" />
+                    <Link href={`/routes/${route.slug}`} className="group block" data-pastoral-card>
+                      <article className={`flex h-full flex-col transition-transform duration-500 motion-reduce:transform-none hover:-translate-y-2 ${index % 2 === 0 ? "sm:rotate-[0.7deg]" : "sm:-rotate-[0.7deg]"}`}>
+                        <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.85rem]">
+                          <div
+                            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none group-hover:scale-105"
+                            style={{ backgroundImage: `url(${cardImage})` }}
+                            role="img"
+                            aria-label={`${route.title} route`}
+                          />
                         </div>
 
-                      </div>
-
-                      <div className="relative mt-6 space-y-3 px-1 sm:mt-8 sm:space-y-4 sm:px-4">
-                        <div className="handwritten pointer-events-none absolute -top-12 left-0 hidden select-none text-3xl text-[var(--gold)]/40 sm:block sm:-left-2 sm:-top-16 sm:-rotate-12 sm:text-4xl">
-                          #{i + 1}
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                            {route.culture}
+                        <div className="flex flex-1 flex-col px-1 pb-1 pt-6 sm:px-4 sm:pt-8">
+                          <h2 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.03] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
+                            {route.title}
+                          </h2>
+                          <p className="mt-4 max-w-[37ch] text-pretty text-sm leading-7 text-[var(--muted)] sm:text-base">
+                            {route.summary}
                           </p>
-                          <div className="h-px flex-1 bg-[var(--line)]/50" />
-                        </div>
-
-                        <h2 className="font-[family:var(--font-display)] text-3xl leading-[1] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
-                          {route.title}
-                        </h2>
-
-                        <p className="handwritten line-clamp-3 max-w-[34ch] text-sm leading-relaxed text-[var(--muted)] sm:max-w-[32ch] sm:text-base">
-                          {route.summary}
-                        </p>
-
-                        <div className="flex items-center justify-between border-t border-[var(--line)]/30 pt-4">
-                          <div className="flex items-center gap-2">
-                            <div className="handwritten text-xs text-[var(--muted)]">
-                              {t("routes.atlas.waypoints")}
+                          <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-2 border-t border-[var(--line)] pt-5 text-sm leading-6 text-[var(--river-deep)]">
+                            <div>
+                              <dt className="sr-only">City</dt>
+                              <dd>{route.city}</dd>
                             </div>
-                            <div className="flex -space-x-2">
-                              {route.itinerary.slice(0, 3).map((_, idx) => (
-                                <div
-                                  key={idx}
-                                  className="w-6 h-6 rounded-full border-2 border-white bg-[var(--paper-deep)] flex items-center justify-center text-[10px] font-bold text-[var(--river-deep)] shadow-sm"
-                                >
-                                  {idx + 1}
-                                </div>
-                              ))}
+                            <div>
+                              <dt className="sr-only">Duration</dt>
+                              <dd>{route.duration}</dd>
                             </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                            <span className="relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-px after:bg-[var(--cinnabar)] after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:origin-left">
-                              {t("routes.atlas.dispatchInfo")}
-                            </span>
-                            <svg
-                              className="h-3 w-3 transition-transform group-hover:translate-x-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                            >
-                              <path
-                                d="M5 12h14M12 5l7 7-7 7"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
+                            <div className="col-span-2">
+                              <dt className="sr-only">Culture</dt>
+                              <dd>{route.culture}</dd>
+                            </div>
+                          </dl>
                         </div>
-                      </div>
-                    </article>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                      </article>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </div>
         )}
@@ -310,20 +235,17 @@ export default function RoutesPageClient({
 
       <section className="pb-20 lg:pb-32">
         <div className="site-container">
-          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-center text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-20 lg:py-28">
+          <div className="relative overflow-hidden bg-[var(--river-deep)] bg-grain px-6 py-16 text-white scrapbook-shadow sm:px-8 sm:py-20 lg:px-20 lg:py-28">
             <div
-              className="absolute inset-0 opacity-10 bg-cover bg-center grayscale"
+              className="absolute inset-0 bg-cover bg-center opacity-10 grayscale"
               style={{ backgroundImage: `url(${ctaImage})` }}
             />
-            <div className="relative z-10 mx-auto max-w-2xl">
+            <div className="relative z-10 mx-auto max-w-2xl text-center">
               <Reveal>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-                  {t("routes.cta.localVoice.eyebrow")}
-                </p>
-                <h2 className="mt-8 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl md:text-6xl">
+                <h2 className="font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl md:text-6xl">
                   {t("routes.cta.localVoice.title")}
                 </h2>
-                <div className="mt-12">
+                <div className="mt-10">
                   <Link
                     href="/interpreting"
                     className="btn-gold inline-flex w-full justify-center px-8 py-4 text-xs sm:w-auto sm:px-12 sm:py-5"

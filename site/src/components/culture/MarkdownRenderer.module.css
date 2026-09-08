@@ -1,48 +1,93 @@
 .prose {
   width: 100%;
-  max-width: 70ch;
+  max-width: 65ch;
   margin-inline: auto;
   color: var(--river-deep);
   font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
   line-height: 1.85;
   overflow-wrap: anywhere;
 }
+
 .prose > :first-child { margin-top: 0; }
-.prose p { margin-block: 1.3em; text-wrap: pretty; }
+.prose p { margin-block: 1.4em; text-wrap: pretty; }
+
 .prose :is(h2, h3, h4, h5, h6) {
   font-family: var(--font-display), Georgia, serif;
   font-weight: 400;
   text-wrap: balance;
-  line-height: 1.15;
-  margin-block: 2em .7em;
+  line-height: 1.08;
+  margin-block: 2.25em .75em;
   scroll-margin-top: 7rem;
 }
-.prose h2 { font-size: clamp(1.9rem, 4vw, 3.15rem); }
-.prose h3 { font-size: clamp(1.5rem, 3vw, 2.2rem); }
+
+.prose h2 {
+  font-size: clamp(2rem, 4vw, 3.35rem);
+  max-width: 20ch;
+}
+
+.prose h3 { font-size: clamp(1.55rem, 3vw, 2.25rem); }
 .prose :is(h4, h5, h6) { font-size: 1.35rem; }
-.prose figure { margin: 2.5rem 0; }
-.prose img { display: block; max-width: 100%; height: auto; margin-inline: auto; }
+
+.prose figure {
+  position: relative;
+  margin: clamp(2.75rem, 7vw, 5rem) 0;
+  padding: clamp(.35rem, 1.4vw, .75rem);
+  background: white;
+  box-shadow: var(--shadow-soft);
+}
+
+.prose figure:nth-of-type(odd) {
+  margin-inline: clamp(-.4rem, -2vw, -1.5rem) 0;
+}
+
+.prose figure:nth-of-type(even) {
+  margin-inline: 0 clamp(-.4rem, -2vw, -1.5rem);
+}
+
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
 .prose blockquote {
-  margin: 2rem 0;
-  padding: 1.25rem clamp(1rem, 3vw, 2rem);
-  background: var(--paper);
+  position: relative;
+  margin: clamp(2.5rem, 6vw, 4.5rem) 0;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 5vw, 3.5rem);
+  background: color-mix(in srgb, var(--paper) 86%, white);
   border-block: 1px solid var(--line);
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
   font-style: italic;
-  line-height: 1.55;
+  line-height: 1.5;
+  text-wrap: balance;
 }
-.prose blockquote p { margin: 0; }
-.prose :is(ul, ol) { padding-inline-start: 1.5em; margin-block: 1.25em; }
+
+.prose blockquote::before {
+  position: absolute;
+  top: -.2em;
+  left: .2em;
+  color: var(--gold);
+  content: "“";
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 4em;
+  line-height: 1;
+  opacity: .35;
+}
+
+.prose blockquote p { position: relative; margin: 0; }
+.prose :is(ul, ol) { padding-inline-start: 1.5em; margin-block: 1.35em; }
 .prose ul { list-style: disc; }
 .prose ol { list-style: decimal; }
-.prose li { padding-inline-start: .2em; margin-block: .4em; }
+.prose li { padding-inline-start: .2em; margin-block: .45em; }
 .prose :global(.task-list-item) { list-style: none; }
 .prose input { accent-color: var(--river-deep); margin-inline-end: .65em; }
-.prose a { text-decoration: underline; text-underline-offset: .2em; }
+.prose a { color: var(--river-deep); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--cinnabar) 58%, transparent); text-underline-offset: .22em; }
 .prose a:hover { color: var(--cinnabar); }
 .prose :is(a, [tabindex]):focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 4px; }
-.prose hr { border: 0; border-top: 1px solid var(--line); margin-block: 2.5rem; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin-block: clamp(3rem, 8vw, 5rem); }
+
 .tableScroll { overflow-x: auto; max-width: 100%; margin-block: 2rem; }
 .prose table { width: 100%; border-collapse: collapse; font-size: .9em; line-height: 1.55; }
 .prose :is(th, td) { border: 1px solid var(--line); padding: .75rem 1rem; min-width: 8rem; text-align: left; }
@@ -50,3 +95,17 @@
 .prose pre { max-width: 100%; overflow-x: auto; padding: 1rem; background: var(--paper); line-height: 1.65; margin-block: 1.5rem; }
 .prose code { font-family: monospace; font-size: .88em; }
 .prose :not(pre) > code { background: var(--paper); padding: .12em .3em; }
+
+@media (min-width: 768px) {
+  .prose > p:first-of-type {
+    font-size: clamp(1.2rem, 2vw, 1.4rem);
+    line-height: 1.75;
+  }
+}
+
+@media (max-width: 639px) {
+  .prose figure:nth-of-type(odd),
+  .prose figure:nth-of-type(even) {
+    margin-inline: 0;
+  }
+}

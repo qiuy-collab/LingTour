@@ -61,37 +61,39 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
   }
 
   return (
-    <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_0.9fr]">
-      <div className="grid gap-6">
+    <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,.8fr)] lg:gap-16">
+      <div className="grid gap-7">
         {relatedCities.map((city, index) => {
           const isHovered = hoveredCitySlug === city.slug;
           return (
             <Reveal key={city.slug} delay={index * 80}>
               <Link
                 href={`/culture/${city.slug}`}
-                className={`group relative grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-4 transition-all duration-300 scrapbook-shadow sm:grid-cols-[120px_1fr] sm:gap-5 sm:p-5 ${isHovered ? "border-[var(--cinnabar)]" : "hover:border-[var(--gold)]"}`}
+                className={`group grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border-b border-[var(--line)] pb-7 transition-colors sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6 ${isHovered ? "border-[var(--cinnabar)]" : "hover:border-[var(--gold)]"}`}
                 onMouseEnter={() => setHoveredCitySlug(city.slug)}
                 onMouseLeave={() => setHoveredCitySlug(null)}
+                onFocus={() => setHoveredCitySlug(city.slug)}
+                onBlur={() => setHoveredCitySlug(null)}
               >
-                <div
-                  className="h-full min-h-28 w-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${city.image})` }}
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="bg-[var(--river-deep)] px-2.5 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
-                      {city.label}
-                    </span>
-                    <span className="text-[11px] font-medium tracking-wider text-[var(--muted)]">
-                      {city.adcode}
-                    </span>
-                  </div>
-                  <h3 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)]">
+                <div className="aspect-[4/5] overflow-hidden border-4 border-white bg-[var(--paper)] scrapbook-shadow">
+                  <div
+                    className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.04]"
+                    style={{ backgroundImage: `url(${city.image})` }}
+                  />
+                </div>
+                <div className="min-w-0 py-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                    {city.label}
+                  </p>
+                  <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-[1.02] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
                     {city.name}
                   </h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
                     {city.summary}
                   </p>
+                  <span className="mt-4 inline-block text-[10px] font-bold uppercase tracking-[0.17em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4">
+                    Read city
+                  </span>
                 </div>
               </Link>
             </Reveal>
@@ -99,13 +101,15 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
         })}
       </div>
 
-      <div className="hidden lg:block">
+      <aside className="hidden lg:block">
         <div className="sticky top-28">
-          <p className="text-label text-[var(--cinnabar)] handwritten">City linkage</p>
-          <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)]">
-            Places connected to {currentCity.name}
+          <h3 className="font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)]">
+            Connected places
           </h3>
-          <div className="relative mt-8 overflow-hidden border-8 border-white bg-white scrapbook-shadow">
+          <p className="mt-3 max-w-[30ch] text-sm leading-6 text-[var(--muted)]">
+            A regional view of the places linked to {currentCity.name}.
+          </p>
+          <div className="relative mt-7 overflow-hidden border-[0.5rem] border-white bg-white scrapbook-shadow">
             {mapData ? (
               <div className="relative p-4">
                 <svg
@@ -123,7 +127,7 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
                       <path
                         key={city.adcode}
                         d={city.path}
-                        fill={isCurrent ? "#1f4b45" : isHovered ? "#d97706" : isLinked ? "#b64235" : "#ccd6ce"}
+                        fill={isCurrent ? "#1f4b45" : isHovered ? "#9a6d2e" : isLinked ? "#b64235" : "#ccd6ce"}
                         stroke="#fff"
                         strokeWidth={isCurrent || isHovered ? 1.6 : 0.9}
                         opacity={isLinked ? 1 : 0.62}
@@ -133,26 +137,20 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
                   })}
                 </svg>
 
-                <motion.div
+                <motion.p
                   initial={{ opacity: 0.9, y: 0 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mx-4 mb-4 border border-[var(--line)] bg-white p-4 shadow-[var(--shadow-soft)]"
+                  className="mt-3 border-t border-[var(--line)] pt-3 text-sm text-[var(--muted)]"
                 >
-                  <p className="text-label text-[var(--cinnabar)]">Current city</p>
-                  <p className="mt-2 font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
-                    {currentCity.name}
-                  </p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    Linked cities: {relatedCities.length}
-                  </p>
-                </motion.div>
+                  {currentCity.name} and {relatedCities.length} linked {relatedCities.length === 1 ? "city" : "cities"}.
+                </motion.p>
               </div>
             ) : (
               <div className="grid h-48 place-items-center text-xs text-[var(--muted)]">Map</div>
             )}
           </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }
