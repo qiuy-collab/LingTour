@@ -17,7 +17,9 @@ const emit = defineEmits<{
 const content = computed(() => readContentValue(props.modelValue))
 
 function updateContent(nextValue: string) {
-  emit('update:modelValue', { zh: '', en: nextValue })
+  // Preserve the existing zh value — the API persists whatever the client
+  // sends, so resetting zh here would wipe legacy bilingual data on save.
+  emit('update:modelValue', { ...props.modelValue, en: nextValue })
 }
 </script>
 

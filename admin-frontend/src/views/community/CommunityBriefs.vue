@@ -142,8 +142,8 @@ async function submitForm() {
     const payload: CommunityBriefPayload = {
       ...form,
       slug: form.slug.trim(),
-      title: { zh: '', en: title },
-      prompt: { zh: '', en: prompt },
+      title: { ...form.title, en: title },
+      prompt: { ...form.prompt, en: prompt },
       location: form.location.trim(),
       route: form.route.trim(),
       mood: form.mood.trim(),
