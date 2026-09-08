@@ -21,7 +21,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center text-sm">
             <Link
               href="/culture"
-                className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] transition hover:text-[var(--river-deep)]"
+              className="inline-flex min-h-11 items-center px-3 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] transition hover:text-[var(--river-deep)]"
             >
               Continue browsing
             </Link>

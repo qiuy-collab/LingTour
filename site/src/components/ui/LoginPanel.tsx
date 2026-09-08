@@ -18,7 +18,7 @@ import { gsap, motionEase, useGSAP } from "@/lib/motion";
 type LoginMode = "login" | "signup";
 
 const FIELD_CLASS =
-  "min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/72 px-4 py-3 text-sm text-[var(--river-deep)] outline-none transition placeholder:text-[var(--muted)]/55 hover:border-[var(--river-deep)]/35 focus:border-[var(--river-deep)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+  "min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/72 px-4 py-3 text-base text-[var(--river-deep)] outline-none transition placeholder:text-[var(--muted)]/55 hover:border-[var(--river-deep)]/35 focus:border-[var(--river-deep)] focus:bg-white focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)] lg:text-sm";
 
 const LABEL_CLASS =
   "grid gap-2 font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
