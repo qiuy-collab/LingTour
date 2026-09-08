@@ -287,9 +287,6 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
             </button>
             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
             <div>
-              <p data-pastoral-kicker className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--gold)]">
-                {t("account.profile.passportLabel")}
-              </p>
               <h1 className="mt-3 overflow-hidden font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.04em]">
                 <span data-pastoral-title className="block">{user.name}</span>
               </h1>
@@ -405,7 +402,6 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                   </div>
                   <div className="flex min-w-0 flex-col justify-between px-4 py-2 sm:px-5 sm:py-3">
                     <div>
-                      <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">Curated object</p>
                       <h2 className="mt-3 font-[family:var(--font-display)] text-xl leading-[1.05] transition-colors group-hover:text-[var(--cinnabar)] sm:text-2xl">{item.name}</h2>
                       <p className="mt-2 handwritten text-xs italic text-[var(--muted)]">{t("account.profile.quantity")} {item.quantity}</p>
                     </div>

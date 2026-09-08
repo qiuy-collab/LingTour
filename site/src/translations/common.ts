@@ -76,8 +76,6 @@ export const common = {
     "common.aria.closeMenu": "Close menu",
     "common.aria.openMenu": "Open menu",
 
-    "common.footer.brand": "The Field Dispatch",
-    "common.footer.registry": "Registry",
     "common.footer.locations": "Guangzhou / Shantou / Meizhou",
 
     "home.hero.title": "LingTour Guangdong",
@@ -97,10 +95,8 @@ export const common = {
     "notFound.btn.cities": "Browse cities",
     "notFound.btn.routes": "Browse routes",
 
-    "community.badge": "The LingTour Field Room",
     "community.hero.title": "Field",
     "community.hero.titleAccent": "Notes.",
-    "community.hero.subtitle": "Notes from travellers on the road. Pick up a brief or add your own.",
     "community.channel.all": "All",
     "community.channel.fieldNotes": "Field Notes",
     "community.channel.foodMap": "Food Map",

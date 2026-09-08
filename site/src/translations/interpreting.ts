@@ -3,8 +3,8 @@ const copy = {
   "interpreting.page.subtitle": "Language support for markets, meals, meetings, and travel days.",
   "interpreting.card.profilePrefix": "Profile",
   "interpreting.card.tapToFlip": "Tap to flip",
-  "interpreting.hero.title": "Guangdong Interpreter Services",
-  "interpreting.hero.subtitle": "Markets · Meetings · Routes · Dining",
+  "interpreting.hero.title": "Interpreting in Guangdong",
+  "interpreting.hero.subtitle": "Language support for the day ahead.",
   "interpreting.hero.scroll": "Scroll to explore",
 
   "interpreting.metrics.0.label": "city",
@@ -114,12 +114,9 @@ const copy = {
   "interpreting.cta.alt": "Not sure yet? Start with the story routes first.",
 
   // Decorative atlas labels (used on the service-types card)
-  "interpreting.atlas.baseRate": "Base rate",
-  "interpreting.atlas.perDispatch": "/ Dispatch",
-  "interpreting.atlas.fieldCapabilities": "Field capabilities",
-  "interpreting.atlas.requestDispatch": "Request dispatch",
-  "interpreting.atlas.serviceScenes": "Service scenes",
-  "interpreting.atlas.chooseShape": "Service Types",
+  "interpreting.atlas.from": "From",
+  "interpreting.atlas.includes": "Includes",
+  "interpreting.atlas.chooseShape": "Choose support",
 
   // Pricing matrix (was in two locales hardcoded inside the component)
   "interpreting.pricing.city": "City",
@@ -138,12 +135,6 @@ const copy = {
   "interpreting.flow.fastTrackHint": "Shortest version: name, contact, city",
   "interpreting.flow.step": "Step {current} of {total}",
   "interpreting.flow.progress": "Booking progress",
-  "interpreting.flow.progressSegment": "Step {number}",
-  "interpreting.flow.stage.quick": "Quick booking",
-  "interpreting.flow.stage.basics": "Basics",
-  "interpreting.flow.stage.needs": "Needs",
-  "interpreting.flow.stage.review": "Review",
-  "interpreting.flow.stage.deposit": "Deposit",
   "interpreting.flow.name": "Name",
   "interpreting.flow.namePlaceholder": "Full name",
   "interpreting.flow.contact": "Email / WhatsApp",

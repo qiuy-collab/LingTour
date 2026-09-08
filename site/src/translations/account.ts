@@ -21,7 +21,6 @@ export const account = {
     "account.profile.tabs.bookings": "Bookings",
     "account.profile.tabs.settings": "Settings",
     "account.profile.tabLabel": "Traveler profile sections",
-    "account.profile.passportLabel": "LingTour Field Passport",
     "account.profile.bioFallback": "A traveler profile waiting for its first field note.",
     "account.profile.locationUnset": "Location not yet filed",
     "account.profile.completion": "Profile {number}% complete",

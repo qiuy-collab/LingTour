@@ -167,12 +167,8 @@ export function PostCard({
           </div>
         ) : (
           <div className="relative overflow-hidden px-6 pb-2 pt-8 sm:px-7">
-            <p className="absolute right-6 top-4 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--gold)]">
-              Text Dispatch
-            </p>
             <div className="max-w-[13rem] border-l-2 border-[var(--gold)] pl-4">
               <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">{post.channel}</p>
-              <p className="mt-3 handwritten text-[var(--muted)]">No image attached. Filed as a pure note.</p>
             </div>
           </div>
         )}
@@ -219,9 +215,7 @@ export function PostCard({
             >
               {post.excerpt}
             </p>
-          ) : (
-            <p className="mt-4 text-sm italic text-[var(--muted)]">Photo-only signal. Open to read the full field context.</p>
-          )}
+          ) : null}
 
           <div className="mt-4 flex flex-wrap gap-2">
             {post.route ? (

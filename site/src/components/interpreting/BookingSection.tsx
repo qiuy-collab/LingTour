@@ -59,29 +59,29 @@ export function BookingSection({ prefillNeeds }: Props) {
       bookingFastTrack
         ? [
             {
-              title: "Your Details",
+              title: "Details",
               body: "Name · Contact · City",
             },
             {
-              title: "Pay Deposit",
+              title: "Deposit",
               body: "Deposit · Matching",
             },
           ]
         : [
             {
-              title: "Your Details",
+              title: "Details",
               body: "Name · Contact · City · Date",
             },
             {
-              title: "Service Needs",
+              title: "Support",
               body: "Mode · Group · Route",
             },
             {
-              title: "Review Brief",
+              title: "Review",
               body: "Request Summary",
             },
             {
-              title: "Pay Deposit",
+              title: "Deposit",
               body: "Deposit · Matching",
             },
           ],
@@ -92,15 +92,12 @@ export function BookingSection({ prefillNeeds }: Props) {
     <section id="interpreting-booking" className="site-container scroll-mt-24 pb-28 md:pb-20 lg:pb-28">
       <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)] sm:items-end lg:mb-14">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-            {"Booking desk"}
-          </p>
-          <h2 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
-            {"Tell us about your day."}
+          <h2 className="font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
+            {"Request support"}
           </h2>
         </div>
         <p className="max-w-md handwritten text-sm leading-7 text-[var(--muted)] sm:justify-self-end">
-          {"Leave the essentials first. We will turn the field details into a clear working brief with you."}
+          {"Share a few details; we’ll match the right interpreter."}
         </p>
       </div>
 
@@ -112,7 +109,7 @@ export function BookingSection({ prefillNeeds }: Props) {
             <div className="px-1 sm:px-0">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                  {"Live field brief"}
+                  {"Request summary"}
                 </p>
                 <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
@@ -164,11 +161,8 @@ export function BookingSection({ prefillNeeds }: Props) {
           <div className="min-w-0">
             <div className="mb-6 flex items-end justify-between gap-4 px-1 sm:px-0">
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
-                  {"Interpreting request"}
-                </p>
-                <h3 className="mt-3 font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)] sm:text-4xl">
-                  {"Your working brief"}
+                <h3 className="font-[family:var(--font-display)] text-3xl italic leading-none text-[var(--river-deep)] sm:text-4xl">
+                  {"Your request"}
                 </h3>
               </div>
               <span className="hidden text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)] sm:block">

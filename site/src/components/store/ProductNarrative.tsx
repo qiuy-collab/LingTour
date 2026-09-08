@@ -29,10 +29,7 @@ export function ProductNarrative({ product }: { product: StoreProduct }) {
           <Reveal>
             <div className="max-w-2xl space-y-7 sm:space-y-8">
               <header>
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)] sm:text-[10px] sm:tracking-[0.24em]">
-                  {t("shop.detail.provenance")}
-                </p>
-                <h2 className="mt-4 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] text-[var(--river-deep)] sm:text-5xl md:text-6xl">
+                <h2 className="max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] text-[var(--river-deep)] sm:text-5xl md:text-6xl">
                   {product.name}
                 </h2>
               </header>

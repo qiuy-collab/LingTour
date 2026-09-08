@@ -2,9 +2,7 @@ export const checkout = {
   en: {
     "checkout.page.title": "Checkout",
     "checkout.page.subtitle": "Review your selected objects and confirm delivery details.",
-    "checkout.page.eyebrow": "Store checkout",
     "checkout.page.heading": "Finalize delivery details.",
-    "checkout.page.body": "Contact and delivery details",
     "checkout.page.paymentEyebrow": "Complete payment",
     "checkout.page.paymentTitle": "Almost there.",
     "checkout.page.paymentBody": "Order {orderNo} has been created. Complete payment below to confirm your order.",
@@ -50,8 +48,6 @@ export const checkout = {
     "checkout.form.countryPlaceholder": "Country",
     "checkout.form.notesPlaceholder": "Anything the fulfillment team should know before packing or dispatching.",
 
-    "checkout.success.paymentConfirmed": "Payment confirmed",
-    "checkout.success.orderLogged": "Order logged",
     "checkout.success.thankYou": "Thank you.",
     "checkout.success.registryConfirmed": "Registry confirmed.",
     "checkout.success.paymentMessage": "Your payment has been processed successfully. We'll begin preparing your order for shipment shortly.",

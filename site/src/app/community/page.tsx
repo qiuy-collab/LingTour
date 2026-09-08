@@ -507,25 +507,10 @@ export default function CommunityPage() {
         />
         <div className="site-container relative text-center">
           <div>
-            <p data-community-kicker className="text-label tracking-[0.3em] text-[var(--cinnabar)]">
-              {t("community.badge")}
-            </p>
-            <h1 className="mt-6 font-[family:var(--font-display)] text-[clamp(3.25rem,15vw,5rem)] leading-[0.86] tracking-tight md:text-8xl lg:text-[8rem]">
+            <h1 className="font-[family:var(--font-display)] text-[clamp(3.25rem,15vw,5rem)] leading-[0.86] tracking-tight md:text-8xl lg:text-[8rem]">
               <span className="block overflow-hidden pb-1"><span data-community-title className="block">{t("community.hero.title")}</span></span>
               <span className="block overflow-hidden pb-3"><span data-community-title className="block italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span></span>
             </h1>
-            <p data-community-subtitle className="handwritten mx-auto mt-6 max-w-2xl text-base leading-relaxed text-[var(--muted)] sm:mt-8 sm:text-lg">
-              {t("community.hero.subtitle")}
-            </p>
-          </div>
-          <div
-            data-community-stamp
-            aria-hidden="true"
-            className="absolute -right-5 -top-8 hidden aspect-square w-28 rotate-12 place-items-center rounded-full border border-[var(--cinnabar)]/45 p-2 text-[var(--cinnabar)] lg:grid xl:right-8 xl:top-0"
-          >
-            <div className="grid h-full w-full place-items-center rounded-full border border-dashed border-current text-center font-mono text-[8px] font-bold uppercase leading-4 tracking-[0.2em]">
-              Live field<br />Guangdong<br />Archive
-            </div>
           </div>
         </div>
       </section>

@@ -185,7 +185,6 @@ export default function InterpretingPageClient({
         languages: profile.language,
         image: profileAvatar || placeholderFor("portrait"),
         needsPrefill: profile.focus,
-        rateLabel: effectiveInterpretingData.serviceModes?.[index]?.price,
         bestFor: profile.helps?.join(" / "),
       };
     });
@@ -227,19 +226,8 @@ export default function InterpretingPageClient({
           <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-10 xl:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4 lg:mb-10 lg:gap-6">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--line)] font-[family:var(--font-display)] text-base italic text-[var(--gold)] sm:h-12 sm:w-12 sm:text-xl">
-                    L
-                  </div>
-                  <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--muted)]">
-                    {"LingTour Interpreting / Field Coordination"}
-                  </p>
-                </div>
-
-                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.88] tracking-[-0.045em] sm:mb-8 lg:text-[7rem] xl:text-[8.25rem]">
-                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{"Guangdong"}</span></span>
-                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Interpreter</span></span>
-                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">Services</span></span>
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.75rem,9vw,4.5rem)] leading-[0.95] tracking-[-0.045em] sm:mb-8 lg:text-[7rem] xl:text-[8.25rem]">
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">{t("interpreting.hero.title")}</span></span>
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
@@ -252,13 +240,13 @@ export default function InterpretingPageClient({
                       href="#interpreting-booking"
                       className="btn-primary inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none active:scale-95 sm:w-auto sm:px-10 sm:py-5"
                     >
-                      {"Plan support"}
+                      {"Request support"}
                     </a>
                     <a
                       href="#service-types"
                       className="btn-paper inline-flex w-full items-center justify-center px-6 py-4 text-xs leading-none sm:w-auto sm:px-10 sm:py-5"
                     >
-                      {"Service types"}
+                      {"View options"}
                     </a>
                   </div>
                 </div>
@@ -283,10 +271,7 @@ export default function InterpretingPageClient({
       <section id="service-types" className="site-container py-16 lg:py-24">
         <div className="mb-8 opacity-60">
           <Reveal>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-              {t("interpreting.atlas.serviceScenes")}
-            </p>
-            <h2 className="mt-3 max-w-[12ch] font-[family:var(--font-display)] text-3xl leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
+            <h2 className="max-w-[12ch] font-[family:var(--font-display)] text-3xl leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
               {t("interpreting.atlas.chooseShape")}
             </h2>
           </Reveal>
@@ -307,14 +292,11 @@ export default function InterpretingPageClient({
                 <div className="relative z-10 flex h-full flex-col">
                   <div className="mb-6 border-b border-[var(--line)] pb-6">
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                      {t("interpreting.atlas.baseRate")}
+                      {t("interpreting.atlas.from")}
                     </p>
-                    <div className="mt-2 flex items-baseline gap-2">
+                    <div className="mt-2 flex items-baseline">
                       <span className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
                         {item.duration}
-                      </span>
-                      <span className="text-[10px] font-bold uppercase text-[var(--muted)]">
-                        {t("interpreting.atlas.perDispatch")}
                       </span>
                     </div>
                   </div>
@@ -333,7 +315,7 @@ export default function InterpretingPageClient({
 
                   <div className="space-y-4">
                     <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">
-                      {t("interpreting.atlas.fieldCapabilities")}
+                      {t("interpreting.atlas.includes")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {item.tags.map((tag) => (
@@ -350,7 +332,7 @@ export default function InterpretingPageClient({
                       href="#interpreting-booking"
                       className="btn-outline mt-6 block w-full py-4 text-center text-[10px] leading-none"
                     >
-                      {t("interpreting.atlas.requestDispatch")}
+                      {"Request support"}
                     </a>
                   </div>
                 </div>
@@ -370,22 +352,16 @@ export default function InterpretingPageClient({
       <section id="interpreting-pricing" className="site-container scroll-mt-24 py-16 pb-28 lg:py-24 lg:pb-32">
         <Reveal>
           <div>
-            <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-              <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                {"Budget guide"}
-              </p>
-              <h2 className="mt-4 max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:max-w-none">
-                {"Rates by Service & Level"}
+            <div className="mb-10 border-b border-[var(--line)] pb-8">
+              <h2 className="max-w-[14ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:max-w-none">
+                {"Rates"}
               </h2>
-              <p className="max-w-xs handwritten text-sm leading-6 text-[var(--muted)] sm:text-right">
-                {"Choose the field format first, then the experience level that fits the day."}
-              </p>
             </div>
 
             <div>
               <div className="space-y-4">
                 <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] px-5 pb-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
-                  <div className="p-4">{"Type"}</div>
+                  <div className="p-4">{"Service"}</div>
                   <div className="text-center">
                     {t("interpreting.levels.junior")}
                   </div>
@@ -457,11 +433,8 @@ export default function InterpretingPageClient({
           <div className="grid gap-10 border-t border-[var(--line)] pt-12 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,1.3fr)] lg:gap-16">
             <Reveal>
               <div className="lg:sticky lg:top-28">
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                  {"Service notes"}
-                </p>
-                <h2 className="mt-4 max-w-[9ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl">
-                  {"Frequently asked questions"}
+                <h2 className="max-w-[9ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl">
+                  {"Questions"}
                 </h2>
               </div>
             </Reveal>
@@ -519,12 +492,12 @@ export default function InterpretingPageClient({
       <MobileStickyActions
         actions={[
           {
-            label: "Book",
+            label: "Request",
             href: "#interpreting-booking",
             variant: "primary",
           },
           {
-            label: "Pricing",
+            label: "Rates",
             href: "#interpreting-pricing",
             variant: "secondary",
           },

@@ -2,7 +2,6 @@ export const shop = {
   en: {
     "shop.page.title": "Shop",
     "shop.page.subtitle": "Route-linked objects selected for craft value, provenance, and story.",
-    "shop.card.curatedObject": "Curated Object",
     "shop.image.pending": "Image pending cataloguing",
     "shop.image.catalogueNote": "The object record is ready; photography is still being filed.",
     "shop.page.viewAll": "All products",
@@ -16,7 +15,6 @@ export const shop = {
     "shop.detail.story": "Behind the object",
     "shop.detail.details": "Details",
     "shop.detail.relatedProducts": "More from this collection",
-    "shop.detail.provenance": "Object record",
     "shop.detail.category": "Category",
     "shop.detail.material": "Material",
     "shop.detail.materialPending": "Material details pending",
@@ -31,14 +29,10 @@ export const shop = {
 
     "shop.hero.quote": "Objects carry stories too, especially the ones you can still trace back to place.",
 
-    "shop.atlas.eyebrow": "Lingnan Store / Objects",
     "shop.atlas.titlePrimary": "Lingnan",
     "shop.atlas.titleItalic": "Objects.",
     "shop.atlas.lede": "Craft, tea, wood, clay, cloth: objects chosen because they still carry the route, the maker, and the place they came from.",
-    "shop.atlas.crafted": "Crafted",
-    "shop.atlas.collectionsEyebrow": "Collections",
     "shop.atlas.collectionsTitle": "Collections by Place",
-    "shop.atlas.featuredEyebrow": "Featured",
     "shop.atlas.featuredTitle": "Featured Objects",
     "shop.atlas.viewAll": "View all",
 
@@ -49,7 +43,6 @@ export const shop = {
     "shop.atlas.empty.products.body":
       "No objects on the shelf yet.",
 
-    "shop.cta.eyebrow": "Gifting",
     "shop.cta.title": "A gift that names its place.",
     "shop.cta.button": "Browse all products",
   }

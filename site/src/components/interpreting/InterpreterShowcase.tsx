@@ -13,7 +13,6 @@ export type InterpreterProfile = {
   languages: string;
   image: string;
   needsPrefill: string;
-  rateLabel?: string;
   bestFor?: string;
 };
 
@@ -38,11 +37,8 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
     <section className="site-container py-16 lg:py-24">
       <div className="mb-8 opacity-60">
         <Reveal>
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-            {"Interpreter Levels"}
-          </p>
-          <h2 className="mt-3 max-w-[13ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
-            {"Junior \u00b7 Mid-level \u00b7 Senior"}
+          <h2 className="max-w-[13ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
+            {"Meet the interpreters"}
           </h2>
         </Reveal>
       </div>
@@ -105,16 +101,10 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-1 rounded-full bg-[var(--cinnabar)] animate-pulse" />
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
-                          Dispatch-ready
+                          Ready to match
                         </p>
                       </div>
                     </div>
-                    {profile.rateLabel ? (
-                      <div className="text-left sm:text-right">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-1">Rate</p>
-                        <p className="text-sm font-bold text-[var(--river-deep)]">{profile.rateLabel.split(' ')[0]}</p>
-                      </div>
-                    ) : null}
                   </div>
 
                   {profile.bestFor ? (
@@ -133,7 +123,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                       isSelected ? "bg-[var(--cinnabar)]" : ""
                     ].join(" ")}
                   >
-                    <span>{"Assign to Brief"}</span>
+                    <span>{"Add to request"}</span>
                     <svg className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                       <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>

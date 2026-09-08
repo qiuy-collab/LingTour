@@ -248,9 +248,6 @@ export function FieldKit<TChannel extends string>({
               }`}
             >
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
-                  Dispatch Mission
-                </p>
                 <h2
                   id="field-kit-title"
                   className={`font-[family:var(--font-display)] text-[var(--river-deep)] ${

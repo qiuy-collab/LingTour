@@ -139,12 +139,6 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
         <div className="flex flex-col">
           <Reveal>
             <div className="mb-12 sm:mb-16">
-              <div className="mb-6 flex items-center gap-4">
-                <div className="h-px w-10 bg-[var(--gold)]" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
-                  {t("home.calendar.eyebrow")}
-                </p>
-              </div>
               <h2 className="font-[family:var(--font-display)] text-4xl leading-[0.94] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:text-7xl">
                 {t("home.calendar.title")}
               </h2>
@@ -260,9 +254,6 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                   className="relative border-l border-[var(--gold)]/30 pl-8"
                 >
                   <div className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-[var(--gold)]" />
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                    {t("home.calendar.eventRegistry")}
-                  </p>
                   <h4 className="mb-3 font-[family:var(--font-display)] text-xl text-[var(--river-deep)] sm:text-2xl">
                     {event.title}
                   </h4>
@@ -338,9 +329,6 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                   </div>
                 </div>
 
-                <div className="handwritten absolute -bottom-4 right-2 select-none text-2xl text-[var(--gold)]/30 sm:-bottom-6 sm:-right-6 sm:-rotate-12 sm:text-3xl">
-                  {t("home.calendar.liveDispatch")}
-                </div>
               </Link>
             </Reveal>
           ) : (

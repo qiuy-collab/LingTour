@@ -185,18 +185,6 @@ function MultiStepFormInner({
 
   const modeLabel = (value: string) =>
     t(serviceModes.find((mode) => mode.value === value)?.labelKey ?? "interpreting.flow.mode.route");
-  const stageLabel = fastTrack
-    ? step === 0
-      ? t("interpreting.flow.stage.quick")
-      : t("interpreting.flow.stage.deposit")
-    : step === 0
-      ? t("interpreting.flow.stage.basics")
-      : step === 1
-        ? t("interpreting.flow.stage.needs")
-        : step === 2
-          ? t("interpreting.flow.stage.review")
-          : t("interpreting.flow.stage.deposit");
-
   if (submitted) {
     return (
       <div className="border border-[var(--gold)]/30 bg-white/95 p-8 text-center shadow-[0_8px_8px_rgba(17,25,35,0.08)] sm:p-12">
@@ -242,14 +230,11 @@ function MultiStepFormInner({
       </div>
 
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-4 sm:px-7">
-        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-end">
           <p className="text-label text-[var(--gold)]">
             {t("interpreting.flow.step")
               .replace("{current}", String(step + 1))
               .replace("{total}", String(totalSteps))}
-          </p>
-          <p className="text-[11px] uppercase tracking-[0.12em] text-[var(--muted)]">
-            {stageLabel}
           </p>
         </div>
         <div

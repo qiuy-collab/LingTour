@@ -123,9 +123,6 @@ export default function HomeClient({
     SEED_IMAGES.homeInterpreting ??
     placeholderFor("hero");
 
-  // Interpreting accent label (bottom-right of the field-notes block).
-  const interpretingLabel =
-    hero.interpretingLabel ?? t("home.interpreting.label");
 
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
@@ -278,15 +275,7 @@ export default function HomeClient({
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.035]"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.04),rgba(8,18,24,0.62))]" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-5 p-6 text-white sm:p-8">
-                    <div>
-                      <p className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-white/60">
-                        {interpretingLabel}
-                      </p>
-                      <p className="mt-2 max-w-[16ch] font-[family:var(--font-display)] text-2xl leading-none sm:text-3xl">
-                        {t("home.interpreting.registry")}
-                      </p>
-                    </div>
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-end gap-5 p-6 text-white sm:p-8">
                     <span className="grid h-11 w-11 shrink-0 place-items-center border border-white/30 bg-white/10 text-lg backdrop-blur-md" aria-hidden>
                       →
                     </span>

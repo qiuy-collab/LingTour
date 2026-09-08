@@ -348,9 +348,6 @@ export function CheckoutClient() {
     return (
       <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-3xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
-            {paymentComplete ? t("checkout.success.paymentConfirmed") : t("checkout.success.orderLogged")}
-          </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.04em]">
             {paymentComplete ? t("checkout.success.thankYou") : t("checkout.success.registryConfirmed")}
           </h1>
@@ -406,22 +403,9 @@ export function CheckoutClient() {
         <section className="min-w-0">
           <div className="min-w-0">
             <div className="mb-10 sm:mb-12">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--cinnabar)]">
-                {t("checkout.page.eyebrow")}
-              </p>
-              <h1 className="mt-5 max-w-[11ch] font-[family:var(--font-display)] text-[clamp(3.2rem,11vw,5.4rem)] leading-[0.9] tracking-[-0.055em]">
+              <h1 className="max-w-[11ch] font-[family:var(--font-display)] text-[clamp(3.2rem,11vw,5.4rem)] leading-[0.9] tracking-[-0.055em]">
                 {t("checkout.page.heading")}
               </h1>
-              <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
-                {t("checkout.page.body")}
-              </p>
-              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] sm:text-[11px] sm:tracking-[0.16em]">
-                <span className="text-[var(--cinnabar)]">01 Details</span>
-                <span className="hidden h-px flex-1 bg-[var(--line)] min-[400px]:block" />
-                <span>02 Review</span>
-                <span className="hidden h-px flex-1 bg-[var(--line)] min-[400px]:block" />
-                <span>03 Payment</span>
-              </div>
             </div>
 
             {error ? (

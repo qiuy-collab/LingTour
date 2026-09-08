@@ -50,10 +50,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
           <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-[var(--paper-deep)] border border-[var(--line)]" />
 
           <div className="space-y-3 pt-2">
-            <div className="flex justify-between items-start">
-              <p className="text-[10px] font-mono text-[var(--muted)] tracking-[0.18em] uppercase">
-                {t("shop.card.curatedObject")}
-              </p>
+            <div className="flex justify-end">
               <FavoriteButton id={product.slug} type="product" title={product.name} variant="dark" />
             </div>
 

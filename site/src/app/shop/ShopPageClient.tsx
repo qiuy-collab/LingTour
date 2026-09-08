@@ -88,12 +88,6 @@ export default function ShopPageClient({
           <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-3xl lg:col-span-8">
               <Reveal>
-                <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
-                  <span className="h-px w-8 shrink-0 bg-[var(--cinnabar)] sm:w-10" />
-                  <p data-pastoral-kicker className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    {t("shop.atlas.eyebrow")}
-                  </p>
-                </div>
                 <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] lg:text-9xl">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("shop.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("shop.atlas.titleItalic")}</span></span>
@@ -112,9 +106,6 @@ export default function ShopPageClient({
                     className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
                     style={{ backgroundImage: `url(${heroImage})` }}
                   />
-                  <div className="absolute -top-3 -left-3 flex h-9 w-16 items-center justify-center bg-[var(--gold)] text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--night)] shadow-lg sm:-top-4 sm:-left-4 sm:h-10 sm:w-20 sm:text-xs sm:-rotate-12 sm:tracking-widest">
-                    {t("shop.atlas.crafted")}
-                  </div>
                 </div>
               </Reveal>
             </div>
@@ -124,20 +115,14 @@ export default function ShopPageClient({
 
       <section className="site-container py-10 lg:py-20">
         <Reveal>
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
-            {t("shop.atlas.collectionsEyebrow")}
-          </p>
-          <h2 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
+          <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
             {t("shop.atlas.collectionsTitle")}
           </h2>
         </Reveal>
 
         {collections.length === 0 ? (
           <div className="mt-10 scrapbook-shadow max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-              {t("shop.atlas.collectionsEyebrow")}
-            </p>
-            <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+            <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
               {t("shop.atlas.empty.collections.title")}
             </h3>
             <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
@@ -163,10 +148,7 @@ export default function ShopPageClient({
                         </div>
                       </div>
                       <div className="mt-6 border border-[var(--line)] bg-white/72 p-6 scrapbook-shadow">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
-                          {t("shop.atlas.collectionsEyebrow")}
-                        </p>
-                        <h3 className="mt-4 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+                        <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
                           {collection.title}
                         </h3>
                         <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)]">
@@ -189,10 +171,7 @@ export default function ShopPageClient({
       <section className="site-container py-10 lg:py-20">
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--cinnabar)]">
-              {t("shop.atlas.featuredEyebrow")}
-            </p>
-            <h2 className="mt-3 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
+            <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
               {t("shop.atlas.featuredTitle")}
             </h2>
           </div>
@@ -206,10 +185,7 @@ export default function ShopPageClient({
 
         {products.length === 0 ? (
           <div className="scrapbook-shadow max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-              {t("shop.atlas.featuredEyebrow")}
-            </p>
-            <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
+            <h3 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
               {t("shop.atlas.empty.products.title")}
             </h3>
             <p className="handwritten mt-4 text-lg leading-relaxed text-[var(--muted)]">
@@ -233,10 +209,7 @@ export default function ShopPageClient({
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.08),transparent_60%)]" />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
-                  {t("shop.cta.eyebrow")}
-                </p>
-                <h2 className="mt-6 font-[family:var(--font-display)] text-3xl leading-tight md:text-5xl">
+                <h2 className="font-[family:var(--font-display)] text-3xl leading-tight md:text-5xl">
                   {t("shop.cta.title")}
                 </h2>
                 <div className="mt-8">
