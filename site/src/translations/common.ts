@@ -98,9 +98,9 @@ export const common = {
     "notFound.btn.routes": "Browse routes",
 
     "community.badge": "The LingTour Field Room",
-    "community.hero.title": "Inspiration",
-    "community.hero.titleAccent": "Exchange.",
-    "community.hero.subtitle": "Read field notes, pick a brief, and trade useful intelligence. Turn quiet details into shared routes.",
+    "community.hero.title": "Field",
+    "community.hero.titleAccent": "Notes.",
+    "community.hero.subtitle": "Notes from travellers on the road. Pick up a brief or add your own.",
     "community.channel.all": "All",
     "community.channel.fieldNotes": "Field Notes",
     "community.channel.foodMap": "Food Map",

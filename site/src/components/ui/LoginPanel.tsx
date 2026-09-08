@@ -52,7 +52,7 @@ export function LoginPanel() {
     },
     signup: {
       tab: "Sign up",
-      title: "Begin your journey",
+      title: "Create your traveler file.",
       body: "Keep every Guangdong route and booking in one place.",
       cta: "Create account",
       alt: "Already have an account?",

@@ -40,7 +40,7 @@ export const routes = {
     "routes.cta.book.body": "Every story route can be accompanied by a live English-speaking interpreter who knows the culture and the context.",
     "routes.cta.book.button": "Book an interpreter",
     "routes.cta.browse.title": "Looking for another route?",
-    "routes.cta.browse.body": "Our routes cover coast, mountain, delta, and city. There is a story waiting for you.",
+    "routes.cta.browse.body": "Coast, mountain, delta, city — each covered by a route file.",
     "routes.cta.browse.button": "Browse more routes",
 
     "routes.progress.stop": "Stop",
@@ -54,7 +54,7 @@ export const routes = {
     "routes.atlas.dispatchInfo": "Dispatch info",
     "routes.atlas.waypoints": "Waypoints:",
     "routes.atlas.empty.title": "No route records",
-    "routes.atlas.empty.body": "No published routes are available.",
+    "routes.atlas.empty.body": "No route files on record yet.",
     "routes.filter.searchLabel": "Search story routes",
     "routes.filter.searchPlaceholder": "Route, city, culture, or audience...",
     "routes.filter.count": "{visible}/{total} routes",
@@ -69,7 +69,7 @@ export const routes = {
 
     "routes.cta.localVoice.eyebrow": "Need a local voice?",
     "routes.cta.localVoice.title":
-      "Walk the route with someone who knows where the quiet details are hiding.",
+      "Walk the route with an interpreter who already knows it.",
     "routes.cta.localVoice.button": "Plan an interpreter",
   }
 

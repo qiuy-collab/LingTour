@@ -94,10 +94,10 @@ export const home = {
     "home.shop.handpicked": "Handpicked",
     "home.shop.localArchive": "Local archive",
     "home.shop.empty.title": "The next object drop is being catalogued.",
-    "home.shop.empty.body": "No published products are available.",
+    "home.shop.empty.body": "Nothing on the shelf yet.",
     "home.cta.eyebrow": "Continue the journey",
-    "home.cta.title.primary": "Plan Your",
-    "home.cta.title.italic": "Guangdong Journey.",
+    "home.cta.title.primary": "Before",
+    "home.cta.title.italic": "you go.",
     "home.cta.startLog": "Start your route",
     "home.cta.bookCoordination": "Book a local interpreter",
   }

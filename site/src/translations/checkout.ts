@@ -80,7 +80,7 @@ export const checkout = {
     "checkout.empty.returnToStore": "Return to store",
 
     "checkout.error.loadSelection": "We could not load the current checkout selection.",
-    "checkout.error.itemUnavailable": "\"{item}\" is not yet mapped to a live catalog item. Re-add it from the store before checkout.",
+    "checkout.error.itemUnavailable": "\"{item}\" is no longer in the store. Add it again from the store before checkout.",
     "checkout.error.createOrder": "We could not create your order right now.",
   }
 
