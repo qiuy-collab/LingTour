@@ -353,3 +353,17 @@ Origin divergence discovered immediately after, read-only, not integrated:
 - Root `main` is ahead 5 / behind 7; admin `main` ahead 1 / behind 1. The remote-only commits are collaborator `qiuy-collab` (2026-09-06 12:49 → 2026-09-07 19:04): culture Markdown persistence/rendering with a publication lifecycle, admin city Markdown authoring, itinerary editorial emphasis, and `site/src/components/mapcn/{map.tsx,LICENSE}` — the mapcn route map the user referenced exists on origin/main, not on the local branch.
 - 15 files overlap between the remote changes and this workspace's uncommitted WIP (admin `CityEdit.vue`/`city.ts`, api cities entity/DTO/service and cache interceptor, site culture detail client, `TimeAxisItinerary`, `api-data.ts`, `server-api.ts`, `server-data.ts`, package manifests); the 8 newly committed guide documents also differ from origin.
 - Consequence: pull/rebase/merge and push require an owner decision on integration strategy and were not executed. The 21 foreign staged files remain staged and untouched.
+
+## 16. 2026-09-09 integration completed onto origin/main
+
+Owner decision: remote-first with cherry-picks. Both repositories were reorganized without force-push and without `reset --hard`/`checkout --`/`stash`:
+
+- Parallel implementation preserved on branches `backup/local-parallel-20260909` and `local-parallel` (root `0158d5e`+`365b51c`+`c497317`; admin same-named branches). Foreign WIP snapshotted there where a branch switch required it.
+- Root `main` = `origin/main` + 12 cherry-picked commits (`73aedc5`..`08a4e0c`): housekeeping docs (6), home-map centroids, zh preservation, calendar mobile, de-AI copy, serviceCount removal, seeded-testimonials fallback. Skipped as superseded: local culture-md three-layer and react-leaflet route map.
+- Admin `main` = `origin/main` + 3 (`d5de03a`..`e75d6a7`): README guide, zh preservation, calendar mobile. 141/142 tracked files byte-identical to root; the only intentional difference is `Dockerfile` (root builds from the repo root, admin from its own directory — pre-existing by design, like `.vscode/extensions.json`).
+- Local DB aligned to the remote schema: `cities.content_markdown` converted jsonb→`text NOT NULL DEFAULT ''` (data was empty; backup in `tmp/content-markdown-backup-20260909.json`), `published_at` already present, stale `typeorm_migrations` row for the superseded `AddCityContentMarkdown1761700000000` removed. Remote migration `1761800000000` remains the single source of truth.
+- Local env fix required by the remote `server-api.ts` contract: site `.env.local` `INTERNAL_API_ORIGIN` now carries the `/api/v1` suffix (untracked file, not committed).
+
+Verification: api tsc clean (spec-mock typing warnings pre-existing per §11) + 144/144 tests + build; site tsc clean + 75/75 tests + lint 0 errors (5 pre-existing warnings) + build 18/18 pages; admin build clean. Browser (maplibre route map after "Load map"): map mounted 514×349, 4/4 markers rendered and `allInside: true`, coordinates complete; home testimonials fallback renders; home-map centroid paths present.
+
+Nothing pushed. Root ahead 12, admin ahead 3. Push/deploy await authorization.
