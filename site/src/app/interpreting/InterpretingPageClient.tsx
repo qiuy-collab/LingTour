@@ -183,7 +183,6 @@ export default function InterpretingPageClient({
         name: profile.name,
         specialty: profile.focus,
         languages: profile.language,
-        serviceCount: 40 + (profiles.length - index) * 12,
         image: profileAvatar || placeholderFor("portrait"),
         needsPrefill: profile.focus,
         rateLabel: effectiveInterpretingData.serviceModes?.[index]?.price,
