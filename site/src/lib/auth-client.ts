@@ -123,6 +123,7 @@ export function clearStoredAuth() {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem("lingtour-user");
+    void clearSession();
   } finally {
     window.dispatchEvent(new Event("lingtour-auth"));
   }
