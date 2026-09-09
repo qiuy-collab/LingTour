@@ -5,9 +5,11 @@ import { useTheme } from '@/composables/useTheme'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import AppBreadcrumb from '@/components/AppBreadcrumb.vue'
 import CommandPalette from '@/components/CommandPalette.vue'
+import OnboardingTour from '@/components/OnboardingTour.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { getAdminOnboardingStorageKey } from '@/constants/onboarding'
 import { animateRouteEnter, animateRouteLeave } from '@/utils/motion'
 import {
   DataAnalysis,
@@ -34,6 +36,7 @@ import {
   Bell,
   List,
   User,
+  QuestionFilled,
 } from '@element-plus/icons-vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
@@ -45,8 +48,46 @@ useTheme()
 const isCollapse = ref(false)
 const isMobile = ref(false)
 const mobileMenuOpen = ref(false)
+const onboardingOpen = ref(false)
+let onboardingTimer: number | undefined
+const onboardingStorageKey = computed(() =>
+  getAdminOnboardingStorageKey(authStore.currentUser?.id),
+)
 const currentPageTitle = computed(
   () => (route.meta.title as string) || '工作台',
+)
+
+function hasCompletedOnboarding(storageKey: string) {
+  if (!storageKey) return true
+  try {
+    return localStorage.getItem(storageKey) === 'done'
+  } catch {
+    return false
+  }
+}
+
+function openOnboarding() {
+  window.clearTimeout(onboardingTimer)
+  onboardingOpen.value = true
+}
+
+watch(
+  () => authStore.currentUser?.id,
+  (staffId) => {
+    window.clearTimeout(onboardingTimer)
+    onboardingOpen.value = false
+    const storageKey = getAdminOnboardingStorageKey(staffId)
+    if (!storageKey || hasCompletedOnboarding(storageKey)) return
+    onboardingTimer = window.setTimeout(() => {
+      if (
+        authStore.currentUser?.id === staffId &&
+        !hasCompletedOnboarding(storageKey)
+      ) {
+        onboardingOpen.value = true
+      }
+    }, 450)
+  },
+  { immediate: true },
 )
 
 // Responsive detection
@@ -63,6 +104,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  window.clearTimeout(onboardingTimer)
   window.removeEventListener('resize', checkMobile)
 })
 
@@ -312,6 +354,7 @@ watch(() => route.fullPath, closeMobileMenu)
                   : '收起导航菜单'
             "
             :aria-expanded="isMobile ? mobileMenuOpen : !isCollapse"
+            data-tour="nav-toggle"
             @click="toggleSidebar"
           >
             <el-icon>
@@ -339,6 +382,17 @@ watch(() => route.fullPath, closeMobileMenu)
               <el-icon><Search /></el-icon>
               <span>搜索</span>
               <kbd>Ctrl K</kbd>
+            </button>
+          </el-tooltip>
+          <el-tooltip content="重新查看新手引导" placement="bottom">
+            <button
+              type="button"
+              class="header-icon-button"
+              aria-label="重新查看新手引导"
+              data-tour="help-menu"
+              @click="openOnboarding"
+            >
+              <el-icon><QuestionFilled /></el-icon>
             </button>
           </el-tooltip>
           <div class="header-utility header-theme"><ThemeToggle /></div>
@@ -390,6 +444,10 @@ watch(() => route.fullPath, closeMobileMenu)
 
     <!-- Command Palette -->
     <CommandPalette v-model:visible="showCommandPalette" />
+    <OnboardingTour
+      v-model="onboardingOpen"
+      :storage-key="onboardingStorageKey"
+    />
   </el-container>
 </template>
 

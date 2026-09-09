@@ -11,7 +11,6 @@ import { useTheme } from '@/composables/useTheme'
 import { ElMessage } from 'element-plus'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '@/utils/motion'
-import OnboardingTour from '@/components/OnboardingTour.vue'
 import {
   User,
   MapLocation,
@@ -22,7 +21,6 @@ import {
   Tickets,
   Picture,
   ArrowRight,
-  QuestionFilled,
 } from '@element-plus/icons-vue'
 
 use([
@@ -42,9 +40,7 @@ const router = useRouter()
 const loading = ref(false)
 const data = ref<DashboardData | null>(null)
 const dashboardRoot = ref<HTMLElement>()
-const guideOpen = ref(false)
 let dashboardMotionContext: gsap.Context | undefined
-let guideTimer: number | undefined
 
 type DashboardStatKey = keyof DashboardData['stats']
 
@@ -429,11 +425,6 @@ function handleResize() {
 onMounted(() => {
   fetchData()
   window.addEventListener('resize', handleResize)
-  if (localStorage.getItem('lingtour-admin-onboarding-v1') !== 'done') {
-    guideTimer = window.setTimeout(() => {
-      guideOpen.value = true
-    }, 450)
-  }
 })
 
 watch(isDark, async () => {
@@ -448,16 +439,11 @@ onUnmounted(() => {
   pieChart?.dispose()
   barChart?.dispose()
   dashboardMotionContext?.revert()
-  window.clearTimeout(guideTimer)
 })
 </script>
 
 <template>
   <div ref="dashboardRoot" class="dashboard" v-loading="loading">
-    <div class="dashboard-tools">
-      <el-button :icon="QuestionFilled" @click="guideOpen = true">新手引导</el-button>
-    </div>
-
     <nav class="quick-actions" aria-label="快捷操作" data-tour="quick-actions">
       <button
         v-for="action in quickActions"
@@ -533,20 +519,12 @@ onUnmounted(() => {
         <div ref="barChartRef" class="chart-container" />
       </article>
     </section>
-
-    <OnboardingTour v-model="guideOpen" />
   </div>
 </template>
 
 <style scoped>
 .dashboard {
   padding: 0;
-}
-
-.dashboard-tools {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
 }
 
 .quick-actions {

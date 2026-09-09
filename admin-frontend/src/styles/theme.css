@@ -12,6 +12,7 @@
   --lt-radius-lg: 16px;
   --lt-radius-xl: 22px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
+  --lt-z-onboarding: 4000;
 
   /* Brand */
   --lt-primary: #236554;
@@ -100,6 +101,7 @@ html.dark {
   --lt-radius-lg: 18px;
   --lt-radius-xl: 24px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
+  --lt-z-onboarding: 4000;
 
   /* Brand */
   --lt-primary: #6faf9d;
