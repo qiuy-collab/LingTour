@@ -10,6 +10,7 @@ import EmptyState from '@/components/EmptyState.vue'
 import PageSkeleton from '@/components/PageSkeleton.vue'
 import type { ExportColumn } from '@/composables/useExport'
 import { useListPage } from '@/composables/useListPage'
+import { useIsMobile } from '@/composables/useIsMobile'
 
 // ─── 列表数据 (useListPage) ─────────────
 const listPage = useListPage<AuditLog>({
@@ -43,6 +44,7 @@ const {
 } = listPage
 
 const apiUnavailable = ref(false)
+const isMobile = useIsMobile()
 const detailVisible = ref(false)
 const activeLog = ref<AuditLog | null>(null)
 const dateRange = ref<string[]>([])
@@ -246,7 +248,7 @@ onMounted(() => {
       />
     </div>
 
-    <el-drawer v-model="detailVisible" title="操作详情" size="560px">
+    <el-drawer v-model="detailVisible" title="操作详情" :size="isMobile ? '100%' : '560px'">
       <div v-if="activeLog" class="detail-stack">
         <div class="detail-row"><span>操作人</span><strong>{{ activeLog.userName || '-' }}</strong></div>
         <div class="detail-row"><span>动作</span><strong>{{ AUDIT_ACTION_LABELS[activeLog.action] || activeLog.action }}</strong></div>

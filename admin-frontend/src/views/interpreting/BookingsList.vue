@@ -9,6 +9,7 @@ import { BookingStatusMap, BookingStatusColorMap } from '@/types/interpreting'
 import { pickI18n } from '@/types/common'
 import { formatDateTime } from '@/utils/format'
 import { useListPage } from '@/composables/useListPage'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { ListToolbar } from '@/components/list'
 
 // ─── 列表数据 (useListPage) ─────────────
@@ -24,6 +25,7 @@ const {
 })
 
 // Drawer
+const isMobile = useIsMobile()
 const drawerVisible = ref(false)
 const selectedBooking = ref<Booking | null>(null)
 
@@ -241,7 +243,7 @@ function getBookingStatusLabel(status: string): string {
     <el-drawer
       v-model="drawerVisible"
       title="预约详情"
-      size="520px"
+      :size="isMobile ? '100%' : '520px'"
       @closed="selectedBooking = null"
     >
       <template v-if="selectedBooking">
