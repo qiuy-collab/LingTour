@@ -219,15 +219,15 @@ export default function InterpretingPageClient({
         .map((profile) => profile.id)
         .join("|")}`}
     >
-      <section className="relative overflow-hidden pb-16 pt-16 sm:pb-20 sm:pt-20 lg:min-h-[72vh] lg:pt-28">
+      <section className="relative overflow-hidden pb-16 pt-14 sm:pb-20 sm:pt-16 lg:min-h-[calc(100dvh-4.5rem)] lg:pb-20 lg:pt-20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:items-center lg:gap-10 xl:gap-16">
+          <div className="grid grid-cols-1 items-center gap-10 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.75rem,9vw,4.5rem)] leading-[0.95] tracking-[-0.045em] sm:mb-8 lg:text-[7rem] xl:text-[8.25rem]">
-                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--cinnabar)]">{t("interpreting.hero.title")}</span></span>
+                <h1 data-pastoral-title className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(3rem,5.25vw,4.5rem)] leading-[0.98] tracking-[-0.045em] text-[var(--river-deep)] sm:mb-8 lg:max-w-none lg:whitespace-nowrap">
+                  {t("interpreting.hero.title")}
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
@@ -254,11 +254,11 @@ export default function InterpretingPageClient({
             </div>
 
             <div className="w-full min-w-0 self-center lg:col-span-5 lg:max-w-none">
-              <Reveal delay={240}>
-                <div className="relative ml-auto aspect-[3/4] w-full overflow-hidden rotate-[1.5deg] border-[0.35rem] border-white scrapbook-shadow sm:border-[0.65rem] lg:aspect-[4/5] lg:max-w-[25rem] lg:border-[12px]">
+              <Reveal delay={240} className="w-full lg:justify-self-end">
+                <div className="relative ml-auto aspect-[4/5] w-full max-w-[28rem] overflow-hidden rotate-[1.5deg] border-[0.5rem] border-white scrapbook-shadow sm:border-[0.75rem] lg:max-w-[30rem] lg:border-[0.9rem]">
                   <div
                     data-pastoral-hero-media
-                    className="absolute inset-0 bg-cover bg-center grayscale transition-all duration-1000 hover:grayscale-0 sm:scale-110"
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 motion-safe:hover:scale-[1.03]"
                     style={{ backgroundImage: `url(${cinematicImage})` }}
                   />
                 </div>

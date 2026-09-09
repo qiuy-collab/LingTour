@@ -55,7 +55,7 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
   if (relatedCities.length === 0) {
     return (
       <p className="mt-8 text-sm text-[var(--muted)]">
-        No linked cities yet. Add related cities in admin to build this journey cluster.
+        No linked cities yet.
       </p>
     );
   }

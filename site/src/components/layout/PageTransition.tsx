@@ -16,13 +16,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
       media.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.fromTo(
           page.current,
-          { autoAlpha: 0, y: 14 },
+          { y: 10 },
           {
-            autoAlpha: 1,
             y: 0,
-            duration: 0.5,
+            duration: 0.38,
             ease: motionEase.enter,
-            clearProps: "transform,opacity,visibility",
+            clearProps: "transform",
           },
         );
       });

@@ -50,8 +50,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
 
   return (
     <main className="min-h-screen overflow-hidden bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <header id="section-masthead" className="site-container relative pb-12 pt-8 sm:pb-16 lg:pb-20 lg:pt-14">
-        <div className="pointer-events-none absolute right-0 top-12 hidden h-[26rem] w-[44%] -rotate-6 border border-[var(--gold)]/20 bg-white/20 lg:block" />
+      <header id="section-masthead" className="site-container relative pb-8 pt-8 sm:pb-10 lg:pb-12 lg:pt-12">
         <div className="relative z-10 grid gap-9 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">
             <Link href="/culture" className="inline-flex min-h-11 items-center text-sm text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">

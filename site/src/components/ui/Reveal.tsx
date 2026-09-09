@@ -34,19 +34,13 @@ export function Reveal({ children, delay = 0, className = "", threshold = 0.12, 
           const triggerPoint = Math.max(78, Math.min(94, 95 - threshold * 50));
           gsap.fromTo(
             ref.current,
+            { y: 18 },
             {
-              autoAlpha: 0,
-              y: 28,
-              clipPath: "inset(0 0 10% 0)",
-            },
-            {
-              autoAlpha: 1,
               y: 0,
-              clipPath: "inset(0 0 0% 0)",
               duration: duration / 1000,
               delay: delay / 1000,
               ease: motionEase.enter,
-              clearProps: "clipPath",
+              clearProps: "transform",
               scrollTrigger: {
                 trigger: ref.current,
                 start: `top ${triggerPoint}%`,

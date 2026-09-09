@@ -76,11 +76,11 @@ export default function RoutesPageClient({
       className="min-h-screen bg-[var(--paper-deep)] bg-grain"
       motionKey={filteredRoutes.map((route) => route.slug).join("|")}
     >
-      <section className="relative overflow-hidden border-b border-[var(--line)] py-8 sm:py-10 lg:py-14">
+      <section className="relative overflow-hidden border-b border-[var(--line)] py-10 sm:py-12 lg:py-16">
         <div className="site-container relative">
-          <div className="grid items-center gap-8 sm:grid-cols-[minmax(12rem,0.78fr)_minmax(0,1.2fr)] sm:gap-10 lg:grid-cols-[minmax(19rem,0.86fr)_minmax(0,1.14fr)] lg:gap-16">
+          <div className="grid items-center gap-8 sm:grid-cols-[minmax(14rem,0.72fr)_minmax(0,1.28fr)] sm:gap-10 lg:grid-cols-[minmax(18rem,0.68fr)_minmax(0,1.32fr)] lg:gap-14">
             <Reveal className="order-2 sm:order-1">
-              <div className="relative aspect-[4/3] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.75rem] lg:border-[0.9rem]">
+              <div className="relative aspect-[4/3] overflow-hidden border-[0.5rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.65rem] lg:border-[0.75rem]">
                 <div
                   data-pastoral-hero-media
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none"
@@ -92,11 +92,10 @@ export default function RoutesPageClient({
             </Reveal>
 
             <Reveal className="order-1 min-w-0 sm:order-2">
-              <h1 className="max-w-[11ch] text-balance font-[family:var(--font-display)] text-[clamp(2.65rem,7vw,5.75rem)] leading-[0.96] tracking-[-0.04em] text-[var(--river-deep)]">
-                <span className="block overflow-hidden pb-2"><span data-pastoral-title className="block">Guangdong</span></span>
-                <span className="block overflow-hidden pb-2"><span data-pastoral-title className="block">routes to inhabit.</span></span>
+              <h1 data-pastoral-title className="max-w-[13ch] text-balance font-[family:var(--font-display)] text-[clamp(2.65rem,6vw,4.75rem)] leading-[0.98] tracking-[-0.04em] text-[var(--river-deep)] lg:max-w-none lg:whitespace-nowrap">
+                Routes
               </h1>
-              <p data-pastoral-subtitle className="mt-5 max-w-[58ch] text-pretty text-base leading-8 text-[var(--muted)] sm:mt-6 lg:text-lg">
+              <p data-pastoral-subtitle className="mt-5 max-w-[50ch] text-pretty text-base leading-7 text-[var(--muted)] sm:mt-6 lg:text-lg">
                 {t("routes.atlas.lede")}
               </p>
             </Reveal>
