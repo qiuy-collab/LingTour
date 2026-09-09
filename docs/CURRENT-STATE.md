@@ -367,3 +367,13 @@ Owner decision: remote-first with cherry-picks. Both repositories were reorganiz
 Verification: api tsc clean (spec-mock typing warnings pre-existing per §11) + 144/144 tests + build; site tsc clean + 75/75 tests + lint 0 errors (5 pre-existing warnings) + build 18/18 pages; admin build clean. Browser (maplibre route map after "Load map"): map mounted 514×349, 4/4 markers rendered and `allInside: true`, coordinates complete; home testimonials fallback renders; home-map centroid paths present.
 
 Nothing pushed. Root ahead 12, admin ahead 3. Push/deploy await authorization.
+
+## 17. 2026-09-10 historical WIP committed
+
+The owner approved merging the previously uncommitted onboarding, mobile-drawer, starter-artifact, and old research-document changes. They were committed with exact pathspecs; no unrelated worktree content was staged.
+
+- Independent admin commits: `ee06ff3` (remove obsolete starter artifacts), `4e2ffbb` (centralize staff onboarding), `5455102` (mobile-friendly detail drawers), and `32b403a` (build-time service origins).
+- Matching root commits: `79a7d41` (obsolete research and starter assets), `19a1d72` (staff onboarding), and `a829c0a` (mobile-friendly detail drawers). The root already tracked the same admin Dockerfile blob introduced by `32b403a`, so no duplicate root commit was necessary.
+- Verification: `admin-frontend` production build passed; `git diff --check` passed in both repositories. The Vite build retained its existing large-chunk warning.
+- Live Git state after the commits: root `main` is clean and ahead 3 of `origin/main`; independent admin `main` is clean and ahead 7 of `origin/main`.
+- Nothing was pushed, deployed, migrated, or written to production. The earlier onboarding browser-review blockers were not re-exercised in this merge session; treat browser validation as required before any release.
