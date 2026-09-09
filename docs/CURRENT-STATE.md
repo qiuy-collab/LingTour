@@ -377,3 +377,19 @@ The owner approved merging the previously uncommitted onboarding, mobile-drawer,
 - Verification: `admin-frontend` production build passed; `git diff --check` passed in both repositories. The Vite build retained its existing large-chunk warning.
 - Live Git state after the commits: root `main` is clean and ahead 3 of `origin/main`; independent admin `main` is clean and ahead 7 of `origin/main`.
 - Nothing was pushed, deployed, migrated, or written to production. The earlier onboarding browser-review blockers were not re-exercised in this merge session; treat browser validation as required before any release.
+
+## 18. 2026-09-10 public-site editorial work restored locally
+
+The owner identified the intended public-site work as the Claude worktree branch `claude/optimistic-ellis-4598a1`. Its three continuous commits were cherry-picked cleanly into root `main`:
+
+- `04199be` `refactor(site): restore field journal priority surfaces`
+- `01c3c1b` `refactor(site): simplify public editorial copy`
+- `b13f8f0` `fix(site): keep editorial page content immediately visible`
+
+The batch covers Culture list/detail, Routes list/detail, the traveler login entry, Markdown and related-content presentation, route brief/map/itinerary hierarchy, and copy simplification across public surfaces. No admin repository change was made in this batch.
+
+Verification passed: site TypeScript, 14 test files / 78 tests, and production build. Site lint exited successfully with zero errors; it reports generated MapLibre worker warnings plus pre-existing application warnings. The root public site was rebuilt and restarted on local port 3000 with its existing local configuration; `/login` returned HTTP 200.
+
+Local Culture detail is currently HTTP 500 because its server-side request correctly targets `127.0.0.1:8000`, but the LingTour API is not running. The local API's PostgreSQL connection was rejected with authentication error `28P01`; port 5432 is occupied by a host PostgreSQL instance, no LingTour Compose services, data volume, or restorable local database backup was found. Do not seed, reset, overwrite that database, or change credentials without identifying the intended LingTour local database and providing/repairing its connection configuration.
+
+Nothing was pushed, deployed, migrated, or written to production.
