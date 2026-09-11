@@ -50,7 +50,7 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
 
       <div className="mt-6 pt-4 border-t border-white/10 text-center">
         <p className="font-mono text-[9px] text-white/40 uppercase tracking-[0.2em]">
-          LingTour Archival Desk
+          Culvoy Archival Desk
         </p>
       </div>
     </div>

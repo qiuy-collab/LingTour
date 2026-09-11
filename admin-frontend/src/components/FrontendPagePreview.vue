@@ -206,7 +206,7 @@ function buildProductPreview() {
   return {
     slug: props.model.slug || "preview-product",
     name: text(props.model.name, "Preview Product"),
-    collection: props.meta?.collectionTitle || "LingTour Goods",
+    collection: props.meta?.collectionTitle || "Culvoy Goods",
     price: Number(props.model.price || 0),
     currency: props.model.currency || "SGD",
     tag: text(props.model.tag),

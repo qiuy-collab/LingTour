@@ -29,7 +29,7 @@ export function SiteFooter() {
       <Container className="grid gap-16 py-20 lg:grid-cols-[1.5fr_1fr_1fr] relative z-10">
         <div className="space-y-8">
           <div>
-            <p className="font-[family:var(--font-display)] text-4xl lg:text-5xl tracking-tight">LingTour</p>
+            <p className="font-[family:var(--font-display)] text-4xl lg:text-5xl tracking-tight">Culvoy</p>
           </div>
           <p className="max-w-md text-lg leading-relaxed text-white/50 handwritten">
             {t("common.site.tagline")}
@@ -53,7 +53,7 @@ export function SiteFooter() {
 
         <div className="space-y-8">
           <div className="space-y-4 text-sm text-white/50">
-            <p className="text-lg text-white">hello@lingtour.cn</p>
+            <p className="text-lg text-white">hello@culvoy.com</p>
             <p className="handwritten text-white/70">{t("common.footer.locations")}</p>
           </div>
           <div className="pt-8 border-t border-white/10 text-[10px] uppercase tracking-widest text-white/30">

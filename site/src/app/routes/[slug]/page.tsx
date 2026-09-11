@@ -32,7 +32,7 @@ export async function generateMetadata({
   const route = await getRoute(slug);
   if (!route) return {};
 
-  const title = `${route.title} | LingTour Guangdong`;
+  const title = `${route.title} | Culvoy Guangdong`;
   const description =
     route.summary?.trim() ||
     `A ${route.duration} story route through ${route.city}, guided stop by stop.`;

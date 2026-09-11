@@ -7,7 +7,7 @@ function normalizePost(raw: any): CommunityPost {
   const user = raw.user || {}
   return {
     id: raw.id,
-    userName: user.name || raw.userName || 'LingTour User',
+    userName: user.name || raw.userName || 'Culvoy User',
     userHandle: user.handle || raw.userHandle || 'guest',
     userAvatar: user.avatar || raw.userAvatar || '',
     image: raw.image || '',

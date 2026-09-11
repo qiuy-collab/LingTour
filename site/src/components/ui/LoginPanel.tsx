@@ -79,7 +79,7 @@ export function LoginPanel() {
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,25,35,0.18),rgba(17,25,35,0.12)_45%,rgba(17,25,35,0.8))]" />
         <div className="relative flex min-h-[100dvh] flex-col justify-between px-[clamp(2.5rem,7vw,7rem)] py-12">
           <div className="leading-none">
-            <p className="font-[Georgia,'Times_New_Roman',serif] text-[clamp(2.25rem,4vw,4.5rem)] tracking-[-0.05em]">LingTour</p>
+            <p className="font-[Georgia,'Times_New_Roman',serif] text-[clamp(2.25rem,4vw,4.5rem)] tracking-[-0.05em]">Culvoy</p>
             <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-white/72">Guangdong</p>
           </div>
           <div className="w-14 border-t border-[var(--cinnabar)]" aria-hidden="true" />
@@ -176,7 +176,7 @@ export function LoginPanel() {
             ) : null}
 
             <p className="pt-1 text-sm text-[var(--muted)]">
-              {isLogin ? "New to LingTour?" : "Already have an account?"}{" "}
+              {isLogin ? "New to Culvoy?" : "Already have an account?"}{" "}
               <button
                 type="button"
                 onClick={() => { setMode(isLogin ? "signup" : "login"); setError(null); }}

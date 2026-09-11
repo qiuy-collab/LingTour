@@ -52,7 +52,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
   const activeMedia = media[activeIndex] ?? media[0] ?? null;
   const noteWords = buildNoteWords(product);
   const shortStory = buildShortStory(product.story);
-  const collectionLabel = product.collection || "LingTour Goods";
+  const collectionLabel = product.collection || "Culvoy Goods";
 
   useGSAP(
     () => {

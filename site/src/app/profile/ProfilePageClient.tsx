@@ -88,7 +88,7 @@ function EmptyArchive({ title, body, href, cta }: { title: string; body: string;
       </div>
       <div className="px-5 py-10 sm:px-10 sm:py-12 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">LingTour field archive</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
           <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
           <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
         </div>

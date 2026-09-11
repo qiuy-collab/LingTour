@@ -4,8 +4,8 @@ import { ProfilePageClient } from "./ProfilePageClient";
 import { requireTraveler, toServerLocalUser } from "@/lib/server-session";
 
 export const metadata: Metadata = {
-  title: "Traveler Profile | LingTour Guangdong",
-  description: "Your LingTour field notes, saved routes, collection, bookings, and traveler settings.",
+  title: "Traveler Profile | Culvoy Guangdong",
+  description: "Your Culvoy field notes, saved routes, collection, bookings, and traveler settings.",
 };
 
 export default async function ProfilePage({

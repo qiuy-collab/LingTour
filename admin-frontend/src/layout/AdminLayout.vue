@@ -243,7 +243,7 @@ const currentSectionTitle = computed(() => {
   const match = menuGroups.find((group) =>
     group.items.some((item) => item.path === activeMenu.value),
   )
-  return match?.title || 'LingTour Operations'
+  return match?.title || 'Culvoy Operations'
 })
 
 function handleMenuSelect(path: string) {
@@ -291,7 +291,7 @@ watch(() => route.fullPath, closeMobileMenu)
       >
         <span class="brand-mark" aria-hidden="true">LT</span>
         <span v-if="!isCollapse || isMobile" class="brand-copy">
-          <strong>LingTour</strong>
+          <strong>Culvoy</strong>
           <small>管理后台</small>
         </span>
       </button>

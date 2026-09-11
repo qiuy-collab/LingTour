@@ -1,5 +1,5 @@
 /**
- * Unified API Client for LingTour frontend.
+ * Unified API Client for Culvoy frontend.
  *
  * - Reads NEXT_PUBLIC_API_URL from environment
  * - Uses the first-party HttpOnly session cookie for authentication

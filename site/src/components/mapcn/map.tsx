@@ -7,7 +7,7 @@
  *
  * Retains the Map context/lifecycle, portal markers and GeoJSON route layer.
  * This deliberately small subset omits unused controls, popups, theme switching
- * and chart layers. LingTour adds local workers and bounded failure handling.
+ * and chart layers. Culvoy adds local workers and bounded failure handling.
  */
 import * as MapLibreGL from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";

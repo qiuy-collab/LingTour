@@ -41,7 +41,7 @@
   <!-- main editorial label -->
   <g transform="translate(800, 380)" text-anchor="middle">
     <text x="0" y="-110" font-family="ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace" font-size="14" fill="#1f1f1f" opacity="0.55" letter-spacing="6">
-      LINGTOUR · FIELD ARCHIVE
+      CULVOY · FIELD ARCHIVE
     </text>
     <text x="0" y="0" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="120" fill="#1f1f1f" opacity="0.92" letter-spacing="-2">
       Awaiting editorial

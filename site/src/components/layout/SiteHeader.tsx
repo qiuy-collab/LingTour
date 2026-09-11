@@ -129,7 +129,7 @@ export function SiteHeader() {
 
         <Link href="/" className="justify-self-start leading-none md:justify-self-center" onClick={() => setIsOpen(false)}>
           <p className="font-[family:var(--font-display)] text-2xl tracking-[0.08em] text-[var(--river-deep)]">
-            LingTour
+            Culvoy
           </p>
           <p className="mt-1 text-center text-[0.62rem] uppercase tracking-[0.3em] text-[var(--muted)]">
             Guangdong

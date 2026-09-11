@@ -62,11 +62,11 @@ onUnmounted(() => motionContext?.revert())
 
 <template>
   <main ref="loginRoot" class="login-container">
-    <section class="login-story" aria-label="LingTour 管理后台">
+    <section class="login-story" aria-label="Culvoy 管理后台">
       <div class="login-brand">
         <span class="brand-mark" aria-hidden="true">LT</span>
         <span>
-          <strong>LingTour</strong>
+          <strong>Culvoy</strong>
           <small>管理后台</small>
         </span>
       </div>

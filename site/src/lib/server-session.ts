@@ -23,7 +23,7 @@ export function toServerLocalUser(user: AuthUser): LocalUser {
   return {
     id: user.id,
     accountId: user.accountId,
-    name: user.name || "LingTour Guest",
+    name: user.name || "Culvoy Guest",
     email: user.email,
     role: user.role,
     country: user.country ?? "",

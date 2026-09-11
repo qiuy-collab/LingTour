@@ -456,7 +456,7 @@ export default function CommunityPage() {
           user: {
             id: user?.id,
             email: user?.email,
-            name: user?.name || "LingTour Guest",
+            name: user?.name || "Culvoy Guest",
             handle: user?.email ? `@${user.email.split("@")[0]}` : "@you",
             avatar: user?.avatarUrl || "",
           },

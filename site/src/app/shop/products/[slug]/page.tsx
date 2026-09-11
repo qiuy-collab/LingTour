@@ -34,7 +34,7 @@ export async function generateMetadata({
   const product = await fetchStoreProductBySlugServer(slug);
   if (!product) return {};
 
-  const title = `${product.name} | Shop | LingTour Guangdong`;
+  const title = `${product.name} | Shop | Culvoy Guangdong`;
   const description =
     product.story?.trim() ||
     product.materialNotes?.trim() ||

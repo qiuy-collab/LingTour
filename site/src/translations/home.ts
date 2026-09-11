@@ -1,6 +1,6 @@
 export const home = {
   en: {
-    "home.hero.eyebrow": "LingTour Guangdong",
+    "home.hero.eyebrow": "Culvoy Guangdong",
     "home.hero.headingLine1": "Guangdong,",
     "home.hero.headingAccent": "Deeply",
     "home.hero.headingLine3": "Arranged.",
@@ -8,7 +8,7 @@ export const home = {
     "home.hero.primaryCta": "Plan my trip",
     "home.hero.secondaryCta": "Explore routes",
     "home.hero.title": "Travel beyond the guidebook.",
-    "home.hero.subtitle": "LingTour connects you to Guangdong culture through story-driven routes, live interpreting, and objects that carry meaning.",
+    "home.hero.subtitle": "Culvoy connects you to Guangdong culture through story-driven routes, live interpreting, and objects that carry meaning.",
     "home.hero.scroll": "Scroll to explore",
 
     "home.hero.tag.storyRoutes": "Story routes",
@@ -50,7 +50,7 @@ export const home = {
     "home.interpreting.subtitle": "Live English interpreting for markets, meals, meetings — in person or remote.",
     "home.interpreting.cta": "Meet Your Field Interpreter",
     "home.interpreting.experts": "60+ local experts · English / Mandarin / Cantonese",
-    "home.entryCards.galleryLabel": "Explore LingTour chapters",
+    "home.entryCards.galleryLabel": "Explore Culvoy chapters",
     "home.entryCards.progressLabel": "Gallery position",
     "home.entryCards.goTo": "Go to chapter {number}",
     "home.entryCards.previous": "Previous chapter",
@@ -64,7 +64,7 @@ export const home = {
     "home.calendar.selectDate": "Select a marked date to reveal the recommended route.",
     "home.video.eyebrow": "A film from the field",
     "home.video.defaultTitle": "Guangdong Field Film",
-    "home.video.play": "Play the LingTour field film",
+    "home.video.play": "Play the Culvoy field film",
     "home.video.duration": "Duration",
     "home.video.resolution": "Format",
     "home.video.watch": "Watch full film",

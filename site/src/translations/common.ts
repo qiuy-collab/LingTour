@@ -1,9 +1,9 @@
 export const common = {
   en: {
-    "common.site.title": "LingTour Guangdong",
+    "common.site.title": "Culvoy Guangdong",
     "common.site.subtitle": "Guangdong",
     "common.site.tagline": "Designed journeys through Guangdong's coast, craft, food, and living memory.",
-    "common.site.footer.rights": "(c) 2026 LingTour. All rights reserved.",
+    "common.site.footer.rights": "(c) 2026 Culvoy. All rights reserved.",
     "common.site.footer.built": "Built with care for Guangdong culture.",
 
     "common.nav.routes": "Routes",
@@ -32,7 +32,7 @@ export const common = {
     "common.footer.link.culture": "Culture Lines",
     "common.footer.link.interpreting": "Interpreting",
     "common.footer.link.shop": "Shop",
-    "common.footer.link.about": "About LingTour",
+    "common.footer.link.about": "About Culvoy",
     "common.footer.link.account": "My Account",
     "common.footer.link.privacy": "Privacy Policy",
 
@@ -78,7 +78,7 @@ export const common = {
 
     "common.footer.locations": "Guangzhou / Shantou / Meizhou",
 
-    "home.hero.title": "LingTour Guangdong",
+    "home.hero.title": "Culvoy Guangdong",
     "home.hero.subtitle": "Follow Guangdong beyond the postcard: coastal tables, old streets, craft rooms, volcanic islands, and the local voices that make each place legible.",
     "home.shop.title": "Objects with a route behind them.",
     "home.interpreting.title": "Move through the day with someone local.",

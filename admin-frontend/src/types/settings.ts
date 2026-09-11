@@ -37,7 +37,7 @@ export interface AppSettings {
 }
 
 export const DefaultSettings: AppSettings = {
-  seoTitle: 'LingTour — Discover Guangdong Through Local Eyes',
+  seoTitle: 'Culvoy — Discover Guangdong Through Local Eyes',
   seoDescription: 'Immersive cultural tours, artisan crafts, and local interpreters across Guangdong, China.',
   languages: ['en', 'zh'],
   defaultLocale: 'zh',

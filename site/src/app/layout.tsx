@@ -8,9 +8,9 @@ import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { LocaleProvider } from "@/lib/locale-context";
 
 export const metadata: Metadata = {
-  title: "LingTour Guangdong",
+  title: "Culvoy Guangdong",
   description:
-    "LingTour connects Guangdong culture, story-driven routes, interpreting services, and Lingnan-inspired retail for international visitors.",
+    "Culvoy connects Guangdong culture, story-driven routes, interpreting services, and Lingnan-inspired retail for international visitors.",
 };
 
 export const viewport: Viewport = {

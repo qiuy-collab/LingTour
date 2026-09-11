@@ -61,7 +61,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                 <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
                   <img
                     src={profile.image || placeholderFor("portrait")}
-                    alt={`${profile.name}, LingTour interpreter`}
+                    alt={`${profile.name}, Culvoy interpreter`}
                     onError={(event) => {
                       const image = event.currentTarget;
                       image.onerror = null;

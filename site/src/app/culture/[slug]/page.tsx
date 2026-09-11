@@ -37,7 +37,7 @@ export async function generateMetadata({
   const city = await getCity(slug);
   if (!city) return {};
 
-  const title = `${city.name} | Culture & Cities | LingTour Guangdong`;
+  const title = `${city.name} | Culture & Cities | Culvoy Guangdong`;
   const description =
     city.summary?.trim() ||
     city.narrative?.trim() ||

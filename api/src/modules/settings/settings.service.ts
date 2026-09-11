@@ -36,8 +36,8 @@ export class SettingsService {
       settings = this.settingsRepo.create({
         scope: 'default',
         payload: {
-          seoTitle: 'LingTour',
-          seoDescription: 'LingTour public site settings',
+          seoTitle: 'Culvoy',
+          seoDescription: 'Culvoy public site settings',
           enableMarkdownEditor: true,
           pageTitleFontSize: 20,
           sectionTitleFontSize: 15,

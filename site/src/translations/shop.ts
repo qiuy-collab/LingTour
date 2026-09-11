@@ -18,7 +18,7 @@ export const shop = {
     "shop.detail.category": "Category",
     "shop.detail.material": "Material",
     "shop.detail.materialPending": "Material details pending",
-    "shop.detail.collectionFallback": "LingTour Goods",
+    "shop.detail.collectionFallback": "Culvoy Goods",
     "shop.detail.routesCta": "Related routes",
     "shop.detail.citiesCta": "Related cities",
     "shop.detail.noteCta": "Add field note",

@@ -88,7 +88,7 @@ export const account = {
     "account.orders.empty": "No orders yet.",
     "account.orders.emptyHint": "Orders will appear here after checkout is submitted.",
 
-    "account.login.title": "Log in to LingTour",
+    "account.login.title": "Log in to Culvoy",
     "account.login.subtitle": "Access your profile, bookings, and saved items.",
     "account.login.email": "Email",
     "account.login.emailPlaceholder": "you@example.com",
