@@ -52,6 +52,12 @@ docker compose -f "$COMPOSE_FILE" --env-file .env run --rm --no-deps api \
 printf '%s\n' "==> Starting Docker services"
 docker compose -f "$COMPOSE_FILE" --env-file .env up -d --remove-orphans
 
+# Recreated app containers can receive new Docker IPs. The nginx gateway
+# resolves upstream names only at startup, so restart it to re-resolve
+# before health checks; otherwise every Host route can return 502.
+printf '%s\n' "==> Restarting nginx gateway to refresh upstream resolution"
+docker compose -f "$COMPOSE_FILE" --env-file .env restart nginx
+
 echo "==> Waiting for container health"
 for attempt in $(seq 1 30); do
   unhealthy=$(docker compose -f "$COMPOSE_FILE" --env-file .env ps --format json | \
