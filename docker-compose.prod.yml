@@ -40,9 +40,9 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://lingfengtranstour.cn/api/v1/auth/google/callback}
-      FRONTEND_URL: https://lingfengtranstour.cn
-      ADMIN_FRONTEND_URL: https://admin.lingfengtranstour.cn
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://culvoy.com/api/v1/auth/google/callback}
+      FRONTEND_URL: https://culvoy.com
+      ADMIN_FRONTEND_URL: https://admin.culvoy.com
       REDIS_URL: redis://redis:6379
     depends_on:
       redis:
@@ -86,8 +86,8 @@ services:
       context: .
       dockerfile: admin-frontend/Dockerfile
       args:
-        VITE_MEDIA_ORIGIN: https://api.lingfengtranstour.cn
-        VITE_SITE_ORIGIN: https://lingfengtranstour.cn
+        VITE_MEDIA_ORIGIN: https://api.culvoy.com
+        VITE_SITE_ORIGIN: https://culvoy.com
     restart: unless-stopped
     depends_on:
       api:

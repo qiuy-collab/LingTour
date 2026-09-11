@@ -6,8 +6,8 @@
  *
  * Usage:
  *   node tools/three-tier-verify.mjs \
- *     --admin-url  https://admin.lingfengtranstour.cn \
- *     --site-url   https://lingfengtranstour.cn \
+ *     --admin-url  https://admin.culvoy.com \
+ *     --site-url   https://culvoy.com \
  *     --auth-token <jwt>
  *
  * If --auth-token is omitted the script will attempt login via

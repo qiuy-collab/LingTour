@@ -124,7 +124,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      allowedHosts: ['admin.lingfengtranstour.cn'],
+      allowedHosts: ['admin.lingfengtranstour.cn', 'admin.culvoy.com'],
       proxy: {
         '/api/admin/auth': {
           target: apiOrigin,
@@ -141,7 +141,7 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: 4173,
       strictPort: true,
-      allowedHosts: ['admin.lingfengtranstour.cn'],
+      allowedHosts: ['admin.lingfengtranstour.cn', 'admin.culvoy.com'],
     },
     build: {
       rollupOptions: {

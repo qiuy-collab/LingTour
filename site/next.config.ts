@@ -7,7 +7,7 @@ const isStandalone = process.env.NEXT_OUTPUT === "standalone";
 const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const apiOrigin = new URL(apiBase.startsWith("http")
   ? apiBase
-  : process.env.INTERNAL_API_ORIGIN ?? "https://api.lingfengtranstour.cn").origin;
+  : process.env.INTERNAL_API_ORIGIN ?? "https://api.culvoy.com").origin;
 
 const nextConfig: NextConfig = {
   output: isStandalone ? "standalone" : isExport ? "export" : undefined,

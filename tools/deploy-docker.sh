@@ -78,6 +78,9 @@ printf '\n'
 curl -fsS -o /dev/null -w 'site-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: lingfengtranstour.cn' http://127.0.0.1:8088/
 curl -fsS -o /dev/null -w 'admin-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: admin.lingfengtranstour.cn' http://127.0.0.1:8088/
 curl -fsS -o /dev/null -w 'api-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
+curl -fsS -o /dev/null -w 'site-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: culvoy.com' http://127.0.0.1:8088/
+curl -fsS -o /dev/null -w 'admin-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: admin.culvoy.com' http://127.0.0.1:8088/
+curl -fsS -o /dev/null -w 'api-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.culvoy.com' http://127.0.0.1:8088/health
 
 echo "==> Docker deploy complete"
 echo "==> PM2 remains untouched; switch host Nginx only after these checks pass."

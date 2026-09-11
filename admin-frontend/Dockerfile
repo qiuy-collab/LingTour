@@ -1,8 +1,8 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-ARG VITE_MEDIA_ORIGIN=https://api.lingfengtranstour.cn
-ARG VITE_SITE_ORIGIN=https://lingfengtranstour.cn
+ARG VITE_MEDIA_ORIGIN=https://api.culvoy.com
+ARG VITE_SITE_ORIGIN=https://culvoy.com
 ENV VITE_MEDIA_ORIGIN=$VITE_MEDIA_ORIGIN
 ENV VITE_SITE_ORIGIN=$VITE_SITE_ORIGIN
 

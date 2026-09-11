@@ -9,7 +9,7 @@
 - Required env:
   - `PORT=3001`
   - `HOST=0.0.0.0`
-  - `NEXT_PUBLIC_API_URL=https://api.lingfengtranstour.cn/api/v1`
+  - `NEXT_PUBLIC_API_URL=https://api.culvoy.com/api/v1`
   - `NEXT_OUTPUT=standalone`
 
 ## Admin frontend
@@ -21,8 +21,8 @@
 - Required env:
   - `PORT=4173`
   - `HOST=0.0.0.0`
-  - `VITE_API_ORIGIN=https://api.lingfengtranstour.cn`
-  - `VITE_MEDIA_ORIGIN=https://api.lingfengtranstour.cn`
+  - `VITE_API_ORIGIN=https://api.culvoy.com`
+  - `VITE_MEDIA_ORIGIN=https://api.culvoy.com`
 
 ## API
 
@@ -33,6 +33,6 @@
 
 ## Nginx target
 
-- `lingfengtranstour.cn` -> reverse proxy to `http://127.0.0.1:3001`
-- `admin.lingfengtranstour.cn` -> reverse proxy to `http://127.0.0.1:4173`
-- `api.lingfengtranstour.cn` -> reverse proxy to `http://127.0.0.1:8000`
+- `culvoy.com` -> reverse proxy to `http://127.0.0.1:3001`
+- `admin.culvoy.com` -> reverse proxy to `http://127.0.0.1:4173`
+- `api.culvoy.com` -> reverse proxy to `http://127.0.0.1:8000`

@@ -19,9 +19,9 @@
 | 环境 | 公开站点 | 运营后台 | API |
 | --- | --- | --- | --- |
 | 本地开发 | http://localhost:3000 | http://localhost:5173 | http://localhost:8000 |
-| 生产 | https://lingfengtranstour.cn | https://admin.lingfengtranstour.cn | https://api.lingfengtranstour.cn |
+| 生产 | https://culvoy.com | https://admin.culvoy.com | https://api.culvoy.com |
 
-API 健康检查：生产 `https://api.lingfengtranstour.cn/health`，本地 `http://localhost:8000/health`。
+API 健康检查：生产 `https://api.culvoy.com/health`，本地 `http://localhost:8000/health`。
 
 ## 快速开始
 

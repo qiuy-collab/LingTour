@@ -117,5 +117,8 @@ printf '\n'
 curl -fsS -o /dev/null -w 'site:%{http_code}\n' --max-time 20 https://lingfengtranstour.cn
 curl -fsS -o /dev/null -w 'admin:%{http_code}\n' --max-time 20 https://admin.lingfengtranstour.cn
 curl -fsS -o /dev/null -w 'api-health:%{http_code}\n' --max-time 20 https://api.lingfengtranstour.cn/health
+curl -fsS -o /dev/null -w 'site-culvoy:%{http_code}\n' --max-time 20 https://culvoy.com
+curl -fsS -o /dev/null -w 'admin-culvoy:%{http_code}\n' --max-time 20 https://admin.culvoy.com
+curl -fsS -o /dev/null -w 'api-culvoy-health:%{http_code}\n' --max-time 20 https://api.culvoy.com/health
 
 echo "==> Deploy complete"

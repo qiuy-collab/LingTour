@@ -1,7 +1,7 @@
 const configuredBase =
   process.env.LINGTOUR_API_BASE ||
   process.env.LINGTOUR_API_ORIGIN ||
-  'https://api.lingfengtranstour.cn';
+  'https://api.culvoy.com';
 
 const normalizedBase = configuredBase.replace(/\/+$/, '');
 const apiBase = normalizedBase.endsWith('/api/v1')

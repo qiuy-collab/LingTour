@@ -9,7 +9,7 @@ const port = Number(process.env.PORT || "4173");
 const host = process.env.HOST || "0.0.0.0";
 const distDir = path.join(cwd, "dist");
 const indexFile = path.join(distDir, "index.html");
-const apiOrigin = process.env.VITE_API_ORIGIN || "https://api.lingfengtranstour.cn";
+const apiOrigin = process.env.VITE_API_ORIGIN || "https://api.culvoy.com";
 
 const MIME_TYPES = {
   ".css": "text/css; charset=utf-8",

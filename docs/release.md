@@ -28,10 +28,10 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 | --- | --- | --- | --- | --- |
 | `lingtour-api` | api | `api/dist/main.js` | 8000 | `NODE_ENV=production` |
 | `lingtour-site` | site | `site/server.cjs` | 3001 | 对外由 Nginx 反代 |
-| `lingtour-admin` | admin-frontend | `admin-frontend/server.cjs` | 4173 | `VITE_API_ORIGIN=https://api.lingfengtranstour.cn` |
+| `lingtour-admin` | admin-frontend | `admin-frontend/server.cjs` | 4173 | `VITE_API_ORIGIN=https://api.culvoy.com` |
 
-- 对外域名：`https://lingfengtranstour.cn`（site）、`https://admin.lingfengtranstour.cn`（admin）、`https://api.lingfengtranstour.cn`（api），经 Nginx 反代到上表内部端口。
-- API 健康检查：`https://api.lingfengtranstour.cn/health`。
+- 对外域名：`https://culvoy.com`（site）、`https://admin.culvoy.com`（admin）、`https://api.culvoy.com`（api），经 Nginx 反代到上表内部端口。
+- API 健康检查：`https://api.culvoy.com/health`。
 - 服务器上存在未跟踪产物（历史部署 `*.bundle`、`site/public/assets/` 等）：未经引用核查与授权不得删除，详见 `docs/CURRENT-STATE.md`。
 - 部署相关路径速查另见根目录 `BT-DEPLOY-PATHS.md`（宝塔口径，内部端口与上表一致）。
 
@@ -72,7 +72,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 
 只在服务器/Secrets 中管理；文档与提交中只出现变量名，绝不写值。
 
-- site：`NEXT_PUBLIC_API_URL`（生产为 `https://api.lingfengtranstour.cn/api/v1`）、`INTERNAL_API_ORIGIN`、`PORT`、`HOST`、`NEXT_OUTPUT`。
+- site：`NEXT_PUBLIC_API_URL`（生产为 `https://api.culvoy.com/api/v1`）、`INTERNAL_API_ORIGIN`、`PORT`、`HOST`、`NEXT_OUTPUT`。
 - admin：`VITE_API_ORIGIN`、`VITE_SITE_ORIGIN` 或 `VITE_SITE_PREVIEW_ORIGIN`、`VITE_MEDIA_ORIGIN`、`PORT`、`HOST`。
 - api：数据库 `DB_*`、`JWT_SECRET`、Stripe 密钥与 webhook secret、媒体/上传相关配置；完整清单见仓库根目录 `.env.production.example`。
 - Actions：仓库 Secrets `SERVER_HOST` / `SERVER_USER` / `SERVER_SSH_KEY` / `SERVER_PORT`。

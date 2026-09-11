@@ -23,10 +23,11 @@ Keep local and production addresses strictly separate. Never point local work at
 | Environment | Public site | Admin | API |
 | --- | --- | --- | --- |
 | Local development | `http://localhost:3000` | `http://localhost:5173` | `http://localhost:8000` |
-| Production | `https://lingfengtranstour.cn` | `https://admin.lingfengtranstour.cn` | `https://api.lingfengtranstour.cn` |
+| Production | `https://culvoy.com` | `https://admin.culvoy.com` | `https://api.culvoy.com` |
 
-- API health: production `https://api.lingfengtranstour.cn/health`; local `http://localhost:8000/health`.
-- Production runs under PM2 with internal ports site `3001` / admin `4173` / api `8000`, proxied by Nginx; see [`docs/release.md`](docs/release.md) §2 for the process table, deployment channels, and rollback.
+- API health: production `https://api.culvoy.com/health`; local `http://localhost:8000/health`.
+- Production topology: host Nginx (TLS, BT panel) → `127.0.0.1:8088` → the `lingtour-nginx` Docker gateway, which routes by Host to the `site`/`api`/`admin` containers. Pushing to root `main` triggers GitHub Actions, which runs `tools/deploy-docker.sh`. PM2 processes on the server are retired and kept stopped. See [`docs/release.md`](docs/release.md) for deployment channels and rollback.
+- Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `lingfengtranstour.cn` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
 
 ## 3. Mandatory startup
 
@@ -115,8 +116,8 @@ Use `admin-frontend/.env.local`, not an unignored plain `.env`, for local admin 
 ## 6. Data, API, and content rules
 
 - Use the real API and production-shaped data; do not introduce fake, placeholder, screenshot-only, or local-only business data.
-- Local site/admin visual work normally reads from `https://api.lingfengtranstour.cn`; explain impact and obtain authorization before writing production data.
-- Site variables: `NEXT_PUBLIC_API_URL=https://api.lingfengtranstour.cn/api/v1` and `INTERNAL_API_ORIGIN=https://api.lingfengtranstour.cn`.
+- Local site/admin visual work normally reads from `https://api.culvoy.com`; explain impact and obtain authorization before writing production data.
+- Site variables: `NEXT_PUBLIC_API_URL=https://api.culvoy.com/api/v1` and `INTERNAL_API_ORIGIN=https://api.culvoy.com`.
 - Admin variables: `VITE_API_ORIGIN`, `VITE_SITE_ORIGIN` or `VITE_SITE_PREVIEW_ORIGIN`, and `VITE_MEDIA_ORIGIN`.
 - The admin client calls `/api/admin`; Vite/Nginx rewrite it to `/api/v1/admin`. Preserve this proxy contract.
 - Start the local API only for API work; do not start or reset it merely to obtain data for UI work.
