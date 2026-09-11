@@ -26,7 +26,7 @@ Keep local and production addresses strictly separate. Never point local work at
 | Production | `https://culvoy.com` | `https://admin.culvoy.com` | `https://api.culvoy.com` |
 
 - API health: production `https://api.culvoy.com/health`; local `http://localhost:8000/health`.
-- Production topology: host Nginx (TLS, BT panel) → `127.0.0.1:8088` → the `lingtour-nginx` Docker gateway, which routes by Host to the `site`/`api`/`admin` containers. Pushing to root `main` triggers GitHub Actions, which runs `tools/deploy-docker.sh`. PM2 processes on the server are retired and kept stopped. See [`docs/release.md`](docs/release.md) for deployment channels and rollback.
+- Production topology: host Nginx (TLS, BT panel) → `127.0.0.1:8088` → the `lingtour-nginx` Docker gateway, which routes by Host to the `site`/`api`/`admin` containers. Deployment runs `tools/deploy-docker.sh` through the `Deploy LingTour Docker Stack` GitHub Actions workflow, which is `workflow_dispatch`-only (pushes to `main` trigger CI only, never a deploy). PM2 processes on the server are retired and kept stopped. See [`docs/release.md`](docs/release.md) for deployment channels and rollback.
 - Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `lingfengtranstour.cn` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
 
 ## 3. Mandatory startup
@@ -82,7 +82,7 @@ git -C E:/workspace/LingTour/admin-frontend add -- src/path/a src/path/b
 git -C E:/workspace/LingTour add -- admin-frontend/src/path/a admin-frontend/src/path/b
 ```
 
-Do not commit, push, deploy, migrate, or mutate production data unless requested or durably authorized. A push to root `main` can be production-affecting through GitHub Actions.
+Do not commit, push, deploy, migrate, or mutate production data unless requested or durably authorized. Deployment to production happens only through the `workflow_dispatch` deploy workflow or by running `tools/deploy-docker.sh` on the server.
 
 ## 5. Protect the workspace
 
