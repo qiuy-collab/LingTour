@@ -393,3 +393,35 @@ Verification passed: site TypeScript, 14 test files / 78 tests, and production b
 Local Culture detail is currently HTTP 500 because its server-side request correctly targets `127.0.0.1:8000`, but the LingTour API is not running. The local API's PostgreSQL connection was rejected with authentication error `28P01`; port 5432 is occupied by a host PostgreSQL instance, no LingTour Compose services, data volume, or restorable local database backup was found. Do not seed, reset, overwrite that database, or change credentials without identifying the intended LingTour local database and providing/repairing its connection configuration.
 
 Nothing was pushed, deployed, migrated, or written to production.
+
+## 19. 2026-09-10 local empty database stack started
+
+The owner confirmed replacement of the unavailable host database with a fresh, isolated local instance. The Windows `postgresql-x64-16` service that owned port 5432 was stopped with administrator authorization; it remains stopped. LingTour Docker Compose then created the `lingtour_pgdata` volume and started `lingtour-postgres-1` on port 5432.
+
+- The local API database and role were created from the existing local API configuration without exposing credentials. The database was confirmed empty before initialization.
+- All 25 tracked TypeORM migrations were applied successfully. The first attempt rolled back at the historical `AddAdminNotifications` step because the new database lacked `uuid-ossp`; the extension was created on the isolated local container and the full migration set then completed. No seed, import, reset, or `--apply` script was run.
+- The API is running locally on port 8000 and `/health` returns HTTP 200. The public site remains on port 3000; `/culture/` now returns HTTP 200 instead of HTTP 500. A historical detail URL such as `/culture/shaoguan` returns HTTP 404 because the new local database contains no city, route, user, or media records.
+
+Nothing was pushed, deployed, or written to production. Restoring historical local Culture content requires a known LingTour database backup or an explicitly approved data source; it cannot be reconstructed from the empty volume.
+
+Follow-up check: the prior Windows PostgreSQL service still has its data directory at `C:\Program Files\PostgreSQL\16\data`; it was not deleted. The service was temporarily started for a read-only verification, but the database credentials in the repository's existing local configuration were rejected. Its contents therefore remain unconfirmed and inaccessible without the original credentials or a backup. The Windows service was stopped again and the Docker local database was restored as the active port-5432 instance.
+
+## 20. 2026-09-10 detailed local preview content
+
+The owner authorized detailed preview content for the isolated localhost database. `api/src/database/seeds/seed-local-preview.ts` is guarded against non-local hosts and writes one connected Zhanjiang preview set: city and three culture sections, route and four stops, collection and product, service mode, interpreter, FAQ, event, community post and brief, home config, settings, local preview accounts, booking, order, favorite, notification, audit record, and media record. No existing seed/reset command was run and nothing was written outside the local Docker database.
+
+- Six real images were downloaded from Wikimedia Commons to `api/uploads/preview/`; attribution and license metadata are retained locally in `ATTRIBUTION.jsonl`. Public data references only `/uploads/preview/...` paths, never external image URLs.
+- API public city, route, and product endpoints returned HTTP 200. Culture, routes, shop detail, interpreting, and community public pages returned HTTP 200. Local images returned HTTP 200 through both API and site origins.
+- API TypeScript still reports existing test-mock typing errors; the new seed script itself compiled and ran through `ts-node` successfully. Browser automation was unavailable because the local browser automation token was missing.
+
+Nothing was committed, pushed, deployed, migrated, or written to production.
+
+## 21. 2026-09-11 culvoy.com domain migration deployed
+
+The owner created proxied Cloudflare A records for `culvoy.com`, `admin.culvoy.com`, and `api.culvoy.com` pointing at `199.68.217.212` and authorized the full cutover with legacy parallel support.
+
+- Repository: 13 active files replaced `lingfengtranstour.cn` with `culvoy.com` (compose environment/build args, `nginx.docker.conf` server names, deploy and smoke scripts, site/admin build-time domains, guides); `nginx.docker.conf` keeps legacy domains alongside the new ones; `hello@culvoy.cn` unified to `hello@culvoy.com`. Committed as `5bec3bf` (brand) and `4e21907` (domains) in both repositories and pushed.
+- Server: `/root/LingTour/.env` (`GOOGLE_CALLBACK_URL`) and `api/.env` (`FRONTEND_URL`) switched after backup to `/root/backups/env-*-pre-domain-*.bak`; BT-panel vhosts `html_culvoy.com.conf`, `html_admin.culvoy.com.conf`, and `api.culvoy.com.conf` were derived from the legacy confs (proxy cache zone renamed to avoid a duplicate-zone collision, well-known includes created) and reloaded; the database was backed up to `/root/backups/lingtour-db-pre-domain-20260911-225953.dump`.
+- Deploy: `deploy.yml` is `workflow_dispatch`-only, so the AGENT.md claim that pushing to `main` triggers deployment is wrong; deployment ran `tools/deploy-docker.sh` directly on the server and HEAD is now `4e21907`. Site and admin image builds on the 2 GB host caused a roughly six-minute memory-exhaustion outage (TCP ports answered but userland froze); the host self-recovered and the build completed with swap absorbing the peak. The script's health check reported 502 because `lingtour-nginx-1` (up 2 days) kept stale upstream DNS after the app containers were recreated; `docker restart lingtour-nginx-1` fixed it. `tools/deploy-docker.sh` now restarts nginx after `up -d` to re-resolve upstreams.
+- Verification over Cloudflare: `https://culvoy.com` 200 (title "Culvoy Guangdong"), `https://admin.culvoy.com` 200 ("Culvoy Admin"), `https://api.culvoy.com/health` 200 JSON; the legacy `lingfengtranstour.cn` family stays 200 in parallel; the new homepage contains zero `lingtour` strings.
+- Pending: the origin still serves the legacy Cloudflare Origin CA (`*.lingfengtranstour.cn`, valid to 2041) for the new hostnames; TLS currently works because Cloudflare accepts it in the zone's current SSL mode. Replace it with a Cloudflare Origin CA covering `culvoy.com` plus `*.culvoy.com` when the owner provides it (new BT-panel cert directory, conf swap, reload). CI remains red on `Build Site image` (pre-existing; `7046446` failed the same way), while server-side builds succeed.
