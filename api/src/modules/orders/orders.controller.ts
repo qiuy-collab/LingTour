@@ -17,12 +17,14 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ShipOrderDto } from './dto/ship-order.dto';
 import { RefundOrderDto } from './dto/refund-order.dto';
+import { CapturePayPalOrderDto } from './dto/capture-paypal-order.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import {
@@ -48,6 +50,30 @@ export class OrdersController {
   @ApiOperation({ summary: 'Create order (guest or logged-in user)' })
   async checkout(@Body() dto: CreateOrderDto) {
     return this.ordersService.createOrder(dto);
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
+  @Get('orders/status')
+  @ApiOperation({
+    summary: 'Get limited public order status with a capability token',
+  })
+  @ApiQuery({ name: 'orderNo', required: true })
+  @ApiQuery({ name: 'token', required: true })
+  async publicStatus(
+    @Query('orderNo') orderNo: string,
+    @Query('token') token: string,
+  ) {
+    return this.ordersService.findPublicStatus(orderNo, token);
+  }
+
+  @Public()
+  @Post('orders/paypal/capture')
+  @ApiOperation({
+    summary: 'Capture a PayPal checkout order and mark the local order paid',
+  })
+  async capturePayPal(@Body() dto: CapturePayPalOrderDto) {
+    return this.ordersService.capturePayPalOrder(dto.paypalOrderId);
   }
 
   // ── Stripe Webhook (public, but signature-verified) ──

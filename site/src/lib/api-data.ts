@@ -513,6 +513,7 @@ export type InterpretingDepositCheckout = {
     status: string;
     paymentLabel: string;
     stripeClientSecret: string;
+    publicStatusToken: string;
   };
 };
 

@@ -9,6 +9,7 @@ import {
   IsInt,
   Min,
   MaxLength,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -76,8 +77,9 @@ export class CreateOrderDto {
   @Type(() => ShippingAddressDto)
   shippingAddress: ShippingAddressDto;
 
-  @ApiPropertyOptional({ default: 'stripe' })
+  @ApiPropertyOptional({ default: 'stripe', enum: ['stripe', 'paypal'] })
   @IsOptional()
   @IsString()
+  @IsIn(['stripe', 'paypal'])
   paymentMethod?: string;
 }

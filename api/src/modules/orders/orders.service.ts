@@ -13,10 +13,17 @@ import {
   type PaymentStatus,
 } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
 import { StoreProduct } from '../shop/entities/store-product.entity';
+
+type PayPalOrderResponse = {
+  id: string;
+  status?: string;
+  links?: Array<{ href: string; rel: string; method?: string }>;
+};
 
 /**
  * 订单履约状态机：从 ← 到的合法迁移。
@@ -50,6 +57,38 @@ export class OrdersService {
 
   private get isStripeEnabled(): boolean {
     return this.stripe !== null;
+  }
+
+  private get paypalBaseUrl(): string {
+    return (
+      this.configService.get<string>('PAYPAL_API_BASE_URL') ??
+      'https://api-m.sandbox.paypal.com'
+    );
+  }
+
+  private get isPayPalEnabled(): boolean {
+    return Boolean(
+      this.configService.get<string>('PAYPAL_CLIENT_ID') &&
+      this.configService.get<string>('PAYPAL_CLIENT_SECRET'),
+    );
+  }
+
+  private createPublicStatusToken() {
+    const token = randomBytes(32).toString('base64url');
+    return { token, hash: this.hashPublicStatusToken(token) };
+  }
+
+  private hashPublicStatusToken(token: string) {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
+  private publicStatusTokenMatches(order: Order, token: string) {
+    if (!order.publicStatusTokenHash || !token) return false;
+    const supplied = Buffer.from(this.hashPublicStatusToken(token), 'hex');
+    const expected = Buffer.from(order.publicStatusTokenHash, 'hex');
+    return (
+      supplied.length === expected.length && timingSafeEqual(supplied, expected)
+    );
   }
 
   /**
@@ -109,6 +148,7 @@ export class OrdersService {
     );
     const handlingCents = Math.max(800, Math.round(subtotalCents * 0.06));
     const totalCents = subtotalCents + handlingCents;
+    const publicStatusToken = this.createPublicStatusToken();
 
     const checkout = await this.orderRepo.manager.transaction(
       async (manager) => {
@@ -124,13 +164,37 @@ export class OrdersService {
           totalAmount: totalCents / 100,
           currency,
           orderType: 'shop',
-          paymentMethod: dto.paymentMethod ?? 'stripe',
+          paymentMethod: dto.paymentMethod === 'paypal' ? 'paypal' : 'stripe',
+          publicStatusTokenHash: publicStatusToken.hash,
           shippingAddr: dto.shippingAddress as unknown as Record<string, any>,
         });
         const saved = await manager.save(Order, order);
 
-        let stripeClientSecret: string;
-        if (this.isStripeEnabled) {
+        let stripeClientSecret: string | null = null;
+        let paypalOrderId: string | null = null;
+        let paypalApprovalUrl: string | null = null;
+        const paymentMethod =
+          dto.paymentMethod === 'paypal' ? 'paypal' : 'stripe';
+
+        if (paymentMethod === 'paypal') {
+          const paypalOrder = await this.createPayPalOrder(
+            saved,
+            totalCents,
+            publicStatusToken.token,
+          );
+          paypalOrderId = paypalOrder.id;
+          paypalApprovalUrl =
+            paypalOrder.links?.find((link) => link.rel === 'approve')?.href ??
+            null;
+          if (!paypalOrderId || !paypalApprovalUrl) {
+            throw new BadRequestException(
+              'PayPal checkout could not be created',
+            );
+          }
+          saved.paymentMethod = 'paypal';
+          saved.paymentId = paypalOrderId;
+          await manager.save(Order, saved);
+        } else if (this.isStripeEnabled) {
           const paymentIntent = await this.stripe!.paymentIntents.create(
             {
               amount: totalCents,
@@ -156,7 +220,13 @@ export class OrdersService {
           stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
         }
 
-        return { saved, stripeClientSecret };
+        return {
+          saved,
+          stripeClientSecret,
+          paypalOrderId,
+          paypalApprovalUrl,
+          paymentMethod,
+        };
       },
     );
 
@@ -178,7 +248,28 @@ export class OrdersService {
       currency,
       status: checkout.saved.status,
       paymentStatus: checkout.saved.paymentStatus,
+      paymentMethod: checkout.paymentMethod,
       stripeClientSecret: checkout.stripeClientSecret,
+      paypalOrderId: checkout.paypalOrderId,
+      paypalApprovalUrl: checkout.paypalApprovalUrl,
+      publicStatusToken: publicStatusToken.token,
+    };
+  }
+
+  async findPublicStatus(orderNo: string, token: string) {
+    const order = await this.orderRepo.findOne({ where: { orderNo } });
+    if (!order || !this.publicStatusTokenMatches(order, token)) {
+      throw new NotFoundException('Order status is unavailable');
+    }
+
+    return {
+      orderNo: order.orderNo,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      totalAmount: order.totalAmount,
+      currency: order.currency,
+      orderType: order.orderType,
     };
   }
 
@@ -207,6 +298,7 @@ export class OrdersService {
     }
 
     const currency = (input.currency ?? 'SGD').toUpperCase();
+    const publicStatusToken = this.createPublicStatusToken();
     const order = manager.create(Order, {
       orderNo: this.generateOrderNo(),
       userId: null,
@@ -218,6 +310,7 @@ export class OrdersService {
       bookingSubmissionId: input.bookingSubmissionId,
       orderType: 'interpreting_deposit',
       currency,
+      publicStatusTokenHash: publicStatusToken.hash,
       shippingAddr: {
         recipientName: input.name,
         street: 'Interpreting deposit request',
@@ -266,7 +359,155 @@ export class OrdersService {
       status: saved.status,
       paymentStatus: saved.paymentStatus,
       stripeClientSecret: pi.client_secret,
+      publicStatusToken: publicStatusToken.token,
     };
+  }
+
+  private async getPayPalAccessToken(): Promise<string> {
+    const clientId = this.configService.get<string>('PAYPAL_CLIENT_ID');
+    const clientSecret = this.configService.get<string>('PAYPAL_CLIENT_SECRET');
+    if (!clientId || !clientSecret) {
+      throw new BadRequestException('PayPal checkout is not configured');
+    }
+
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      'base64',
+    );
+    const response = await fetch(`${this.paypalBaseUrl}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+    if (!response.ok) {
+      throw new BadRequestException('PayPal authentication failed');
+    }
+    const data = (await response.json()) as { access_token?: string };
+    if (!data.access_token) {
+      throw new BadRequestException('PayPal authentication failed');
+    }
+    return data.access_token;
+  }
+
+  private async createPayPalOrder(
+    order: Order,
+    totalCents: number,
+    publicStatusToken: string,
+  ): Promise<PayPalOrderResponse> {
+    if (!this.isPayPalEnabled) {
+      throw new BadRequestException('PayPal checkout is not configured');
+    }
+
+    const accessToken = await this.getPayPalAccessToken();
+    const siteUrl =
+      this.configService.get<string>('SITE_ORIGIN') ??
+      this.configService.get<string>('PUBLIC_SITE_ORIGIN') ??
+      'http://localhost:3000';
+    const response = await fetch(`${this.paypalBaseUrl}/v2/checkout/orders`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        intent: 'CAPTURE',
+        purchase_units: [
+          {
+            reference_id: order.orderNo,
+            custom_id: order.id,
+            amount: {
+              currency_code: order.currency,
+              value: (totalCents / 100).toFixed(2),
+            },
+          },
+        ],
+        application_context: {
+          brand_name: 'LingTour Guangdong',
+          user_action: 'PAY_NOW',
+          return_url: `${siteUrl}/checkout/success?orderNo=${encodeURIComponent(order.orderNo)}&provider=paypal&statusToken=${encodeURIComponent(publicStatusToken)}`,
+          cancel_url: `${siteUrl}/checkout?paypal=cancelled&orderNo=${encodeURIComponent(order.orderNo)}`,
+        },
+      }),
+    });
+    if (!response.ok) {
+      throw new BadRequestException('PayPal checkout could not be created');
+    }
+    return (await response.json()) as PayPalOrderResponse;
+  }
+
+  async capturePayPalOrder(paypalOrderId: string) {
+    const existingOrder = await this.orderRepo.findOne({
+      where: { paymentId: paypalOrderId },
+    });
+    if (existingOrder?.paymentStatus === 'paid') {
+      return existingOrder;
+    }
+
+    const accessToken = await this.getPayPalAccessToken();
+    const response = await fetch(
+      `${this.paypalBaseUrl}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new BadRequestException('PayPal payment could not be captured');
+    }
+
+    const data = (await response.json()) as {
+      id: string;
+      status?: string;
+      purchase_units?: Array<{
+        reference_id?: string;
+        custom_id?: string;
+        payments?: {
+          captures?: Array<{
+            id: string;
+            status?: string;
+            amount?: { currency_code?: string; value?: string };
+          }>;
+        };
+      }>;
+    };
+    const unit = data.purchase_units?.[0];
+    const capture = unit?.payments?.captures?.[0];
+    if (data.status !== 'COMPLETED' || capture?.status !== 'COMPLETED') {
+      throw new BadRequestException('PayPal payment is not complete');
+    }
+    if (!unit?.reference_id || !unit.custom_id || !capture.id) {
+      throw new BadRequestException('PayPal payment is missing order metadata');
+    }
+
+    const order = await this.orderRepo.findOne({
+      where: { id: unit.custom_id },
+    });
+    if (
+      !order ||
+      order.orderNo !== unit.reference_id ||
+      order.paymentId !== data.id
+    ) {
+      throw new BadRequestException(
+        'PayPal payment is not linked to this order',
+      );
+    }
+    if (capture.amount?.currency_code !== order.currency) {
+      throw new BadRequestException(
+        'PayPal payment currency does not match order',
+      );
+    }
+    if (Number(capture.amount?.value) !== Number(order.totalAmount)) {
+      throw new BadRequestException(
+        'PayPal payment amount does not match order',
+      );
+    }
+
+    return this.markPaid(order.orderNo, capture.id);
   }
 
   /**
@@ -301,7 +542,7 @@ export class OrdersService {
       return { received: true, event: event.type, status: 'acknowledged' };
     }
 
-    const paymentIntent = event.data.object as Stripe.PaymentIntent;
+    const paymentIntent = event.data.object;
     const order = await this.orderRepo.findOne({
       where: { stripePaymentIntentId: paymentIntent.id },
     });
@@ -333,30 +574,38 @@ export class OrdersService {
     paymentIntent: Stripe.PaymentIntent,
   ): void {
     const expectedAmount = Math.round(Number(order.totalAmount) * 100);
-    const receivedAmount = paymentIntent.amount_received || paymentIntent.amount;
+    const receivedAmount =
+      paymentIntent.amount_received || paymentIntent.amount;
     const expectedCurrency = order.currency.toLowerCase();
 
     if (
       paymentIntent.metadata.orderId !== order.id ||
       paymentIntent.metadata.orderNo !== order.orderNo
     ) {
-      throw new BadRequestException('PaymentIntent metadata does not match order');
+      throw new BadRequestException(
+        'PaymentIntent metadata does not match order',
+      );
     }
     if (
       order.orderType === 'interpreting_deposit' &&
       (!order.bookingSubmissionId ||
         paymentIntent.metadata.type !== 'interpreting-deposit' ||
-        paymentIntent.metadata.bookingSubmissionId !== order.bookingSubmissionId)
+        paymentIntent.metadata.bookingSubmissionId !==
+          order.bookingSubmissionId)
     ) {
       throw new BadRequestException(
         'PaymentIntent metadata does not match interpreting booking',
       );
     }
     if (receivedAmount !== expectedAmount) {
-      throw new BadRequestException('PaymentIntent amount does not match order');
+      throw new BadRequestException(
+        'PaymentIntent amount does not match order',
+      );
     }
     if (paymentIntent.currency.toLowerCase() !== expectedCurrency) {
-      throw new BadRequestException('PaymentIntent currency does not match order');
+      throw new BadRequestException(
+        'PaymentIntent currency does not match order',
+      );
     }
   }
 
@@ -384,14 +633,18 @@ export class OrdersService {
 
       if (order.orderType === 'interpreting_deposit') {
         if (!order.bookingSubmissionId) {
-          throw new BadRequestException('Deposit order is not linked to a booking');
+          throw new BadRequestException(
+            'Deposit order is not linked to a booking',
+          );
         }
         const booking = await manager.findOne(BookingSubmission, {
           where: { id: order.bookingSubmissionId },
           lock: { mode: 'pessimistic_write' },
         });
         if (!booking) {
-          throw new NotFoundException('Deposit booking is not linked to an order');
+          throw new NotFoundException(
+            'Deposit booking is not linked to an order',
+          );
         }
         if (booking.status === 'deposit_pending') {
           booking.status = 'deposit_paid';

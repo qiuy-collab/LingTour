@@ -16,11 +16,15 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 type PaymentFormInnerProps = {
   orderNo: string;
-  onSuccess: () => void;
+  publicStatusToken: string;
   onError: (message: string) => void;
 };
 
-function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps) {
+function PaymentFormInner({
+  orderNo,
+  publicStatusToken,
+  onError,
+}: PaymentFormInnerProps) {
   const { t } = useLocale();
   const stripe = useStripe();
   const elements = useElements();
@@ -33,10 +37,11 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
 
       setProcessing(true);
 
+      const successUrl = `${window.location.origin}/checkout/success?orderNo=${encodeURIComponent(orderNo)}&statusToken=${encodeURIComponent(publicStatusToken)}`;
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?orderNo=${encodeURIComponent(orderNo)}&status=confirmed`,
+          return_url: successUrl,
         },
         redirect: "if_required",
       });
@@ -45,10 +50,10 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
         onError(error.message ?? t("checkout.payment.failed"));
         setProcessing(false);
       } else {
-        onSuccess();
+        window.location.assign(successUrl);
       }
     },
-    [stripe, elements, orderNo, onSuccess, onError, t],
+    [stripe, elements, orderNo, publicStatusToken, onError, t],
   );
 
   return (
@@ -62,9 +67,11 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
         type="submit"
         disabled={!stripe || processing}
         className={`w-full px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] transition ${
-          !processing
-            ? "bg-[var(--river-deep)] text-white hover:bg-[var(--cinnabar)]"
-            : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
+          !stripe && !processing
+            ? "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
+            : !processing
+              ? "bg-[var(--river-deep)] text-white hover:bg-[var(--cinnabar)]"
+              : "cursor-not-allowed bg-[var(--line)] text-[var(--muted)]"
         }`}
       >
         {processing ? t("checkout.payment.processing") : t("checkout.payment.payNow")}
@@ -76,14 +83,14 @@ function PaymentFormInner({ orderNo, onSuccess, onError }: PaymentFormInnerProps
 type StripePaymentFormProps = {
   clientSecret: string;
   orderNo: string;
-  onSuccess: () => void;
+  publicStatusToken: string;
   onError: (message: string) => void;
 };
 
 export function StripePaymentForm({
   clientSecret,
   orderNo,
-  onSuccess,
+  publicStatusToken,
   onError,
 }: StripePaymentFormProps) {
   const { t } = useLocale();
@@ -117,7 +124,7 @@ export function StripePaymentForm({
     >
       <PaymentFormInner
         orderNo={orderNo}
-        onSuccess={onSuccess}
+        publicStatusToken={publicStatusToken}
         onError={onError}
       />
     </Elements>

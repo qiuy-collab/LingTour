@@ -170,6 +170,14 @@ export class Order {
   })
   paymentFailureReason: string | null;
 
+  @Column({
+    type: 'varchar',
+    length: 64,
+    name: 'public_status_token_hash',
+    nullable: true,
+  })
+  publicStatusTokenHash: string | null;
+
   @Column({ type: 'jsonb', name: 'shipping_addr' })
   shippingAddr: Record<string, any>;
 

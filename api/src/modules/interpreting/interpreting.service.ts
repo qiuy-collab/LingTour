@@ -381,6 +381,7 @@ export class InterpretingService {
         status: checkout.depositOrder.status,
         paymentLabel: this.describeDeposit(dto),
         stripeClientSecret: checkout.depositOrder.stripeClientSecret,
+        publicStatusToken: checkout.depositOrder.publicStatusToken,
       },
     };
   }

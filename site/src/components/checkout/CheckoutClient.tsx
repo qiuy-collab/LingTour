@@ -7,14 +7,20 @@ import { apiPost } from "@/lib/api-client";
 import { fetchStoreProductBySlug, fetchStoreProducts } from "@/lib/api-data";
 import { useLocale } from "@/lib/locale-context";
 import { readStoredUser } from "@/lib/auth-client";
-import { readCart } from "@/lib/cart";
+import {
+  readCart,
+  rememberCheckoutItems,
+  removeCartItem,
+  setCartItemQuantity,
+  setCartItemSelected,
+} from "@/lib/cart";
 import { formatCurrency } from "@/lib/region-currency";
 import { countryName } from "@/lib/country-list";
-import { StripePaymentForm } from "./StripePaymentForm";
 import type { StoreProduct } from "@/data/store";
 
 type CheckoutItem = StoreProduct & {
   quantity: number;
+  selected: boolean;
 };
 
 type CheckoutForm = {
@@ -35,7 +41,11 @@ type CheckoutResponse = {
   orderNo: string;
   totalAmount: number;
   status: string;
-  stripeClientSecret: string;
+  paymentMethod: "stripe" | "paypal";
+  stripeClientSecret: string | null;
+  paypalOrderId?: string | null;
+  paypalApprovalUrl?: string | null;
+  publicStatusToken: string;
 };
 
 const INITIAL_FORM: CheckoutForm = {
@@ -48,11 +58,13 @@ const INITIAL_FORM: CheckoutForm = {
   country: "",
   phone: "",
   note: "",
-  paymentMethod: "card",
+  // PayPal-only checkout: the storefront exposes PayPal as the sole payment
+  // method. Stripe remains available on the API but has no storefront entry.
+  paymentMethod: "paypal",
 };
 
 const CHECKOUT_FIELD_CLASS =
-  "min-h-12 w-full border-0 border-b border-[var(--line)] bg-transparent px-0 py-3 text-sm text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)]";
+  "min-h-12 w-full border-0 border-b border-[var(--line)] bg-transparent px-0 py-3 text-base text-[var(--river-deep)] outline-none transition focus:border-[var(--cinnabar)] lg:text-sm";
 
 const CHECKOUT_PANEL_CLASS =
   "min-w-0 border-t border-[var(--line)] py-7 sm:py-9";
@@ -80,7 +92,6 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderResult, setOrderResult] = useState<CheckoutResponse | null>(null);
-  const [paymentComplete, setPaymentComplete] = useState(false);
   const [form, setForm] = useState<CheckoutForm>(INITIAL_FORM);
 
   useEffect(() => {
@@ -105,18 +116,18 @@ export function CheckoutClient() {
     async function load() {
       try {
         const storedCart = typeof window !== "undefined" ? readCart() : [];
-        const selectedCart = storedCart.filter((item) => item.selected !== false);
 
-        if (selectedCart.length > 0) {
+        if (storedCart.length > 0) {
           const products = await fetchStoreProducts();
           const itemMap = new Map(products.map((item) => [item.slug, item]));
-          const selectedItems = selectedCart.map((cartItem) => {
+          const cartItems = storedCart.map((cartItem) => {
             const matchedProduct = itemMap.get(cartItem.slug);
             if (matchedProduct) {
               return {
                 ...matchedProduct,
                 id: matchedProduct.id ?? cartItem.productId,
                 quantity: cartItem.quantity,
+                selected: cartItem.selected !== false,
               };
             }
 
@@ -131,12 +142,12 @@ export function CheckoutClient() {
               story: "",
               tag: "",
               quantity: cartItem.quantity,
+              selected: cartItem.selected !== false,
             };
           });
 
           if (!cancelled) {
-            setItems(selectedItems);
-            setLoading(false);
+            setItems(cartItems);
           }
           return;
         }
@@ -144,15 +155,12 @@ export function CheckoutClient() {
         if (productSlug) {
           const product = await fetchStoreProductBySlug(productSlug);
           if (!cancelled && product) {
-            setItems([{ ...product, quantity: 1 }]);
-            setLoading(false);
+            setItems([{ ...product, quantity: 1, selected: true }]);
             return;
           }
-        }
-
-        const products = await fetchStoreProducts();
-        if (!cancelled && products.length > 0) {
-          setItems([{ ...products[0], quantity: 1 }]);
+          if (!cancelled) {
+            setError(t("checkout.error.productNotFound"));
+          }
         }
       } catch {
         setError(t("checkout.error.loadSelection"));
@@ -167,16 +175,26 @@ export function CheckoutClient() {
     };
   }, [productSlug, t]);
 
+  const selectedItems = useMemo(
+    () => items.filter((item) => item.selected),
+    [items],
+  );
+
+  const displayCurrency = selectedItems[0]?.currency ?? items[0]?.currency;
+
   const totals = useMemo(() => {
-    if (items.length === 0) return { subtotal: 0, handling: 0, total: 0 };
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    if (selectedItems.length === 0) return { subtotal: 0, handling: 0, total: 0 };
+    const subtotal = selectedItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
     const handling = subtotal > 0 ? Math.max(8, subtotal * 0.06) : 0;
     return { subtotal, handling, total: subtotal + handling };
-  }, [items]);
+  }, [selectedItems]);
 
   const canSubmit = useMemo(() => {
     return Boolean(
-      items.length &&
+      selectedItems.length &&
         form.email.trim() &&
         form.recipientName.trim() &&
         form.street.trim() &&
@@ -185,7 +203,30 @@ export function CheckoutClient() {
         form.postalCode.trim() &&
         form.country.trim(),
     );
-  }, [form, items.length]);
+  }, [form, selectedItems.length]);
+
+  const updateCartSelection = (slug: string, selected: boolean) => {
+    setCartItemSelected(slug, selected);
+    setItems((current) =>
+      current.map((item) => (item.slug === slug ? { ...item, selected } : item)),
+    );
+  };
+
+  const updateCartQuantity = (slug: string, quantity: number) => {
+    setCartItemQuantity(slug, quantity);
+    setItems((current) =>
+      current.map((item) =>
+        item.slug === slug
+          ? { ...item, quantity: Math.max(1, Math.floor(quantity)) }
+          : item,
+      ),
+    );
+  };
+
+  const deleteCartItem = (slug: string) => {
+    removeCartItem(slug);
+    setItems((current) => current.filter((item) => item.slug !== slug));
+  };
 
   const updateField = (field: keyof CheckoutForm, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -207,20 +248,10 @@ export function CheckoutClient() {
     [t],
   );
 
-  const isSandboxSecret = (secret: string) => secret.startsWith("pi_sandbox_");
-
-  const handlePaymentSuccess = useCallback(() => {
-    setPaymentComplete(true);
-  }, []);
-
-  const handlePaymentError = useCallback((message: string) => {
-    setError(message);
-  }, []);
-
   const submitOrder = async () => {
     if (!canSubmit || submitting) return;
 
-    const incomplete = items.find((item) => !item.id);
+    const incomplete = selectedItems.find((item) => !item.id);
     if (incomplete) {
       setError(
         fillTemplate(t("checkout.error.itemUnavailable"), {
@@ -236,7 +267,7 @@ export function CheckoutClient() {
     try {
       const payload = {
         guestEmail: form.email.trim(),
-        items: items.map((item) => ({
+        items: selectedItems.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
         })),
@@ -253,6 +284,10 @@ export function CheckoutClient() {
       };
 
       const created = await apiPost<CheckoutResponse>("/orders/checkout", payload);
+      rememberCheckoutItems(
+        created.orderNo,
+        selectedItems.map((item) => item.slug),
+      );
       setOrderResult(created);
     } catch (submitError) {
       setError(
@@ -267,94 +302,77 @@ export function CheckoutClient() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
-        <div className="flex min-h-screen items-center justify-center">
+      <div className="min-h-[calc(100dvh-4.95rem)] bg-[var(--paper-deep)] bg-grain">
+        <div className="flex min-h-[calc(100dvh-4.95rem)] items-center justify-center">
           <p className="text-base text-[var(--muted)]">
             {t("checkout.empty.loading")}
           </p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain">
-        <div className="flex min-h-screen flex-col items-center justify-center gap-6">
-          <p className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-            {t("checkout.empty.bagTitle")}
-          </p>
-          <p className="text-sm text-[var(--muted)]">
-            {t("checkout.empty.bagBody")}
+      <div className="min-h-[calc(100dvh-4.95rem)] bg-[var(--paper-deep)] bg-grain">
+        <div className="site-container flex min-h-[calc(100dvh-4.95rem)] flex-col items-center justify-center gap-6 py-12 text-center">
+          <h1 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] sm:text-4xl">
+            {error
+              ? t("checkout.empty.productUnavailableTitle")
+              : t("checkout.empty.bagTitle")}
+          </h1>
+          <p className="max-w-md text-center text-sm leading-6 text-[var(--muted)]" role={error ? "alert" : undefined}>
+            {error || t("checkout.empty.bagBody")}
           </p>
           <Link href="/shop" className="lt-action lt-action-secondary">
             {t("checkout.empty.returnToStore")}
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
-  if (orderResult && !isSandboxSecret(orderResult.stripeClientSecret) && !paymentComplete) {
+  if (orderResult && orderResult.paymentMethod === "paypal" && orderResult.paypalApprovalUrl) {
     return (
-      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-        <div className="mx-auto max-w-xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
+      <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
+        <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {t("checkout.page.paymentEyebrow")}
           </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.96] tracking-[-0.04em]">
-            {t("checkout.page.paymentTitle")}
+            {t("checkout.payment.paypalTitle")}
           </h1>
           <p className="mt-4 text-sm leading-7 text-[var(--muted)]">
-            {fillTemplate(t("checkout.page.paymentBody"), {
+            {fillTemplate(t("checkout.payment.paypalBody"), {
               orderNo: orderResult.orderNo,
-            }).split(orderResult.orderNo).map((segment, index, arr) => (
-              <span key={`${segment}-${index}`}>
-                {segment}
-                {index < arr.length - 1 ? (
-                  <span className="font-bold">{orderResult.orderNo}</span>
-                ) : null}
-              </span>
-            ))}
+            })}
           </p>
-
           <div className="mt-6 mb-2 flex items-end justify-between border-b border-[var(--line)] pb-4">
             <span className="text-sm text-[var(--muted)]">{t("checkout.summary.total")}</span>
             <span className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
-              {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
+              {formatStorePrice(orderResult.totalAmount, displayCurrency)}
             </span>
           </div>
-
-          {error && (
-            <div className="my-4 border-l-2 border-[var(--cinnabar)] bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar)]">
-              {error}
-            </div>
-          )}
-
-          <div className="mt-6">
-            <StripePaymentForm
-              clientSecret={orderResult.stripeClientSecret}
-              orderNo={orderResult.orderNo}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-            />
-          </div>
+          <a
+            href={orderResult.paypalApprovalUrl}
+            className="mt-8 inline-flex min-h-12 w-full items-center justify-center bg-[var(--river-deep)] px-8 py-4 text-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[var(--cinnabar)] active:scale-[0.985]"
+          >
+            {t("checkout.payment.paypalContinue")}
+          </a>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (orderResult) {
     return (
-      <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
+      <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-3xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
           <h1 className="mt-4 font-[family:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.04em]">
-            {paymentComplete ? t("checkout.success.thankYou") : t("checkout.success.registryConfirmed")}
+            {t("checkout.success.registryConfirmed")}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
-            {paymentComplete
-              ? t("checkout.success.paymentMessage")
-              : t("checkout.success.orderMessage")}
+            {t("checkout.success.orderMessage")}
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -379,7 +397,7 @@ export function CheckoutClient() {
                 {t("checkout.success.total")}
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
-                {formatStorePrice(orderResult.totalAmount, items[0]?.currency)}
+                {formatStorePrice(orderResult.totalAmount, displayCurrency)}
               </p>
             </div>
           </div>
@@ -393,12 +411,12 @@ export function CheckoutClient() {
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain py-10 text-[var(--river-deep)] sm:py-14 lg:py-20">
+    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain py-10 text-[var(--river-deep)] sm:py-14 lg:py-20">
       <div className="site-container grid min-h-screen min-w-0 gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] lg:gap-16 xl:gap-24">
         <section className="min-w-0">
           <div className="min-w-0">
@@ -409,7 +427,7 @@ export function CheckoutClient() {
             </div>
 
             {error ? (
-              <div className="mb-8 border-l-2 border-[var(--cinnabar)] bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar)]">
+              <div className="mb-8 border-l-2 border-[var(--cinnabar)] bg-[var(--cinnabar)]/6 px-4 py-3 text-sm text-[var(--cinnabar)]" role="alert">
                 {error}
               </div>
             ) : null}
@@ -459,22 +477,14 @@ export function CheckoutClient() {
                       placeholder={t("checkout.form.phonePlaceholder")}
                     />
                   </label>
-                  <label htmlFor="checkout-payment-method" className="grid gap-2">
-                    <span className="sr-only">{t("checkout.form.paymentMethod")}</span>
+                  <div className="grid gap-2">
                     <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.paymentMethod")}
                     </span>
-                    <select
-                      id="checkout-payment-method"
-                      value={form.paymentMethod}
-                      onChange={(event) => updateField("paymentMethod", event.target.value)}
-                      className={CHECKOUT_FIELD_CLASS}
-                    >
-                      <option value="card">{t("checkout.form.paymentOption.card")}</option>
-                      <option value="wechat">{t("checkout.form.paymentOption.wechat")}</option>
-                      <option value="alipay">{t("checkout.form.paymentOption.alipay")}</option>
-                    </select>
-                  </label>
+                    <p className="flex min-h-12 items-center border-b border-[var(--line)] text-base text-[var(--river-deep)] lg:text-sm">
+                      PayPal
+                    </p>
+                  </div>
                 </div>
               </section>
 
@@ -561,7 +571,7 @@ export function CheckoutClient() {
                     id="checkout-note"
                     value={form.note}
                     onChange={(event) => updateField("note", event.target.value)}
-                    className="min-h-[120px] w-full resize-y border-0 border-b border-[var(--line)] bg-transparent px-0 py-4 text-sm leading-7 outline-none transition focus:border-[var(--cinnabar)]"
+                    className="min-h-[120px] w-full resize-y border-0 border-b border-[var(--line)] bg-transparent px-0 py-4 text-base leading-7 outline-none transition focus:border-[var(--cinnabar)] lg:text-sm"
                     placeholder={t("checkout.form.notesPlaceholder")}
                   />
                 </label>
@@ -584,37 +594,113 @@ export function CheckoutClient() {
                 {items.map((item) => (
                   <div
                     key={item.slug}
-                    className="grid grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-4 border-t border-[var(--line)] py-4 last:border-b"
+                    className={`border-t border-[var(--line)] py-5 last:border-b ${
+                      item.selected ? "" : "opacity-55"
+                    }`}
                   >
-                    <img src={item.image} alt="" className="h-16 w-16 shrink-0 object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-[var(--river-deep)]">
-                        {item.name}
-                      </p>
-                      <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
-                        {fillTemplate(t("checkout.summary.quantity"), {
-                          count: item.quantity,
-                        })}
-                      </p>
+                    <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:gap-4">
+                      <img src={item.image} alt="" className="h-12 w-12 shrink-0 object-cover sm:h-16 sm:w-16" />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-[var(--river-deep)]">
+                          {item.name}
+                        </p>
+                        <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+                          {formatStorePrice(item.price * item.quantity, item.currency)}
+                        </p>
+                      </div>
+                      <label className="grid min-h-11 min-w-11 cursor-pointer place-items-center">
+                        <span className="sr-only">
+                          {fillTemplate(
+                            t(
+                              item.selected
+                                ? "checkout.cart.unselectItem"
+                                : "checkout.cart.selectItem",
+                            ),
+                            { item: item.name },
+                          )}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={item.selected}
+                          aria-label={fillTemplate(
+                            t(
+                              item.selected
+                                ? "checkout.cart.unselectItem"
+                                : "checkout.cart.selectItem",
+                            ),
+                            { item: item.name },
+                          )}
+                          onChange={(event) =>
+                            updateCartSelection(item.slug, event.target.checked)
+                          }
+                          className="h-5 w-5 accent-[var(--river-deep)]"
+                        />
+                      </label>
                     </div>
-                    <p className="text-sm font-bold text-[var(--river-deep)]">
-                      {formatStorePrice(item.price * item.quantity, item.currency)}
-                    </p>
+
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pl-[3.75rem] sm:pl-20">
+                      <div className="inline-grid grid-cols-[2.75rem_auto_2.75rem] items-center border border-[var(--line)] bg-white/45">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateCartQuantity(item.slug, item.quantity - 1)
+                          }
+                          disabled={item.quantity <= 1}
+                          className="grid min-h-11 min-w-11 place-items-center text-lg text-[var(--river-deep)] transition hover:bg-white disabled:cursor-not-allowed disabled:text-[var(--muted)]/45"
+                          aria-label={fillTemplate(t("checkout.cart.decreaseQuantity"), {
+                            item: item.name,
+                          })}
+                        >
+                          −
+                        </button>
+                        <span className="min-w-10 text-center text-sm font-bold text-[var(--river-deep)]" aria-label={fillTemplate(t("checkout.summary.quantity"), { count: item.quantity })}>
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateCartQuantity(item.slug, item.quantity + 1)
+                          }
+                          className="grid min-h-11 min-w-11 place-items-center text-lg text-[var(--river-deep)] transition hover:bg-white"
+                          aria-label={fillTemplate(t("checkout.cart.increaseQuantity"), {
+                            item: item.name,
+                          })}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteCartItem(item.slug)}
+                        className="min-h-11 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition hover:text-[var(--cinnabar)]"
+                        aria-label={fillTemplate(t("checkout.cart.removeItem"), {
+                          item: item.name,
+                        })}
+                      >
+                        {t("checkout.cart.remove")}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
+
+              {selectedItems.length === 0 ? (
+                <p className="mt-5 border border-[var(--gold)]/30 bg-[var(--gold)]/8 px-4 py-3 text-xs leading-6 text-[var(--muted)]" role="status">
+                  {t("checkout.cart.selectAtLeastOne")}
+                </p>
+              ) : null}
 
               <div className="mt-8 space-y-4 border-t border-[var(--line)] pt-6">
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
                   <span>{t("checkout.summary.subtotal")}</span>
                   <span className="font-semibold text-[var(--river-deep)]">
-                    {formatStorePrice(totals.subtotal, items[0]?.currency)}
+                    {formatStorePrice(totals.subtotal, displayCurrency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-[var(--muted)]">
                   <span>{t("checkout.summary.shipping")}</span>
                   <span className="font-semibold text-[var(--river-deep)]">
-                    {formatStorePrice(totals.handling, items[0]?.currency)}
+                    {formatStorePrice(totals.handling, displayCurrency)}
                   </span>
                 </div>
                 <div className="flex items-end justify-between border-t border-[var(--line)] pt-5">
@@ -627,7 +713,7 @@ export function CheckoutClient() {
                     </p>
                   </div>
                   <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
-                    {formatStorePrice(totals.total, items[0]?.currency)}
+                    {formatStorePrice(totals.total, displayCurrency)}
                   </p>
                 </div>
               </div>
@@ -652,6 +738,6 @@ export function CheckoutClient() {
           </div>
         </aside>
       </div>
-    </main>
+    </div>
   );
 }

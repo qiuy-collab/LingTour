@@ -1,6 +1,7 @@
 jest.mock('uuid', () => ({ v4: () => 'test-uuid' }));
 
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { OrdersService } from './orders.service';
 import { Order } from './entities/order.entity';
 import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
@@ -93,6 +94,16 @@ describe('OrdersService shop checkout', () => {
       }),
     );
     expect(result.totalAmount).toBe(72);
+    expect(result.publicStatusToken).toEqual(expect.any(String));
+    expect(result.publicStatusToken).toHaveLength(43);
+    expect(manager.create).toHaveBeenCalledWith(
+      Order,
+      expect.objectContaining({
+        publicStatusTokenHash: createHash('sha256')
+          .update(result.publicStatusToken)
+          .digest('hex'),
+      }),
+    );
   });
 
   it('rejects unavailable products instead of trusting request prices', async () => {
@@ -110,6 +121,108 @@ describe('OrdersService shop checkout', () => {
         shippingAddress: {} as any,
       }),
     ).rejects.toThrow('One or more products are unavailable');
+  });
+  it('rejects PayPal checkout when PayPal credentials are not configured', async () => {
+    const product = {
+      id: 'product-id',
+      slug: 'tea-bowl',
+      name: { en: 'Tea Bowl', zh: '茶碗' },
+      image: '/uploads/products/tea-bowl.webp',
+      price: 32,
+      currency: 'SGD',
+      stock: 5,
+    };
+    const manager = {
+      create: jest.fn((_entity, value) => ({ ...value, id: 'order-id' })),
+      save: jest.fn(async (_entity, value) => value),
+    };
+    const service = new OrdersService(
+      { manager: { transaction: jest.fn((work) => work(manager)) } } as any,
+      { find: jest.fn().mockResolvedValue([product]) } as any,
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      { notifyStaff: jest.fn() } as any,
+    );
+
+    await expect(
+      service.createOrder({
+        guestEmail: 'guest@example.com',
+        paymentMethod: 'paypal',
+        items: [{ productId: 'product-id', quantity: 1 }],
+        shippingAddress: {
+          recipientName: 'Guest',
+          street: '1 Main Street',
+          city: 'Singapore',
+          state: 'Singapore',
+          postalCode: '123456',
+          country: 'Singapore',
+        },
+      }),
+    ).rejects.toThrow('PayPal checkout is not configured');
+  });
+});
+
+describe('OrdersService public status', () => {
+  const token = 'public-status-token';
+  const hash = createHash('sha256').update(token).digest('hex');
+
+  it('returns only limited status fields for the correct capability token', async () => {
+    const order = makeOrder({
+      publicStatusTokenHash: hash,
+      paymentMethod: 'stripe',
+      orderType: 'shop',
+      items: [
+        {
+          productId: 'product-id',
+          productName: 'Tea Bowl',
+          productImage: '/tea.webp',
+          quantity: 1,
+          unitPrice: 120,
+        },
+      ],
+      guestEmail: 'guest@example.com',
+      shippingAddr: { street: 'Private address' },
+    });
+    const service = new OrdersService(
+      { findOne: jest.fn().mockResolvedValue(order) } as any,
+      {} as any,
+      { get: jest.fn() } as any,
+      {} as any,
+    );
+
+    const result = await service.findPublicStatus(order.orderNo, token);
+
+    expect(result).toEqual({
+      orderNo: 'LT123',
+      status: 'pending',
+      paymentStatus: 'unpaid',
+      paymentMethod: 'stripe',
+      totalAmount: 120,
+      currency: 'SGD',
+      orderType: 'shop',
+    });
+    expect(result).not.toHaveProperty('guestEmail');
+    expect(result).not.toHaveProperty('shippingAddr');
+    expect(result).not.toHaveProperty('items');
+    expect(result).not.toHaveProperty('paymentId');
+  });
+
+  it('rejects an incorrect capability token without returning the order', async () => {
+    const service = new OrdersService(
+      {
+        findOne: jest
+          .fn()
+          .mockResolvedValue(
+            makeOrder({ publicStatusTokenHash: hash, orderType: 'shop' }),
+          ),
+      } as any,
+      {} as any,
+      { get: jest.fn() } as any,
+      {} as any,
+    );
+
+    await expect(
+      service.findPublicStatus('LT123', 'wrong-token'),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });
 
@@ -157,11 +270,13 @@ describe('OrdersService interpreting deposits', () => {
       } as any,
       {} as any,
     );
-    (service as any).stripe = { paymentIntents: { create: paymentIntentsCreate } };
+    (service as any).stripe = {
+      paymentIntents: { create: paymentIntentsCreate },
+    };
     jest.spyOn(Date, 'now').mockReturnValue(1);
     jest.spyOn(Math, 'random').mockReturnValue(0.1);
 
-    await service.createInterpretingDeposit(
+    const result = await service.createInterpretingDeposit(
       {
         bookingSubmissionId: 'booking-id',
         name: 'Guest',
@@ -180,6 +295,17 @@ describe('OrdersService interpreting deposits', () => {
         bookingSubmissionId: 'booking-id',
         orderType: 'interpreting_deposit',
         currency: 'SGD',
+        publicStatusTokenHash: expect.any(String),
+      }),
+    );
+    expect(result.publicStatusToken).toEqual(expect.any(String));
+    expect(result.publicStatusToken).toHaveLength(43);
+    expect(manager.create).toHaveBeenCalledWith(
+      Order,
+      expect.objectContaining({
+        publicStatusTokenHash: createHash('sha256')
+          .update(result.publicStatusToken)
+          .digest('hex'),
       }),
     );
     expect(paymentIntentsCreate).toHaveBeenCalledWith(
@@ -191,7 +317,9 @@ describe('OrdersService interpreting deposits', () => {
           type: 'interpreting-deposit',
         }),
       }),
-      expect.objectContaining({ idempotencyKey: expect.stringContaining('interpreting-deposit:') }),
+      expect.objectContaining({
+        idempotencyKey: expect.stringContaining('interpreting-deposit:'),
+      }),
     );
     expect(manager.save).toHaveBeenLastCalledWith(
       Order,
@@ -260,7 +388,10 @@ describe('OrdersService interpreting deposits', () => {
 
   it('atomically marks the bound order and booking paid after verified success', async () => {
     const order = makeOrder();
-    const booking = { id: 'booking-id', status: 'deposit_pending' } as BookingSubmission;
+    const booking = {
+      id: 'booking-id',
+      status: 'deposit_pending',
+    } as BookingSubmission;
     const manager = {
       findOne: jest
         .fn()
