@@ -291,7 +291,7 @@ export default function InterpretingPageClient({
           <div className="grid grid-cols-1 items-center gap-10 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 data-pastoral-title className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(3rem,5.25vw,4.5rem)] leading-[0.98] tracking-[-0.045em] text-[var(--river-deep)] sm:mb-8 lg:max-w-none lg:whitespace-nowrap">
+                <h1 data-pastoral-title className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(3rem,5.25vw,4.5rem)] leading-[0.98] tracking-[-0.045em] text-[var(--river-deep)] sm:mb-8">
                   {t("interpreting.hero.title")}
                 </h1>
 
@@ -493,13 +493,14 @@ export default function InterpretingPageClient({
         </Reveal>
       </section>
 
+      <div className="flex flex-col">
       {effectiveInterpretingData.faqs.length ? (
-        <section id="interpreting-faq" className="site-container scroll-mt-24 pb-24 lg:pb-32">
+        <section id="interpreting-faq" className="site-container order-2 scroll-mt-24 pb-24 lg:pb-32">
           <div className="grid gap-10 border-t border-[var(--line)] pt-12 lg:grid-cols-[minmax(14rem,0.7fr)_minmax(0,1.3fr)] lg:gap-16">
             <Reveal>
               <div className="lg:sticky lg:top-28">
                 <h2 className="max-w-[9ch] font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl">
-                  {"Questions"}
+                  {"Q&A"}
                 </h2>
               </div>
             </Reveal>
@@ -553,6 +554,7 @@ export default function InterpretingPageClient({
       ) : null}
 
       <BookingSection prefillNeeds={prefillNeeds} />
+      </div>
 
       <MobileStickyActions
         actions={[
