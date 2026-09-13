@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LocalUser, readStoredUser } from "@/lib/auth-client";
+import { useLocale } from "@/lib/locale-context";
 
 function getInitials(name: string) {
   return name
@@ -14,6 +15,7 @@ function getInitials(name: string) {
 }
 
 export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useLocale();
   const [user, setUser] = useState<LocalUser | null>(null);
 
   useEffect(() => {
@@ -38,20 +40,10 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href="/login?next=%2Fprofile%3Ftab%3Dnotes"
         onClick={onNavigate}
-        className="ml-2 grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 transition hover:bg-white"
+        className="ml-2 inline-flex min-h-11 items-center gap-2 border border-[var(--line)] bg-white/70 px-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition hover:border-[var(--river-deep)] hover:bg-white"
         aria-label="Log in to open your traveler profile"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--ink)]">
-          <circle cx="6" cy="6" r="1.5" fill="currentColor" />
-          <circle cx="12" cy="6" r="1.5" fill="currentColor" />
-          <circle cx="18" cy="6" r="1.5" fill="currentColor" />
-          <circle cx="6" cy="12" r="1.5" fill="currentColor" />
-          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-          <circle cx="18" cy="12" r="1.5" fill="currentColor" />
-          <circle cx="6" cy="18" r="1.5" fill="currentColor" />
-          <circle cx="12" cy="18" r="1.5" fill="currentColor" />
-          <circle cx="18" cy="18" r="1.5" fill="currentColor" />
-        </svg>
+        {t("common.nav.login")}
       </Link>
     );
   }
@@ -61,10 +53,10 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href="/profile?tab=notes"
         onClick={onNavigate}
-        className="relative z-20 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/72 px-2 py-1.5 text-sm text-[var(--ink)] shadow-[0_14px_40px_rgba(17,25,35,0.06)] transition hover:border-[var(--cinnabar)] hover:bg-white"
+        className="relative z-20 inline-flex min-h-11 items-center gap-3 border border-[var(--line)] bg-white/72 px-2 py-1.5 text-sm text-[var(--ink)] transition hover:border-[var(--cinnabar)] hover:bg-white"
         aria-label="Open your traveler profile"
       >
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-sm text-white shadow-[0_8px_22px_rgba(182,66,53,0.26)]">
+        <span className="grid h-8 w-8 place-items-center bg-[var(--cinnabar)] font-[family:var(--font-display)] text-sm text-white">
           {getInitials(user.name)}
         </span>
         <span className="hidden max-w-24 truncate lg:inline">{user.name}</span>

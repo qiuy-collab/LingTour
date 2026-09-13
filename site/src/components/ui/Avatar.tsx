@@ -8,6 +8,7 @@ type AvatarProps = {
   /** Stable seed used to pick the fallback colour. Falls back to `name`. */
   seed?: string | null;
   size?: number;
+  shape?: "round" | "square";
   className?: string;
   /** Optional explicit border ring class, e.g. `ring-2 ring-white`. */
   ringClassName?: string;
@@ -58,6 +59,7 @@ export function Avatar({
   name,
   seed,
   size = 40,
+  shape = "round",
   className = "",
   ringClassName = "",
   alt,
@@ -73,7 +75,9 @@ export function Avatar({
 
   return (
     <span
-      className={`relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full ${ringClassName} ${className}`}
+      className={`relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden ${
+        shape === "round" ? "rounded-full" : ""
+      } ${ringClassName} ${className}`}
       style={{
         width: size,
         height: size,

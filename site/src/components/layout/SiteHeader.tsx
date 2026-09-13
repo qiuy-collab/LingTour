@@ -34,6 +34,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
+  const [isRegionsOpen, setIsRegionsOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobilePanelRef = useRef<HTMLDivElement | null>(null);
@@ -45,6 +46,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     setIsOpen(false);
+    setIsRegionsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -101,7 +103,7 @@ export function SiteHeader() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
-      <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 lg:grid-cols-[1fr_auto_1fr]">
+      <Container className="grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 lg:grid-cols-[1fr_auto_1fr] lg:gap-5">
         <nav className="hidden items-center justify-start gap-1 lg:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
             const active = isActivePath(pathname, item.href);
@@ -166,6 +168,10 @@ export function SiteHeader() {
           </Link>
         </div>
 
+        <div className="flex items-center lg:hidden">
+          <AccountNavLink onNavigate={() => setIsOpen(false)} />
+        </div>
+
         <button
           ref={menuButtonRef}
           type="button"
@@ -223,30 +229,43 @@ export function SiteHeader() {
             </div>
 
             <div className="border-t border-[var(--line)] pt-4">
-              <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+              <button
+                type="button"
+                className="flex min-h-11 w-full items-center justify-between gap-3 px-1 text-left text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]"
+                aria-expanded={isRegionsOpen}
+                aria-controls="site-mobile-route-regions"
+                onClick={() => setIsRegionsOpen((open) => !open)}
+              >
                 {t("common.nav.mobile.chooseRegion")}
-              </p>
-              <div className="grid gap-1.5">
-                {DEFAULT_ROUTE_REGIONS.map((region) => {
-                  const regionTitle = pickRouteRegionText(region.title);
-                  const regionNote = pickRouteRegionText(region.note);
+                <span aria-hidden className="text-lg leading-none">{isRegionsOpen ? "−" : "+"}</span>
+              </button>
 
-                  return (
-                    <Link
-                      key={region.key}
-                      href={`/routes?region=${region.key}`}
-                      className="flex items-center gap-3 border border-[var(--line)] bg-white/40 px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--river-deep)] hover:text-white"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <span className="h-2 w-2 flex-shrink-0 rounded-full bg-[var(--cinnabar)]/60" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{regionTitle}</span>
-                        <span className="text-[10px] text-[var(--muted)]">{regionNote}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+              {isRegionsOpen ? (
+                <div id="site-mobile-route-regions" className="mt-2 grid gap-1.5">
+                  {DEFAULT_ROUTE_REGIONS.map((region) => {
+                    const regionTitle = pickRouteRegionText(region.title);
+                    const regionNote = pickRouteRegionText(region.note);
+
+                    return (
+                      <Link
+                        key={region.key}
+                        href={`/routes?region=${region.key}`}
+                        className="flex min-h-11 items-center gap-3 border border-[var(--line)] bg-white/40 px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--river-deep)] hover:text-white"
+                        onClick={() => {
+                          setIsRegionsOpen(false);
+                          setIsOpen(false);
+                        }}
+                      >
+                        <span className="h-2 w-2 flex-shrink-0 bg-[var(--cinnabar)]/60" />
+                        <div className="flex flex-col">
+                          <span className="font-medium">{regionTitle}</span>
+                          <span className="text-[10px] text-[var(--muted)]">{regionNote}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
