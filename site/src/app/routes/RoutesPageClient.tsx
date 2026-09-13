@@ -76,29 +76,42 @@ export default function RoutesPageClient({
       className="min-h-screen bg-[var(--paper-deep)] bg-grain"
       motionKey={filteredRoutes.map((route) => route.slug).join("|")}
     >
-      <section className="relative overflow-hidden border-b border-[var(--line)] py-10 sm:py-12 lg:py-16">
+      <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container relative">
-          <div className="grid items-center gap-8 sm:grid-cols-[minmax(14rem,0.72fr)_minmax(0,1.28fr)] sm:gap-10 lg:grid-cols-[minmax(18rem,0.68fr)_minmax(0,1.32fr)] lg:gap-14">
-            <Reveal className="order-2 sm:order-1">
-              <div className="relative aspect-[4/3] overflow-hidden border-[0.5rem] border-white bg-white scrapbook-shadow sm:aspect-[3/4] sm:border-[0.65rem] lg:border-[0.75rem]">
-                <div
-                  data-pastoral-hero-media
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none"
-                  style={{ backgroundImage: `url(${heroImage})` }}
-                  role="img"
-                  aria-label="Landscape from a Guangdong route"
-                />
-              </div>
-            </Reveal>
+          <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+            <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
+              <Reveal>
+                <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
+                  {t("routes.atlas.eyebrow")}
+                </p>
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
+                  <span className="block overflow-hidden pb-1">
+                    <span data-pastoral-title className="block">{t("routes.atlas.titlePrimary")}</span>
+                  </span>
+                  <span className="block overflow-hidden pb-3">
+                    <span data-pastoral-title className="block italic text-[var(--gold)]">{t("routes.atlas.titleItalic")}</span>
+                  </span>
+                </h1>
+                <p data-pastoral-subtitle className="handwritten mt-5 max-w-xl text-[13px] leading-6 text-[var(--muted)] sm:mt-8 sm:text-base sm:leading-relaxed lg:mt-12 lg:text-lg">
+                  {t("routes.atlas.lede")}
+                </p>
+              </Reveal>
+            </div>
 
-            <Reveal className="order-1 min-w-0 sm:order-2">
-              <h1 data-pastoral-title className="max-w-[13ch] text-balance font-[family:var(--font-display)] text-[clamp(2.65rem,6vw,4.75rem)] leading-[0.98] tracking-[-0.04em] text-[var(--river-deep)] lg:max-w-none lg:whitespace-nowrap">
-                Routes
-              </h1>
-              <p data-pastoral-subtitle className="mt-5 max-w-[50ch] text-pretty text-base leading-7 text-[var(--muted)] sm:mt-6 lg:text-lg">
-                {t("routes.atlas.lede")}
-              </p>
-            </Reveal>
+            <div className="relative w-full min-w-0 self-end lg:col-span-5 lg:max-w-none lg:self-center">
+              <Reveal delay={200}>
+                <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
+                  <div
+                    data-pastoral-hero-media
+                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none"
+                    style={{ backgroundImage: `url(${heroImage})` }}
+                    role="img"
+                    aria-label="Landscape from a Guangdong route"
+                  />
+                  <div className="absolute inset-0 bg-black/10" />
+                </div>
+              </Reveal>
+            </div>
           </div>
         </div>
       </section>

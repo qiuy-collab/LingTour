@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LngLatBounds } from "maplibre-gl";
 import { Map, MapMarker, MapRoute, MarkerContent, useMap } from "@/components/mapcn/map";
 import type { buildRouteGeometry } from "./route-map-geometry";
 
 type Geometry = ReturnType<typeof buildRouteGeometry>;
+type MarkerGroup = { points: Geometry["points"]; screenX: number; screenY: number };
 
 type Props = {
   geometry: Geometry;
@@ -44,6 +45,75 @@ function RouteOverview({ points, routeTitle }: { points: Geometry["points"]; rou
   return null;
 }
 
+function RouteMarkers({ points, routeTitle }: { points: Geometry["points"]; routeTitle: string }) {
+  const { map } = useMap();
+  const [groups, setGroups] = useState<MarkerGroup[]>([]);
+
+  useEffect(() => {
+    if (!map || !points.length) return;
+
+    const update = () => {
+      const next: MarkerGroup[] = [];
+      points.forEach((point) => {
+        const projected = map.project(point.coordinates);
+        const existing = next.find(
+          (group) =>
+            Math.hypot(group.screenX - projected.x, group.screenY - projected.y) < 34,
+        );
+        if (existing) {
+          existing.points.push(point);
+        } else {
+          next.push({ points: [point], screenX: projected.x, screenY: projected.y });
+        }
+      });
+      setGroups(next);
+    };
+
+    update();
+    map.on("idle", update);
+
+    return () => {
+      map.off("idle", update);
+    };
+  }, [map, points]);
+
+  return (
+    <>
+      {groups.map((group, index) => {
+        const first = group.points[0];
+        const label = group.points
+          .map(
+            (point) =>
+              `Stop ${point.index + 1}: ${point.stop}${point.time ? `, ${point.time}` : ""}`,
+          )
+          .join(" | ");
+        const text = group.points.length > 1 ? `${first.index + 1}+` : `${first.index + 1}`;
+
+        return (
+          <MapMarker
+            key={`${first.index}-${index}`}
+            longitude={first.coordinates[0]}
+            latitude={first.coordinates[1]}
+            anchor="center"
+          >
+            <MarkerContent>
+              <span
+                role="img"
+                aria-label={label}
+                title={label}
+                className="grid h-8 min-w-8 cursor-default place-items-center border-2 border-[var(--paper)] bg-[var(--river-deep)] px-1 font-mono text-xs font-bold text-[var(--paper)]"
+              >
+                {text}
+              </span>
+            </MarkerContent>
+          </MapMarker>
+        );
+      })}
+      <span className="sr-only">{`Schematic stop positions for ${routeTitle}`}</span>
+    </>
+  );
+}
+
 export default function RouteMapCanvas({ geometry, routeTitle, onReady, onError }: Props) {
   return (
     <Map
@@ -64,23 +134,7 @@ export default function RouteMapCanvas({ geometry, routeTitle, onReady, onError 
       {geometry.segments.map((coordinates, index) => (
         <MapRoute key={index} coordinates={coordinates} dashArray={[3, 3]} />
       ))}
-      {geometry.points.map((point) => {
-        const label = `Stop ${point.index + 1}: ${point.stop}${point.time ? `, ${point.time}` : ""}`;
-        return (
-          <MapMarker key={point.index} longitude={point.coordinates[0]} latitude={point.coordinates[1]} anchor="center">
-            <MarkerContent>
-              <span
-                role="img"
-                aria-label={label}
-                title={label}
-                className="grid h-8 min-w-8 cursor-default place-items-center border-2 border-[var(--paper)] bg-[var(--river-deep)] px-1 font-mono text-xs font-bold text-[var(--paper)]"
-              >
-                {point.index + 1}
-              </span>
-            </MarkerContent>
-          </MapMarker>
-        );
-      })}
+      <RouteMarkers points={geometry.points} routeTitle={routeTitle} />
     </Map>
   );
 }

@@ -90,8 +90,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
         </div>
       </header>
 
-      <article id="section-chapters" aria-label={`${activeCity.name} city article`} className="relative border-y border-[var(--line)]/80 bg-[var(--paper)]/64 py-12 sm:py-16 lg:py-24">
-        <div className="pointer-events-none absolute inset-0 bg-grain opacity-[0.06]" />
+      <article id="section-chapters" aria-label={`${activeCity.name} city article`} className="relative py-12 sm:py-16 lg:py-24">
         <div className="relative site-container">
           <MarkdownRenderer content={activeCity.contentMarkdown ?? ""} />
         </div>

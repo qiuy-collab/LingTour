@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
@@ -28,10 +27,8 @@ const initialFeatures = getMapFeatures();
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
   const { t } = useLocale();
-  const menuId = useId();
   const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const toggleRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
@@ -73,7 +70,6 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
       if (event.key !== "Escape") return;
       event.preventDefault();
       setIsOpen(false);
-      window.requestAnimationFrame(() => toggleRef.current?.focus());
     };
     const handlePointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
@@ -139,35 +135,8 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
       >
         {t("common.nav.routes")}
       </Link>
-      <button
-        ref={toggleRef}
-        type="button"
-        data-routes-menu-toggle
-        className="group/toggle ml-1 inline-flex h-11 w-11 items-center justify-center border-l border-[var(--line)] text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]"
-        aria-label={
-          isOpen
-            ? t("common.nav.routesMega.close")
-            : t("common.nav.routesMega.open")
-        }
-        aria-expanded={isOpen}
-        aria-controls={menuId}
-        onClick={() => setIsOpen((open) => !open)}
-      >
-        <span
-          aria-hidden="true"
-          data-routes-disclosure-mark
-          className={`relative block h-4 w-4 transition-transform duration-300 ${
-            isOpen ? "rotate-45 scale-110 text-[var(--cinnabar)]" : ""
-          }`}
-        >
-          <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
-          <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current" />
-        </span>
-      </button>
-
       {isOpen ? (
         <div
-          id={menuId}
           aria-busy={!routesReady}
           className="fixed left-0 top-[4.55rem] z-40 max-h-[calc(100dvh-4.55rem)] w-screen overflow-y-auto overscroll-contain border-y border-black/5 bg-[var(--paper-deep)] bg-grain shadow-[0_40px_100px_rgba(0,0,0,0.15)] backdrop-blur-xl"
         >
