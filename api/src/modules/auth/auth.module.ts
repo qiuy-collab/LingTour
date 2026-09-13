@@ -5,8 +5,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { EmailVerificationService } from './email-verification.service';
+import { EmailVerificationCode } from './entities/email-verification-code.entity';
 import { UsersModule } from '../users/users.module';
 import { UploadModule } from '../upload/upload.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   resolveJwtExpiration,
   resolveJwtSecret,
@@ -16,6 +19,7 @@ import {
   imports: [
     UsersModule,
     UploadModule,
+    TypeOrmModule.forFeature([EmailVerificationCode]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -29,7 +33,7 @@ import {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, EmailVerificationService, JwtStrategy],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

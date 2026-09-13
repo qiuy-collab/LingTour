@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { countryOptions } from "@/lib/country-list";
 import { hydrateFavoritesFromServer } from "@/lib/favorites";
 import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
 import {
   registerWithPassword,
+  sendEmailCode,
   signInWithGoogle,
   signInWithPassword,
   updateCurrentUserProfile,
+  verifyEmailCode,
 } from "@/lib/auth-client";
 
 function safeNextPath(value: string | null) {
@@ -20,13 +22,18 @@ const fieldClass = "min-h-12 w-full border-b border-[var(--line)] bg-transparent
 const labelClass = "grid gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]";
 
 type Mode = "login" | "signup";
+type SignInMethod = "password" | "code";
 
 export function LoginPanel() {
   const router = useRouter();
   const params = useSearchParams();
   const countries = useMemo(() => countryOptions(), []);
   const [mode, setMode] = useState<Mode>("login");
+  const [signInMethod, setSignInMethod] = useState<SignInMethod>("password");
   const [loading, setLoading] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const nextPath = safeNextPath(params.get("next"));
@@ -35,23 +42,47 @@ export function LoginPanel() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") || "").trim();
-    const password = String(data.get("password") || "");
-    if (!email || !password) { setError("Please enter your email and password."); return; }
     setLoading(true); setError(null);
     try {
-      if (mode === "login") {
-        await signInWithPassword(email, password);
+      if (mode === "login" && signInMethod === "code") {
+        const code = String(data.get("code") || "").trim();
+        if (!email || !code) { setError("Enter your email and the 6-digit code."); return; }
+        await verifyEmailCode({ email, code });
       } else {
-        const name = String(data.get("name") || "").trim();
-        const country = String(data.get("country") || "SG");
-        const travelStyle = String(data.get("travelStyle") || "Culture routes and food walks");
-        await registerWithPassword({ name, email, password });
-        await updateCurrentUserProfile({ country, travelStyle });
+        const password = String(data.get("password") || "");
+        if (!email || !password) { setError("Please enter your email and password."); return; }
+        if (mode === "login") {
+          await signInWithPassword(email, password);
+        } else {
+          const name = String(data.get("name") || "").trim();
+          const country = String(data.get("country") || "SG");
+          const travelStyle = String(data.get("travelStyle") || "Culture routes and food walks");
+          await registerWithPassword({ name, email, password });
+          await updateCurrentUserProfile({ country, travelStyle });
+        }
       }
       void hydrateFavoritesFromServer();
       router.replace(nextPath); router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : "An unexpected error occurred."); }
     finally { setLoading(false); }
+  }
+
+  async function handleSendCode() {
+    const form = formRef.current;
+    if (!form) return;
+    const data = new FormData(form);
+    const email = String(data.get("email") || "").trim();
+    if (!email) { setError("Please enter your email address."); return; }
+    setSendingCode(true); setError(null); setDevCode(null);
+    try {
+      const result = await sendEmailCode(email, "login");
+      setCodeSent(true);
+      setDevCode(result.devCode ?? null);
+    } catch {
+      setError("We could not send a verification code right now. Please try again in a moment.");
+    } finally {
+      setSendingCode(false);
+    }
   }
 
   async function googleLogin() {
@@ -67,6 +98,8 @@ export function LoginPanel() {
   }
 
   const isLogin = mode === "login";
+  const usingCode = isLogin && signInMethod === "code";
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <main className="grid min-h-[100dvh] bg-[var(--paper-deep)] text-[var(--river-deep)] lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
@@ -103,7 +136,7 @@ export function LoginPanel() {
             </div>
           ) : null}
 
-          <form className="mt-9 grid gap-6" onSubmit={submit} aria-busy={loading}>
+          <form ref={formRef} className="mt-9 grid gap-6" onSubmit={submit} aria-busy={loading}>
             {!isLogin ? (
               <>
                 <label className={labelClass}>
@@ -123,27 +156,60 @@ export function LoginPanel() {
               Email address
               <input name="email" type="email" autoComplete="email" inputMode="email" className={fieldClass} required />
             </label>
-            <label className={labelClass}>
-              Password
-              <span className="relative block">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={isLogin ? "current-password" : "new-password"}
-                  minLength={isLogin ? 1 : 8}
-                  className={`${fieldClass} pr-16`}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  className="absolute right-0 top-1/2 min-h-11 min-w-11 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)]"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </span>
-            </label>
+
+            {usingCode ? (
+              <label className={labelClass}>
+                Verification code
+                <span className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                  <input
+                    name="code"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    autoComplete="one-time-code"
+                    className={fieldClass}
+                    placeholder="6-digit code"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleSendCode()}
+                    disabled={sendingCode}
+                    className="min-h-12 border border-[var(--line)] bg-white/60 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)]/40 hover:bg-white disabled:opacity-50"
+                  >
+                    {sendingCode ? "Sending..." : codeSent ? "Send again" : "Send code"}
+                  </button>
+                </span>
+              </label>
+            ) : (
+              <label className={labelClass}>
+                Password
+                <span className="relative block">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    minLength={isLogin ? 1 : 8}
+                    className={`${fieldClass} pr-16`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    className="absolute right-0 top-1/2 min-h-11 min-w-11 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)]"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </span>
+              </label>
+            )}
+
+            {usingCode && devCode ? (
+              <div className="border-y border-[var(--gold)]/40 py-3 text-xs leading-5 text-[var(--muted)]" role="status">
+                Development code: <span className="font-mono font-bold text-[var(--river-deep)]">{devCode}</span>
+              </div>
+            ) : null}
 
             {!isLogin ? (
               <label className={labelClass}>
@@ -161,8 +227,31 @@ export function LoginPanel() {
               disabled={loading}
               className="min-h-12 w-full bg-[var(--river-deep)] px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-[background-color,transform] duration-300 hover:bg-[var(--cinnabar)] active:translate-y-px disabled:opacity-50"
             >
-              {loading ? "Processing..." : isLogin ? "Log in" : "Create account"}
+              {loading
+                ? "Processing..."
+                : isLogin
+                  ? usingCode
+                    ? "Verify and log in"
+                    : "Log in"
+                  : "Create account"}
             </button>
+
+            {isLogin ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSignInMethod(usingCode ? "password" : "code");
+                  setCodeSent(false);
+                  setDevCode(null);
+                  setError(null);
+                }}
+                className="min-h-11 px-1 text-left text-sm text-[var(--muted)] transition-colors hover:text-[var(--river-deep)]"
+              >
+                {usingCode
+                  ? "Use your password instead"
+                  : "Email me a one-time code instead"}
+              </button>
+            ) : null}
 
             {isLogin && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (
               <button

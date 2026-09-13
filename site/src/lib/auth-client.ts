@@ -61,7 +61,17 @@ export type UpdateProfileInput = {
   profileVisibility?: ProfileVisibility;
 };
 
-export type SessionAction = "login" | "register" | "google";
+export type SessionAction = "login" | "register" | "google" | "email-code";
+
+export type EmailCodePurpose = "login" | "signup";
+
+export type EmailCodeResponse = {
+  email: string;
+  purpose: EmailCodePurpose;
+  expiresInSeconds: number;
+  delivery: "email" | "development";
+  devCode?: string;
+};
 
 async function createSession<TPayload extends object>(action: SessionAction, payload: TPayload): Promise<AuthResponse> {
   const response = await fetch("/api/auth/session", {
@@ -161,6 +171,24 @@ export async function signInWithGoogle(credential: string, name?: string) {
     name: name || "Google Traveler",
   });
 
+  persistAuthUser(data.user);
+  return data;
+}
+
+export function sendEmailCode(email: string, purpose: EmailCodePurpose = "login") {
+  return apiPost<EmailCodeResponse>("/auth/email-code/send", { email, purpose });
+}
+
+export async function verifyEmailCode(input: {
+  email: string;
+  code: string;
+  purpose?: EmailCodePurpose;
+}) {
+  const data = await createSession("email-code", {
+    email: input.email,
+    purpose: input.purpose ?? "login",
+    code: input.code,
+  });
   persistAuthUser(data.user);
   return data;
 }

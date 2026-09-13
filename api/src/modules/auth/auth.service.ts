@@ -10,6 +10,8 @@ import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtExpiration } from '../../common/auth/jwt-config';
 import { OAuth2Client } from 'google-auth-library';
+import { randomUUID } from 'crypto';
+import { EmailVerificationService } from './email-verification.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +19,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailVerificationService: EmailVerificationService,
   ) {}
 
   private formatAccountId(userId: string): string {
@@ -99,6 +102,52 @@ export class AuthService {
       name,
       {
         provider: 'password',
+        memberSince: new Date().toISOString().slice(0, 10),
+      },
+    );
+    return this.buildAuthResponse(user);
+  }
+
+  async sendEmailCode(email: string, purpose: 'login' | 'signup') {
+    return this.emailVerificationService.sendCode(email, purpose);
+  }
+
+  async verifyEmailCode(
+    email: string,
+    purpose: 'login' | 'signup',
+    code: string,
+    name?: string,
+  ) {
+    const verified = await this.emailVerificationService.consumeCode(
+      email,
+      purpose,
+      code,
+    );
+
+    if (purpose === 'login') {
+      const user = await this.usersService.findByEmail(verified.email);
+      if (!user) {
+        throw new UnauthorizedException('Invalid email or verification code');
+      }
+      if (user.status !== 'active') {
+        throw new UnauthorizedException('This account is disabled');
+      }
+      return this.buildAuthResponse(user);
+    }
+
+    const existing = await this.usersService.findByEmail(verified.email);
+    if (existing) {
+      throw new ConflictException('This email is already in use');
+    }
+
+    const passwordHash = await bcrypt.hash(`email-code:${verified.email}:${randomUUID()}`, 12);
+    const user = await this.usersService.create(
+      verified.email,
+      passwordHash,
+      'traveler',
+      name?.trim() || verified.email.split('@')[0],
+      {
+        provider: 'email_code',
         memberSince: new Date().toISOString().slice(0, 10),
       },
     );

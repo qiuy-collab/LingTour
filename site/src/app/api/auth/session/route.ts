@@ -5,6 +5,7 @@ const ACTION_PATHS = {
   login: "/auth/login",
   register: "/auth/register",
   google: "/auth/google",
+  "email-code": "/auth/email-code/verify",
 } as const;
 
 type Action = keyof typeof ACTION_PATHS;

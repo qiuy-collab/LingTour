@@ -5,11 +5,16 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { EmailVerificationService } from './email-verification.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let usersService: jest.Mocked<Partial<UsersService>>;
   let jwtService: jest.Mocked<Partial<JwtService>>;
+  let emailVerificationService: {
+    sendCode: jest.Mock;
+    consumeCode: jest.Mock;
+  };
 
   const mockUser = {
     id: 'uuid-test',
@@ -26,10 +31,16 @@ describe('AuthService', () => {
     usersService = {
       findByEmail: jest.fn(),
       findById: jest.fn(),
+      create: jest.fn(),
     };
 
     jwtService = {
       sign: jest.fn().mockReturnValue('mock-jwt-token'),
+    };
+
+    emailVerificationService = {
+      sendCode: jest.fn(),
+      consumeCode: jest.fn(),
     };
 
     const configService = {
@@ -46,6 +57,7 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
+        { provide: EmailVerificationService, useValue: emailVerificationService },
       ],
     }).compile();
 
@@ -134,6 +146,59 @@ describe('AuthService', () => {
         },
         { expiresIn: '24h' },
       );
+    });
+  });
+
+  describe('email code authentication', () => {
+    it('logs in an existing active account after code verification', async () => {
+      emailVerificationService.consumeCode.mockResolvedValue({
+        email: 'admin@lingtour.cn',
+        purpose: 'login',
+      });
+      usersService.findByEmail!.mockResolvedValue(mockUser as any);
+
+      const result = await authService.verifyEmailCode(
+        'admin@lingtour.cn',
+        'login',
+        '248613',
+      );
+
+      expect(result.access_token).toBe('mock-jwt-token');
+      expect(result.user.email).toBe('admin@lingtour.cn');
+    });
+
+    it('creates a traveler account after signup code verification', async () => {
+      const created = {
+        ...mockUser,
+        id: 'traveler-id',
+        email: 'traveler@example.com',
+        role: 'traveler' as const,
+        name: 'Maya Chen',
+        provider: 'email_code',
+      };
+      emailVerificationService.consumeCode.mockResolvedValue({
+        email: 'traveler@example.com',
+        purpose: 'signup',
+      });
+      usersService.findByEmail!.mockResolvedValue(null);
+      usersService.create!.mockResolvedValue(created as any);
+
+      const result = await authService.verifyEmailCode(
+        'traveler@example.com',
+        'signup',
+        '248613',
+        'Maya Chen',
+      );
+
+      expect(usersService.create).toHaveBeenCalledWith(
+        'traveler@example.com',
+        expect.any(String),
+        'traveler',
+        'Maya Chen',
+        expect.objectContaining({ provider: 'email_code' }),
+      );
+      expect(result.user.role).toBe('traveler');
+      expect(result.user.email).toBe('traveler@example.com');
     });
   });
 });

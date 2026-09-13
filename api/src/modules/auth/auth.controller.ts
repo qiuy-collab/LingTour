@@ -21,6 +21,8 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { SendEmailCodeDto } from './dto/send-email-code.dto';
+import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
@@ -71,6 +73,31 @@ export class AuthController {
       registerDto.name,
       registerDto.email,
       registerDto.password,
+    );
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
+  @Post('email-code/send')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send an email verification code for login or signup' })
+  @ApiBody({ type: SendEmailCodeDto })
+  async sendEmailCode(@Body() dto: SendEmailCodeDto) {
+    return this.authService.sendEmailCode(dto.email, dto.purpose);
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Post('email-code/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify email code and sign in or create account' })
+  @ApiBody({ type: VerifyEmailCodeDto })
+  async verifyEmailCode(@Body() dto: VerifyEmailCodeDto) {
+    return this.authService.verifyEmailCode(
+      dto.email,
+      dto.purpose,
+      dto.code,
+      dto.name,
     );
   }
 
