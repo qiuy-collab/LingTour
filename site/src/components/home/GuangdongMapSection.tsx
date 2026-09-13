@@ -309,7 +309,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
               hills, no showcased city), which is the intended scrapbook layer.
               At md that same overlap swallows 31% including Zhanjiang and
               Maoming, so the card stays in flow until there is room for it. */}
-          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm md:mb-6 md:block md:w-56 md:max-w-sm md:rotate-1 md:border-8 md:p-4 lg:absolute lg:left-0 lg:top-0 lg:mb-0 lg:w-52">
+          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm lg:absolute lg:left-0 lg:top-0 lg:w-52 lg:border-8 lg:p-4">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
@@ -370,7 +370,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           {/* Taller than the map's own 1.43 ratio, with the province pinned to
               the top, so the scrapbook panel below can overlap the leftover
               strip without covering Zhanjiang in the south-west corner. */}
-          <div className="relative z-10 aspect-[1.13/1] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] md:aspect-auto md:h-[28rem] md:rounded-none md:border-0 md:bg-transparent lg:h-[40rem]">
+          <div className="relative z-10 aspect-[1.13/1] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--background)] lg:aspect-auto lg:h-[40rem] lg:rounded-none lg:border-0 lg:bg-transparent">
             <div className="pointer-events-auto h-full w-full opacity-80 md:opacity-60">
               {mapData ? (
                 <svg
@@ -522,7 +522,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
 
           <div
             ref={mobilePanelRef}
-            className="relative z-30 mx-3 -mt-12 grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] gap-3 border-[0.35rem] border-white bg-[rgba(248,246,239,0.96)] p-2.5 shadow-[0_16px_35px_rgba(20,52,61,0.14)] backdrop-blur-sm md:hidden"
+            className="relative z-30 mx-3 -mt-12 grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] gap-3 border-[0.35rem] border-white bg-[rgba(248,246,239,0.96)] p-2.5 shadow-[0_16px_35px_rgba(20,52,61,0.14)] backdrop-blur-sm lg:hidden"
           >
             <Link
               href={`/culture/${activeCity.slug}`}
@@ -562,7 +562,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           </div>
 
           {showcase.length > 1 ? (
-            <div className="scrollbar-hide -mx-4 mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 md:hidden">
+            <div className="scrollbar-hide -mx-4 mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 lg:hidden">
               {showcase.map((city, index) => {
                 const isActive = city.adcode === resolvedActiveCode;
                 return (

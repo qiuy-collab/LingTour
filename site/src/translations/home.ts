@@ -46,7 +46,7 @@ export const home = {
     "home.culture.subtitle": "Guangdong culture divides into three main traditions. Each shapes the food, dialect, and daily rhythm of its cities.",
     "home.culture.explore": "Explore their culture",
 
-    "home.interpreting.title": "Interpreter Services",
+    "home.interpreting.title": "Interpreting",
     "home.interpreting.subtitle": "Live English interpreting for markets, meals, meetings — in person or remote.",
     "home.interpreting.cta": "Meet Your Field Interpreter",
     "home.interpreting.experts": "60+ local experts · English / Mandarin / Cantonese",
@@ -69,7 +69,7 @@ export const home = {
     "home.video.resolution": "Format",
     "home.video.watch": "Watch full film",
 
-    "home.shop.title": "Featured Lingnan Objects",
+    "home.shop.title": "Lingnan Objects",
     "home.shop.subtitle": "From the Zhanjiang coast — volcanic soil pottery, maritime tools, and everyday objects shaped by the landscape.",
     "home.shop.cta": "Browse the shop",
 

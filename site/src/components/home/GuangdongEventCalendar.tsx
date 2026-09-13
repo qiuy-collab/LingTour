@@ -135,7 +135,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
 
   return (
     <section className="site-container py-16 sm:py-20 lg:py-40">
-      <div className="grid items-start gap-10 min-[620px]:grid-cols-[minmax(0,1fr)_15rem] min-[620px]:gap-8 lg:grid-cols-[1fr_420px] lg:gap-20">
+      <div className="grid items-start gap-10 lg:grid-cols-[1fr_420px] lg:gap-20">
         <div className="flex flex-col">
           <Reveal>
             <div className="mb-12 sm:mb-16">
@@ -280,8 +280,8 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                 href={`/routes/${relatedRoute.slug}`}
                 className="group relative block"
               >
-                <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] min-[620px]:block min-[620px]:-rotate-2 min-[620px]:p-4 min-[620px]:group-hover:rotate-0 lg:p-6">
-                  <div className="relative aspect-square overflow-hidden min-[620px]:mb-5 min-[620px]:aspect-[3/4] lg:mb-8">
+                    <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 border border-[var(--line)] bg-white p-3 scrapbook-shadow transition-all duration-700 group-hover:scale-[1.02] lg:block lg:-rotate-2 lg:p-6 lg:group-hover:rotate-0">
+                  <div className="relative aspect-square overflow-hidden lg:mb-8 lg:aspect-[3/4]">
                     <img
                       src={relatedRoute.image}
                       alt=""
@@ -305,7 +305,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                     <h4 className="font-[family:var(--font-display)] text-xl leading-tight text-[var(--river-deep)] lg:text-3xl">
                       {relatedRoute.title}
                     </h4>
-                    <p className="hidden line-clamp-2 text-sm leading-relaxed text-[var(--muted)] min-[620px]:block">
+                    <p className="hidden line-clamp-2 text-sm leading-relaxed text-[var(--muted)] lg:block">
                       {relatedRoute.summary}
                     </p>
                     <div className="flex items-center justify-between border-t border-[var(--line)] pt-3 text-[var(--cinnabar)] lg:pt-6">

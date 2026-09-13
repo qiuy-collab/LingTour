@@ -306,26 +306,28 @@ export default function HomeClient({
         )}
 
         {/* FINAL CTA: THE DEPARTURE LOG */}
-        <section className="site-container pb-20 lg:pb-28">
-          <div className="relative overflow-hidden rounded-[var(--radius-xl)] bg-[var(--river-deep)] px-6 py-16 text-white shadow-[0_28px_90px_rgba(17,25,35,0.2)] sm:px-8 sm:py-20 lg:px-24 lg:py-28">
-            <img
-              src={ctaImage}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover opacity-15 grayscale"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,18,24,0.96),rgba(8,18,24,0.7)_58%,rgba(8,18,24,0.28))]" />
-            <div className="relative z-10 max-w-4xl">
+        <section className="relative overflow-hidden bg-[var(--night)] pb-20 pt-16 text-white sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
+          <img
+            src={ctaImage}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover opacity-20 grayscale"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,18,24,0.97),rgba(8,18,24,0.78)_58%,rgba(8,18,24,0.42))]" />
+
+          <div className="site-container relative z-10">
+            <div className="max-w-4xl">
               <Reveal>
-                <div className="mb-10 opacity-60">
+                <div className="mb-10 flex items-center gap-4 opacity-70">
+                  <span className="h-px w-10 bg-[var(--gold)]" />
                   <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
                     {t("home.cta.eyebrow")}
                   </p>
                 </div>
-                <h2 className="mb-10 font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-[-0.04em] sm:text-5xl md:mb-12 md:text-7xl lg:text-8xl">
-                  {t("home.cta.title.primary")} <br />
+                <h2 className="mb-10 font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.04em] sm:text-5xl md:mb-12 md:text-7xl lg:text-8xl">
+                  {t("home.cta.title.primary")}{" "}
                   <span className="italic text-[var(--gold)]">
                     {t("home.cta.title.italic")}
                   </span>
