@@ -163,7 +163,7 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
             type="button"
             onClick={togglePlayback}
             aria-label={paused ? "Play Guangzhou skyline film" : "Pause Guangzhou skyline film"}
-            aria-pressed={paused}
+            aria-pressed={!paused}
             className="absolute bottom-4 right-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-[var(--night)]/58 text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] backdrop-blur-md transition duration-300 hover:scale-105 hover:bg-[var(--night)]/78 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:bottom-6 sm:right-6 sm:h-12 sm:w-12"
           >
             <span aria-hidden className="text-sm font-bold leading-none">

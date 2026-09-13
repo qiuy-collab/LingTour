@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/lib/locale-context";
 import {
   fetchInterpreting,
@@ -192,6 +192,71 @@ export default function InterpretingPageClient({
     effectiveInterpretingData.profiles,
     effectiveInterpretingData.serviceModes,
     profileLevels,
+  ]);
+
+  const hasRestoredBookingHash = useRef(false);
+  const bookingHashRafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (
+      hasRestoredBookingHash.current ||
+      window.location.hash !== "#interpreting-booking"
+    ) {
+      return;
+    }
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // Wait until the anchor stops moving (images, fonts, late layout)
+    // before scrolling, so the scroll is not interrupted mid-flight.
+    const settleAndScroll = () => {
+      const bookingSection = document.getElementById("interpreting-booking");
+      if (!bookingSection) return;
+
+      let lastTop = bookingSection.getBoundingClientRect().top;
+      let settledFrames = 0;
+      let elapsedFrames = 0;
+
+      const settle = () => {
+        const top = bookingSection.getBoundingClientRect().top;
+        elapsedFrames += 1;
+        if (Math.abs(top - lastTop) < 1) {
+          settledFrames += 1;
+        } else {
+          settledFrames = 0;
+          lastTop = top;
+        }
+
+        if (settledFrames >= 4 || elapsedFrames >= 240) {
+          bookingSection.scrollIntoView({
+            behavior: reduceMotion ? "auto" : "smooth",
+            block: "start",
+          });
+          hasRestoredBookingHash.current = true;
+          return;
+        }
+        bookingHashRafRef.current = window.requestAnimationFrame(settle);
+      };
+
+      bookingHashRafRef.current = window.requestAnimationFrame(settle);
+    };
+
+    const frame = window.requestAnimationFrame(settleAndScroll);
+    bookingHashRafRef.current = frame;
+
+    return () => {
+      if (bookingHashRafRef.current !== null) {
+        window.cancelAnimationFrame(bookingHashRafRef.current);
+        bookingHashRafRef.current = null;
+      }
+    };
+  }, [
+    loading,
+    effectiveInterpretingData.faqs.length,
+    effectiveInterpretingData.profiles.length,
+    effectiveInterpretingData.serviceModes.length,
   ]);
 
   if (loading && initialInterpretingData.serviceModes.length === 0) {

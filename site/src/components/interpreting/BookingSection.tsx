@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { MultiStepForm } from "@/components/interpreting/MultiStepForm";
 
@@ -21,6 +21,8 @@ type Props = {
 export function BookingSection({ prefillNeeds }: Props) {
   const [bookingStep, setBookingStep] = useState(0);
   const [bookingFastTrack, setBookingFastTrack] = useState(false);
+  const stepTrackRef = useRef<HTMLDivElement | null>(null);
+  const stepButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [bookingForm, setBookingForm] = useState<BookingFormSnapshot>({
     name: "",
     contact: "",
@@ -88,6 +90,24 @@ export function BookingSection({ prefillNeeds }: Props) {
     [bookingFastTrack],
   );
 
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 1024px)").matches) return;
+    const stepTrack = stepTrackRef.current;
+    const activeButton = stepButtonRefs.current[bookingStep];
+    if (!stepTrack || !activeButton || typeof stepTrack.scrollTo !== "function") {
+      return;
+    }
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    stepTrack.scrollTo({
+      left:
+        activeButton.offsetLeft -
+        (stepTrack.clientWidth - activeButton.offsetWidth) / 2,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [bookingStep, bookingFastTrack]);
+
   return (
     <section id="interpreting-booking" className="site-container scroll-mt-24 pb-28 md:pb-20 lg:pb-28">
       <div className="mb-10 grid gap-5 border-b border-[var(--line)] pb-8 sm:grid-cols-[minmax(0,1fr)_minmax(16rem,0.55fr)] sm:items-end lg:mb-14">
@@ -117,45 +137,58 @@ export function BookingSection({ prefillNeeds }: Props) {
                 </span>
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-y border-[var(--line)] py-4">
-                {bookingSummary.map((item) => (
-                  <span key={item} className="handwritten text-[12px] italic leading-5 text-[var(--river-deep)]">
-                    {item}
+              <div className="mt-5 flex min-w-0 items-center overflow-hidden border-y border-[var(--line)] py-4 lg:flex-wrap lg:gap-x-4 lg:gap-y-2">
+                {bookingSummary.map((item, index) => (
+                  <span key={`${index}-${item}`} className="flex min-w-0 items-center handwritten text-[12px] italic leading-5 text-[var(--river-deep)]">
+                    {index > 0 ? <span className="mx-2 text-[var(--gold)]" aria-hidden="true">/</span> : null}
+                    <span className="truncate">{item}</span>
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="mt-6 flex snap-x gap-3 overflow-x-auto pb-2 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
+            <nav
+              ref={stepTrackRef}
+              aria-label="Booking steps"
+              className="scrollbar-hide mt-6 grid auto-cols-[7.5rem] grid-flow-col overflow-x-auto border-y border-[var(--line)] lg:block lg:mt-6 lg:space-y-1 lg:overflow-visible lg:border-y-0 lg:pb-0"
+            >
               {bookingSteps.map((item, index) => {
                 const isActive = bookingStep === index;
+                const isLocked = index > bookingStep;
                 return (
                   <button
                     key={item.title}
+                    ref={(element) => {
+                      stepButtonRefs.current[index] = element;
+                    }}
                     type="button"
                     onClick={() => setBookingStep(index)}
+                    disabled={isLocked}
                     aria-current={isActive ? "step" : undefined}
-                    className={`group flex min-w-[14rem] snap-start items-start gap-3 border-l-2 px-4 py-4 text-left transition-[background-color,border-color,opacity,transform] duration-300 lg:min-w-0 lg:w-full ${
+                    aria-label={`${String(index + 1).padStart(2, "0")}. ${item.title}. ${item.body}`}
+                    className={`group flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 border-b-2 px-1.5 py-2 text-center transition-[background-color,border-color,opacity,transform] duration-300 disabled:cursor-not-allowed lg:min-h-0 lg:w-full lg:flex-row lg:items-start lg:justify-start lg:gap-3 lg:border-b-0 lg:border-l-2 lg:px-4 lg:py-4 lg:text-left ${
                       isActive
                         ? "border-[var(--cinnabar)] bg-white/80 opacity-100 lg:translate-x-1"
-                        : "border-transparent opacity-45 hover:border-[var(--gold)]/45 hover:bg-white/40 hover:opacity-100"
+                        : isLocked
+                          ? "border-transparent opacity-35"
+                          : "border-transparent opacity-45 hover:border-[var(--gold)]/45 hover:bg-white/40 hover:opacity-100"
                     }`}
                   >
-                    <span className={`pt-0.5 font-[family:var(--font-display)] text-sm ${isActive ? "text-[var(--cinnabar)]" : "text-[var(--muted)]"}`}>
+                    <span className={`font-[family:var(--font-display)] text-[11px] lg:pt-0.5 lg:text-sm ${isActive ? "text-[var(--cinnabar)]" : "text-[var(--muted)]"}`}>
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span>
-                      <span className="block font-[family:var(--font-display)] text-xl leading-none text-[var(--river-deep)]">
+                    <span className="min-w-0">
+                      <span className="block text-[8px] font-bold uppercase leading-tight tracking-[0.08em] text-[var(--river-deep)] sm:text-[9px] lg:font-[family:var(--font-display)] lg:text-xl lg:font-normal lg:normal-case lg:leading-none lg:tracking-normal">
                         {item.title}
                       </span>
-                      <span className="mt-2 block handwritten text-[11px] italic leading-5 text-[var(--muted)]">
+                      <span className="mt-2 hidden handwritten text-[11px] italic leading-5 text-[var(--muted)] lg:block">
                         {item.body}
                       </span>
                     </span>
                   </button>
                 );
               })}
-            </div>
+            </nav>
           </aside>
 
           <div className="min-w-0">

@@ -29,7 +29,13 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
     onSelectGuide(profile.needsPrefill);
     const el = document.getElementById("interpreting-booking");
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      el.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
     }
   };
 

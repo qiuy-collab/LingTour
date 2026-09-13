@@ -197,51 +197,55 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
 
       <div className="site-container mt-9 sm:mt-12">
         <div className="grid min-w-0 gap-10 min-[600px]:grid-cols-2 min-[600px]:gap-7 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
-          <div className="min-w-0 space-y-7 sm:space-y-8 min-[600px]:col-span-2 lg:col-span-3 lg:space-y-10">
-            <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
-              <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
-              <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-white">
-                {collectionLabel}
-              </p>
-              <div className="absolute -right-3 -top-3 grid h-14 w-14 rotate-12 place-items-center rounded-full border-2 border-dashed border-[var(--gold)]/30 sm:-right-4 sm:-top-4 sm:h-16 sm:w-16">
-                <span className="text-center text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]/55 sm:text-[9px]">
-                  Authentic<br />Object
-                </span>
-              </div>
-            </div>
-
-            <header data-product-heading className="space-y-3 sm:space-y-4">
-              <h1 className="max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-tight text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
-                {product.name}
-              </h1>
-              <p className="handwritten text-xl text-[var(--gold)] sm:text-2xl">{product.tag}</p>
-            </header>
-
-            <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Story Summary</p>
-              <p className="max-w-[34rem] text-[15px] italic leading-7 text-[var(--river-deep)]/80 sm:text-base">
-                &ldquo;{shortStory}&rdquo;
-              </p>
-            </div>
-
-            {noteWords.length ? (
-              <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Material Logic</p>
-                <div className="flex flex-wrap gap-2">
-                  {noteWords.map((word) => (
-                    <span
-                      key={word}
-                      className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] sm:text-[10px]"
-                    >
-                      {word}
-                    </span>
-                  ))}
+          <div className="contents lg:col-span-3 lg:block lg:min-w-0">
+            <div className="order-1 space-y-7 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:space-y-10">
+              <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
+                <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
+                <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-white">
+                  {collectionLabel}
+                </p>
+                <div className="absolute -right-3 -top-3 grid h-14 w-14 rotate-12 place-items-center rounded-full border-2 border-dashed border-[var(--gold)]/30 sm:-right-4 sm:-top-4 sm:h-16 sm:w-16">
+                  <span className="text-center text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]/55 sm:text-[9px]">
+                    Authentic<br />Object
+                  </span>
                 </div>
               </div>
-            ) : null}
+
+              <header data-product-heading className="space-y-3 sm:space-y-4">
+                <h1 className="max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-tight text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
+                  {product.name}
+                </h1>
+                <p className="handwritten text-xl text-[var(--gold)] sm:text-2xl">{product.tag}</p>
+              </header>
+            </div>
+
+            <div className="order-4 space-y-7 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:mt-10 lg:space-y-10">
+              <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Story Summary</p>
+                <p className="max-w-[34rem] text-[15px] italic leading-7 text-[var(--river-deep)]/80 sm:text-base">
+                  &ldquo;{shortStory}&rdquo;
+                </p>
+              </div>
+
+              {noteWords.length ? (
+                <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Material Logic</p>
+                  <div className="flex flex-wrap gap-2">
+                    {noteWords.map((word) => (
+                      <span
+                        key={word}
+                        className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] sm:text-[10px]"
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </div>
 
-          <div data-product-frame className="relative min-w-0 rotate-1 lg:col-span-5">
+          <div data-product-frame className="relative order-2 min-w-0 rotate-1 lg:order-none lg:col-span-5">
             <div ref={plateRef} className="relative aspect-[4/5] w-full bg-white p-5 scrapbook-shadow transform-gpu sm:p-9 xl:p-12">
               <div className="absolute -top-3 left-1/2 z-20 h-8 w-24 -translate-x-1/2 rotate-2 border border-white/20 bg-white/45 backdrop-blur-sm sm:-top-4 sm:h-10 sm:w-32" />
               <div className="relative flex h-full w-full items-center justify-center">
@@ -304,7 +308,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
             ) : null}
           </div>
 
-          <aside data-product-buy className="min-w-0 lg:col-span-4 lg:pl-4 xl:pl-8">
+          <aside data-product-buy className="order-3 min-w-0 lg:order-none lg:col-span-4 lg:pl-4 xl:pl-8">
             <div className="-rotate-1 space-y-7 bg-white p-6 scrapbook-shadow sm:p-8 lg:space-y-8">
               <p className="font-[family:var(--font-display)] text-5xl tracking-tight text-[var(--river-deep)] sm:text-6xl">
                 <Price amount={product.price} currency={product.currency} />

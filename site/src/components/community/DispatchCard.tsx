@@ -33,15 +33,17 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
       <div className="mt-8 flex flex-col gap-4">
         {isLoggedIn ? (
           <button
+            type="button"
             onClick={onDispatch}
-            className="w-full rounded-full bg-white py-4 text-sm font-bold text-[var(--night)] transition-all hover:scale-105 active:scale-95 shadow-lg"
+            className="min-h-12 w-full rounded-full bg-white py-4 text-sm font-bold text-[var(--night)] transition-all hover:scale-105 active:scale-95 shadow-lg"
           >
             Open Field Kit
           </button>
         ) : (
           <button
+            type="button"
             onClick={onLogin}
-            className="w-full rounded-full bg-[var(--cinnabar)] py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
+            className="min-h-12 w-full rounded-full bg-[var(--cinnabar)] py-4 text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
           >
             Sign in to Publish
           </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
 import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
@@ -39,7 +39,7 @@ const PROFILE_TABS: Array<{ key: ProfileTab; labelKey: string }> = [
 ];
 
 const PROFILE_FIELD_CLASS =
-  "mt-2 min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 px-4 py-3 text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+  "mt-2 min-h-12 w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/68 px-4 py-3 text-base text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
 
 const PROFILE_LABEL_CLASS =
   "font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
@@ -120,6 +120,8 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageKind, setMessageKind] = useState<"success" | "error" | "">("");
+  const [fieldError, setFieldError] = useState<"name" | "email" | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -198,12 +200,35 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
 
   useEffect(() => {
     if (!ready) return;
-    tabRefs.current[activeTab]?.scrollIntoView({
-      behavior: "smooth",
+    const activeTabElement = tabRefs.current[activeTab];
+    if (typeof activeTabElement?.scrollIntoView !== "function") return;
+    activeTabElement.scrollIntoView({
+      behavior:
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
       block: "nearest",
       inline: "center",
     });
   }, [activeTab, ready]);
+
+  function handleTabKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % PROFILE_TABS.length;
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + PROFILE_TABS.length) % PROFILE_TABS.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = PROFILE_TABS.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    const nextTab = PROFILE_TABS[nextIndex].key;
+    selectTab(nextTab);
+    tabRefs.current[nextTab]?.focus();
+  }
 
   function selectTab(tab: ProfileTab) {
     router.replace(`/profile?tab=${tab}`, { scroll: false });
@@ -211,14 +236,20 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
 
   async function saveProfile() {
     if (!form.name.trim()) {
+      setFieldError("name");
+      setMessageKind("error");
       setMessage(t("account.profile.nameRequired"));
       return;
     }
     if (!form.email.trim()) {
+      setFieldError("email");
+      setMessageKind("error");
       setMessage(t("account.profile.emailRequired"));
       return;
     }
     setSaving(true);
+    setFieldError(null);
+    setMessageKind("");
     setMessage("");
     try {
       const nextUser = await updateCurrentUserProfile({
@@ -231,8 +262,10 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         profileVisibility: form.profileVisibility,
       });
       hydrateProfile(nextUser);
+      setMessageKind("success");
       setMessage(t("account.profile.saved"));
     } catch (error) {
+      setMessageKind("error");
       setMessage(error instanceof Error ? error.message : t("account.profile.saveFailed"));
     } finally {
       setSaving(false);
@@ -242,12 +275,15 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
   async function uploadAvatar(file?: File) {
     if (!file) return;
     setUploading(true);
+    setMessageKind("");
     setMessage("");
     try {
       await uploadCurrentUserAvatar(file);
       hydrateProfile(readStoredUser());
+      setMessageKind("success");
       setMessage(t("account.profile.avatarSaved"));
     } catch (error) {
+      setMessageKind("error");
       setMessage(error instanceof Error ? error.message : t("account.profile.avatarFailed"));
     } finally {
       setUploading(false);
@@ -301,6 +337,18 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                 {t("account.profile.edit")}
                 <span aria-hidden>→</span>
               </button>
+              {message && activeTab !== "settings" ? (
+                <p
+                  className={`mt-4 text-sm ${
+                    messageKind === "success"
+                      ? "text-white/78"
+                      : "text-[var(--gold)]"
+                  }`}
+                  role={messageKind === "error" ? "alert" : "status"}
+                >
+                  {message}
+                </p>
+              ) : null}
             </div>
           </div>
           <div data-pastoral-stamp className="border border-white/12 bg-white/[0.05] p-5 text-sm text-white/52 md:w-64">
@@ -322,8 +370,12 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       </header>
 
       <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/94 backdrop-blur-xl">
-        <nav className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3" aria-label={t("account.profile.tabLabel")}>
-          {PROFILE_TABS.map((tab) => (
+        <nav
+          className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3"
+          aria-label={t("account.profile.tabLabel")}
+          role="tablist"
+        >
+          {PROFILE_TABS.map((tab, index) => (
             <button
               key={tab.key}
               ref={(node) => {
@@ -331,12 +383,17 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
               }}
               type="button"
               onClick={() => selectTab(tab.key)}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+              id={`profile-tab-${tab.key}`}
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              aria-controls="profile-panel"
+              tabIndex={activeTab === tab.key ? 0 : -1}
               className={`min-h-11 shrink-0 rounded-full border px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition ${
                 activeTab === tab.key
                   ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                   : "border-[var(--line)] bg-white/58 text-[var(--muted)] hover:border-[var(--river-deep)] hover:text-[var(--river-deep)]"
               }`}
-              aria-current={activeTab === tab.key ? "page" : undefined}
             >
               {t(tab.labelKey)}
             </button>
@@ -345,6 +402,13 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       </div>
 
       <main className="site-container py-10 sm:py-14 lg:py-20">
+        <div
+          id="profile-panel"
+          role="tabpanel"
+          aria-labelledby={`profile-tab-${activeTab}`}
+          tabIndex={0}
+          className="focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-[var(--gold)]"
+        >
         {activeTab === "notes" ? (
           savedNotes.length ? (
             <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -477,11 +541,13 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
             <div className="grid gap-5 rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-5 shadow-[0_16px_52px_rgba(17,25,35,0.06)] sm:p-7">
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.name")}</span>
-                <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} className={`${PROFILE_FIELD_CLASS} text-lg`} />
+                <input value={form.name} onChange={(event) => { setFieldError(null); setMessage(""); setMessageKind(""); setForm((current) => ({ ...current, name: event.target.value })); }} className={`${PROFILE_FIELD_CLASS} text-lg`} aria-invalid={fieldError === "name"} aria-describedby={fieldError === "name" ? "profile-name-error" : undefined} />
+                {fieldError === "name" ? <span id="profile-name-error" className="mt-2 block text-sm text-[var(--cinnabar)]">{message}</span> : null}
               </label>
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.email")}</span>
-                <input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} className={PROFILE_FIELD_CLASS} autoComplete="email" />
+                <input type="email" value={form.email} onChange={(event) => { setFieldError(null); setMessage(""); setMessageKind(""); setForm((current) => ({ ...current, email: event.target.value })); }} className={PROFILE_FIELD_CLASS} autoComplete="email" aria-invalid={fieldError === "email"} aria-describedby={fieldError === "email" ? "profile-email-error" : undefined} />
+                {fieldError === "email" ? <span id="profile-email-error" className="mt-2 block text-sm text-[var(--cinnabar)]">{message}</span> : null}
               </label>
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.country")}</span>
@@ -512,7 +578,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                   <option value="private">{t("account.profile.visibilityPrivate")}</option>
                 </select>
               </label>
-              {message ? <p className="text-sm text-[var(--cinnabar)]" role="status">{message}</p> : null}
+              {message && !fieldError ? <p className={`text-sm ${messageKind === "success" ? "text-[var(--river-deep)]" : "text-[var(--cinnabar)]"}`} role={messageKind === "error" ? "alert" : "status"}>{message}</p> : null}
               <button type="button" onClick={() => void saveProfile()} disabled={saving} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--river-deep)] px-8 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)] disabled:opacity-50">
                 {saving ? t("account.profile.saving") : t("account.profile.save")}
               </button>
@@ -524,6 +590,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
             </aside>
           </section>
         ) : null}
+        </div>
       </main>
 
       {activeTab !== "settings" ? (

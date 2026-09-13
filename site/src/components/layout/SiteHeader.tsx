@@ -101,8 +101,8 @@ export function SiteHeader() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
-      <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 md:grid-cols-[1fr_auto_1fr]">
-        <nav className="hidden items-center justify-start gap-1 md:flex" aria-label="Primary navigation">
+      <Container className="grid grid-cols-[1fr_auto] items-center gap-5 py-4 lg:grid-cols-[1fr_auto_1fr]">
+        <nav className="hidden items-center justify-start gap-1 lg:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
             const active = isActivePath(pathname, item.href);
 
@@ -127,7 +127,7 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <Link href="/" className="justify-self-start leading-none md:justify-self-center" onClick={() => setIsOpen(false)}>
+        <Link href="/" className="justify-self-start leading-none lg:justify-self-center" onClick={() => setIsOpen(false)}>
           <p className="font-[family:var(--font-display)] text-2xl tracking-[0.08em] text-[var(--river-deep)]">
             Culvoy
           </p>
@@ -136,7 +136,7 @@ export function SiteHeader() {
           </p>
         </Link>
 
-        <div className="hidden items-center justify-end gap-1 md:flex">
+        <div className="hidden items-center justify-end gap-1 lg:flex">
           <nav className="flex items-center gap-1" aria-label="Secondary navigation">
             {rightNavigation.map((item) => {
               const active = isActivePath(pathname, item.href);
@@ -169,7 +169,7 @@ export function SiteHeader() {
         <button
           ref={menuButtonRef}
           type="button"
-          className="grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 md:hidden"
+          className="grid h-11 w-11 place-items-center border border-[var(--line)] bg-white/60 lg:hidden"
           aria-label={isOpen ? t("common.aria.closeMenu") : t("common.aria.openMenu")}
           aria-expanded={isOpen}
           aria-controls="site-mobile-navigation"
@@ -184,7 +184,7 @@ export function SiteHeader() {
       </Container>
 
       {isOpen ? (
-        <div aria-hidden="true" className="fixed inset-0 top-[4.6rem] z-40 bg-black/30 md:hidden" onClick={closeMenu} />
+        <div aria-hidden="true" className="fixed inset-0 top-[4.6rem] z-40 bg-black/30 lg:hidden" onClick={closeMenu} />
       ) : null}
 
       {isOpen ? (
@@ -194,7 +194,7 @@ export function SiteHeader() {
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
-          className="relative z-50 max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain md:hidden"
+          className="relative z-50 max-h-[calc(100svh-4.6rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper-deep)] bg-grain lg:hidden"
         >
           <Container className="grid gap-4 py-4">
             <div className="grid gap-2">

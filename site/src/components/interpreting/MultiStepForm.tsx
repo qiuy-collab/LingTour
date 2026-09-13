@@ -8,6 +8,7 @@ import {
   type InterpretingDepositCheckout,
 } from "@/lib/api-data";
 import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
+import { getCalendarDateKey, getLocalDateKey } from "@/lib/calendar-date";
 import { formatCurrency } from "@/lib/region-currency";
 import { useLocale } from "@/lib/locale-context";
 
@@ -37,7 +38,7 @@ const serviceModes = [
 ];
 
 const inputClass =
-  "rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-[15px] leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)]";
+  "rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-base leading-6 text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)] md:text-[15px]";
 
 function MultiStepFormInner({
   prefillNeeds,
@@ -63,7 +64,6 @@ function MultiStepFormInner({
   });
   const [depositSession, setDepositSession] = useState<InterpretingDepositCheckout | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -71,6 +71,7 @@ function MultiStepFormInner({
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
   const calendarRef = useRef<HTMLDivElement | null>(null);
+  const calendarTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     fetchCities()
@@ -100,8 +101,18 @@ function MultiStepFormInner({
         setShowCalendar(false);
       }
     };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setShowCalendar(false);
+      calendarTriggerRef.current?.focus();
+    };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [showCalendar]);
 
   useEffect(() => {
@@ -127,8 +138,20 @@ function MultiStepFormInner({
     return true;
   };
 
-  const handleSubmit = () => setSubmitted(true);
   const canOpenDeposit = fastTrack ? canNext() : step === 2;
+  const completionHint = (() => {
+    if (canNext()) return null;
+    if (fastTrack) {
+      return "Add your name and contact details to continue.";
+    }
+    if (step === 0) {
+      return "Add your name, contact details, and service date to continue.";
+    }
+    if (step === 1) {
+      return "Add your group size and what you need to continue.";
+    }
+    return null;
+  })();
 
   const openDepositCheckout = async () => {
     if (!canOpenDeposit || submitting) return;
@@ -141,7 +164,7 @@ function MultiStepFormInner({
         name: form.name,
         contact: form.contact,
         city: form.city,
-        serviceDate: form.date || new Date().toISOString().split("T")[0],
+        serviceDate: form.date || getLocalDateKey(),
         supportMode: form.mode || "City companion support",
         groupSize: form.groupSize || undefined,
         routeOrNeed: form.needs || undefined,
@@ -167,9 +190,10 @@ function MultiStepFormInner({
   const firstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const handleCalendarSelect = (day: number) => {
-    const d = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
-    const iso = d.toISOString().split("T")[0];
-    update("date", iso);
+    update(
+      "date",
+      getCalendarDateKey(calendarMonth.getFullYear(), calendarMonth.getMonth(), day),
+    );
     setShowCalendar(false);
   };
 
@@ -185,33 +209,11 @@ function MultiStepFormInner({
 
   const modeLabel = (value: string) =>
     t(serviceModes.find((mode) => mode.value === value)?.labelKey ?? "interpreting.flow.mode.route");
-  if (submitted) {
-    return (
-      <div className="border border-[var(--gold)]/30 bg-white/95 p-8 text-center shadow-[0_8px_8px_rgba(17,25,35,0.08)] sm:p-12">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--gold)] bg-white">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C5A039" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-        <h3 className="mt-6 font-[family:var(--font-display)] text-2xl text-[var(--river-deep)] sm:text-3xl">
-          Payment submitted
-        </h3>
-        <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
-          {fastTrack
-            ? "Your Fast Track payment was submitted securely. We will confirm the deposit after Stripe verification and reply within 12 hours."
-            : "Your payment was submitted securely. We will confirm the deposit after Stripe verification and reply within 24 hours."}
-        </p>
-        <p className="mt-6 text-label text-[var(--gold)]">
-          Payment pending Stripe verification.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="overflow-visible border-y border-[var(--line)] bg-white/92 sm:border-x">
       <div className="border-b border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-4 sm:px-7">
-        <label className="flex cursor-pointer flex-col gap-2 border-l-2 border-transparent bg-white/62 px-4 py-3 transition-colors hover:border-[var(--gold)] sm:flex-row sm:items-center">
+        <label className="flex min-h-11 cursor-pointer items-start gap-3 border-l-2 border-transparent bg-white/62 px-3 py-3 transition-colors hover:border-[var(--gold)] sm:items-center sm:px-4">
           <input
             type="checkbox"
             checked={fastTrack}
@@ -222,10 +224,12 @@ function MultiStepFormInner({
               onFastTrackChange?.(checked);
               onStepChange?.(0, checked);
             }}
-            className="h-4 w-4 accent-[var(--cinnabar)]"
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--cinnabar)] sm:mt-0"
           />
-          <span className="text-[15px] font-medium leading-6 text-[var(--ink)]">{t("interpreting.flow.fastTrack")}</span>
-          <span className="text-[13px] leading-6 text-[var(--muted)]">{t("interpreting.flow.fastTrackHint")}</span>
+          <span className="min-w-0 sm:flex sm:items-baseline sm:gap-2">
+            <span className="block text-[15px] font-medium leading-5 text-[var(--ink)]">{t("interpreting.flow.fastTrack")}</span>
+            <span className="mt-0.5 block text-[12px] leading-5 text-[var(--muted)] sm:mt-0 sm:text-[13px]">{t("interpreting.flow.fastTrackHint")}</span>
+          </span>
         </label>
       </div>
 
@@ -307,7 +311,8 @@ function MultiStepFormInner({
                   aria-haspopup="dialog"
                   aria-expanded={showCalendar}
                   aria-controls="interpreting-service-calendar"
-                  className="flex w-full items-center justify-between rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition hover:border-[var(--gold)] hover:bg-[var(--paper)]"
+                  ref={calendarTriggerRef}
+                  className="flex w-full items-center justify-between rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-base text-[var(--ink)] outline-none transition hover:border-[var(--gold)] hover:bg-[var(--paper)] md:text-sm"
                 >
                   <span className={form.date ? "text-[var(--ink)]" : "text-[var(--muted)]"}>
                     {form.date ? formatDate(form.date) : t("interpreting.flow.chooseDate")}
@@ -353,9 +358,9 @@ function MultiStepFormInner({
                       {Array.from({ length: firstDayOfMonth(calendarMonth) }).map((_, i) => <div key={`empty-${i}`} />)}
                       {Array.from({ length: daysInMonth(calendarMonth) }).map((_, i) => {
                         const day = i + 1;
-                        const dateStr = `${calendarMonth.getFullYear()}-${String(calendarMonth.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                        const dateStr = getCalendarDateKey(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
                         const isSelected = form.date === dateStr;
-                        const isToday = new Date().toISOString().split("T")[0] === dateStr;
+                        const isToday = getLocalDateKey() === dateStr;
                         return (
                           <button
                             key={day}
@@ -402,7 +407,7 @@ function MultiStepFormInner({
                 onChange={(e) => update("needs", e.target.value)}
                 rows={5}
                 placeholder={t("interpreting.flow.needsPlaceholder")}
-                className="min-h-[140px] rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-sm text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)]"
+                className="min-h-[140px] rounded-sm border border-[var(--line)] bg-white px-4 py-3.5 text-base text-[var(--ink)] outline-none transition focus:border-[var(--gold)] focus:bg-[var(--paper)] md:text-sm"
               />
             </label>
           </div>
@@ -463,7 +468,7 @@ function MultiStepFormInner({
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.serviceDate")}</p>
-                    <p className="mt-1 text-[var(--ink)]">{formatDate(form.date || new Date().toISOString().split("T")[0])}</p>
+                    <p className="mt-1 text-[var(--ink)]">{formatDate(form.date || getLocalDateKey())}</p>
                   </div>
                 </div>
 
@@ -471,7 +476,7 @@ function MultiStepFormInner({
                   <StripePaymentForm
                     clientSecret={depositSession.deposit.stripeClientSecret}
                     orderNo={depositSession.deposit.orderNo}
-                    onSuccess={handleSubmit}
+                    publicStatusToken={depositSession.deposit.publicStatusToken}
                     onError={setErrorMessage}
                   />
                 </div>
@@ -485,7 +490,18 @@ function MultiStepFormInner({
         )}
       </div>
 
-      <div className="flex flex-col-reverse gap-3 border-t border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+      <div className="border-t border-[var(--line)] bg-[rgba(248,244,236,0.48)] px-5 py-5 sm:px-7">
+        {completionHint ? (
+          <p
+            id="interpreting-next-requirements"
+            aria-live="polite"
+            className="mb-3 text-[12px] leading-5 text-[var(--muted)] sm:max-w-[20rem]"
+          >
+            {completionHint}
+          </p>
+        ) : null}
+
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => {
@@ -514,6 +530,7 @@ function MultiStepFormInner({
             type="button"
             onClick={openDepositCheckout}
             disabled={!canNext() || submitting}
+            aria-describedby={completionHint ? "interpreting-next-requirements" : undefined}
             className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
               canNext() && !submitting
                 ? "bg-[var(--cinnabar)] text-white shadow-[0_12px_30px_rgba(140,58,44,0.18)] hover:bg-[var(--cinnabar-deep)]"
@@ -531,6 +548,7 @@ function MultiStepFormInner({
               onStepChange?.(next, fastTrack);
             }}
             disabled={!canNext()}
+            aria-describedby={completionHint ? "interpreting-next-requirements" : undefined}
             className={`w-full rounded-full px-6 py-3 text-[14px] font-semibold transition-all sm:w-auto ${
               canNext()
                 ? "bg-[var(--gold)] text-[var(--night)] shadow-[0_12px_30px_rgba(197,160,57,0.18)] hover:bg-[var(--gold)]/90"
@@ -553,6 +571,8 @@ function MultiStepFormInner({
             {submitting ? t("interpreting.flow.openingDeposit") : t("interpreting.flow.sendAndContinue")}
           </button>
         )}
+
+        </div>
       </div>
     </div>
   );

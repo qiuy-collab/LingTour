@@ -17,6 +17,8 @@ export const common = {
     "common.nav.mobile.chooseRegion": "Routes — Choose a region",
     "common.nav.routesMega.eyebrow": "Routes / Field discovery",
     "common.nav.routesMega.viewAll": "View all routes",
+    "common.nav.routesMega.open": "Open route regions",
+    "common.nav.routesMega.close": "Close route regions",
     "common.nav.routesMega.loadingMap": "Loading map...",
     "common.nav.routesMega.comingSoon": "Coming soon",
     "common.footer.link.community": "Traveler Community",
