@@ -7,8 +7,15 @@ import type { Product, ProductFormData } from '@/types/product'
 
 export const productsApi = {
   getProducts(params: PageParams & { collectionId?: string; status?: string }) {
+    const { status, pageSize, keyword, ...rest } = params
+    const published = status === 'on_sale' ? true : status === 'off_shelf' ? false : undefined
     return api.get<ApiResponse<PaginatedResponse<Product>>>('/shop/products', {
-      params: { ...params, limit: params.pageSize },
+      params: {
+        ...rest,
+        limit: pageSize,
+        ...(keyword ? { q: keyword } : {}),
+        ...(published === undefined ? {} : { published }),
+      },
     })
   },
 

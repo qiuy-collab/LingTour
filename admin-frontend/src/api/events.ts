@@ -12,8 +12,13 @@ function toEventPayload(data: Partial<EventFormData>) {
 
 export const eventsApi = {
   getEvents(params: PageParams & { status?: string; city?: string; startDate?: string; endDate?: string }) {
+    const { pageSize, keyword, ...filters } = params
     return api.get<ApiResponse<PaginatedResponse<Event>>>('/events', {
-      params: { ...params, limit: params.pageSize },
+      params: {
+        ...filters,
+        limit: pageSize,
+        ...(keyword ? { q: keyword } : {}),
+      },
     })
   },
 

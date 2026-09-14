@@ -37,13 +37,14 @@ function normalizeDetail(res: any) {
 }
 
 export const bookingsApi = {
-  async getBookings(params: BookingListParams) {
+  async getBookings(params: BookingListParams & { keyword?: string }) {
     const res = await api.get<ApiResponse<PaginatedResponse<Booking>>>('/bookings', {
       params: {
         page: params.page,
         size: params.pageSize,
         status: params.status,
-        q: params.date,
+        q: params.keyword,
+        date: params.date,
       },
     })
     return normalizeList(res)
