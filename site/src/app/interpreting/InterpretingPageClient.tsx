@@ -288,11 +288,12 @@ export default function InterpretingPageClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-1 items-center gap-10 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(8.5rem,0.9fr)] items-center gap-5 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 data-pastoral-title className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(3rem,5.25vw,4.5rem)] leading-[0.98] tracking-[-0.045em] text-[var(--river-deep)] sm:mb-8">
-                  {t("interpreting.hero.title")}
+                <h1 className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8">
+                  <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("interpreting.atlas.titlePrimary")}</span></span>
+                  <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("interpreting.atlas.titleItalic")}</span></span>
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
@@ -320,7 +321,7 @@ export default function InterpretingPageClient({
 
             <div className="w-full min-w-0 self-center lg:col-span-5 lg:max-w-none">
               <Reveal delay={240} className="w-full lg:justify-self-end">
-                <div className="relative ml-auto aspect-[4/5] w-full max-w-[28rem] overflow-hidden rotate-[1.5deg] border-[0.5rem] border-white scrapbook-shadow sm:border-[0.75rem] lg:max-w-[30rem] lg:border-[0.9rem]">
+                <div className="relative ml-auto aspect-[3/4] w-full max-w-[16rem] overflow-hidden rotate-[1.5deg] border-[0.35rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:max-w-[28rem] sm:border-[0.75rem] lg:max-w-[30rem] lg:border-[0.9rem]">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 motion-safe:hover:scale-[1.03]"

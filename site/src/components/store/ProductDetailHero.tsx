@@ -196,9 +196,9 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
       </div>
 
       <div className="site-container mt-9 sm:mt-12">
-        <div className="grid min-w-0 gap-10 min-[600px]:grid-cols-2 min-[600px]:gap-7 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1.1fr)_minmax(8.5rem,0.9fr)] gap-4 min-[600px]:grid-cols-2 min-[600px]:gap-7 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
           <div className="contents lg:col-span-3 lg:block lg:min-w-0">
-            <div className="order-1 space-y-7 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:space-y-10">
+            <div className="order-1 col-span-2 space-y-5 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:space-y-10">
               <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
                 <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
                 <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-white">
@@ -219,7 +219,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               </header>
             </div>
 
-            <div className="order-4 space-y-7 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:mt-10 lg:space-y-10">
+            <div className="order-4 col-span-2 space-y-5 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:mt-10 lg:space-y-10">
               <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Story Summary</p>
                 <p className="max-w-[34rem] text-[15px] italic leading-7 text-[var(--river-deep)]/80 sm:text-base">

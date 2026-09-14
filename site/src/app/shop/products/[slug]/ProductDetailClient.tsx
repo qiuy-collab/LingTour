@@ -77,7 +77,7 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
             </div>
           </Reveal>
 
-          <div className="mt-12 grid gap-8 sm:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+          <div className="mt-12 grid grid-cols-2 gap-x-3 gap-y-8 sm:mt-16 md:grid-cols-2 md:gap-x-12 lg:grid-cols-3 lg:gap-10">
             {relatedProducts.map((item, index) => (
               <div key={item.slug} className={index === 1 ? "lg:mt-12" : index === 2 ? "lg:mt-6" : ""}>
                 <StoreProductCard product={item} index={index} />

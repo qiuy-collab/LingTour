@@ -78,7 +78,7 @@ export default function RoutesPageClient({
     >
       <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container relative">
-          <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
                 <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">

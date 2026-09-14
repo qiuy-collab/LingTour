@@ -40,9 +40,10 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href="/login?next=%2Fprofile%3Ftab%3Dnotes"
         onClick={onNavigate}
-        className="ml-2 inline-flex min-h-11 items-center gap-2 border border-[var(--line)] bg-white/70 px-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition hover:border-[var(--river-deep)] hover:bg-white"
+        className="btn-paper-compact ml-2 inline-flex min-h-11 items-center gap-2 text-sm"
         aria-label="Log in to open your traveler profile"
       >
+        <span aria-hidden className="h-2 w-2 rotate-45 bg-[var(--cinnabar)]/85" />
         {t("common.nav.login")}
       </Link>
     );

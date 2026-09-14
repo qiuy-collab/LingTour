@@ -114,6 +114,8 @@ const copy = {
   "interpreting.cta.alt": "Not sure yet? Start with the story routes first.",
 
   // Decorative atlas labels (used on the service-types card)
+  "interpreting.atlas.titlePrimary": "Interpreting",
+  "interpreting.atlas.titleItalic": "in Guangdong.",
   "interpreting.atlas.from": "From",
   "interpreting.atlas.includes": "Includes",
   "interpreting.atlas.chooseShape": "Choose support",
