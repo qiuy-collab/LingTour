@@ -43,9 +43,9 @@ defineProps<{
       <el-skeleton :rows="0" animated class="skeleton-toolbar">
         <template #template>
           <div style="display: flex; gap: 12px; align-items: center;">
-            <el-skeleton-item variant="rect" style="width: 200px; height: 32px; border-radius: 4px;" />
-            <el-skeleton-item variant="rect" style="width: 120px; height: 32px; border-radius: 4px;" />
-            <el-skeleton-item variant="button" style="width: 64px; height: 32px; border-radius: 4px;" />
+            <el-skeleton-item variant="rect" style="width: 200px; height: 32px; border-radius: var(--lt-radius-sm);" />
+            <el-skeleton-item variant="rect" style="width: 120px; height: 32px; border-radius: var(--lt-radius-sm);" />
+            <el-skeleton-item variant="button" style="width: 64px; height: 32px; border-radius: var(--lt-radius-sm);" />
           </div>
         </template>
       </el-skeleton>
@@ -88,20 +88,21 @@ defineProps<{
 }
 
 .skeleton-table {
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
+  border: 1px solid var(--lt-border-light);
+  border-radius: var(--lt-radius-sm);
   overflow: hidden;
+  background: var(--lt-bg-card);
 }
 
 .skeleton-table-header {
   padding: 12px 16px;
-  background: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
+  background: var(--lt-bg-hover);
+  border-bottom: 1px solid var(--lt-border-light);
 }
 
 .skeleton-table-row {
   padding: 14px 16px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--lt-border-light);
 }
 
 .skeleton-table-row:last-child {
