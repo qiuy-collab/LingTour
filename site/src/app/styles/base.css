@@ -93,6 +93,13 @@ main > div {
   min-height: 100vh;
 }
 
+/* Profile content owns its height; the legacy transition wrapper rule must not
+   turn an empty tab into a full viewport of blank paper. */
+main > #profile-panel {
+  min-height: 0;
+  background-color: transparent;
+}
+
 a {
   color: inherit;
   text-decoration: none;

@@ -39,7 +39,7 @@ const PROFILE_TABS: Array<{ key: ProfileTab; labelKey: string }> = [
 ];
 
 const PROFILE_FIELD_CLASS =
-  "mt-2 min-h-12 w-full border border-[var(--line)] bg-white px-4 py-3 text-base text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
+  "mt-2 min-h-12 w-full border border-[var(--line)] bg-[var(--background)] px-4 py-3 text-base text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
 
 const PROFILE_LABEL_CLASS =
   "text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
@@ -84,7 +84,7 @@ function formatBookingDate(value: string) {
 
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
-    <section data-pastoral-card className="mx-auto max-w-4xl border border-[var(--line)] bg-transparent px-5 py-9 sm:px-10 sm:py-12">
+    <section data-pastoral-card className="mx-auto max-w-3xl border-y border-[var(--line)] px-1 py-9 sm:py-12">
       <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
       <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
       <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
@@ -301,28 +301,28 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
 
   return (
     <PastoralPageMotion
-      className="min-h-screen bg-[var(--paper-deep)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20"
+      className="min-h-[100dvh] bg-[var(--background)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20"
       motionKey={`${activeTab}:${collectionItems.length}:${savedNotes.length}`}
     >
-      <header className="border-b border-[var(--line)] bg-[var(--paper-deep)] py-10 sm:py-12 lg:py-16">
-        <div className="site-container flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-          <div className="flex flex-col gap-7 sm:flex-row sm:items-center">
-            <button type="button" onClick={() => avatarInputRef.current?.click()} className="group relative w-fit" aria-label={t("account.profile.changeAvatar")}>
+      <header className="border-b border-[var(--line)] bg-[var(--background)] py-10 sm:py-12 lg:py-16">
+        <div className="site-container grid min-w-0 gap-8 md:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)] md:items-end md:gap-12 lg:gap-16">
+          <div className="flex min-w-0 flex-col gap-7 sm:flex-row sm:items-center">
+            <button type="button" onClick={() => avatarInputRef.current?.click()} className="group relative w-fit shrink-0 rounded-full" aria-label={t("account.profile.changeAvatar")}>
               <Avatar
                 src={user.avatarUrl}
                 name={user.name}
                 seed={user.accountId}
-                size={120}
-                shape="square"
-                ringClassName="border border-[var(--line)]"
+                size={112}
+                shape="round"
+                ringClassName="border-2 border-[var(--paper)]"
               />
               <span className="absolute -bottom-3 -right-3 bg-[var(--gold)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.16em] text-white transition-transform group-hover:-translate-y-1">
                 {uploading ? t("account.profile.uploading") : t("account.profile.editPhoto")}
               </span>
             </button>
             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
-            <div>
-              <h1 className="mt-3 overflow-hidden font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.92] tracking-[-0.04em]">
+            <div className="min-w-0">
+              <h1 className="mt-3 min-w-0 break-words font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] tracking-[-0.04em]">
                 <span data-pastoral-title className="block">{user.name}</span>
               </h1>
               <p data-pastoral-subtitle className="mt-4 max-w-xl text-base leading-7 text-[var(--muted)] sm:text-lg">
@@ -350,7 +350,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
               ) : null}
             </div>
           </div>
-          <div data-pastoral-stamp className="border border-[var(--line)] bg-white/64 p-5 text-sm text-[var(--muted)] md:w-64">
+          <div data-pastoral-stamp className="min-w-0 border-t border-[var(--line)] pt-5 text-sm text-[var(--muted)] md:border md:p-5">
             <p>{countryName(user.country) || t("account.profile.locationUnset")}</p>
             <p className="mt-2">{user.homeBase || user.email}</p>
             <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
@@ -368,7 +368,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </div>
       </header>
 
-      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/94 backdrop-blur-xl">
+      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--background)]">
         <nav
           className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3"
           aria-label={t("account.profile.tabLabel")}
@@ -400,21 +400,21 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </nav>
       </div>
 
-      <main className="site-container py-10 sm:py-14 lg:py-20">
+      <main className="site-container min-w-0 py-8 sm:py-12 lg:py-16">
         <div
           id="profile-panel"
           role="tabpanel"
           aria-labelledby={`profile-tab-${activeTab}`}
           tabIndex={0}
-          className="focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-[var(--gold)]"
+          className="min-h-0 bg-transparent focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-[var(--gold)]"
         >
         {activeTab === "notes" ? (
           savedNotes.length ? (
             <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {savedNotes.map((note) => (
-                <Link data-pastoral-card key={note.id} href={`/community?post=${note.id}`} className="group block overflow-hidden border border-[var(--line)] bg-white transition hover:-translate-y-1">
-                  {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full object-cover" /> : null}
-                  <div className="p-5">
+                <Link data-pastoral-card key={note.id} href={`/community?post=${note.id}`} className="group block min-w-0 overflow-hidden border-t border-[var(--line)] pb-5 pt-3 transition hover:-translate-y-1">
+                  {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full bg-[var(--paper)] object-cover" /> : null}
+                  <div className="pt-4">
                   <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{note.channel}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight transition-colors group-hover:text-[var(--cinnabar)]">{note.title}</h2>
                   <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--muted)]">{note.excerpt}</p>
@@ -431,7 +431,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
           savedRoutes.length ? (
             <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {savedRoutes.map((item) => (
-                <Link data-pastoral-card key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group border border-[var(--line)] bg-white p-6 transition hover:-translate-y-1">
+                <Link data-pastoral-card key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group min-w-0 border-t border-[var(--line)] py-6 transition hover:-translate-y-1">
                   <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.type}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.title}</h2>
                   <span className="mt-6 inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">{t("account.profile.openRecord")} →</span>
@@ -451,7 +451,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                   data-pastoral-card
                   key={`${item.slug}-${index}`}
                   href={`/shop/products/${item.slug}`}
-                  className="group grid grid-cols-[7.5rem_minmax(0,1fr)] border border-[var(--line)] bg-white p-3 transition-transform duration-500 hover:-translate-y-1 sm:grid-cols-[9rem_minmax(0,1fr)] sm:p-4"
+                  className="group grid min-w-0 grid-cols-[minmax(6rem,7.5rem)_minmax(0,1fr)] border border-[var(--line)] bg-[var(--background)] p-3 transition-transform duration-500 hover:-translate-y-1 sm:grid-cols-[9rem_minmax(0,1fr)] sm:p-4"
                 >
                   <div className="relative aspect-square overflow-hidden bg-[var(--paper)]">
                     {item.image ? (
@@ -459,7 +459,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                     ) : (
                       <div className="grid h-full place-items-center border border-dashed border-[var(--line)] bg-[var(--paper)] font-[family:var(--font-display)] text-5xl italic text-[var(--gold)]/55">L</div>
                     )}
-                    <span className="absolute left-2 top-2 bg-white/88 px-2 py-1 text-[8px] font-bold tracking-[0.16em] text-[var(--river-deep)]">
+                    <span className="absolute left-2 top-2 bg-[var(--paper)] px-2 py-1 text-[8px] font-bold tracking-[0.16em] text-[var(--river-deep)]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                   </div>
@@ -492,7 +492,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
             <section aria-label={t("account.profile.bookingsLabel")}>
               <div className="grid gap-4 lg:grid-cols-2">
                 {bookings.map((booking) => (
-                  <article data-pastoral-card key={booking.id} className="border border-[var(--line)] bg-white p-6 sm:p-8">
+                  <article data-pastoral-card key={booking.id} className="border-t border-[var(--line)] py-6 sm:py-8">
                     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
                       <div>
                         <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
@@ -536,8 +536,8 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         ) : null}
 
         {activeTab === "settings" ? (
-          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
-            <div className="grid gap-5 border border-[var(--line)] bg-white p-5 sm:p-7">
+          <section className="grid min-w-0 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:gap-16">
+            <div className="grid min-w-0 gap-5 border-t border-[var(--line)] pt-6 sm:pt-7">
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.name")}</span>
                 <input value={form.name} onChange={(event) => { setFieldError(null); setMessage(""); setMessageKind(""); setForm((current) => ({ ...current, name: event.target.value })); }} className={`${PROFILE_FIELD_CLASS} text-lg`} aria-invalid={fieldError === "name"} aria-describedby={fieldError === "name" ? "profile-name-error" : undefined} />
@@ -582,7 +582,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                 {saving ? t("account.profile.saving") : t("account.profile.save")}
               </button>
             </div>
-            <aside className="border border-[var(--line)] bg-white/64 p-6">
+            <aside className="border-t border-[var(--line)] pt-6 lg:pt-7">
               <p className="font-[family:var(--font-display)] text-2xl italic">{t("account.profile.settingsNoteTitle")}</p>
               <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">{t("account.profile.settingsNoteBody")}</p>
               <p className="mt-7 text-xs text-[var(--muted)]">{user.email}</p>
