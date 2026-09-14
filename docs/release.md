@@ -35,9 +35,10 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 
 1. 三端验证全绿（命令见 `development.md` §3），两仓库 `git diff --check` 通过。
 2. 核对两仓库状态与未推送提交，记录 root 与 admin 的 SHA。
-3. 审查每个待上库的 TypeORM 迁移：**只新增、不重写已执行迁移**；`api/src/database/data-source.ts` 保持 `synchronize: false`。
-4. 备份目标数据库，并做**只读**迁移状态检查（已应用迁移数以服务器实时状态为准）。
-5. 确认 `docs/CURRENT-STATE.md` 无未解决的部署阻塞项。
+3. 更新 `CHANGELOG.md`：把 `[Unreleased]` 条目移入本次部署的日期分节（以 root HEAD SHA 为锚），部署信息（workflow run、迁移、备份文件）写入节尾——分节约定见 `CHANGELOG.md` 头部说明；即使是全新内容也照此新增分节，防止 CHANGELOG 再次失实。
+4. 审查每个待上库的 TypeORM 迁移：**只新增、不重写已执行迁移**；`api/src/database/data-source.ts` 保持 `synchronize: false`。
+5. 备份目标数据库，并做**只读**迁移状态检查（已应用迁移数以服务器实时状态为准）。
+6. 确认 `docs/CURRENT-STATE.md` 无未解决的部署阻塞项。
 
 ## 4. 发布步骤（授权后）
 
