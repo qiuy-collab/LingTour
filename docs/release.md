@@ -51,6 +51,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
    ```
 
 4. 执行冒烟（§5）。
+5. 冒烟通过后创建 GitHub Release：在本次部署的 root HEAD 打 tag `deploy-YYYY-MM-DD-<shortsha>`（日期 + SHA 式命名，同日多次部署靠 SHA 区分，不使用 SemVer——与 `CHANGELOG.md` 分节约定一致）；Release 标题与 notes 取自 `CHANGELOG.md` 对应日期分节，保证 GitHub 侧与 CHANGELOG 不失配；notes 中附本次部署对应的 admin-frontend SHA。仅在根仓库建 Release，admin 仓库不单独建。
 
 ## 5. 发布后冒烟
 
