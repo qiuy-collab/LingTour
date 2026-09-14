@@ -14,7 +14,13 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
+export function AccountNavLink({
+  onNavigate,
+  hideWhenAuthenticated = false,
+}: {
+  onNavigate?: () => void;
+  hideWhenAuthenticated?: boolean;
+}) {
   const { t } = useLocale();
   const [user, setUser] = useState<LocalUser | null>(null);
 
@@ -48,18 +54,17 @@ export function AccountNavLink({ onNavigate }: { onNavigate?: () => void }) {
     );
   }
 
+  if (hideWhenAuthenticated && user) return null;
+
   return (
     <div className="ml-2" suppressHydrationWarning>
       <Link
         href="/profile?tab=notes"
         onClick={onNavigate}
-        className="relative z-20 inline-flex min-h-11 items-center gap-3 border border-[var(--line)] bg-white/72 px-2 py-1.5 text-sm text-[var(--ink)] transition hover:border-[var(--cinnabar)] hover:bg-white"
+        className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-sm text-white transition hover:bg-[var(--river-deep)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
         aria-label="Open your traveler profile"
       >
-        <span className="grid h-8 w-8 place-items-center bg-[var(--cinnabar)] font-[family:var(--font-display)] text-sm text-white">
-          {getInitials(user.name)}
-        </span>
-        <span className="hidden max-w-24 truncate lg:inline">{user.name}</span>
+        {getInitials(user.name)}
       </Link>
     </div>
   );

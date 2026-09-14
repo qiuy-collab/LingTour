@@ -49,39 +49,41 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
   );
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
+    <main className="min-h-[100dvh] overflow-hidden bg-[var(--background)] bg-grain text-[var(--river-deep)]">
       <header id="section-masthead" className="site-container relative pb-8 pt-8 sm:pb-10 lg:pb-12 lg:pt-12">
-        <div className="relative z-10 grid gap-9 lg:grid-cols-12 lg:items-end lg:gap-12">
-          <div className="lg:col-span-7">
-            <Link href="/culture" className="inline-flex min-h-11 items-center text-sm text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
+        <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(19rem,0.88fr)] lg:items-center lg:gap-12">
+          <div className="order-2 min-w-0 lg:order-none">
+            <Link href="/culture" className="relative z-20 mx-2 -mt-8 mb-2 inline-flex min-h-11 items-center bg-[var(--background)] px-1 text-sm text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4 lg:mx-0 lg:mb-7 lg:mt-0 lg:bg-transparent lg:px-0">
               All cities
             </Link>
-            <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
-              {activeCity.label}
-            </p>
-            <h1 className="mt-3 max-w-4xl text-balance font-[family:var(--font-display)] text-[clamp(3rem,8vw,6.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
-              {activeCity.name}
-            </h1>
-            {activeCity.summary && !isSummaryInArticle ? (
-              <p className="mt-7 max-w-[65ch] text-lg leading-[1.75] text-[var(--river-deep)] sm:text-xl">
-                {activeCity.summary}
+            <div className="relative z-10 mx-2 max-w-3xl border border-[var(--line)] bg-[var(--background)] p-4 scrapbook-shadow sm:mx-3 sm:p-5 lg:mx-0 lg:mt-0 lg:max-w-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
+                {activeCity.label}
               </p>
-            ) : null}
-            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
-              {activeCity.publishedAt ? (
-                <time dateTime={activeCity.publishedAt}>
-                  {new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(activeCity.publishedAt))}
-                </time>
+              <h1 className="mt-3 max-w-full text-balance font-[family:var(--font-display)] text-[clamp(3rem,7vw,6.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
+                {activeCity.name}
+              </h1>
+              {activeCity.summary && !isSummaryInArticle ? (
+                <p className="mt-6 max-w-[65ch] text-lg leading-[1.7] text-[var(--river-deep)] sm:text-xl">
+                  {activeCity.summary}
+                </p>
               ) : null}
-              {activeCity.tags.length > 0 ? <span>{activeCity.tags.join(" / ")}</span> : null}
-              <Link href={`/community?compose=1&location=${encodeURIComponent(activeCity.name)}&channel=Culture%20Desk&title=${encodeURIComponent(activeCity.name)}&note=${encodeURIComponent(`City note from ${activeCity.name}: `)}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
-                Post city note
-              </Link>
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
+                {activeCity.publishedAt ? (
+                  <time dateTime={activeCity.publishedAt}>
+                    {new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(activeCity.publishedAt))}
+                  </time>
+                ) : null}
+                {activeCity.tags.length > 0 ? <span>{activeCity.tags.join(" / ")}</span> : null}
+                <Link href={`/community?compose=1&location=${encodeURIComponent(activeCity.name)}&channel=Culture%20Desk&title=${encodeURIComponent(activeCity.name)}&note=${encodeURIComponent(`City note from ${activeCity.name}: `)}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
+                  Post city note
+                </Link>
+              </div>
             </div>
           </div>
 
           {activeCity.primaryMedia && !isMediaInArticle ? (
-            <div className="relative lg:col-span-5 lg:pb-2">
+            <div className="relative order-1 min-w-0 lg:order-none lg:pb-2">
               <div className="relative aspect-[4/3] overflow-hidden border-[0.5rem] border-white bg-[var(--paper)] scrapbook-shadow sm:border-8 lg:-rotate-2">
                 <MediaFrame asset={activeCity.primaryMedia} alt={activeCity.name} mode={activeCity.primaryMedia.type === "video" ? "interactive" : "image"} eager />
               </div>

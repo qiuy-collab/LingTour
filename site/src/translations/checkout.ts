@@ -3,7 +3,7 @@ export const checkout = {
     "checkout.page.title": "Checkout",
     "checkout.page.subtitle": "Review your selected objects and confirm delivery details.",
     "checkout.page.eyebrow": "Store checkout",
-    "checkout.page.heading": "Finalize delivery details.",
+    "checkout.page.heading": "Check out",
     "checkout.page.body": "Contact and delivery details",
     "checkout.page.paymentEyebrow": "Complete payment",
     "checkout.page.paymentTitle": "Almost there.",

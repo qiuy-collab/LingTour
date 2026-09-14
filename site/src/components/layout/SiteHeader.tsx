@@ -269,7 +269,10 @@ export function SiteHeader() {
             </div>
 
             <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
-              <AccountNavLink onNavigate={() => setIsOpen(false)} />
+              <AccountNavLink
+                onNavigate={() => setIsOpen(false)}
+                hideWhenAuthenticated
+              />
               <Link
                 href="/interpreting#interpreting-booking"
                 className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"

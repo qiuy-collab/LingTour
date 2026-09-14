@@ -421,7 +421,7 @@ export function CheckoutClient() {
         <section className="min-w-0">
           <div className="min-w-0">
             <div className="mb-10 sm:mb-12">
-              <h1 className="max-w-[11ch] font-[family:var(--font-display)] text-[clamp(3.2rem,11vw,5.4rem)] leading-[0.9] tracking-[-0.055em]">
+              <h1 className="font-[family:var(--font-display)] text-4xl leading-none tracking-[-0.04em] whitespace-nowrap sm:text-5xl lg:text-6xl">
                 {t("checkout.page.heading")}
               </h1>
             </div>

@@ -43,10 +43,10 @@ export function RouteBrief({ route }: Props) {
   return (
     <section ref={briefRef} className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
       <div className="site-container py-7 sm:py-10 lg:py-14">
-        <div className="grid items-center gap-8 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
+        <div className="grid min-w-0 items-center gap-6 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
           <figure
             data-route-brief-media
-            className="relative aspect-[4/3] min-w-0 overflow-hidden border-[0.55rem] border-white bg-[var(--paper)] scrapbook-shadow sm:border-[0.75rem] lg:aspect-[4/5] lg:border-[0.9rem]"
+            className="relative order-1 aspect-[4/3] min-w-0 overflow-hidden border-[0.55rem] border-white bg-[var(--paper)] scrapbook-shadow sm:border-[0.75rem] min-[620px]:order-none lg:aspect-[4/5] lg:border-[0.9rem]"
           >
             <MediaFrame
               asset={route.image ? { type: "image", url: route.image } : undefined}
@@ -57,7 +57,7 @@ export function RouteBrief({ route }: Props) {
             />
           </figure>
 
-          <div className="min-w-0 max-w-3xl">
+          <div className="relative z-10 order-2 mx-2 -mt-8 min-w-0 max-w-3xl border border-[var(--line)] bg-[var(--background)] p-4 scrapbook-shadow sm:mx-3 sm:-mt-12 sm:p-5 min-[620px]:order-none min-[620px]:mx-0 min-[620px]:mt-0 min-[620px]:border-0 min-[620px]:bg-transparent min-[620px]:p-0 min-[620px]:shadow-none lg:max-w-none">
             <h1
               data-route-brief-title
               className="max-w-[13ch] text-balance font-[family:var(--font-display)] text-4xl leading-[1] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-6xl xl:text-7xl"
