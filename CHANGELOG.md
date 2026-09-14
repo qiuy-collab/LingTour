@@ -17,7 +17,7 @@
 - site: Culture 详情桌面首屏改用稳定的 `minmax(0, …)` 网格，避免标题与摘要列被媒体列挤压。
 - site: Profile 统一页面底色与内容表面，移除空状态整屏撑高、白色大卡片和设置区割裂容器，补齐移动端字段与内容的宽度约束。
 
-部署：待执行；无迁移。
+部署：`Deploy LingTour Docker Stack` run `34875955514` 成功（8m14s）；无迁移。部署前数据库备份 `/root/backups/lingtour-db-pre-profile-20260915-013724.dump`。
 
 ## 2026-09-14 — 公共站点移动端与档案状态修复（root `0303a42`）
 

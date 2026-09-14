@@ -466,3 +466,15 @@ Owner requested commit and deploy of the browser-review UI fixes; both executed 
 - Deploy: pushed `c886caf..0303a42` to root `origin/main`; dispatched `Deploy LingTour Docker Stack` run `34829863128` — **success in 4m19s**. Server HEAD confirmed `0303a42`; api/admin containers healthy, nginx and redis healthy; no migration was added.
 - Smoke (2026-09-14): api `/health`, Home, Culture, Interpreting, route detail, product detail, and Profile all returned 200 via Cloudflare. Production HTML contains the new Culture hero sizing and Interpreting one-line heading classes. `lingtour-site-1` still reports Docker `unhealthy` while serving 200; this is the documented healthcheck false alarm.
 - Documentation: `CHANGELOG.md` gained the matching `2026-09-14` deployment section, and a GitHub Release was created at the deployed root SHA.
+
+## 25. 2026-09-15 site review and Profile refactor deployed
+
+Owner requested the browser-review fixes and a structural Profile page refactor, followed by a production deployment.
+
+- Commits: `97039b5` `fix(site): resolve layout review notes`; `008dbbf` `refactor(site): unify profile page surfaces`; `4f2bc30` `docs(release): record profile polish deployment`. The independent admin repository was unchanged at `a9430cf`.
+- Pre-deploy validation: site TypeScript passed; 18/18 test files and 101/101 tests passed; production build passed; lint exited with 0 errors and the existing generated MapLibre/application warnings; root and admin `git diff --check` passed.
+- Browser validation: local Profile notes/routes/collection/bookings/settings passed at 320, 375, 390, 430, 768, 834, and 1280 CSS pixels with no horizontal overflow or console errors; Culture and Route detail passed at 320, 375, 390, 430, 768, 834, 1280, 1440, and 1920 with no horizontal overflow. The local preview login was used only against localhost. Profile's legacy direct-child height rule was removed for the content panel, and the circular avatar entry was verified.
+- Database: production backup `/root/backups/lingtour-db-pre-profile-20260915-013724.dump` completed before deployment (144143 bytes). Read-only `migration:show` reported all 27 migrations applied; the deploy migration step was a no-op.
+- Deploy: root `main` was pushed through `4f2bc30`; `Deploy LingTour Docker Stack` run `34875955514` succeeded in 8m14s. Server HEAD is `4f2bc30`; admin remains `a9430cf`.
+- Smoke: `https://api.culvoy.com/health` returned 200 with database `up`; Home, Culture detail, Route detail, Shop, Login, Profile route, and Admin returned 200. Unauthenticated Profile correctly returned 307 to Login. `lingtour-site-1` remains Docker `unhealthy` while serving successfully, matching the documented healthcheck false alarm.
+- Release: GitHub Release/tag `deploy-2026-09-15-4f2bc30` was created from deployed root HEAD. No production data, migration, or admin code changed.
