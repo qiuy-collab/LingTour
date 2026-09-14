@@ -8,6 +8,17 @@
 
 已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。当前为空。
 
+## 2026-09-14 — 公共站点移动端与档案状态修复（root `0303a42`）
+
+### Fixed
+
+- site: 登录入口改为高对比实心按钮，去掉窄屏局促的装饰菱形。
+- site: Culture 移动端 hero 图文顶部对齐，标题不再被挤压截断；城市/路线卡片统一高度并保持底部 action 对齐。
+- site: Interpreting 移动端标题不再三行挤压；“Choose support” 与 “Meet the interpreters” 保持横排。
+- site: Profile 空状态底色与页面一致，去除割裂白块；不可读的深色 action 改为可读 outline 按钮。
+
+部署：`Deploy LingTour Docker Stack` run `34829863128` 成功（4m19s）；无迁移。
+
 ## 2026-09-14 — 后台列表筛选与壳层打磨（root `e9f9914`）
 
 ### Fixed
