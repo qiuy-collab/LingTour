@@ -138,17 +138,22 @@ export class ShopController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'collectionId', required: false })
   @ApiQuery({ name: 'q', required: false })
+  @ApiQuery({ name: 'published', required: false })
   async getAdminProducts(
     @Query('page') page = 1,
     @Query('limit') limit = 20,
     @Query('collectionId') collectionId?: string,
     @Query('q') q?: string,
+    @Query('published') published?: string,
   ) {
+    const publishedFilter =
+      published === 'true' ? true : published === 'false' ? false : undefined;
     return this.shopService.findAllProductsAdmin(
       +page,
       +limit,
       collectionId,
       q,
+      publishedFilter,
     );
   }
 

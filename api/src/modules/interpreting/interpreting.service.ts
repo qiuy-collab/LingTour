@@ -388,7 +388,13 @@ export class InterpretingService {
 
   // ── Bookings: Admin list ──
 
-  async findBookingsAdmin(page = 1, size = 20, status?: string, q?: string) {
+  async findBookingsAdmin(
+    page = 1,
+    size = 20,
+    status?: string,
+    q?: string,
+    date?: string,
+  ) {
     const qb = this.bookingRepo
       .createQueryBuilder('b')
       .orderBy('b.createdAt', 'DESC');
@@ -401,6 +407,9 @@ export class InterpretingService {
         '(b.name ILIKE :q OR b.contact ILIKE :q OR b.city ILIKE :q)',
         { q: `%${q}%` },
       );
+    }
+    if (date) {
+      qb.andWhere('b.serviceDate = :date', { date });
     }
 
     const [items, total] = await qb

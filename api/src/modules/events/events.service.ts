@@ -51,20 +51,23 @@ export class EventsService {
   async listAdmin(query: {
     status?: string;
     city?: string;
+    startDate?: string;
+    endDate?: string;
     page?: number;
     limit?: number;
   }) {
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit = query.limit && query.limit > 0 ? query.limit : 20;
-    const where: { status?: string; citySlug?: string } = {};
-    if (query.status) where.status = query.status;
-    if (query.city) where.citySlug = query.city;
-    const [items, total] = await this.repo.findAndCount({
-      where,
-      order: { date: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    const qb = this.repo.createQueryBuilder('e');
+    if (query.status) qb.andWhere('e.status = :status', { status: query.status });
+    if (query.city) qb.andWhere('e.citySlug = :city', { city: query.city });
+    if (query.startDate) qb.andWhere('e.date >= :startDate', { startDate: query.startDate });
+    if (query.endDate) qb.andWhere('e.date <= :endDate', { endDate: query.endDate });
+    const [items, total] = await qb
+      .orderBy('e.date', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
     return { data: items, total, page, pageSize: limit };
   }
 

@@ -285,13 +285,15 @@ export class InterpretingController {
   @ApiQuery({ name: 'size', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'q', required: false })
+  @ApiQuery({ name: 'date', required: false })
   async getBookings(
     @Query('page') page = 1,
     @Query('size') size = 20,
     @Query('status') status?: string,
     @Query('q') q?: string,
+    @Query('date') date?: string,
   ) {
-    return this.interpretingService.findBookingsAdmin(+page, +size, status, q);
+    return this.interpretingService.findBookingsAdmin(+page, +size, status, q, date);
   }
 
   @Roles('admin', 'editor')

@@ -222,6 +222,7 @@ export class ShopService {
     limit = 20,
     collectionId?: string,
     q?: string,
+    published?: boolean,
   ) {
     const qb = this.productRepo
       .createQueryBuilder('p')
@@ -235,6 +236,9 @@ export class ShopService {
       qb.andWhere('(p.slug ILIKE :q OR p.name::text ILIKE :q)', {
         q: `%${q}%`,
       });
+    }
+    if (published !== undefined) {
+      qb.andWhere('p.published = :published', { published });
     }
 
     const [data, total] = await qb

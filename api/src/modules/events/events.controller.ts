@@ -56,13 +56,24 @@ export class EventsController {
   @Roles('admin', 'editor')
   @Get('admin/events')
   @ApiBearerAuth()
+  @ApiQuery({ name: 'startDate', required: false })
+  @ApiQuery({ name: 'endDate', required: false })
   async listAdmin(
     @Query('status') status?: string,
     @Query('city') city?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
   ) {
-    return this.service.listAdmin({ status, city, page: +page, limit: +limit });
+    return this.service.listAdmin({
+      status,
+      city,
+      startDate,
+      endDate,
+      page: +page,
+      limit: +limit,
+    });
   }
 
   @Roles('admin', 'editor')
