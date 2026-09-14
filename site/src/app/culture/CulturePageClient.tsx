@@ -91,13 +91,13 @@ export default function CulturePageClient({
       >
       <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container">
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:items-center sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
                 <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
                   {t("culture.atlas.eyebrow")}
                 </p>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("culture.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("culture.atlas.titleItalic")}</span></span>
                 </h1>
@@ -107,7 +107,7 @@ export default function CulturePageClient({
               </Reveal>
             </div>
 
-            <div className="relative w-full min-w-0 self-end lg:col-span-5 lg:max-w-none lg:self-center">
+            <div className="relative w-full min-w-0 self-start sm:self-end lg:col-span-5 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
                 <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
                   <div
@@ -197,15 +197,15 @@ export default function CulturePageClient({
                 return (
                   <motion.div
                     key={city.slug}
-                    className={`w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none ${indexLayout(index)}`}
+                    className={`h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none ${indexLayout(index)}`}
                     layout
                     initial={false}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   >
-                    <Link href={`/culture/${city.slug}`} className="group block" data-pastoral-card>
-                      <article className="h-full min-w-0">
+                    <Link href={`/culture/${city.slug}`} className="group block h-full" data-pastoral-card>
+                      <article className="flex h-full min-w-0 flex-col">
                         <div className={`relative overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.75rem] ${imageLayout(index)}`}>
                           <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.04]"
@@ -214,14 +214,14 @@ export default function CulturePageClient({
                           <div className="absolute inset-0 bg-black/[0.07]" />
                         </div>
 
-                        <div className="mt-5 min-w-0 border-t border-[var(--line)] pt-4 sm:mt-6 sm:pt-5">
+                        <div className="mt-5 flex min-w-0 flex-1 flex-col border-t border-[var(--line)] pt-4 sm:mt-6 sm:pt-5">
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                             {city.label}
                           </p>
                           <h2 className="mt-2 font-[family:var(--font-display)] text-3xl leading-[0.98] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                             {city.name}
                           </h2>
-                          <p className="handwritten mt-3 max-w-[38ch] text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                          <p className="handwritten mt-3 flex-1 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
                             {city.narrative}
                           </p>
                           <div className="mt-5 flex items-end justify-between gap-4">

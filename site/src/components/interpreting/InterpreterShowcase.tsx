@@ -43,7 +43,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
     <section className="site-container py-16 lg:py-24">
       <div className="mb-8 opacity-60">
         <Reveal>
-          <h2 className="max-w-[13ch] font-[family:var(--font-display)] text-3xl leading-[1.04] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
+          <h2 className="whitespace-nowrap font-[family:var(--font-display)] text-2xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-3xl md:text-4xl">
             {"Meet the interpreters"}
           </h2>
         </Reveal>

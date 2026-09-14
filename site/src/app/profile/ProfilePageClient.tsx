@@ -45,7 +45,7 @@ const PROFILE_LABEL_CLASS =
   "text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
 
 const ARCHIVE_ACTION_CLASS =
-  "inline-flex min-h-12 items-center justify-center bg-[var(--river-deep)] px-6 text-[10px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)]";
+  "btn-outline min-h-12 w-full text-[10px] leading-none sm:w-auto";
 
 function readFavorites(): FavoriteItem[] {
   try {
@@ -84,21 +84,16 @@ function formatBookingDate(value: string) {
 
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
-    <section data-pastoral-card className="mx-auto grid max-w-4xl border border-[var(--line)] bg-white/72 sm:grid-cols-[8rem_minmax(0,1fr)]">
-      <div className="hidden border-r border-[var(--line)] p-6 sm:flex sm:flex-col sm:justify-between">
-        <span className="font-[family:var(--font-display)] text-6xl italic leading-none text-[var(--gold)]/75">L</span>
-        <span className="h-px w-full bg-[var(--gold)]/45" />
-      </div>
-      <div className="px-5 py-10 sm:px-10 sm:py-12 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-10">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
-          <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
-          <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
-        </div>
-        <Link href={href} className={`${ARCHIVE_ACTION_CLASS} mt-7 lg:mt-0`}>
-          {cta}
-        </Link>
-      </div>
+    <section data-pastoral-card className="mx-auto max-w-4xl border border-[var(--line)] bg-transparent px-5 py-9 sm:px-10 sm:py-12">
+      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
+      <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
+      <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
+      <Link
+        href={href}
+        className={`${ARCHIVE_ACTION_CLASS} mt-7`}
+      >
+        {cta}
+      </Link>
     </section>
   );
 }

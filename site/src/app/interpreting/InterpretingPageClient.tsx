@@ -288,10 +288,10 @@ export default function InterpretingPageClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(8.5rem,0.9fr)] items-center gap-5 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(7rem,0.65fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:items-center sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 className="mb-6 max-w-[16ch] font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8">
+                <h1 className="mb-6 max-w-[18ch] font-[family:var(--font-display)] text-[clamp(1.9rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("interpreting.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("interpreting.atlas.titleItalic")}</span></span>
                 </h1>
@@ -320,8 +320,8 @@ export default function InterpretingPageClient({
             </div>
 
             <div className="w-full min-w-0 self-center lg:col-span-5 lg:max-w-none">
-              <Reveal delay={240} className="w-full lg:justify-self-end">
-                <div className="relative ml-auto aspect-[3/4] w-full max-w-[16rem] overflow-hidden rotate-[1.5deg] border-[0.35rem] border-white scrapbook-shadow sm:aspect-[4/5] sm:max-w-[28rem] sm:border-[0.75rem] lg:max-w-[30rem] lg:border-[0.9rem]">
+              <Reveal delay={240} className="w-full sm:justify-self-end">
+                <div className="relative mx-auto aspect-[3/4] w-full max-w-[10rem] overflow-hidden rotate-[1.5deg] border-[0.35rem] border-white scrapbook-shadow sm:mx-0 sm:aspect-[4/5] sm:max-w-[28rem] sm:border-[0.75rem] lg:max-w-[30rem] lg:border-[0.9rem]">
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 motion-safe:hover:scale-[1.03]"
@@ -337,7 +337,7 @@ export default function InterpretingPageClient({
       <section id="service-types" className="site-container py-16 lg:py-24">
         <div className="mb-8 opacity-60">
           <Reveal>
-            <h2 className="max-w-[12ch] font-[family:var(--font-display)] text-3xl leading-[1.02] tracking-[-0.02em] text-[var(--river-deep)] md:max-w-none md:whitespace-nowrap">
+            <h2 className="whitespace-nowrap font-[family:var(--font-display)] text-2xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-3xl md:text-4xl">
               {t("interpreting.atlas.chooseShape")}
             </h2>
           </Reveal>
