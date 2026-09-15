@@ -69,8 +69,8 @@ export class JwtAuthGuard implements CanActivate {
     const cookieToken = cookieHeader
       .split(';')
       .map((entry) => entry.trim())
-      .find((entry) => entry.startsWith('lingtour_session='))
-      ?.slice('lingtour_session='.length);
+      .find((entry) => entry.startsWith('culvoy_session='))
+      ?.slice('culvoy_session='.length);
 
     if (!cookieToken) return {};
     try {

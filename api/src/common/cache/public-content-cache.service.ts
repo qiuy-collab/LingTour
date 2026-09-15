@@ -6,7 +6,7 @@ import Redis from 'ioredis';
 export class PublicContentCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(PublicContentCacheService.name);
   private readonly redis: Redis | null;
-  private readonly namespace = 'lingtour:public:v1';
+  private readonly namespace = 'culvoy:public:v1';
   private generation: string | null = null;
 
   constructor(config: ConfigService) {

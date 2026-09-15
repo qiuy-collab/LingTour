@@ -63,8 +63,8 @@ async function bootstrap() {
   // Only expose Swagger in non-production environments
   if (nodeEnv !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('LingTour API')
-      .setDescription('LingTour - Headless CMS + commerce API')
+      .setTitle('Culvoy API')
+      .setDescription('Culvoy - Headless CMS + commerce API')
       .setVersion('1.0')
       .addBearerAuth(
         {
@@ -104,7 +104,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3001);
   await app.listen(port);
 
-  logger.log(`LingTour API running on http://localhost:${port}`);
+  logger.log(`Culvoy API running on http://localhost:${port}`);
   logger.log(`Static uploads at http://localhost:${port}/uploads`);
 }
 

@@ -424,7 +424,7 @@ export class OrdersService {
           },
         ],
         application_context: {
-          brand_name: 'LingTour Guangdong',
+          brand_name: 'Culvoy Guangdong',
           user_action: 'PAY_NOW',
           return_url: `${siteUrl}/checkout/success?orderNo=${encodeURIComponent(order.orderNo)}&provider=paypal&statusToken=${encodeURIComponent(publicStatusToken)}`,
           cancel_url: `${siteUrl}/checkout?paypal=cancelled&orderNo=${encodeURIComponent(order.orderNo)}`,
@@ -851,6 +851,6 @@ export class OrdersService {
     }
 
     const safe = trimmed.replace(/[^a-zA-Z0-9]/g, '').slice(0, 18) || 'guest';
-    return `${safe.toLowerCase()}@lingtour.local`;
+    return `${safe.toLowerCase()}@culvoy.local`;
   }
 }

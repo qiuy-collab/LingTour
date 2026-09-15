@@ -119,7 +119,7 @@ export class EmailVerificationService {
     }
     if (purpose === 'login') {
       if (!existing) {
-        throw new NotFoundException('No LingTour account uses this email');
+        throw new NotFoundException('No Culvoy account uses this email');
       }
       if (existing.status !== 'active') {
         throw new UnauthorizedException('This account is disabled');
@@ -142,7 +142,7 @@ export class EmailVerificationService {
     const pass = this.configService.get<string>('SMTP_PASS');
     const from =
       this.configService.get<string>('SMTP_FROM') ||
-      'LingTour <no-reply@lingtour.cn>';
+      'Culvoy <no-reply@culvoy.com>';
 
     if (!host || !user || !pass) {
       return false;
@@ -155,11 +155,11 @@ export class EmailVerificationService {
       auth: { user, pass },
     });
 
-    const action = purpose === 'signup' ? 'create your LingTour account' : 'log in to LingTour';
+    const action = purpose === 'signup' ? 'create your Culvoy account' : 'log in to Culvoy';
     await transporter.sendMail({
       from,
       to: email,
-      subject: 'Your LingTour verification code',
+      subject: 'Your Culvoy verification code',
       text: `Use ${code} to ${action}. This code expires in 10 minutes.`,
       html: `<p>Use <strong>${code}</strong> to ${action}.</p><p>This code expires in 10 minutes.</p>`,
     });

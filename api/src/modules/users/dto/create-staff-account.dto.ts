@@ -14,7 +14,7 @@ const USER_STATUSES = ['active', 'banned'] as const;
 const STRONG_PASSWORD = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
 
 export class CreateStaffAccountDto {
-  @ApiProperty({ example: 'editor@lingtour.cn' })
+  @ApiProperty({ example: 'editor@culvoy.com' })
   @IsEmail()
   @MaxLength(255)
   email: string;

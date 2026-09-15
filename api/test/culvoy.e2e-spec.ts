@@ -13,7 +13,7 @@ import * as request from 'supertest';
 // 3. Validation pipe behavior
 // 4. Complete service chain logic
 
-describe('LingTour E2E Flow (Service Layer)', () => {
+describe('Culvoy E2E Flow (Service Layer)', () => {
   describe('Full Business Flow Simulation', () => {
     /**
      * Simulated end-to-end: Browse Route → Select Product → Guest Checkout → Payment Callback

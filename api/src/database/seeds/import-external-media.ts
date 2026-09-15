@@ -193,7 +193,7 @@ async function importRemoteImage(
         response = await fetch(candidate, {
           headers: {
             Accept: 'image/*,*/*;q=0.8',
-            'User-Agent': 'LingTour media importer/1.0',
+            'User-Agent': 'Culvoy media importer/1.0',
           },
         });
 

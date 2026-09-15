@@ -51,7 +51,7 @@ async function seed() {
   `);
 
   await dataSource.query('DELETE FROM users WHERE email <> $1', [
-    'admin@lingtour.cn',
+    'admin@culvoy.com',
   ]);
 
   // ═══════════════════════════════════════════════
@@ -67,7 +67,7 @@ async function seed() {
   const passwordHash = await bcrypt.hash(adminPassword, 12);
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
-     VALUES ('admin@lingtour.cn', $1, 'admin', 'LingTour Admin', 'active')
+     VALUES ('admin@culvoy.com', $1, 'admin', 'Culvoy Admin', 'active')
      ON CONFLICT (email)
      DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, name = EXCLUDED.name, status = EXCLUDED.status;`,
     [passwordHash],
@@ -83,7 +83,7 @@ async function seed() {
   const editorHash = await bcrypt.hash(editorPassword, 12);
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
-     VALUES ('editor@lingtour.cn', $1, 'editor', 'LingTour Editor', 'active')
+     VALUES ('editor@culvoy.com', $1, 'editor', 'Culvoy Editor', 'active')
      ON CONFLICT (email) DO NOTHING;`,
     [editorHash],
   );
@@ -661,8 +661,8 @@ async function seed() {
       ('FoodMap', 'published', $5, $6, $7, $8, '/uploads/seed/chaozhou-food-800.jpg', 'Chaozhou', 'chaoshan-tea-culture', 'warm', 89, 15, 32);`,
     [
       j({
-        name: 'LingTour Team',
-        handle: 'lingtour',
+        name: 'Culvoy Team',
+        handle: 'culvoy',
         avatar: '',
       }),
       j({ en: 'Morning auction notes', zh: '清晨拍卖现场笔记' }),
@@ -716,7 +716,7 @@ async function seed() {
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
     [
       j({
-        title: { en: 'LingTour', zh: 'LingTour 岭途' },
+        title: { en: 'Culvoy', zh: 'Culvoy' },
         subtitle: {
           en: 'Story-shaped routes across Guangdong',
           zh: '在广东，用故事串起城市与旅行',
@@ -829,7 +829,7 @@ async function seed() {
      ON CONFLICT (scope) DO UPDATE SET payload = EXCLUDED.payload;`,
     [
       j({
-        seoTitle: 'LingTour',
+        seoTitle: 'Culvoy',
         seoDescription:
           'Story-shaped routes across Guangdong — culture, food, and local life.',
         enableMarkdownEditor: true,

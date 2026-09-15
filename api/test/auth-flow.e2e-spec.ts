@@ -49,7 +49,7 @@ describeIfDb('Auth Flow E2E', () => {
     jwtService = moduleFixture.get<JwtService>(JwtService);
 
     // Use seeded admin credentials from env or defaults
-    adminEmail = process.env.ADMIN_EMAIL || 'admin@lingtour.com';
+    adminEmail = process.env.ADMIN_EMAIL || 'admin@culvoy.com';
     adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
   });
 

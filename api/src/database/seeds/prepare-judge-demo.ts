@@ -31,16 +31,16 @@ const TEST_PATTERNS = [
   /\btmp\b/i,
 ];
 
-const DEMO_ADMIN_EMAIL = 'admin@lingtour.cn';
-const DEMO_EDITOR_EMAIL = 'editor@lingtour.cn';
+const DEMO_ADMIN_EMAIL = 'admin@culvoy.com';
+const DEMO_EDITOR_EMAIL = 'editor@culvoy.com';
 const DEMO_ADMIN_PASSWORD =
   process.env.DEMO_ADMIN_PASSWORD ??
   process.env.SEED_ADMIN_PASSWORD ??
-  'LingTour2026!';
+  'Culvoy2026!';
 const DEMO_EDITOR_PASSWORD =
   process.env.DEMO_EDITOR_PASSWORD ??
   process.env.SEED_EDITOR_PASSWORD ??
-  'LingTour2026!';
+  'Culvoy2026!';
 
 type CountRow = { count: number };
 type CityRow = { id: string; slug: string; name: unknown };
@@ -443,7 +443,7 @@ async function ensureDemoAccounts(dataSource: DataSource) {
 
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
-     VALUES ($1, $2, 'admin', 'LingTour Admin', 'active')
+     VALUES ($1, $2, 'admin', 'Culvoy Admin', 'active')
      ON CONFLICT (email)
      DO UPDATE SET
        password_hash = EXCLUDED.password_hash,
@@ -455,7 +455,7 @@ async function ensureDemoAccounts(dataSource: DataSource) {
 
   await dataSource.query(
     `INSERT INTO users (email, password_hash, role, name, status)
-     VALUES ($1, $2, 'editor', 'LingTour Editor', 'active')
+     VALUES ($1, $2, 'editor', 'Culvoy Editor', 'active')
      ON CONFLICT (email)
      DO UPDATE SET
        password_hash = EXCLUDED.password_hash,

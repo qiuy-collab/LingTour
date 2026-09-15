@@ -18,7 +18,7 @@ describe('AuthService', () => {
 
   const mockUser = {
     id: 'uuid-test',
-    email: 'admin@lingtour.cn',
+    email: 'admin@culvoy.com',
     passwordHash: '',
     role: 'admin' as const,
     status: 'active' as const,
@@ -63,7 +63,7 @@ describe('AuthService', () => {
 
     authService = module.get<AuthService>(AuthService);
 
-    mockUser.passwordHash = await bcrypt.hash('LingTour2026!', 4);
+    mockUser.passwordHash = await bcrypt.hash('Culvoy2026!', 4);
   });
 
   describe('validateUser', () => {
@@ -71,11 +71,11 @@ describe('AuthService', () => {
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
       const result = await authService.validateUser(
-        'admin@lingtour.cn',
-        'LingTour2026!',
+        'admin@culvoy.com',
+        'Culvoy2026!',
       );
       expect(result).toBeDefined();
-      expect(result.email).toBe('admin@lingtour.cn');
+      expect(result.email).toBe('admin@culvoy.com');
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
@@ -90,7 +90,7 @@ describe('AuthService', () => {
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
       await expect(
-        authService.validateUser('admin@lingtour.cn', 'WrongPassword'),
+        authService.validateUser('admin@culvoy.com', 'WrongPassword'),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -101,7 +101,7 @@ describe('AuthService', () => {
       } as any);
 
       await expect(
-        authService.validateUser('admin@lingtour.cn', 'LingTour2026!'),
+        authService.validateUser('admin@culvoy.com', 'Culvoy2026!'),
       ).rejects.toThrow('This account is disabled');
     });
   });
@@ -111,13 +111,13 @@ describe('AuthService', () => {
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
       const result = await authService.login(
-        'admin@lingtour.cn',
-        'LingTour2026!',
+        'admin@culvoy.com',
+        'Culvoy2026!',
       );
 
       expect(result.access_token).toBe('mock-jwt-token');
       expect(result.expires_in).toBe('24h');
-      expect(result.user.email).toBe('admin@lingtour.cn');
+      expect(result.user.email).toBe('admin@culvoy.com');
       expect(result.user.role).toBe('admin');
       expect(result.user.accountId).toBe('LT-UUIDTEST');
     });
@@ -126,8 +126,8 @@ describe('AuthService', () => {
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
       const result = await authService.login(
-        'admin@lingtour.cn',
-        'LingTour2026!',
+        'admin@culvoy.com',
+        'Culvoy2026!',
       );
 
       expect((result.user as any).passwordHash).toBeUndefined();
@@ -136,7 +136,7 @@ describe('AuthService', () => {
     it('should sign JWT with correct payload', async () => {
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
-      await authService.login('admin@lingtour.cn', 'LingTour2026!');
+      await authService.login('admin@culvoy.com', 'Culvoy2026!');
 
       expect(jwtService.sign).toHaveBeenCalledWith(
         {
@@ -152,19 +152,19 @@ describe('AuthService', () => {
   describe('email code authentication', () => {
     it('logs in an existing active account after code verification', async () => {
       emailVerificationService.consumeCode.mockResolvedValue({
-        email: 'admin@lingtour.cn',
+        email: 'admin@culvoy.com',
         purpose: 'login',
       });
       usersService.findByEmail!.mockResolvedValue(mockUser as any);
 
       const result = await authService.verifyEmailCode(
-        'admin@lingtour.cn',
+        'admin@culvoy.com',
         'login',
         '248613',
       );
 
       expect(result.access_token).toBe('mock-jwt-token');
-      expect(result.user.email).toBe('admin@lingtour.cn');
+      expect(result.user.email).toBe('admin@culvoy.com');
     });
 
     it('creates a traveler account after signup code verification', async () => {
