@@ -499,3 +499,12 @@ Owner requested categorized fixes from the de-AI review report, then deployment.
 - Deploys: run `34964987686` deployed `66d31fc` (all site/api/admin changes; site container `unhealthy` was a pre-existing healthcheck keep-alive bug, not a service fault); run `34966820692` deployed `9114e93` and the site container now reports healthy. Server HEAD: `9114e93` (root), `2dba4d5` (admin).
 - Production smoke: 18/18 — trust layer (no fake counts/testimonials/picsum, roster shows real count), hero variations, preload links, ¥ notation, community counts from live data, 320px overflow spot-check, zero console errors.
 - Known follow-up: update the legacy CMS `service_modes.price` strings ("From RMB 680 / half day") through the admin to match the ¥ notation.
+
+## 28. 2026-09-15 production traveler login restored (gateway forward fix)
+
+Owner reported `Cannot POST /api/auth/session` in production.
+
+- Root cause: the gateway `nginx.docker.conf` has forwarded every `/api/*` request to the API backend since the Docker cutover (`c39ac17`). The site's own `/api/auth/session` handler (`app/api/auth/session/route.ts`, present and working inside the site container) never received production traffic, so traveler login, register, Google sign-in, email-code sign-in, and logout all failed with the API's 404. Not introduced by the de-AI batch. The general forward must stay: browsers rely on it for direct `/api/v1/*` calls.
+- Fix: commit `3343209` added exact-match locations for `/api/auth/session` (and its trailing-slash form) proxying to `site_frontend`; syntax pre-checked on the server with a one-off `nginx:alpine nginx -t`.
+- Deploy: run `34993271372`; server root HEAD `3343209`; gateway conf md5 matches the repo; site container healthy.
+- Verification 7/7 against production: POST wrong credentials → 401 "Invalid email or password" (real auth flow reached); POST invalid action → 400 from the site handler; DELETE → `{ok:true}` cookie cleared; direct `/api/v1/auth/login` forward unaffected; a real browser on `/login` submitting bad credentials shows the visible auth error with no "Cannot POST" and zero page errors. A successful login was not exercised (no production credentials; success and failure share the same handler forward branch).
