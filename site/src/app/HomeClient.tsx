@@ -27,10 +27,10 @@ import { StoreProductCard } from "@/components/store/StoreProductCard";
 import { usePreviewBridge } from "@/lib/preview";
 
 interface HomeClientProps {
-  initialHomeData: HomeData;
-  initialProducts: StoreProduct[];
-  initialRoutes: StoryRoute[];
-  initialEvents: EventData[];
+  initialHomeData: HomeData | null;
+  initialProducts: StoreProduct[] | null;
+  initialRoutes: StoryRoute[] | null;
+  initialEvents: EventData[] | null;
 }
 
 export default function HomeClient({
@@ -102,6 +102,7 @@ export default function HomeClient({
 
   // Use SSR data as fallback when client fetch hasn't returned yet
   const baseHomeData = homeData ?? initialHomeData;
+  if (!baseHomeData) return null;
   const effectiveHomeData: HomeData = previewHome
     ? {
         ...baseHomeData,
@@ -116,9 +117,9 @@ export default function HomeClient({
   const { hero, heroStats, homeEntryCards, regionShowcase, cultureHighlights, testimonials } =
     effectiveHomeData;
 
-  const storeProducts = products ?? initialProducts;
-  const storyRoutes = allRoutes ?? initialRoutes;
-  const baseEvents = events ?? initialEvents;
+  const storeProducts = products ?? initialProducts ?? [];
+  const storyRoutes = allRoutes ?? initialRoutes ?? [];
+  const baseEvents = events ?? initialEvents ?? [];
   const liveEvents = previewEvent
     ? [
         previewEvent,

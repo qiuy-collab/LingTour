@@ -47,10 +47,13 @@ export function useApiQuery<T>(
     revalidateOnMount = true,
   } = options;
   const initialData = (options as { initialData?: T | null }).initialData ?? null;
-  const skipInitialRevalidation = initialData !== null && !revalidateOnMount;
+  const hasInitialData =
+    initialData !== null &&
+    !(Array.isArray(initialData) && initialData.length === 0);
+  const skipInitialRevalidation = hasInitialData && !revalidateOnMount;
 
   const [data, setData] = useState<T | null>(initialData);
-  const [loading, setLoading] = useState(enabled && !initialData);
+  const [loading, setLoading] = useState(enabled && !hasInitialData);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
 

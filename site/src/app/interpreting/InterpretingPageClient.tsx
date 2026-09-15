@@ -89,7 +89,7 @@ const buildPricingMatrix = (t: (key: string) => string): PricingTier[] => [
 ];
 
 interface InterpretingPageClientProps {
-  initialInterpretingData: InterpretingData;
+  initialInterpretingData: InterpretingData | null;
 }
 
 export default function InterpretingPageClient({
@@ -131,7 +131,11 @@ export default function InterpretingPageClient({
     [t],
   );
 
-  const baseInterpretingData = interpretingData ?? initialInterpretingData;
+  const baseInterpretingData = interpretingData ?? initialInterpretingData ?? {
+    serviceModes: [],
+    profiles: [],
+    faqs: [],
+  };
   const effectiveInterpretingData = useMemo<InterpretingData>(() => {
     const prependPreview = <T extends { id: string }>(
       preview: T | null,
@@ -266,11 +270,11 @@ export default function InterpretingPageClient({
     effectiveInterpretingData.serviceModes.length,
   ]);
 
-  if (loading && initialInterpretingData.serviceModes.length === 0) {
+  if (loading && !initialInterpretingData) {
     return <LoadingSpinner text="Setting up the interpreting desk..." />;
   }
 
-  if (error && initialInterpretingData.serviceModes.length === 0) {
+  if (error && !initialInterpretingData) {
     return (
       <ErrorState
         title="Interpreting service unavailable"

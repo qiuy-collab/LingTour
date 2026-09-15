@@ -13,8 +13,8 @@ import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
 import { usePreviewBridge } from "@/lib/preview";
 
 interface ShopPageClientProps {
-  initialCollections: StoreCollection[];
-  initialProducts: StoreProduct[];
+  initialCollections: StoreCollection[] | null;
+  initialProducts: StoreProduct[] | null;
 }
 
 export default function ShopPageClient({
@@ -45,11 +45,11 @@ export default function ShopPageClient({
     revalidateOnMount: false,
   });
 
-  if (colsLoading && prodLoading && initialCollections.length === 0 && initialProducts.length === 0) {
+  if (colsLoading && prodLoading && !initialCollections && !initialProducts) {
     return <LoadingSpinner text="Opening the shelf..." />;
   }
 
-  if ((colsError || prodError) && initialCollections.length === 0 && initialProducts.length === 0) {
+  if ((colsError || prodError) && !initialCollections && !initialProducts) {
     return (
       <ErrorState
         title="Store unavailable"
@@ -62,7 +62,7 @@ export default function ShopPageClient({
     );
   }
 
-  const baseCollections = storeCollections ?? initialCollections;
+  const baseCollections = storeCollections ?? initialCollections ?? [];
   const collections = previewCollection
     ? [
         previewCollection,
@@ -73,7 +73,7 @@ export default function ShopPageClient({
         ),
       ]
     : baseCollections;
-  const products = storeProducts ?? initialProducts;
+  const products = storeProducts ?? initialProducts ?? [];
   const heroImage = SEED_IMAGES.shopHero ?? placeholderFor("square");
 
   return (

@@ -46,12 +46,12 @@ import {
 // 鈹€鈹€ Shared helpers (duplicated from api-data.ts to avoid importing client code) 鈹€鈹€
 
 function pickLocalized(
-  val: string | { en?: string; zh?: string } | undefined,
+  val: string | { en?: string; zh?: string; EN?: string; ZH?: string } | undefined,
   fallback = "",
 ): string {
   if (typeof val === "string") return val;
   if (val && typeof val === "object") {
-    return val.en ?? val.zh ?? fallback;
+    return val.en ?? val.EN ?? val.zh ?? val.ZH ?? fallback;
   }
   return fallback;
 }
@@ -139,7 +139,7 @@ interface ApiCity {
   relatedCitySlugs?: string[];
 }
 
-type LocalizedText = string | { en?: string; zh?: string };
+type LocalizedText = string | { en?: string; zh?: string; EN?: string; ZH?: string };
 
 interface ApiHomeConfig {
   hero?: {
@@ -203,11 +203,11 @@ interface ApiStoreProduct {
 interface ApiStoreCollection {
   id: string;
   slug: string;
-  title: string;
-  routeName: string;
+  title: LocalizedText;
+  routeName: LocalizedText;
   routeSlug: string;
   image: string;
-  body: string;
+  body: LocalizedText;
 }
 
 interface ApiEvent {
@@ -308,11 +308,11 @@ function mapProduct(p: ApiStoreProduct): StoreProduct {
 
 function mapCollection(c: ApiStoreCollection): StoreCollection {
   return {
-    title: c.title,
-    route: c.routeName,
+    title: pickLocalized(c.title),
+    route: pickLocalized(c.routeName),
     href: `/routes/${c.routeSlug}`,
     image: c.image,
-    body: c.body,
+    body: pickLocalized(c.body),
   };
 }
 
@@ -512,19 +512,11 @@ export async function fetchCityCultureBySlugServer(
 export async function fetchHomeDataServer(
   routesPromise: Promise<StoryRoute[]> = fetchRoutesServer(),
 ): Promise<HomeData> {
-  const [routesResult, citiesResult, homeConfigResult] =
-    await Promise.allSettled([
-      routesPromise,
-      fetchCitiesServer(),
-      serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
-    ]);
-
-  const routes = routesResult.status === "fulfilled" ? routesResult.value : [];
-  const cities = citiesResult.status === "fulfilled" ? citiesResult.value : [];
-  const homeConfig =
-    homeConfigResult.status === "fulfilled"
-      ? homeConfigResult.value
-      : ({} as ApiHomeConfig);
+  const [routes, cities, homeConfig] = await Promise.all([
+    routesPromise,
+    fetchCitiesServer(),
+    serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
+  ]);
 
   const hero: HomeHero = {
     image: homeConfig.hero?.image,
@@ -727,23 +719,15 @@ export async function fetchEventsServer(): Promise<EventData[]> {
 }
 
 export async function fetchInterpretingServer(): Promise<InterpretingData> {
-  try {
-    const res = await serverGet<{
-      service_modes: InterpretingData["serviceModes"];
-      profiles: InterpretingData["profiles"];
-      faqs: InterpretingData["faqs"];
-    }>("/public/interpreting");
+  const res = await serverGet<{
+    service_modes: InterpretingData["serviceModes"];
+    profiles: InterpretingData["profiles"];
+    faqs: InterpretingData["faqs"];
+  }>("/public/interpreting");
 
-    return {
-      serviceModes: res.service_modes ?? [],
-      profiles: res.profiles ?? [],
-      faqs: res.faqs ?? [],
-    };
-  } catch {
-    return {
-      serviceModes: [],
-      profiles: [],
-      faqs: [],
-    };
-  }
+  return {
+    serviceModes: res.service_modes ?? [],
+    profiles: res.profiles ?? [],
+    faqs: res.faqs ?? [],
+  };
 }

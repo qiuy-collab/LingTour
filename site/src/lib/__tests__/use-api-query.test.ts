@@ -102,6 +102,21 @@ describe("useApiQuery", () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
+  it("revalidates an empty initial list so SSR failures can recover", async () => {
+    const fetcher = vi.fn().mockResolvedValue(["fresh"]);
+    const { result } = renderHook(() =>
+      useApiQuery(fetcher, [], {
+        initialData: [],
+        revalidateOnMount: false,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(["fresh"]);
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it("revalidates initial data after a dependency changes", async () => {
     const fetcher = vi.fn().mockResolvedValue({ name: "fresh" });
     const { result, rerender } = renderHook(

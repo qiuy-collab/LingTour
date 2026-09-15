@@ -20,7 +20,7 @@ function uniqueValues(values: string[]) {
 }
 
 interface RoutesPageClientProps {
-  initialRoutes: StoryRoute[];
+  initialRoutes: StoryRoute[] | null;
 }
 
 export default function RoutesPageClient({
@@ -45,15 +45,15 @@ export default function RoutesPageClient({
     setAudience("");
   }, []);
 
-  if (loading && initialRoutes.length === 0) {
+  if (loading && !initialRoutes) {
     return <LoadingSpinner text="Drawing the routes..." />;
   }
 
-  if (error && initialRoutes.length === 0) {
+  if (error && !initialRoutes) {
     return <ErrorState message={error} onRetry={refetch} />;
   }
 
-  const storyRoutes = data ?? initialRoutes;
+  const storyRoutes = data ?? initialRoutes ?? [];
   const cultureOptions = uniqueValues(storyRoutes.map((route) => route.culture));
   const durationOptions = uniqueValues(storyRoutes.map((route) => route.duration));
   const audienceOptions = uniqueValues(storyRoutes.map((route) => route.audience));

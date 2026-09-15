@@ -8,8 +8,8 @@ export const revalidate = 60;
 
 export default async function ShopPage() {
   const [collections, products] = await Promise.all([
-    fetchStoreCollectionsServer(),
-    fetchStoreProductsServer(),
+    fetchStoreCollectionsServer().catch(() => null),
+    fetchStoreProductsServer().catch(() => null),
   ]);
 
   return (

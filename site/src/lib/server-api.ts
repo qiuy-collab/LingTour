@@ -76,9 +76,10 @@ export async function serverGet<T = unknown>(
 
   const response = await fetch(url.toString(), {
     headers: headersInit,
-    ...(/^\/public\/cities(?:\/|$)/.test(endpoint)
-      ? { cache: "no-store" as const }
-      : { next: { revalidate: 60 } }),
+    // Redis at the API boundary remains the shared public cache. Keeping the
+    // Next data/route cache out of this path lets a publish invalidate all
+    // visitors without waiting for a second, independent TTL.
+    cache: "no-store",
   });
 
   if (!response.ok) {
