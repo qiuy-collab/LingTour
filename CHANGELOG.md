@@ -8,6 +8,25 @@
 
 已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。当前为空。
 
+## 2026-09-16 — 品牌更名 Culvoy 与界面反馈修复（root `9cb4eb0`）
+
+### Changed
+
+- api/site/admin: 品牌全面更名为 Culvoy——API 面、邮件、cookie 与 localStorage 键（`lingtour_session` → `culvoy_session` 等）、预览通道、站点文案与全部指南文档；网关 `server_name` 收敛到 culvoy.com 家族，旧域名在宿主 TLS 层保持兼容。破坏性提示：访客需重新登录一次，本地购物车/收藏因键名变更而重置。
+- admin: 独立仓库 `be74c41` 同步更名（预览通道、存储键、允许主机、vite 配置）。
+
+### Fixed
+
+- site: 文化列表卡片移除交错布局函数，统一 3 列网格，排版结构不再被打乱。
+- site: Interpreting 页 hero 标题对齐其他页面样板——移除 `max-w-[18ch]` 窄约束并补桌面放大档位，左侧文字不再被挤压。
+- site: 产品详情标题移除 `max-w-[12ch]` / `[14ch]` 窄栏约束，"Canton Porcelain Tea Cup" 等长标题恢复正常横排。
+- site: 登录页左侧品牌分割线水平居中（`self-center`）。
+- site: 验证码按钮文案精简为 "Email a code instead"。
+- site: 删除登录页 "Sign in to return to your saved routes, field notes, and bookings." 描述段落。
+- site: Header 登录入口改为 river-deep 描边按钮、Book 改为同色实底按钮，替代原先突兀的朱红双实底。
+
+部署：`Deploy LingTour Docker Stack` run `34998367122`；服务器 HEAD `9cb4eb0`（admin `be74c41`）；无新增迁移。本批界面修复在部署前被并行会话卷入 rebrand 提交 `b51ca6e` 一并入库上线，部署后已在生产逐条实证 7/7（登录页 DOM 按钮/分割线/无旧段落、首页 Header 按钮类名、Interpreting hero、产品详情 h1、Culture 网格）。
+
 ## 2026-09-15 — Profile 一致性与注册验证码（root `b3df634`）
 
 ### Fixed
