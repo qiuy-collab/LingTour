@@ -1,4 +1,4 @@
-# LingTour Admin
+# Culvoy Admin
 
 运营后台：聚焦工作流的 CMS——内容编辑与真实预览、订单/预约、媒体、社区、审计与系统管理。设计服务运营清晰度，保留 Element Plus 体系。
 

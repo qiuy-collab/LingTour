@@ -2,7 +2,7 @@ import { ref, watch, onMounted } from 'vue'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
-const STORAGE_KEY = 'lingtour-admin-theme'
+const STORAGE_KEY = 'culvoy-admin-theme'
 
 // Singleton state shared across all component instances
 const themeMode = ref<ThemeMode>(

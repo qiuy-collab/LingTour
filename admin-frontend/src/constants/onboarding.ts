@@ -1,4 +1,4 @@
-export const ADMIN_ONBOARDING_VERSION = 'lingtour-admin-onboarding-v2'
+export const ADMIN_ONBOARDING_VERSION = 'culvoy-admin-onboarding-v2'
 
 export type AdminOnboardingStep = {
   id: string

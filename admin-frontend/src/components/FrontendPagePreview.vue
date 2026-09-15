@@ -388,7 +388,7 @@ const scaledFrameHeight = computed(() =>
 
 function createPreviewEnvelope() {
   return {
-    channel: "lingtour-preview" as const,
+    channel: "culvoy-preview" as const,
     key: previewKey.value,
     type: props.type,
     locale: editorLocale.value,
@@ -437,7 +437,7 @@ function handlePreviewMessage(event: MessageEvent) {
     : event.source === popupWindow ? popupWindow : null;
   if (!target) return;
   const payload = event.data as Record<string, unknown> | undefined;
-  if (!payload || payload.channel !== "lingtour-preview-ready") return;
+  if (!payload || payload.channel !== "culvoy-preview-ready") return;
   if (payload.key !== previewKey.value || payload.type !== props.type) return;
   postPreviewTo(target);
 }
@@ -445,7 +445,7 @@ function handlePreviewMessage(event: MessageEvent) {
 function openPreviewWindow() {
   const popup = window.open(
     iframeSrcWithReload.value,
-    `lingtour-preview-${previewSessionId}`,
+    `culvoy-preview-${previewSessionId}`,
   );
   if (!popup) return;
   popupWindow = popup;
