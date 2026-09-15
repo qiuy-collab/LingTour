@@ -108,7 +108,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
                 </p>
               ) : (
                 <p className="mt-4 text-sm italic text-[var(--muted)]">
-                  Shared as a visual-only field signal.
+                  Shared as a photo without text.
                 </p>
               )}
             </div>

@@ -511,6 +511,12 @@ export default function CommunityPage() {
               <span className="block overflow-hidden pb-1"><span data-community-title className="block">{t("community.hero.title")}</span></span>
               <span className="block overflow-hidden pb-3"><span data-community-title className="block italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span></span>
             </h1>
+            <p className="mx-auto mt-8 max-w-xl handwritten text-base leading-7 text-[var(--river-deep)]/85 sm:text-lg">
+              What travellers noticed on the ground, and what the editors are chasing next.
+            </p>
+            <p aria-live="polite" className="mt-6 font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+              {allPosts.length} traveller notes · {fieldBriefs.length} editor briefs
+            </p>
           </div>
         </div>
       </section>
@@ -524,10 +530,10 @@ export default function CommunityPage() {
                 type="button"
                 onClick={() => setActiveChannel(channel)}
                 aria-pressed={activeChannel === channel}
-                className={`min-h-11 shrink-0 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all sm:px-5 sm:text-xs ${
+                className={`min-h-11 shrink-0 border px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors sm:px-5 sm:text-[11px] ${
                   activeChannel === channel
-                    ? "bg-[var(--river-deep)] text-white shadow-md"
-                    : "border border-[var(--line)] bg-white/55 text-[var(--muted)] hover:bg-white hover:text-[var(--river-deep)]"
+                    ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
+                    : "border-[var(--line)] bg-transparent text-[var(--river-deep)] hover:border-[var(--river-deep)]"
                 }`}
               >
                 {t(CHANNEL_I18N[channel])}
@@ -541,20 +547,20 @@ export default function CommunityPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("community.search.placeholder")}
-                className="h-11 w-full rounded-full border border-[var(--line)] bg-white/60 pl-9 pr-4 text-sm outline-none transition-colors focus:border-[var(--cinnabar)] focus:bg-white"
+                className="h-11 w-full border-b border-[var(--line)] bg-transparent pl-9 pr-4 text-sm outline-none transition-colors placeholder:text-[var(--muted)] focus:border-[var(--river-deep)]"
               />
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </label>
-            <div className="scrollbar-hide flex min-w-0 overflow-x-auto rounded-full border border-[var(--line)] bg-white/50 p-1">
+            <div className="scrollbar-hide flex min-w-0 overflow-x-auto border border-[var(--line)] p-1">
               {(["Live", "Loved", "Saved"] as SortMode[]).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setSortMode(mode)}
                   aria-pressed={sortMode === mode}
-                  className={`min-h-11 shrink-0 rounded-full px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition active:scale-[0.97] ${
+                  className={`min-h-11 shrink-0 px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition ${
                     sortMode === mode
                       ? "bg-[var(--river-deep)] text-white"
                       : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
@@ -647,9 +653,19 @@ export default function CommunityPage() {
               })
             ) : (
               <div className="col-span-full py-20 text-center break-inside-avoid">
-                <p className="font-[family:var(--font-display)] text-4xl text-[var(--muted)] opacity-30">
+                <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
                   {t("community.empty")}
                 </p>
+                <p className="mx-auto mt-4 max-w-md text-base leading-7 text-[var(--muted)]">
+                  {t("community.empty.body")}
+                </p>
+                <button
+                  type="button"
+                  onClick={openFieldKit}
+                  className="btn-outline mt-8 px-8"
+                >
+                  {t("community.empty.cta")}
+                </button>
               </div>
             )}
           </div>

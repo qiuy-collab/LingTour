@@ -330,7 +330,7 @@ export function FieldKit<TChannel extends string>({
 
               <div>
                 <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Signal Title
+                  Note title
                 </label>
                 <input
                   type="text"
@@ -362,7 +362,7 @@ export function FieldKit<TChannel extends string>({
 
               <div>
                 <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Visual Signal (Optional)
+                  Photo (optional)
                 </label>
                 <div className="flex gap-4">
                   <label
@@ -430,10 +430,10 @@ export function FieldKit<TChannel extends string>({
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >
-                  {submitting ? "DISPATCHING..." : imageUploading ? "UPLOADING IMAGE..." : "STAMP & DISPATCH"}
+                  {submitting ? "POSTING..." : imageUploading ? "UPLOADING PHOTO..." : "POST NOTE"}
                 </button>
                 <p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Publish as illustrated note, text-only note, or photo-only signal
+                  Publish as an illustrated note, a text note, or a photo
                 </p>
               </div>
             </div>
