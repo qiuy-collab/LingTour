@@ -11,9 +11,11 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/auth-client", () => ({
   registerWithPassword: vi.fn(),
+  sendEmailCode: vi.fn(),
   signInWithGoogle: vi.fn(),
   signInWithPassword: vi.fn(),
   updateCurrentUserProfile: vi.fn(),
+  verifyEmailCode: vi.fn(),
 }));
 
 vi.mock("@/lib/favorites", () => ({
@@ -41,5 +43,12 @@ describe("LoginPanel", () => {
     expect(screen.getByRole("heading", { name: "Create your account" })).toBeInTheDocument();
     expect(screen.getByLabelText("Full name")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Log in" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Verification code")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send code" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Country" }));
+
+    expect(screen.getByRole("listbox", { name: "Country" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { selected: true, name: "Singapore" })).toBeInTheDocument();
   });
 });

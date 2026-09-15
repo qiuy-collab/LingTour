@@ -183,11 +183,13 @@ export async function verifyEmailCode(input: {
   email: string;
   code: string;
   purpose?: EmailCodePurpose;
+  name?: string;
 }) {
   const data = await createSession("email-code", {
     email: input.email,
     purpose: input.purpose ?? "login",
     code: input.code,
+    name: input.name,
   });
   persistAuthUser(data.user);
   return data;

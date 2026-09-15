@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { countryOptions } from "@/lib/country-list";
 import { hydrateFavoritesFromServer } from "@/lib/favorites";
@@ -23,6 +23,130 @@ const labelClass = "grid gap-2 text-[10px] font-semibold uppercase tracking-[0.1
 
 type Mode = "login" | "signup";
 type SignInMethod = "password" | "code";
+type SelectOption = { value: string; label: string };
+
+const travelStyleOptions: Array<SelectOption> = [
+  { value: "Culture routes and food walks", label: "Culture routes and food walks" },
+  { value: "Craft workshops and museums", label: "Craft workshops and museums" },
+  { value: "Slow city walks and local life", label: "Slow city walks and local life" },
+];
+
+function SelectField({
+  id,
+  label,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  name: string;
+  options: Array<SelectOption>;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const selectedOption = options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <label id={`${id}-label`} htmlFor={`${id}-trigger`} className={labelClass}>
+        {label}
+      </label>
+      <button
+        ref={triggerRef}
+        id={`${id}-trigger`}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-labelledby={`${id}-label ${id}-trigger`}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className={`${fieldClass} flex w-full items-center justify-between gap-3 text-left`}
+      >
+        <span className="truncate">{selectedOption?.label ?? "Select"}</span>
+        <span aria-hidden="true" className="shrink-0 text-xs">▾</span>
+      </button>
+      <input type="hidden" name={name} value={value} />
+
+      {open ? (
+        <div
+          role="listbox"
+          aria-labelledby={`${id}-label`}
+          tabIndex={-1}
+          onKeyDown={(event) => {
+            if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+            event.preventDefault();
+            const optionButtons = Array.from(
+              event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+            );
+            const currentIndex = optionButtons.findIndex((button) => button === document.activeElement);
+            const nextIndex = event.key === "ArrowDown"
+              ? Math.min(optionButtons.length - 1, currentIndex + 1)
+              : Math.max(0, currentIndex - 1);
+            optionButtons[nextIndex]?.focus();
+          }}
+          className="absolute z-50 mt-2 max-h-64 w-full overflow-y-auto overscroll-contain border border-[var(--line)] bg-[var(--paper)] shadow-[0_20px_60px_rgba(17,25,35,0.16)]"
+        >
+          {options.map((option) => {
+            const selected = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                  triggerRef.current?.focus();
+                }}
+                className={`flex min-h-11 w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm transition-colors ${
+                  selected
+                    ? "bg-[var(--river-deep)] text-white"
+                    : "text-[var(--river-deep)] hover:bg-[var(--paper-deep)]"
+                }`}
+              >
+                <span className="truncate">{option.label}</span>
+                {selected ? <span aria-hidden="true">✓</span> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function LoginPanel() {
   const router = useRouter();
@@ -36,6 +160,8 @@ export function LoginPanel() {
   const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [country, setCountry] = useState("SG");
+  const [travelStyle, setTravelStyle] = useState("Culture routes and food walks");
   const nextPath = safeNextPath(params.get("next"));
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -44,10 +170,11 @@ export function LoginPanel() {
     const email = String(data.get("email") || "").trim();
     setLoading(true); setError(null);
     try {
-      if (mode === "login" && signInMethod === "code") {
+      if (signInMethod === "code") {
         const code = String(data.get("code") || "").trim();
         if (!email || !code) { setError("Enter your email and the 6-digit code."); return; }
-        await verifyEmailCode({ email, code });
+        const name = String(data.get("name") || "").trim();
+        await verifyEmailCode({ email, code, purpose: mode, name: mode === "signup" ? name : undefined });
       } else {
         const password = String(data.get("password") || "");
         if (!email || !password) { setError("Please enter your email and password."); return; }
@@ -55,10 +182,10 @@ export function LoginPanel() {
           await signInWithPassword(email, password);
         } else {
           const name = String(data.get("name") || "").trim();
-          const country = String(data.get("country") || "SG");
-          const travelStyle = String(data.get("travelStyle") || "Culture routes and food walks");
+          const selectedCountry = String(data.get("country") || country);
+          const selectedTravelStyle = String(data.get("travelStyle") || travelStyle);
           await registerWithPassword({ name, email, password });
-          await updateCurrentUserProfile({ country, travelStyle });
+          await updateCurrentUserProfile({ country: selectedCountry, travelStyle: selectedTravelStyle });
         }
       }
       void hydrateFavoritesFromServer();
@@ -75,7 +202,7 @@ export function LoginPanel() {
     if (!email) { setError("Please enter your email address."); return; }
     setSendingCode(true); setError(null); setDevCode(null);
     try {
-      const result = await sendEmailCode(email, "login");
+      const result = await sendEmailCode(email, mode);
       setCodeSent(true);
       setDevCode(result.devCode ?? null);
     } catch {
@@ -98,7 +225,7 @@ export function LoginPanel() {
   }
 
   const isLogin = mode === "login";
-  const usingCode = isLogin && signInMethod === "code";
+  const usingCode = signInMethod === "code";
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
@@ -143,12 +270,14 @@ export function LoginPanel() {
                   Full name
                   <input name="name" autoComplete="name" className={fieldClass} required />
                 </label>
-                <label className={labelClass}>
-                  Country
-                  <select name="country" defaultValue="SG" className={fieldClass}>
-                    {countries.map((country) => <option key={country.code} value={country.code}>{country.label}</option>)}
-                  </select>
-                </label>
+                <SelectField
+                  id="signup-country"
+                  label="Country"
+                  name="country"
+                  options={countries.map((country) => ({ value: country.code, label: country.label }))}
+                  value={country}
+                  onChange={setCountry}
+                />
               </>
             ) : null}
 
@@ -212,14 +341,14 @@ export function LoginPanel() {
             ) : null}
 
             {!isLogin ? (
-              <label className={labelClass}>
-                Travel style
-                <select name="travelStyle" className={fieldClass}>
-                  <option>Culture routes and food walks</option>
-                  <option>Craft workshops and museums</option>
-                  <option>Slow city walks and local life</option>
-                </select>
-              </label>
+              <SelectField
+                id="signup-travel-style"
+                label="Travel style"
+                name="travelStyle"
+                options={travelStyleOptions}
+                value={travelStyle}
+                onChange={setTravelStyle}
+              />
             ) : null}
 
             <button
@@ -236,22 +365,20 @@ export function LoginPanel() {
                   : "Create account"}
             </button>
 
-            {isLogin ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setSignInMethod(usingCode ? "password" : "code");
-                  setCodeSent(false);
-                  setDevCode(null);
-                  setError(null);
-                }}
-                className="min-h-11 px-1 text-left text-sm text-[var(--muted)] transition-colors hover:text-[var(--river-deep)]"
-              >
-                {usingCode
-                  ? "Use your password instead"
-                  : "Email me a one-time code instead"}
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                setSignInMethod(usingCode ? "password" : "code");
+                setCodeSent(false);
+                setDevCode(null);
+                setError(null);
+              }}
+              className="min-h-11 px-1 text-left text-sm text-[var(--muted)] transition-colors hover:text-[var(--river-deep)]"
+            >
+              {usingCode
+                ? "Use your password instead"
+                : "Email me a one-time code instead"}
+            </button>
 
             {isLogin && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (
               <button
@@ -268,7 +395,13 @@ export function LoginPanel() {
               {isLogin ? "New to Culvoy?" : "Already have an account?"}{" "}
               <button
                 type="button"
-                onClick={() => { setMode(isLogin ? "signup" : "login"); setError(null); }}
+                onClick={() => {
+                  setMode(isLogin ? "signup" : "login");
+                  setSignInMethod(isLogin ? "code" : "password");
+                  setCodeSent(false);
+                  setDevCode(null);
+                  setError(null);
+                }}
                 className="min-h-11 px-1 font-semibold text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/45 underline-offset-4"
               >
                 {isLogin ? "Create account" : "Log in"}
