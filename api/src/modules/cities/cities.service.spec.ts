@@ -13,8 +13,12 @@ import { CitiesController } from './cities.controller';
 
 describe('CitiesService', () => {
   let service: CitiesService;
-  let cityRepo: jest.Mocked<Partial<Repository<City>>>;
-  let sectionRepo: jest.Mocked<Partial<Repository<CityCultureSection>>>;
+  type MockedMethods<T> = Partial<{
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? jest.Mock : T[K];
+  }>;
+
+  let cityRepo: MockedMethods<Repository<City>>;
+  let sectionRepo: MockedMethods<Repository<CityCultureSection>>;
   let queryRunner: {
     connect: jest.Mock;
     startTransaction: jest.Mock;

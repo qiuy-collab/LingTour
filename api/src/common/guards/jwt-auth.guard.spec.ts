@@ -21,7 +21,7 @@ describe('JwtAuthGuard cookie authentication', () => {
   });
 
   it('accepts a valid cookie for reads', async () => {
-    const request = { method: 'GET', headers: { cookie: 'culvoy_session=token' } };
+    const request: Record<string, unknown> = { method: 'GET', headers: { cookie: 'culvoy_session=token' } };
     await expect(guard.canActivate(context(request))).resolves.toBe(true);
     expect(request.user).toMatchObject({ sub: 'user-1' });
   });
