@@ -613,18 +613,15 @@ export async function fetchHomeDataServer(
           image: c.image || c.gallery?.[0] || undefined,
         }));
 
-  const testimonials: Testimonial[] = (
-    homeConfig.testimonials ?? [
-      {
-        quote:
-          "I arrived knowing nothing. I left understanding why every dish on the table mattered.",
-        name: "A Coastal Guest",
-      },
-    ]
-  ).map((t) => ({
-    quote: pickLocalized(t.quote),
-    name: pickLocalized(t.name),
-  }));
+  // Testimonials are CMS-only. When the admin has not authored any, render
+  // nothing rather than inventing a traveller — the home client shows an
+  // honest empty state instead.
+  const testimonials: Testimonial[] = (homeConfig.testimonials ?? []).map(
+    (t) => ({
+      quote: pickLocalized(t.quote),
+      name: pickLocalized(t.name),
+    }),
+  );
 
   const trustMetrics: TrustMetric[] = (
     homeConfig.trustMetrics ?? [

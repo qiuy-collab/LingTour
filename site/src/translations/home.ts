@@ -49,7 +49,6 @@ export const home = {
     "home.interpreting.title": "Interpreting",
     "home.interpreting.subtitle": "Live English interpreting for markets, meals, meetings — in person or remote.",
     "home.interpreting.cta": "Meet Your Field Interpreter",
-    "home.interpreting.experts": "60+ local experts · English / Mandarin / Cantonese",
     "home.entryCards.galleryLabel": "Explore Culvoy chapters",
     "home.entryCards.progressLabel": "Gallery position",
     "home.entryCards.goTo": "Go to chapter {number}",
@@ -72,13 +71,6 @@ export const home = {
     "home.shop.title": "Lingnan Objects",
     "home.shop.subtitle": "From the Zhanjiang coast — volcanic soil pottery, maritime tools, and everyday objects shaped by the landscape.",
     "home.shop.cta": "Browse the shop",
-
-    "home.testimonials.0.name": "Maya, Singapore",
-    "home.testimonials.0.text": "I arrived knowing nothing about Zhanjiang. I left understanding why every dish on the table mattered. The route is really well designed.",
-    "home.testimonials.1.name": "James, UK",
-    "home.testimonials.1.text": "Having an interpreter for the seafood market made all the difference. I would have missed half the stories without it.",
-    "home.testimonials.2.name": "Lin, Shanghai",
-    "home.testimonials.2.text": "The shop feels like a real connection to the place. I bought the tea cloth and it is one of my favourite things at home.",
 
     "home.trust.cities": "cities",
     "home.trust.routes": "curated route",

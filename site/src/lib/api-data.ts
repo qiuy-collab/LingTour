@@ -876,8 +876,9 @@ export async function fetchHomeData(): Promise<HomeData> {
     body: pickLocalized(s.description),
   }));
 
-  // Testimonials: CMS-first. When the admin has not authored any yet, fall back to the
-  // two seeded field-note quotes so the home section never renders empty.
+  // Testimonials: CMS-only. When the admin has not authored any, return an
+  // empty list — the home client renders an honest empty state. Never fall
+  // back to invented traveller quotes.
   const cmsTestimonials = (homeConfig.testimonials ?? [])
     .map((item) => ({
       quote: pickLocalized(item.quote),
@@ -891,13 +892,7 @@ export async function fetchHomeData(): Promise<HomeData> {
     regionShowcase,
     featuredRoutes,
     cultureHighlights,
-    testimonials:
-      cmsTestimonials.length > 0
-        ? cmsTestimonials
-        : [
-            { quote: "I left understanding why every dish mattered.", name: "Lina, Singapore" },
-            { quote: "The tea ceremony changed how I think about time.", name: "James K., Australia" },
-          ],
+    testimonials: cmsTestimonials,
     trustMetrics: homeConfig.trustMetrics?.map((item) => ({
       value: item.value,
       label: pickLocalized(item.label),

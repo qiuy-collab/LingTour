@@ -5,6 +5,7 @@ import { useLocale } from "@/lib/locale-context";
 import {
   fetchEvents,
   fetchHomeData,
+  fetchInterpreting,
   fetchStoreProducts,
   fetchRoutes,
   type EventData,
@@ -69,6 +70,22 @@ export default function HomeClient({
     [],
     { initialData: initialEvents, revalidateOnMount: false },
   );
+
+  // The interpreter line under the CTA states the real roster size and the
+  // languages actually listed on published profiles — never a padded count.
+  // It renders nothing until the API answers, so a failed request can't be
+  // replaced by a made-up number.
+  const { data: interpretingData } = useApiQuery(() => fetchInterpreting(), []);
+  const interpreterProfiles = interpretingData?.profiles ?? [];
+  const interpreterCount = interpreterProfiles.length;
+  const interpreterLanguages = Array.from(
+    new Set(
+      interpreterProfiles
+        .flatMap((profile) => profile.language.split(/[,/·]+/))
+        .map((lang) => lang.trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, 4);
 
   // Only show loading spinner if we have NO initial data at all
   // (e.g., SSR failed AND client fetch is still pending).
@@ -235,19 +252,28 @@ export default function HomeClient({
                   {t("home.interpreting.title")}
                 </h2>
                 <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 lg:mx-0 lg:block lg:space-y-7 lg:overflow-visible lg:px-0 lg:pb-0">
-                  {testimonials
-                    .slice(0, 2)
-                    .map((item: { name: string; quote: string }) => (
-                        <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 min-[620px]:w-[18rem] lg:w-auto lg:max-w-none">
+                  {testimonials.length > 0
+                    ? testimonials
+                        .slice(0, 2)
+                        .map((item: { name: string; quote: string }) => (
+                            <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 min-[620px]:w-[18rem] lg:w-auto lg:max-w-none">
+                              <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
+                                {item.quote}
+                              </p>
+                              <p className="mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
+                                - {item.name}
+                              </p>
+                            </div>
+                          ),
+                        )
+                    : (
+                        <div className="w-full max-w-[23rem] shrink-0 snap-start border border-dashed border-[var(--line)] bg-white/45 p-5 sm:p-6 lg:w-auto lg:max-w-none">
                           <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
-                            {item.quote}
-                          </p>
-                          <p className="mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-                            - {item.name}
+                            No traveller notes have come back yet. The first dispatches
+                            from the field will be posted here exactly as written.
                           </p>
                         </div>
-                      ),
-                    )}
+                      )}
                 </div>
                 <div className="mt-10 sm:mt-16">
                   <Link
@@ -257,9 +283,16 @@ export default function HomeClient({
                     <span className="relative z-10">{t("home.interpreting.cta")}</span>
                     <span aria-hidden className="relative z-10 text-base">→</span>
                   </Link>
-                  <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
-                    {t("home.interpreting.experts")}
-                  </p>
+                  {interpreterCount > 0 ? (
+                    <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+                      {interpreterCount === 1
+                        ? "1 local interpreter on the roster"
+                        : `${interpreterCount} local interpreters on the roster`}
+                      {interpreterLanguages.length > 0
+                        ? ` · ${interpreterLanguages.join(" / ")}`
+                        : ""}
+                    </p>
+                  ) : null}
                 </div>
               </Reveal>
             </div>
