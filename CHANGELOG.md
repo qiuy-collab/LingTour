@@ -8,6 +8,19 @@
 
 已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。当前为空。
 
+## 2026-09-16 — Review 缺陷修复上线（root `6216454`）
+
+### Fixed
+
+- api: 按生产代理跳数配置 `trust proxy`，避免所有访客共享全局限流桶；refresh 和 JWT 校验重新检查账号状态；事件状态收紧为 `draft/upcoming/ongoing/past`。
+- api: 上传文件增加 magic-byte 校验并为静态上传响应增加 `nosniff`；修复 API 测试 mock 类型漂移。
+- platform: 商城下单在事务内锁定并预留库存，支付失败或取消时释放；预约/定金提交支持 `Idempotency-Key`。
+- site: SSR 失败不再伪装成稳定空数据；空 initial list 会重新请求；公开 server fetch 移除独立 Next Data Cache；兼容 collection 历史多语言字段；后台登录页不再请求未授权 settings。
+
+部署：`Deploy LingTour Docker Stack` run `35015977643` 成功（6m09s）；服务器 root `6216454`，admin-frontend `228b55c`；新增迁移 `AddStockReservationsAndBookingIdempotency1762200000000` 已应用。部署前数据库备份：`/root/backups/lingtour-db-pre-review-fixes-20260916.dump`（144303 bytes）。
+
+验证：API tsc、24 suites/161 tests/build；site tsc、18 suites/102 tests/build；admin build；site lint 0 errors/1084 warnings；前台和后台 1280/390px 浏览器回归通过；公网 API/页面 200，数据库 health `up`。
+
 ## 2026-09-16 — 品牌更名 Culvoy 与界面反馈修复（root `9cb4eb0`）
 
 ### Changed

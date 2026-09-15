@@ -4,14 +4,13 @@
 
 ## 1. Production baseline
 
-- Root production and root `origin/main`: `9b5dbfc9787d6bc5d200232bb6503bf3406c6057`.
+- Root production and root `origin/main`: `6216454d0d6927fafb95e1b17a8c3e176082225b`.
 - Server path: `/root/LingTour`.
-- Production mode: PM2.
-- `lingtour-api`, `lingtour-site`, and `lingtour-admin` were online on 2026-07-27.
+- Production mode: Docker Compose (`docker-compose.prod.yml`).
+- `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 21 applied migrations; all 21 reported `[X]`.
-- Local code has a 22nd migration, `api/src/database/migrations/1761600000000-SecureInterpretingDeposits.ts`, in an unpushed commit and therefore not on production.
-- Local `tools/deploy-pm2.sh` runs migrations after the API build and before service restart. The deployed `9b5dbfc` script does not yet contain that change.
+- Production has 28 applied migrations; all 28 reported `[X]`, including `AddStockReservationsAndBookingIdempotency1762200000000`.
+- The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
 
@@ -28,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `73f8c3a` (2026-09-05, "fix(site): restore manual home video playback") — refreshed 2026-09-07
+- Local HEAD: `6216454` (2026-09-16, "test(api): restore type-safe mocks")
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -48,7 +47,7 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD: `acf770e` (2026-07-27, "fix(preview): send unsaved drafts to the popup window") — refreshed 2026-09-07
+- Local HEAD: `228b55c` (2026-09-16, "fix(admin): avoid unauthenticated settings load")
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 
 Formerly unpushed commits (pushed since; kept as record):
@@ -60,51 +59,9 @@ Formerly unpushed commits (pushed since; kept as record):
 
 The paired root/admin files have matching blobs. Before cleanup the complete tracked admin trees had zero differences except `.vscode/extensions.json`, which is intentionally tracked only by the independent admin repository.
 
-## 3. Protected uncommitted onboarding work
+## 3. Protected uncommitted work
 
-The same physical admin files are visible as WIP from both repositories:
-
-- Modified `admin-frontend/src/components/OnboardingTour.vue`
-- Deleted `admin-frontend/src/components/OperationsGuide.vue`
-- Added `admin-frontend/src/constants/onboarding.ts`
-- Modified `admin-frontend/src/layout/AdminLayout.vue`
-- Modified `admin-frontend/src/styles/theme.css`
-- Modified `admin-frontend/src/views/dashboard/Dashboard.vue`
-
-Implemented direction:
-
-- Six spotlight steps with Next, Back, Skip, completion, and step count.
-- Layout-level ownership and dashboard routing.
-- Desktop/mobile navigation target.
-- Versioned per-staff completion key `culvoy-admin-onboarding-v2:<staff-id>`.
-- First-login opening and a global help re-entry button.
-- Real target/popover geometry, focus entry/wrap/restore, Escape, reduced motion, and GSAP/observer/listener cleanup.
-- Removal of the unreferenced static `OperationsGuide.vue`.
-- Admin tokenized theme/z-index rather than arbitrary component values.
-
-Build/browser evidence:
-
-- Admin `vue-tsc` and production build passed.
-- Browser work covered first open, all six steps, mobile targeting, persistence, re-entry, Escape/focus restore, and viewport geometry.
-
-**Not ready to commit. Confirmed review blockers:**
-
-High severity:
-
-1. The tour overlay can cover and disable an unsaved-changes confirmation while route navigation is guarded.
-2. During step activation the popover is unmounted and the modal focus trap disappears, allowing keyboard activation behind the overlay.
-
-Medium severity:
-
-1. `Ctrl+K` can focus the hidden command palette behind the tour.
-2. The dialog references title/description elements that are absent while activation is pending.
-3. External route changes can leave a stale spotlight/popover.
-4. Crossing the mobile breakpoint does not reacquire the correct target.
-5. The mobile charts target fills most of the viewport and removes meaningful dimming.
-6. The mobile-nav copy asks users to click a target that the dim layer intercepts.
-7. Dark-mode primary-button contrast is about 3.61:1, below WCAG AA for normal text.
-
-No dedicated onboarding component/unit tests exist yet. Fix blockers, add focused tests, rerun visible-tab browser verification, and only then commit in both repositories.
+No protected uncommitted source changes remain in either repository. The onboarding work and its review follow-ups are committed in the current admin history; the remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
 
 ## 4. Verification matrix
 
@@ -508,6 +465,17 @@ Owner reported `Cannot POST /api/auth/session` in production.
 - Fix: commit `3343209` added exact-match locations for `/api/auth/session` (and its trailing-slash form) proxying to `site_frontend`; syntax pre-checked on the server with a one-off `nginx:alpine nginx -t`.
 - Deploy: run `34993271372`; server root HEAD `3343209`; gateway conf md5 matches the repo; site container healthy.
 - Verification 7/7 against production: POST wrong credentials → 401 "Invalid email or password" (real auth flow reached); POST invalid action → 400 from the site handler; DELETE → `{ok:true}` cookie cleared; direct `/api/v1/auth/login` forward unaffected; a real browser on `/login` submitting bad credentials shows the visible auth error with no "Cannot POST" and zero page errors. A successful login was not exercised (no production credentials; success and failure share the same handler forward branch).
+
+## 31. 2026-09-16 Review fixes deployed
+
+Owner requested targeted fixes from `review/9-16/report.md`, categorized commits, and production deployment.
+
+- Root commits: `fa8f5ce` API request/content boundaries; `d2d2640` commerce and booking writes; `8202c8d` public content recovery; `af2992a` admin mirror; `6216454` API test mock types. Independent admin commit: `228b55c`.
+- Validation before push: API tsc, 24 suites/161 tests, build; site tsc, 18 suites/102 tests, build; admin build; site lint 0 errors with 1084 warnings; browser regression passed for public pages and admin login at 1280px and 390px.
+- Database backup before deployment: `/root/backups/lingtour-db-pre-review-fixes-20260916.dump` (144303 bytes, custom format). Read-only migration status before deploy reported 27/27 applied.
+- Deploy: `Deploy LingTour Docker Stack` run `35015977643` succeeded in 6m09s. Server root HEAD `6216454`; migration 28 `AddStockReservationsAndBookingIdempotency1762200000000` is applied. API, site, admin, nginx, and Redis containers are healthy.
+- Production smoke: API health returned database `up`; public API cities/routes/shop/interpreting returned 200; Home/Culture/Routes/Shop/Interpreting/Community/Login returned 200. Cache-busted upload response returned `x-content-type-options: nosniff`. No production CRUD, payment, or content write was performed.
+- Remaining verification: authenticated admin CRUD, inventory concurrency, duplicate booking behavior against staging, and successful production login/payment require dedicated credentials and should be run by operations.
 
 ## 29. 2026-09-16 full rebrand to Culvoy deployed, legacy domains kept compatible
 
