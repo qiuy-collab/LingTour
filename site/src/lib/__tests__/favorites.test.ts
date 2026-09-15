@@ -5,7 +5,7 @@ import {
   writeFavorites,
 } from "../favorites";
 
-const USER_KEY = "lingtour-user";
+const USER_KEY = "culvoy-user";
 
 const signedInUser = JSON.stringify({ id: "u1", accountId: "u1", name: "Traveler", email: "traveler@example.com" });
 

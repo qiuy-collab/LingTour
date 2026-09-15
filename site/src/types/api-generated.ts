@@ -1178,9 +1178,9 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         LoginDto: {
-            /** @example admin@lingtour.cn */
+            /** @example admin@culvoy.com */
             email: string;
-            /** @example LingTour2026! */
+            /** @example Culvoy2026! */
             password: string;
         };
         RegisterDto: Record<string, never>;
@@ -1200,7 +1200,7 @@ export interface components {
              *     }
              */
             body: Record<string, never>;
-            /** @example https://oss.lingtour.cn/cities/xxx.jpg */
+            /** @example https://oss.culvoy.com/cities/xxx.jpg */
             image: string;
             /**
              * @example {
@@ -1238,7 +1238,7 @@ export interface components {
              *     }
              */
             regionLabel: Record<string, never>;
-            /** @example https://oss.lingtour.cn/cities/gz-hero.jpg */
+            /** @example https://oss.culvoy.com/cities/gz-hero.jpg */
             heroImage: string;
             /**
              * @example {
@@ -1310,7 +1310,7 @@ export interface components {
              *     }
              */
             regionLabel?: Record<string, never>;
-            /** @example https://oss.lingtour.cn/cities/gz-hero.jpg */
+            /** @example https://oss.culvoy.com/cities/gz-hero.jpg */
             heroImage?: string;
             /**
              * @example {
@@ -1393,7 +1393,7 @@ export interface components {
             culturalStory: Record<string, never>;
             /** @default [] */
             details: string[];
-            /** @example https://oss.lingtour.cn/routes/stop-0.jpg */
+            /** @example https://oss.culvoy.com/routes/stop-0.jpg */
             image: string;
             lat?: number;
             lng?: number;
@@ -1448,7 +1448,7 @@ export interface components {
              *     }
              */
             story: Record<string, never>;
-            /** @example https://oss.lingtour.cn/routes/cover.jpg */
+            /** @example https://oss.culvoy.com/routes/cover.jpg */
             coverImage: string;
             /** @default false */
             published: boolean;
@@ -1507,7 +1507,7 @@ export interface components {
              *     }
              */
             story?: Record<string, never>;
-            /** @example https://oss.lingtour.cn/routes/cover.jpg */
+            /** @example https://oss.culvoy.com/routes/cover.jpg */
             coverImage?: string;
             /** @default false */
             published: boolean;
@@ -1533,7 +1533,7 @@ export interface components {
             routeName: string;
             /** @default  */
             routeSlug: string;
-            /** @example https://oss.lingtour.cn/shop/coastal-cover.jpg */
+            /** @example https://oss.culvoy.com/shop/coastal-cover.jpg */
             image: string;
             /**
              * @example {
@@ -1561,7 +1561,7 @@ export interface components {
             routeName?: string;
             /** @default  */
             routeSlug: string;
-            /** @example https://oss.lingtour.cn/shop/coastal-cover.jpg */
+            /** @example https://oss.culvoy.com/shop/coastal-cover.jpg */
             image?: string;
             /**
              * @example {
@@ -1598,7 +1598,7 @@ export interface components {
              *     }
              */
             tag: Record<string, never>;
-            /** @example https://oss.lingtour.cn/shop/bowl.jpg */
+            /** @example https://oss.culvoy.com/shop/bowl.jpg */
             image: string;
             /**
              * @example {
@@ -1642,7 +1642,7 @@ export interface components {
              *     }
              */
             tag?: Record<string, never>;
-            /** @example https://oss.lingtour.cn/shop/bowl.jpg */
+            /** @example https://oss.culvoy.com/shop/bowl.jpg */
             image?: string;
             /**
              * @example {

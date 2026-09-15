@@ -122,7 +122,7 @@ export function toLocalUser(
 export function readStoredUser(): LocalUser | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem("lingtour-user");
+    const raw = window.localStorage.getItem("culvoy-user");
     return raw ? (JSON.parse(raw) as LocalUser) : null;
   } catch {
     return null;
@@ -132,10 +132,10 @@ export function readStoredUser(): LocalUser | null {
 export function clearStoredAuth() {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.removeItem("lingtour-user");
+    window.localStorage.removeItem("culvoy-user");
     void clearSession();
   } finally {
-    window.dispatchEvent(new Event("lingtour-auth"));
+    window.dispatchEvent(new Event("culvoy-auth"));
   }
 }
 
@@ -144,8 +144,8 @@ export function persistAuthUser(
   overrides: Partial<LocalUser> = {},
 ) {
   const localUser = toLocalUser(user, overrides);
-  window.localStorage.setItem("lingtour-user", JSON.stringify(localUser));
-  window.dispatchEvent(new Event("lingtour-auth"));
+  window.localStorage.setItem("culvoy-user", JSON.stringify(localUser));
+  window.dispatchEvent(new Event("culvoy-auth"));
   return localUser;
 }
 

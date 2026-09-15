@@ -15,8 +15,8 @@ type LegacyCartItem = CartItem & {
   productSlug?: string;
 };
 
-const CART_STORAGE_KEY = "lingtour-cart";
-const CHECKOUT_ITEMS_STORAGE_KEY = "lingtour-checkout-items";
+const CART_STORAGE_KEY = "culvoy-cart";
+const CHECKOUT_ITEMS_STORAGE_KEY = "culvoy-checkout-items";
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -79,7 +79,7 @@ export function readCart(): CartItem[] {
 export function writeCart(items: CartItem[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  window.dispatchEvent(new Event("lingtour-cart"));
+  window.dispatchEvent(new Event("culvoy-cart"));
 }
 
 export function rememberCheckoutItems(orderNo: string, slugs: string[]) {

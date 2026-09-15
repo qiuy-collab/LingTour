@@ -31,7 +31,7 @@ describe("usePreviewBridge popup handshake", () => {
     await waitFor(() => {
       expect(opener.postMessage).toHaveBeenCalledWith(
         {
-          channel: "lingtour-preview-ready",
+          channel: "culvoy-preview-ready",
           key: KEY,
           type: "route",
         },
@@ -56,7 +56,7 @@ describe("usePreviewBridge popup handshake", () => {
           origin: SOURCE,
           source: {} as Window,
           data: {
-            channel: "lingtour-preview",
+            channel: "culvoy-preview",
             key: KEY,
             type: "route",
             source: SOURCE,
@@ -74,7 +74,7 @@ describe("usePreviewBridge popup handshake", () => {
           origin: SOURCE,
           source: opener as unknown as Window,
           data: {
-            channel: "lingtour-preview",
+            channel: "culvoy-preview",
             key: KEY,
             type: "route",
             source: SOURCE,
@@ -90,7 +90,7 @@ describe("usePreviewBridge popup handshake", () => {
         title: "Unsaved popup draft",
       });
     });
-    expect(window.sessionStorage.getItem(`lingtour-preview:${KEY}`)).toContain(
+    expect(window.sessionStorage.getItem(`culvoy-preview:${KEY}`)).toContain(
       "Unsaved popup draft",
     );
   });

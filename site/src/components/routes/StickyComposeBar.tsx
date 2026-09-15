@@ -64,10 +64,10 @@ export function StickyComposeBar({
   useEffect(() => {
     const sync = () => setUser(readStoredUser());
     sync();
-    window.addEventListener("lingtour-auth", sync);
+    window.addEventListener("culvoy-auth", sync);
     window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener("lingtour-auth", sync);
+      window.removeEventListener("culvoy-auth", sync);
       window.removeEventListener("storage", sync);
     };
   }, []);

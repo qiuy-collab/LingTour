@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { AuthUser, LocalUser } from "@/lib/auth-client";
 
-export const SESSION_COOKIE = "lingtour_session";
+export const SESSION_COOKIE = "culvoy_session";
 
 function getInternalApiBase(): string {
   const origin = process.env.INTERNAL_API_ORIGIN || process.env.NEXT_PUBLIC_API_URL || "";

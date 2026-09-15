@@ -4,8 +4,8 @@ export function CarouselRuntime() {
       dangerouslySetInnerHTML={{
         __html: `
           (() => {
-            if (window.__lingtourCarouselRuntimeReady) return;
-            window.__lingtourCarouselRuntimeReady = true;
+            if (window.__culvoyCarouselRuntimeReady) return;
+            window.__culvoyCarouselRuntimeReady = true;
 
             function moveCarousel(root, direction) {
               const track = root.querySelector("[data-carousel-track]");

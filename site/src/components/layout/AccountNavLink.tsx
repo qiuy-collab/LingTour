@@ -31,12 +31,12 @@ export function AccountNavLink({
 
     syncUser();
     window.addEventListener("storage", syncUser);
-    window.addEventListener("lingtour-auth", syncUser);
+    window.addEventListener("culvoy-auth", syncUser);
     window.addEventListener("pageshow", syncUser);
 
     return () => {
       window.removeEventListener("storage", syncUser);
-      window.removeEventListener("lingtour-auth", syncUser);
+      window.removeEventListener("culvoy-auth", syncUser);
       window.removeEventListener("pageshow", syncUser);
     };
   }, []);
@@ -46,7 +46,7 @@ export function AccountNavLink({
       <Link
         href="/login?next=%2Fprofile%3Ftab%3Dnotes"
         onClick={onNavigate}
-        className="btn-primary-compact ml-2 inline-flex min-h-11 items-center px-4 py-2 text-[10px] uppercase tracking-[0.2em] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--gold)]"
+        className="ml-2 inline-flex min-h-11 items-center border border-[var(--river-deep)]/45 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)] hover:bg-[var(--river-deep)] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--gold)]"
         aria-label="Log in to open your traveler profile"
       >
         {t("common.nav.login")}

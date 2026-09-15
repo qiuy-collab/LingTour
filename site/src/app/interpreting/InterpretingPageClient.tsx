@@ -295,15 +295,15 @@ export default function InterpretingPageClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(185,138,70,0.1),transparent_40%)]" />
 
         <div className="site-container relative w-full">
-          <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(7rem,0.65fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.18fr)_minmax(14rem,0.82fr)] sm:items-center sm:gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:items-center sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 className="mb-6 max-w-[18ch] font-[family:var(--font-display)] text-[clamp(1.9rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8">
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8 lg:text-[clamp(2.75rem,7vw,6rem)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("interpreting.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("interpreting.atlas.titleItalic")}</span></span>
                 </h1>
 
-                <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
+                <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:gap-8 lg:pt-7">
                   <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-[13px] leading-6 text-[var(--river-deep)]/85 sm:text-base sm:leading-relaxed lg:text-lg">
                     {t("interpreting.hero.subtitle")}
                   </p>
@@ -342,9 +342,9 @@ export default function InterpretingPageClient({
       </section>
 
       <section id="service-types" className="site-container py-16 lg:py-24">
-        <div className="mb-8 opacity-60">
+        <div className="mb-8">
           <Reveal>
-            <h2 className="whitespace-nowrap font-[family:var(--font-display)] text-2xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-3xl md:text-4xl">
+            <h2 className="font-[family:var(--font-display)] text-3xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-4xl md:text-5xl">
               {t("interpreting.atlas.chooseShape")}
             </h2>
           </Reveal>

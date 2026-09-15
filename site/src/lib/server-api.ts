@@ -16,7 +16,7 @@ import { headers } from "next/headers";
  *
  * Priority:
  *  1. INTERNAL_API_ORIGIN server-only env var (e.g. "http://api:8000/api/v1")
- *  2. NEXT_PUBLIC_API_URL env var (e.g. "https://api.lingfengtranstour.cn/api/v1")
+ *  2. NEXT_PUBLIC_API_URL env var (e.g. "https://api.culvoy.com/api/v1")
  *  3. Same-origin fallback using the incoming request's Host header
  */
 async function getServerBaseUrl(): Promise<string> {

@@ -66,7 +66,7 @@ export function Avatar({
 }: AvatarProps) {
   const initials = useMemo(() => getInitials(name), [name]);
   const colour = useMemo(
-    () => pickColour((seed ?? name ?? "lingtour").toLowerCase()),
+    () => pickColour((seed ?? name ?? "culvoy").toLowerCase()),
     [seed, name],
   );
 

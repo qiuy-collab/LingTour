@@ -19,22 +19,6 @@ function uniqueValues(values: string[]) {
   );
 }
 
-function indexLayout(index: number) {
-  if (index === 0) {
-    return "md:col-span-2 lg:col-span-7 lg:grid lg:grid-cols-[minmax(0,1.18fr)_minmax(13rem,0.82fr)] lg:items-end lg:gap-8";
-  }
-  if (index % 4 === 1) return "lg:col-span-5 lg:mt-20";
-  if (index % 4 === 2) return "lg:col-span-4 lg:-mt-5";
-  return "lg:col-span-8 lg:mt-14 lg:grid lg:grid-cols-[minmax(12rem,0.72fr)_minmax(0,1.28fr)] lg:items-end lg:gap-8";
-}
-
-function imageLayout(index: number) {
-  if (index === 0) return "aspect-[16/10] lg:aspect-[5/4]";
-  if (index % 4 === 1) return "aspect-[4/5]";
-  if (index % 4 === 2) return "aspect-square";
-  return "aspect-[16/10] lg:aspect-[5/4]";
-}
-
 interface CulturePageClientProps {
   initialCityCultures: CityCulture[];
 }
@@ -193,14 +177,14 @@ export default function CulturePageClient({
             </button>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-16 md:overflow-visible md:px-0 lg:grid-cols-12 lg:gap-x-12 lg:gap-y-20">
+          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-16 md:overflow-visible md:px-0 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-20">
             <AnimatePresence initial={false} mode="popLayout">
-              {filteredCultures.map((city, index) => {
+              {filteredCultures.map((city) => {
                 const cardImage = city.image || placeholderFor("square");
                 return (
                   <motion.div
                     key={city.slug}
-                    className={`h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none ${indexLayout(index)}`}
+                    className="h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none"
                     layout
                     initial={false}
                     animate={{ opacity: 1, y: 0 }}
@@ -209,7 +193,7 @@ export default function CulturePageClient({
                   >
                     <Link href={`/culture/${city.slug}`} className="group block h-full" data-pastoral-card>
                       <article className="flex h-full min-w-0 flex-col">
-                        <div className={`relative overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.75rem] ${imageLayout(index)}`}>
+                        <div className="relative aspect-[4/3] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.75rem]">
                           <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.04]"
                             style={{ backgroundImage: `url(${cardImage})` }}

@@ -57,7 +57,7 @@ type Draft = {
   image?: string;
 };
 
-const LOCAL_STAMPS_KEY = "lingtour-community-stamps";
+const LOCAL_STAMPS_KEY = "culvoy-community-stamps";
 
 /** Feed items rendered per page. */
 const PAGE_SIZE = 12;
@@ -82,8 +82,8 @@ function coerceChannel(channel: string): PostChannel {
 function readLoginState() {
   if (typeof window === "undefined") return false;
   return Boolean(
-    window.localStorage.getItem("lingtour-user") ||
-    window.localStorage.getItem("lingtour-token"),
+    window.localStorage.getItem("culvoy-user") ||
+    window.localStorage.getItem("culvoy-token"),
   );
 }
 
@@ -184,10 +184,10 @@ export default function CommunityPage() {
       window.localStorage.getItem(LOCAL_STAMPS_KEY) || "0",
     );
     setStampCount(Number.isFinite(storedStamps) ? storedStamps : 0);
-    window.addEventListener("lingtour-auth", syncAuth);
+    window.addEventListener("culvoy-auth", syncAuth);
     const unsubscribe = subscribeSyncedCommunityPosts(setOptimisticPosts);
     return () => {
-      window.removeEventListener("lingtour-auth", syncAuth);
+      window.removeEventListener("culvoy-auth", syncAuth);
       unsubscribe();
     };
   }, []);

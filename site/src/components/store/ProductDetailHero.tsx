@@ -202,7 +202,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
 
       <div className="site-container mt-9 sm:mt-12">
         <div className="grid min-w-0 grid-cols-1 gap-6 min-[600px]:grid-cols-2 min-[600px]:gap-7 lg:grid-cols-12 lg:items-start lg:gap-8 xl:gap-12">
-          <div className="contents lg:col-span-3 lg:block lg:min-w-0">
+          <div className="contents lg:col-span-4 lg:block lg:min-w-0">
             <div className="order-1 col-span-1 space-y-5 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:space-y-10">
               <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
                 <p className="handwritten text-xl text-[var(--gold-light)]">Collection</p>
@@ -217,7 +217,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               </div>
 
               <header data-product-heading className="space-y-3 sm:space-y-4">
-                <h1 className="max-w-[12ch] font-[family:var(--font-display)] text-4xl leading-[0.92] tracking-tight text-[var(--river-deep)] sm:text-5xl lg:text-6xl">
+                <h1 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.05] tracking-tight text-[var(--river-deep)] sm:text-4xl lg:text-5xl">
                   {product.name}
                 </h1>
                 <p className="handwritten text-xl text-[var(--gold)] sm:text-2xl">{product.tag}</p>
@@ -250,7 +250,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
             </div>
           </div>
 
-          <div data-product-frame className="relative order-2 min-w-0 lg:order-none lg:col-span-5">
+          <div data-product-frame className="relative order-2 min-w-0 lg:order-none lg:col-span-4">
             {/* Product hero: a flat object-file mount with a document header —
                 the catalogue gesture, not a fourth polaroid. */}
             <div ref={plateRef} className="relative flex aspect-[4/5] w-full flex-col border border-[var(--line)] bg-white p-5 scrapbook-shadow transform-gpu sm:p-7 xl:p-9">

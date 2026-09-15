@@ -49,7 +49,7 @@ const ARCHIVE_ACTION_CLASS =
 
 function readFavorites(): FavoriteItem[] {
   try {
-    const raw = window.localStorage.getItem("lingtour-favorites");
+    const raw = window.localStorage.getItem("culvoy-favorites");
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed)
       ? parsed.filter((item) => item && typeof item.id === "string" && typeof item.title === "string")

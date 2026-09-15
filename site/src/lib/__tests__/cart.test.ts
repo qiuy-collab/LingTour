@@ -13,7 +13,7 @@ import {
   writeCart,
 } from "../cart";
 
-const STORAGE_KEY = "lingtour-cart";
+const STORAGE_KEY = "culvoy-cart";
 
 const teaCup = {
   productId: "tea-id",
@@ -148,11 +148,11 @@ describe("cart store", () => {
 
   it("dispatches the cart event after a write", () => {
     const listener = vi.fn();
-    window.addEventListener("lingtour-cart", listener);
+    window.addEventListener("culvoy-cart", listener);
 
     writeCart([{ ...teaCup, quantity: 1, selected: true }]);
 
     expect(listener).toHaveBeenCalledOnce();
-    window.removeEventListener("lingtour-cart", listener);
+    window.removeEventListener("culvoy-cart", listener);
   });
 });

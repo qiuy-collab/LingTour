@@ -4,9 +4,9 @@ export function FavoriteRuntime() {
       dangerouslySetInnerHTML={{
         __html: `
           (() => {
-            if (window.__lingtourFavoriteRuntimeReady) return;
-            window.__lingtourFavoriteRuntimeReady = true;
-            const key = "lingtour-favorites";
+            if (window.__culvoyFavoriteRuntimeReady) return;
+            window.__culvoyFavoriteRuntimeReady = true;
+            const key = "culvoy-favorites";
 
             function readFavorites() {
               try {
@@ -21,7 +21,7 @@ export function FavoriteRuntime() {
             function writeFavorites(items) {
               try {
                 window.localStorage.setItem(key, JSON.stringify(items));
-                window.dispatchEvent(new Event("lingtour-favorites"));
+                window.dispatchEvent(new Event("culvoy-favorites"));
               } catch {
                 // localStorage unavailable
               }
@@ -137,7 +137,7 @@ export function FavoriteRuntime() {
             }, true);
 
             window.addEventListener("storage", syncFavorites);
-            window.addEventListener("lingtour-favorites", syncFavorites);
+            window.addEventListener("culvoy-favorites", syncFavorites);
             window.addEventListener("pageshow", syncFavorites);
             if (document.readyState === "loading") {
               document.addEventListener("DOMContentLoaded", syncFavorites, { once: true });

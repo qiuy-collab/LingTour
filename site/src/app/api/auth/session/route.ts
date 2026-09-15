@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SESSION_COOKIE = "lingtour_session";
+const SESSION_COOKIE = "culvoy_session";
 const ACTION_PATHS = {
   login: "/auth/login",
   register: "/auth/register",

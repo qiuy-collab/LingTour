@@ -25,9 +25,9 @@ type ServerFavorite = {
   targetImage?: string;
 };
 
-const STORAGE_KEY = "lingtour-favorites";
-const USER_KEY = "lingtour-user";
-export const FAVORITES_EVENT = "lingtour-favorites";
+const STORAGE_KEY = "culvoy-favorites";
+const USER_KEY = "culvoy-user";
+export const FAVORITES_EVENT = "culvoy-favorites";
 
 function apiBase() {
   return process.env.NEXT_PUBLIC_API_URL || "/api/v1";

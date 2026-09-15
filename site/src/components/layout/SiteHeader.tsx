@@ -162,7 +162,7 @@ export function SiteHeader() {
           <AccountNavLink />
           <Link
             href="/interpreting#interpreting-booking"
-            className="btn-primary-compact ml-1 inline-flex items-center justify-center px-4 py-2.5 text-sm"
+            className="ml-1 inline-flex min-h-11 items-center justify-center bg-[var(--river-deep)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--river-deep)]/85"
           >
             {t("common.nav.planTrip")}
           </Link>
@@ -275,7 +275,7 @@ export function SiteHeader() {
               />
               <Link
                 href="/interpreting#interpreting-booking"
-                className="btn-primary-compact inline-flex items-center justify-center px-4 py-3 text-center text-sm"
+                className="inline-flex min-h-11 items-center justify-center bg-[var(--river-deep)] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--river-deep)]/85"
                 onClick={() => setIsOpen(false)}
               >
                 {t("common.nav.planTrip")}

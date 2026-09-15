@@ -242,7 +242,7 @@ export function LoginPanel() {
             <p className="font-[Georgia,'Times_New_Roman',serif] text-[clamp(2.25rem,4vw,4.5rem)] tracking-[-0.05em]">Culvoy</p>
             <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-white/72">Guangdong</p>
           </div>
-          <div className="w-14 border-t border-[var(--cinnabar)]" aria-hidden="true" />
+          <div className="w-14 self-center border-t border-[var(--cinnabar)]" aria-hidden="true" />
         </div>
       </section>
 
@@ -251,12 +251,6 @@ export function LoginPanel() {
           <h1 className="font-[Georgia,'Times_New_Roman',serif] text-[clamp(2.75rem,4vw,4.25rem)] leading-[1] tracking-[-0.04em] text-balance lg:whitespace-nowrap">
             {isLogin ? "Welcome back" : "Create your account"}
           </h1>
-          <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--muted)]">
-            {isLogin
-              ? "Sign in to return to your saved routes, field notes, and bookings."
-              : "Keep your routes, field notes, and bookings in one place."}
-          </p>
-
           {error ? (
             <div className="mt-7 border-y border-[var(--cinnabar)]/45 py-3 text-sm leading-6 text-[var(--cinnabar)]" role="alert">
               {error}
@@ -377,7 +371,7 @@ export function LoginPanel() {
             >
               {usingCode
                 ? "Use your password instead"
-                : "Email me a one-time code instead"}
+                : "Email a code instead"}
             </button>
 
             {isLogin && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (

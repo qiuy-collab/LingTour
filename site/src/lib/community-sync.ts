@@ -2,8 +2,8 @@
 
 import type { CommunityFeedPost } from "@/lib/api-data";
 
-const COMMUNITY_POSTS_KEY = "lingtour-community-posts";
-const COMMUNITY_POSTS_EVENT = "lingtour-community-posts";
+const COMMUNITY_POSTS_KEY = "culvoy-community-posts";
+const COMMUNITY_POSTS_EVENT = "culvoy-community-posts";
 
 export function readSyncedCommunityPosts(): CommunityFeedPost[] {
   if (typeof window === "undefined") return [];

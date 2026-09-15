@@ -14,7 +14,7 @@ type PreviewType =
   | "home";
 
 type PreviewEnvelope<T> = {
-  channel: "lingtour-preview";
+  channel: "culvoy-preview";
   key: string;
   type: PreviewType;
   source?: string;
@@ -23,12 +23,12 @@ type PreviewEnvelope<T> = {
 };
 
 type PreviewReadyEnvelope = {
-  channel: "lingtour-preview-ready";
+  channel: "culvoy-preview-ready";
   key: string;
   type: PreviewType;
 };
 
-const STORAGE_PREFIX = "lingtour-preview:";
+const STORAGE_PREFIX = "culvoy-preview:";
 
 
 function readStoredPreview<T>(key: string): PreviewEnvelope<T> | null {
@@ -96,7 +96,7 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
       window.parent !== window ? window.parent : window.opener;
     if (trustedSender && previewSource) {
       const ready: PreviewReadyEnvelope = {
-        channel: "lingtour-preview-ready",
+        channel: "culvoy-preview-ready",
         key: previewKey,
         type: expectedType,
       };
@@ -106,7 +106,7 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
     const handleMessage = (event: MessageEvent) => {
       if (!trustedSender || event.source !== trustedSender) return;
       const payload = event.data as PreviewEnvelope<T> | undefined;
-      if (!payload || payload.channel !== "lingtour-preview") return;
+      if (!payload || payload.channel !== "culvoy-preview") return;
       if (payload.type !== expectedType || payload.key !== previewKey) return;
       if (!previewSource || event.origin !== previewSource) return;
       if (payload.source && payload.source !== previewSource) return;
