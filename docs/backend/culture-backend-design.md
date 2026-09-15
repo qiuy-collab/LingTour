@@ -1,6 +1,6 @@
 # Culture 模块后端设计文档
 
-> 版本: 1.0 | 日期: 2026-05-09 | 关联: LingTour 整体后端设计 v1.0
+> 版本: 1.0 | 日期: 2026-05-09 | 关联: Culvoy 整体后端设计 v1.0
 
 ---
 
@@ -164,7 +164,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
       "slug": "zhanjiang",
       "name": "Zhanjiang",
       "regionLabel": "Southern coast",
-      "heroImage": "https://oss.lingtour.cn/cities/zhanjiang-hero.jpg",
+      "heroImage": "https://oss.culvoy.com/cities/zhanjiang-hero.jpg",
       "heroNarrative": "Zhanjiang opens the southern sea chapter...",
       "tags": ["Coast", "Seafood", "Volcanic landscape"],
       "routeSlugs": ["southern-sea-table"]
@@ -182,7 +182,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
     "slug": "zhanjiang",
     "name": "Zhanjiang",
     "regionLabel": "Southern coast",
-    "heroImage": "https://oss.lingtour.cn/...",
+    "heroImage": "https://oss.culvoy.com/...",
     "heroNarrative": "Zhanjiang opens...",
     "tags": ["Coast", "Seafood"],
     "entryCta": "Enter Zhanjiang",
@@ -193,10 +193,10 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
         "id": "uuid-1",
         "title": "Southern coast",
         "body": "Zhanjiang sits at the southernmost edge...\n\nWhat makes...",
-        "image": "https://oss.lingtour.cn/...",
+        "image": "https://oss.culvoy.com/...",
         "statLabel": "海岸线长度",
         "statValue": "1,243 km",
-        "breathImage": "https://oss.lingtour.cn/...",
+        "breathImage": "https://oss.culvoy.com/...",
         "breathQuote": "The coast is not a line on a map...",
         "sortOrder": 0
       }
@@ -214,7 +214,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
         "duration": "1 day",
         "audience": "Coastal explorers",
         "summary": "A coastal route...",
-        "image": "https://oss.lingtour.cn/..."
+        "image": "https://oss.culvoy.com/..."
       }
     ],
     "nav": {
@@ -237,7 +237,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
   "slug": "guangzhou",
   "name": "Guangzhou",
   "regionLabel": "Bay Area core",
-  "heroImage": "https://oss.lingtour.cn/upload/xxx.jpg",
+  "heroImage": "https://oss.culvoy.com/upload/xxx.jpg",
   "heroNarrative": "Guangzhou, the starting point of the Maritime Silk Road...",
   "tags": ["Guangfu", "Cantonese", "Lingnan"],
   "editorIntro": "## Guangzhou: A River City\n\nGuangzhou sits at the heart of the Pearl River Delta...",
@@ -250,7 +250,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
     {
       "title": "Lingnan architecture",
       "body": "The qilou arcades of Guangzhou...",
-      "image": "https://oss.lingtour.cn/upload/yyy.jpg",
+      "image": "https://oss.culvoy.com/upload/yyy.jpg",
       "statLabel": "历史街区数量",
       "statValue": "26",
       "sortOrder": 0
@@ -290,7 +290,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
 {
   "title": "Cantonese opera",
   "body": "## Origins\n\nCantonese opera traces...",
-  "image": "https://oss.lingtour.cn/upload/zzz.jpg",
+  "image": "https://oss.culvoy.com/upload/zzz.jpg",
   "statLabel": "粤剧剧目",
   "statValue": "13,000+",
   "breathImage": null,
@@ -324,7 +324,7 @@ CREATE INDEX idx_crl_route ON city_route_links(route_id);
 // Field: file (图片文件，最大 10MB，支持 jpg/png/webp)
 
 // Response
-{ "data": { "url": "https://oss.lingtour.cn/upload/2026/05/abc.jpg" } }
+{ "data": { "url": "https://oss.culvoy.com/upload/2026/05/abc.jpg" } }
 ```
 
 ### 2.4 错误码

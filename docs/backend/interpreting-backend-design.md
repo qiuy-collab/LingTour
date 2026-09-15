@@ -1,6 +1,6 @@
 # Interpreting 模块后端设计文档
 
-> 版本: 1.0 | 日期: 2026-05-11 | 关联: LingTour 整体后端设计 v1.0 / Culture 模块 v1.0
+> 版本: 1.0 | 日期: 2026-05-11 | 关联: Culvoy 整体后端设计 v1.0 / Culture 模块 v1.0
 
 ---
 
@@ -178,7 +178,7 @@ Interpreting 页使用 `cities` 表（Culture 模块已有）作为城市下拉�
 │     背景: 暗色夜底 + cinematic zoom + radial gradient     │
 │     标签: "Interpreting service"                         │
 │     大标题: "Travel with someone who can explain..."     │
-│     简介: "LingTour interpreting combines..."            │
+│     简介: "Culvoy interpreting combines..."            │
 │     CTA: [Start a booking request] [Browse story routes] │
 │     指标: StatsCounter × 4                               │
 │       └─ city_count (动态)                               │
@@ -329,7 +329,7 @@ Interpreting 页使用 `cities` 表（Culture 模块已有）作为城市下拉�
       "name": "Zhanjiang",
       "label": "Southern coast",
       "tags": ["Coast", "Seafood", "Volcanic landscape"],
-      "gallery": ["https://oss.lingtour.cn/cities/zhanjiang/1.jpg"]
+      "gallery": ["https://oss.culvoy.com/cities/zhanjiang/1.jpg"]
     }
   ]
 }
@@ -536,7 +536,7 @@ COMMIT
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  LingTour Admin                         [账号] [退出]     │
+│  Culvoy Admin                         [账号] [退出]     │
 ├──────────────┬───────────────────────────────────────────┤
 │  导航         │                                           │
 │              │  Interpreting 设置                   [保存]│
@@ -673,7 +673,7 @@ COMMIT
 │    restaurant support?      │
 │                             │
 │  ▸ Do I need to follow      │
-│    a LingTour route?        │
+│    a Culvoy route?        │
 └─────────────────────────────┘
 ```
 

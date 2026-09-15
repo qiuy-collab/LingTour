@@ -1,5 +1,5 @@
 ---
-name: LingTour Guangdong
+name: Culvoy Guangdong
 description: A field-journal design system for Guangdong cultural tourism — archival, tactile, warm.
 colors:
   river-deep: "#14343d"
@@ -72,13 +72,13 @@ components:
     rounded: "{rounded.none}"
 ---
 
-# Design System: LingTour Guangdong
+# Design System: Culvoy Guangdong
 
 ## 1. Overview
 
 **Creative North Star: "The Field Journal"**
 
-LingTour's visual system is an editorial archive in digital form — a field researcher's logbook where every page carries texture, evidence, and care. It is warm without sentimentality, authoritative without coldness, and richly textured without clutter. The system draws from printed matter: paper grain, ink washes, archival tape, scrapbook shadows, and the deliberate asymmetry of hand-assembled pages.
+Culvoy's visual system is an editorial archive in digital form — a field researcher's logbook where every page carries texture, evidence, and care. It is warm without sentimentality, authoritative without coldness, and richly textured without clutter. The system draws from printed matter: paper grain, ink washes, archival tape, scrapbook shadows, and the deliberate asymmetry of hand-assembled pages.
 
 This is a **brand-first** system (the design IS the product for the public-facing site), with a secondary product register for the admin dashboard (Element Plus, serving the workflow). The system explicitly rejects cold corporate SaaS aesthetics, AI-generated landing-page templates (gradient text, glass cards, hero-metric grids), and the saturated 2026 default of cream/sand body backgrounds chosen by reflex rather than intent.
 

@@ -1,4 +1,4 @@
-# LingTour API
+# Culvoy API
 
 内容、预约、支付与运营接口：城市文化、路线、传译、店铺与 Stripe 支付、社区、账户与后台管理。
 

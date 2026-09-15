@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * LingTour Mobile Performance Analysis
+ * Culvoy Mobile Performance Analysis
  *
  * Uses Puppeteer + Chrome DevTools Protocol to measure real-user
  * performance metrics on an iPhone 12 viewport (390×844).
@@ -324,7 +324,7 @@ function averageResults(runs) {
 // ── Main ───────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`${BOLD}\n═══ LingTour Mobile Performance Analysis ═══${RESET}`);
+  console.log(`${BOLD}\n═══ Culvoy Mobile Performance Analysis ═══${RESET}`);
   console.log(`${DIM}Viewport:  iPhone 12 (${VIEWPORT.width}×${VIEWPORT.height})${RESET}`);
   console.log(`${DIM}Site:      ${SITE_URL}${RESET}`);
   console.log(`${DIM}Admin:     ${ADMIN_URL}${RESET}`);

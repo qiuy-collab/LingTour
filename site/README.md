@@ -1,4 +1,4 @@
-# LingTour Site
+# Culvoy Site
 
 公开站点：面向国际旅行者的广东文化旅行前台——城市文化、故事路线、陪同传译与预约、店铺与 Stripe 支付、社区与账户。品牌优先：编辑式 Field Journal / Living Field Atlas 视觉语言。
 

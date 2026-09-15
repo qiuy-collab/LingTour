@@ -1,4 +1,4 @@
-# LingTour Responsive Design Specification
+# Culvoy Responsive Design Specification
 
 Unified responsive system for both the admin panel and public site.
 
@@ -182,7 +182,7 @@ Use responsive Tailwind prefixes for all heading and body text:
 
 ```html
 <!-- Hero -->
-<h1 class="text-5xl md:text-7xl lg:text-9xl font-bold">LingTour</h1>
+<h1 class="text-5xl md:text-7xl lg:text-9xl font-bold">Culvoy</h1>
 
 <!-- Section title -->
 <h2 class="text-2xl md:text-3xl lg:text-4xl">Explore Culture</h2>

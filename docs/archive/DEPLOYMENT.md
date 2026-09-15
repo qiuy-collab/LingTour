@@ -1,7 +1,7 @@
-# LingTour 部署与运维手册
+# Culvoy 部署与运维手册
 
-> 本文档覆盖 LingTour 项目从零搭建到日常运维的完整流程。  
-> 域名：`lingfengtranstour.cn`  
+> 本文档覆盖 Culvoy 项目从零搭建到日常运维的完整流程。  
+> 域名：`culvoy.com`  
 > 最后更新：2026-05-28
 
 ---
@@ -69,10 +69,10 @@
 
 | 域名 | 指向 | 说明 |
 |------|------|------|
-| `lingfengtranstour.cn` | Site (:3000) | 主站 |
-| `www.lingfengtranstour.cn` | → 301 到主域名 | 重定向 |
-| `api.lingfengtranstour.cn` | API (:8000) | API 服务 |
-| `admin.lingfengtranstour.cn` | Admin (:4173) | 管理后台 |
+| `culvoy.com` | Site (:3000) | 主站 |
+| `www.culvoy.com` | → 301 到主域名 | 重定向 |
+| `api.culvoy.com` | API (:8000) | API 服务 |
+| `admin.culvoy.com` | Admin (:4173) | 管理后台 |
 
 ---
 
@@ -116,7 +116,7 @@ FRONTEND_URL=http://localhost:3000      # 前台地址 (用于 CORS)
 ```bash
 # ─── 必填 ───
 NEXT_PUBLIC_API_URL=/api/v1                    # API 路径 (相对路径用于 Nginx 代理)
-# 或使用绝对路径: https://api.lingfengtranstour.cn/api/v1
+# 或使用绝对路径: https://api.culvoy.com/api/v1
 
 # ─── 可选 ───
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx # Stripe 公钥
@@ -332,8 +332,8 @@ sudo systemctl reload nginx
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d lingfengtranstour.cn -d www.lingfengtranstour.cn \
-  -d api.lingfengtranstour.cn -d admin.lingfengtranstour.cn
+sudo certbot --nginx -d culvoy.com -d www.culvoy.com \
+  -d api.culvoy.com -d admin.culvoy.com
 ```
 
 ### 4.2 更新部署 (仅代码变更)
@@ -518,20 +518,20 @@ upstream site_frontend {
 limit_req_zone $binary_remote_addr zone=api_limit:10m rate=30r/s;
 limit_req_zone $binary_remote_addr zone=upload_limit:10m rate=5r/s;
 
-# ─── 主站 (lingfengtranstour.cn) ─────────────────────────────────
+# ─── 主站 (culvoy.com) ─────────────────────────────────
 server {
     listen 80;
-    server_name lingfengtranstour.cn www.lingfengtranstour.cn;
+    server_name culvoy.com www.culvoy.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name lingfengtranstour.cn www.lingfengtranstour.cn;
+    server_name culvoy.com www.culvoy.com;
 
     # SSL 证书 (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/lingfengtranstour.cn/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lingfengtranstour.cn/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/culvoy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/culvoy.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
@@ -588,24 +588,24 @@ server {
     }
 
     # www 重定向
-    if ($host = www.lingfengtranstour.cn) {
-        return 301 https://lingfengtranstour.cn$request_uri;
+    if ($host = www.culvoy.com) {
+        return 301 https://culvoy.com$request_uri;
     }
 }
 
-# ─── API 域名 (api.lingfengtranstour.cn) ─────────────────────────
+# ─── API 域名 (api.culvoy.com) ─────────────────────────
 server {
     listen 80;
-    server_name api.lingfengtranstour.cn;
+    server_name api.culvoy.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name api.lingfengtranstour.cn;
+    server_name api.culvoy.com;
 
-    ssl_certificate /etc/letsencrypt/live/lingfengtranstour.cn/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lingfengtranstour.cn/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/culvoy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/culvoy.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -631,19 +631,19 @@ server {
     }
 }
 
-# ─── 管理后台 (admin.lingfengtranstour.cn) ───────────────────────
+# ─── 管理后台 (admin.culvoy.com) ───────────────────────
 server {
     listen 80;
-    server_name admin.lingfengtranstour.cn;
+    server_name admin.culvoy.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name admin.lingfengtranstour.cn;
+    server_name admin.culvoy.com;
 
-    ssl_certificate /etc/letsencrypt/live/lingfengtranstour.cn/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lingfengtranstour.cn/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/culvoy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/culvoy.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
@@ -725,10 +725,10 @@ docker-compose up -d
 
 | 类型 | 名称 | 内容 | 代理状态 |
 |------|------|------|----------|
-| A | `lingfengtranstour.cn` | `<服务器 IP>` | 已代理 (橙色云朵) |
+| A | `culvoy.com` | `<服务器 IP>` | 已代理 (橙色云朵) |
 | A | `api` | `<服务器 IP>` | 已代理 (橙色云朵) |
 | A | `admin` | `<服务器 IP>` | 已代理 (橙色云朵) |
-| CNAME | `www` | `lingfengtranstour.cn` | 已代理 (橙色云朵) |
+| CNAME | `www` | `culvoy.com` | 已代理 (橙色云朵) |
 
 ### 7.2 SSL/TLS 配置
 
@@ -741,10 +741,10 @@ docker-compose up -d
 
 | 规则 | URL 匹配 | 设置 |
 |------|----------|------|
-| 静态资源缓存 | `lingfengtranstour.cn/uploads/*` | Cache Level: Cache Everything, Edge Cache TTL: 1 month |
-| API 不缓存 | `api.lingfengtranstour.cn/*` | Cache Level: Bypass |
-| Admin 不缓存 | `admin.lingfengtranstour.cn/*` | Cache Level: Bypass |
-| 前台缓存 | `lingfengtranstour.cn/*` | Cache Level: Standard, Browser Cache TTL: 4 hours |
+| 静态资源缓存 | `culvoy.com/uploads/*` | Cache Level: Cache Everything, Edge Cache TTL: 1 month |
+| API 不缓存 | `api.culvoy.com/*` | Cache Level: Bypass |
+| Admin 不缓存 | `admin.culvoy.com/*` | Cache Level: Bypass |
+| 前台缓存 | `culvoy.com/*` | Cache Level: Standard, Browser Cache TTL: 4 hours |
 
 ### 7.4 缓存规则 (Cache Rules)
 
@@ -752,15 +752,15 @@ docker-compose up -d
 
 ```
 规则 1: 绕过 API 请求
-  表达式: (http.host eq "api.lingfengtranstour.cn")
+  表达式: (http.host eq "api.culvoy.com")
   操作: Bypass cache
 
 规则 2: 绕过 Admin 请求
-  表达式: (http.host eq "admin.lingfengtranstour.cn")
+  表达式: (http.host eq "admin.culvoy.com")
   操作: Bypass cache
 
 规则 3: 缓存静态上传文件
-  表达式: (http.host eq "lingfengtranstour.cn" and starts_with(http.request.uri.path, "/uploads/"))
+  表达式: (http.host eq "culvoy.com" and starts_with(http.request.uri.path, "/uploads/"))
   操作: Eligible for cache, Edge TTL: 1 month
 ```
 
@@ -819,7 +819,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cac
 curl -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
   -H "Authorization: Bearer ${CF_API_TOKEN}" \
   -H "Content-Type: application/json" \
-  --data '{"files":["https://lingfengtranstour.cn/uploads/example.jpg"]}'
+  --data '{"files":["https://culvoy.com/uploads/example.jpg"]}'
 ```
 
 #### 浏览器缓存
@@ -1077,7 +1077,7 @@ node tools/admin-api-e2e.mjs --dry-run
 
 ```bash
 # 安全防护逻辑:
-# - URL 包含 "lingfengtranstour.cn" → 拒绝 (生产环境)
+# - URL 包含 "culvoy.com" → 拒绝 (生产环境)
 # - URL 不包含 "localhost" 且不包含 "127.0.0.1" → 拒绝
 # - 设置 E2E_ALLOW_PROD=1 可覆盖
 ```
@@ -1360,9 +1360,9 @@ pm2 restart lingtour-api
 API 的 CORS 配置位于 NestJS 代码中，确保只允许以下来源:
 
 ```
-- https://lingfengtranstour.cn
-- https://www.lingfengtranstour.cn
-- https://admin.lingfengtranstour.cn
+- https://culvoy.com
+- https://www.culvoy.com
+- https://admin.culvoy.com
 - http://localhost:5173 (仅开发环境)
 - http://localhost:3000 (仅开发环境)
 ```

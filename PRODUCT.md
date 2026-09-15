@@ -13,7 +13,7 @@ _Site frontend: brand. Admin backend: product (functional tool, design serves th
 
 ## Product Purpose
 
-LingTour Guangdong 连接广东在地文化、故事驱动路线、口译服务和岭南文创零售，为国际游客提供一站式深度旅行体验。产品目标：
+Culvoy Guangdong 连接广东在地文化、故事驱动路线、口译服务和岭南文创零售，为国际游客提供一站式深度旅行体验。产品目标：
 1. 用叙事驱动的方式展示广东，而非传统 OTA 列表式陈列
 2. 降低境外游客的语言与文化门槛
 3. 构建可运营的内容+电商+服务三合一平台

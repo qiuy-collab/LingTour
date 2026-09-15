@@ -1,6 +1,6 @@
-# LingTour V1 技术执行与详细规格方案 (Agent 专用版)
+# Culvoy V1 技术执行与详细规格方案 (Agent 专用版)
 
-本方案旨在为 Agent 提供清晰、可执行的路径，用于实现 LingTour 的系统性升级。
+本方案旨在为 Agent 提供清晰、可执行的路径，用于实现 Culvoy 的系统性升级。
 
 ---
 
@@ -12,8 +12,8 @@
     *   使用 `framer-motion` 实现从右侧滑出的 `AnimatePresence` 抽屉。
     *   **状态管理**：创建一个轻量级 `useGlobalStore` (推荐 Zustand) 或 `UIContext` 来控制 `isDrawerOpen`。
     *   **内容规格**：
-        1. **Favorites Segment**：读取 `localStorage` 中的 `lingtour-favorites`，以卡片流形式展示。
-        2. **Cart Segment**：读取 `lingtour-cart`，展示已选文创产品及“去结算”按钮。
+        1. **Favorites Segment**：读取 `localStorage` 中的 `culvoy-favorites`，以卡片流形式展示。
+        2. **Cart Segment**：读取 `culvoy-cart`，展示已选文创产品及“去结算”按钮。
         3. **Recent Routes**：展示用户最近查看过的 3 条路线。
 *   **审美要求**：背景使用 `backdrop-blur-xl` 和 `rgba(242, 238, 230, 0.95)`。
 
@@ -79,7 +79,7 @@
 *   **目标文件**：`src/components/ui/CuratingPlaceholder.tsx`
 *   **技术细节**：
     *   用于 `getCityCulture` 返回为空或未定义详情的城市。
-    *   **视觉设计**：一个缓缓旋转的 LingTour Logo，配合文字：“Our editors are currently walking the streets of [City Name] to curate its story. Join the waitlist to be notified.”
+    *   **视觉设计**：一个缓缓旋转的 Culvoy Logo，配合文字：“Our editors are currently walking the streets of [City Name] to curate its story. Join the waitlist to be notified.”
     *   **功能**：集成一个极简的 Email 订阅框。
 
 ### 5.2 移动端“单手模式”

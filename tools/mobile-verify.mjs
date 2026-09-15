@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * LingTour Mobile Viewport Verification
+ * Culvoy Mobile Viewport Verification
  *
  * Launches Puppeteer at multiple viewport sizes, navigates key pages,
  * takes screenshots, and checks for horizontal overflow / broken images.
@@ -195,7 +195,7 @@ async function checkPage(page, url, viewportName, pageName) {
 // ── Main ───────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`${BOLD}\n═══ LingTour Mobile Viewport Verification ═══${RESET}`);
+  console.log(`${BOLD}\n═══ Culvoy Mobile Viewport Verification ═══${RESET}`);
   console.log(`${DIM}Site:  ${SITE_URL}${RESET}`);
   console.log(`${DIM}Admin: ${ADMIN_URL}${RESET}`);
   if (SKIP_ADMIN) console.log(`${DIM}Admin pages: skipped${RESET}`);

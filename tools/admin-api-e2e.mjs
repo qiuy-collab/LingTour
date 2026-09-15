@@ -15,7 +15,6 @@ if (missing.length) {
 
 // ── Production URL guard ───────────────────────────────────────────────
 const isProdUrl =
-  base.includes('lingfengtranstour.cn') ||
   base.includes('culvoy.com') ||
   (!base.includes('localhost') && !base.includes('127.0.0.1'));
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * LingTour CI Test Runner
+ * Culvoy CI Test Runner
  *
  * Runs all test suites in order and prints a summary.
  *
@@ -90,7 +90,7 @@ const suites = [
 ];
 
 // ── Main ─────────────────────────────────────────────────────────────
-console.log(`\n${BOLD}═══ LingTour CI Test Runner ═══${RESET}`);
+console.log(`\n${BOLD}═══ Culvoy CI Test Runner ═══${RESET}`);
 console.log(`${DIM}Working directory: ${ROOT}${RESET}`);
 if (dryRun) console.log(`${DIM}Mode: dry-run (no tests will execute)${RESET}`);
 if (skipE2e) console.log(`${DIM}Skipping e2e suites${RESET}`);

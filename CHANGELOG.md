@@ -68,7 +68,7 @@
 
 ### Changed
 
-- 全仓：产品更名为 Culvoy（`5bec3bf`）；生产域名从 `lingfengtranstour.cn` 切换为 `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com`（`4e21907`），nginx、部署与冒烟脚本、构建期域名同步更新；legacy 域名并行保留直至迁移关闭。
+- 全仓：产品更名为 Culvoy（`5bec3bf`）；生产域名从 `culvoy.com` 切换为 `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com`（`4e21907`），nginx、部署与冒烟脚本、构建期域名同步更新；legacy 域名并行保留直至迁移关闭。
 - site/api/admin: 2026-09-06 ~ 09-10 积压的已提交工作随本次部署首次上线（均核实为 `4e21907` 祖先）：culture Markdown 持久化与发布生命周期、admin 城市 Markdown 编辑、路线行程编辑强调与路线地图、staff onboarding 流程、移动端详情抽屉、Field Journal 编辑版式（Culture / Routes 列表与详情、登录入口）。
 - site: 首页广东地图装饰路线改用真实城市质心与统一投影，修复硬编码坐标越界导致的裁切（`73aedc5`）。
 - site: 移除虚构的 serviceCount 表达（`0ab3405`）；首页见证在 CMS 列表为空时回退为默认两条（`08a4e0c`）；全站文案替换 AI 残留表达（`8f6bdcd`）。
@@ -85,7 +85,7 @@
 
 ## [1.0.0] - 2026-09-05
 
-首次公开基线：生产环境运行 LingTour 完整产品（公开站点、运营后台、API）。
+首次公开基线：生产环境运行 Culvoy 完整产品（公开站点、运营后台、API）。
 
 ### Added
 

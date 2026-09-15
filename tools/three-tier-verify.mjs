@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Three-tier sync verification script for LingTour.
+ * Three-tier sync verification script for Culvoy.
  *
  * Verifies the full data flow: Admin → API → Site
  *
@@ -212,7 +212,7 @@ async function verifyEntity({ entityType, adminListPath, slugField = "slug", pub
 // ---------------------------------------------------------------------------
 async function main() {
   console.log("╔══════════════════════════════════════════════╗");
-  console.log("║   LingTour Three-Tier Sync Verification      ║");
+  console.log("║   Culvoy Three-Tier Sync Verification      ║");
   console.log("╚══════════════════════════════════════════════╝");
   console.log(`  Admin URL : ${ADMIN_URL}`);
   console.log(`  Site URL  : ${SITE_URL}`);

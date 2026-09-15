@@ -1,4 +1,4 @@
-# LingTour Site Deployment Checklist
+# Culvoy Site Deployment Checklist
 
 ## Pre-deployment Checklist
 
@@ -9,7 +9,7 @@
 - [ ] No hydration warnings in build output
 
 ### Environment Variables
-- [ ] `NEXT_PUBLIC_API_URL` points to production API (`https://api.lingfengtranstour.cn/api/v1`)
+- [ ] `NEXT_PUBLIC_API_URL` points to production API (`https://api.culvoy.com/api/v1`)
 - [ ] `NEXT_PUBLIC_SITE_URL` set to production domain
 - [ ] All image URLs use production OSS/CDN paths
 - [ ] `NEXT_PUBLIC_BASE_PATH` set correctly (empty string for root deployment)
@@ -28,8 +28,8 @@ Choose the correct mode for your deployment target before running the build.
 
 ### API Proxy (Rewrites)
 The site proxies API calls via Next.js rewrites in `next.config.ts`:
-- `/api/*` → `https://api.lingfengtranstour.cn/api/*`
-- `/uploads/*` → `https://api.lingfengtranstour.cn/uploads/*`
+- `/api/*` → `https://api.culvoy.com/api/*`
+- `/uploads/*` → `https://api.culvoy.com/uploads/*`
 
 Ensure the API origin is reachable from the deployment environment.
 
@@ -64,8 +64,8 @@ Ensure the API origin is reachable from the deployment environment.
 Run the three-tier sync verification script:
 ```bash
 node tools/three-tier-verify.mjs \
-  --admin-url https://admin.lingfengtranstour.cn \
-  --site-url https://lingfengtranstour.cn \
+  --admin-url https://admin.culvoy.com \
+  --site-url https://culvoy.com \
   --auth-token <admin-jwt-token>
 ```
 This checks that data flows correctly from Admin → API → Site.

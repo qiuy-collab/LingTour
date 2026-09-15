@@ -1,6 +1,6 @@
 # Docker deployment notes
 
-LingTour currently runs in production via PM2. The Docker deployment files are prepared for the next migration/update path without interrupting the existing PM2 services.
+Culvoy currently runs in production via PM2. The Docker deployment files are prepared for the next migration/update path without interrupting the existing PM2 services.
 
 ## Files
 
@@ -41,16 +41,16 @@ bash tools/deploy-docker.sh
 Smoke checks:
 
 ```bash
-curl -H 'Host: lingfengtranstour.cn' http://127.0.0.1:8088/
-curl -H 'Host: admin.lingfengtranstour.cn' http://127.0.0.1:8088/
-curl -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
+curl -H 'Host: culvoy.com' http://127.0.0.1:8088/
+curl -H 'Host: admin.culvoy.com' http://127.0.0.1:8088/
+curl -H 'Host: api.culvoy.com' http://127.0.0.1:8088/health
 ```
 
 ## Cutover options
 
 Recommended cutover: keep the host-level HTTPS/Cloudflare setup, and point the host nginx upstreams to Docker nginx on `127.0.0.1:8088`. This avoids moving certificates into containers.
 
-After cutover is verified, stop PM2 LingTour apps:
+After cutover is verified, stop PM2 Culvoy apps:
 
 ```bash
 pm2 stop lingtour-api lingtour-site lingtour-admin

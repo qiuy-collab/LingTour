@@ -1,4 +1,4 @@
-# LingTour 项目进度迁移交接
+# Culvoy 项目进度迁移交接
 
 > **历史快照（2026-07-26）：** 本文保留当日交接背景，不再代表当前 Git、生产或待办状态。稳定工作规范见 [`../AGENT.md`](../AGENT.md)，实时状态与任务进度见 [`CURRENT-STATE.md`](CURRENT-STATE.md)。
 
@@ -33,7 +33,7 @@
 
 ## 1. 项目上下文
 
-LingTour 是一个面向广东文化旅行的全栈产品，不是单纯的旅游展示站。
+Culvoy 是一个面向广东文化旅行的全栈产品，不是单纯的旅游展示站。
 
 产品同时包含：
 
@@ -63,9 +63,9 @@ LingTour 是一个面向广东文化旅行的全栈产品，不是单纯的旅�
 
 生产地址：
 
-- 前台：<https://lingfengtranstour.cn>
-- 后台：<https://admin.lingfengtranstour.cn>
-- API 健康检查：<https://api.lingfengtranstour.cn/health>
+- 前台：<https://culvoy.com>
+- 后台：<https://admin.culvoy.com>
+- API 健康检查：<https://api.culvoy.com/health>
 
 ### 1.2 仓库关系
 
@@ -331,7 +331,7 @@ if (-not (Test-Path .claude\skills\taste-skill)) {
 线上 API 基址：
 
 ```text
-https://api.lingfengtranstour.cn
+https://api.culvoy.com
 ```
 
 ### 5.2 本地启动
@@ -658,7 +658,7 @@ ssh lingtour-server "cd /root/LingTour && git rev-parse --short HEAD && pm2 stat
 
 一个任务只有同时满足以下条件才算完成：
 
-1. 使用了要求的 skill 流程，并保持 LingTour 原有设计语言。
+1. 使用了要求的 skill 流程，并保持 Culvoy 原有设计语言。
 2. 代码只包含当前任务相关改动。
 3. 构建和必要测试通过。
 4. 桌面与移动端真实操作通过。

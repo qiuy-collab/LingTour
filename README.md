@@ -2,7 +2,7 @@
   <img src="docs/assets/culvoy-logo.png" alt="Culvoy logo" width="160" />
 </p>
 
-# LingTour · 岭风传译之旅
+# Culvoy · 岭风传译之旅
 
 面向国际旅行者的广东文化旅行产品：城市文化、故事路线、陪同传译与预约、店铺与 Stripe 支付、社区，以及真实的运营/CMS 后台。
 

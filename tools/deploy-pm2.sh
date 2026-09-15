@@ -8,7 +8,7 @@ BACKUP_ROOT="${BACKUP_ROOT:-/root/backups}"
 
 cd "$APP_DIR"
 
-echo "==> LingTour PM2 deploy"
+echo "==> Culvoy PM2 deploy"
 echo "App dir: $APP_DIR"
 echo "Target:  $REMOTE/$BRANCH"
 
@@ -114,9 +114,9 @@ sleep 3
 pm2 list
 curl -fsS --max-time 20 http://127.0.0.1:8000/health
 printf '\n'
-curl -fsS -o /dev/null -w 'site:%{http_code}\n' --max-time 20 https://lingfengtranstour.cn
-curl -fsS -o /dev/null -w 'admin:%{http_code}\n' --max-time 20 https://admin.lingfengtranstour.cn
-curl -fsS -o /dev/null -w 'api-health:%{http_code}\n' --max-time 20 https://api.lingfengtranstour.cn/health
+curl -fsS -o /dev/null -w 'site:%{http_code}\n' --max-time 20 https://culvoy.com
+curl -fsS -o /dev/null -w 'admin:%{http_code}\n' --max-time 20 https://admin.culvoy.com
+curl -fsS -o /dev/null -w 'api-health:%{http_code}\n' --max-time 20 https://api.culvoy.com/health
 curl -fsS -o /dev/null -w 'site-culvoy:%{http_code}\n' --max-time 20 https://culvoy.com
 curl -fsS -o /dev/null -w 'admin-culvoy:%{http_code}\n' --max-time 20 https://admin.culvoy.com
 curl -fsS -o /dev/null -w 'api-culvoy-health:%{http_code}\n' --max-time 20 https://api.culvoy.com/health

@@ -1,4 +1,4 @@
-# LingTour Agent Guide
+# Culvoy Agent Guide
 
 This is the canonical operating guide for `E:/workspace/LingTour`. Read it before inspecting, editing, testing, cleaning, committing, pushing, migrating, or deploying. Read [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md) for the live Git, production, verification, WIP, and backlog state; documents under [`docs/archive/`](docs/archive/) are historical evidence, not current status.
 
@@ -6,7 +6,7 @@ Companion guides: [`docs/development.md`](docs/development.md) covers environmen
 
 ## 1. Product and repositories
 
-LingTour is a full-stack Guangdong cultural-travel product for international travellers: city culture, story routes, interpreting and bookings, shop and Stripe payments, community, accounts, and a real operations/CMS admin.
+Culvoy is a full-stack Guangdong cultural-travel product for international travellers: city culture, story routes, interpreting and bookings, shop and Stripe payments, community, accounts, and a real operations/CMS admin.
 
 | Path | Application | Stack |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Keep local and production addresses strictly separate. Never point local work at
 
 - API health: production `https://api.culvoy.com/health`; local `http://localhost:8000/health`.
 - Production topology: host Nginx (TLS, BT panel) → `127.0.0.1:8088` → the `lingtour-nginx` Docker gateway, which routes by Host to the `site`/`api`/`admin` containers. Deployment runs `tools/deploy-docker.sh` through the `Deploy LingTour Docker Stack` GitHub Actions workflow, which is `workflow_dispatch`-only (pushes to `main` trigger CI only, never a deploy). PM2 processes on the server are retired and kept stopped. See [`docs/release.md`](docs/release.md) for deployment channels and rollback.
-- Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `lingfengtranstour.cn` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
+- Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `culvoy.com` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
 
 ## 3. Mandatory startup
 

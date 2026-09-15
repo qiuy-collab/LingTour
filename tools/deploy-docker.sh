@@ -9,7 +9,7 @@ BACKUP_ROOT="${BACKUP_ROOT:-/root/backups}"
 
 cd "$APP_DIR"
 
-echo "==> LingTour Docker deploy"
+echo "==> Culvoy Docker deploy"
 echo "App dir:      $APP_DIR"
 echo "Target:       $REMOTE/$BRANCH"
 echo "Compose file: $COMPOSE_FILE"
@@ -79,11 +79,11 @@ fi
 printf '%s\n' "==> Health checks"
 # nginx is intentionally bound to loopback port 8088 behind the existing host TLS proxy.
 curl -fsS --max-time 20 http://127.0.0.1:8088/ >/dev/null
-curl -fsS --max-time 20 -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
+curl -fsS --max-time 20 -H 'Host: api.culvoy.com' http://127.0.0.1:8088/health
 printf '\n'
-curl -fsS -o /dev/null -w 'site-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: lingfengtranstour.cn' http://127.0.0.1:8088/
-curl -fsS -o /dev/null -w 'admin-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: admin.lingfengtranstour.cn' http://127.0.0.1:8088/
-curl -fsS -o /dev/null -w 'api-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.lingfengtranstour.cn' http://127.0.0.1:8088/health
+curl -fsS -o /dev/null -w 'site-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: culvoy.com' http://127.0.0.1:8088/
+curl -fsS -o /dev/null -w 'admin-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: admin.culvoy.com' http://127.0.0.1:8088/
+curl -fsS -o /dev/null -w 'api-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.culvoy.com' http://127.0.0.1:8088/health
 curl -fsS -o /dev/null -w 'site-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: culvoy.com' http://127.0.0.1:8088/
 curl -fsS -o /dev/null -w 'admin-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: admin.culvoy.com' http://127.0.0.1:8088/
 curl -fsS -o /dev/null -w 'api-culvoy-via-docker-nginx:%{http_code}\n' --max-time 20 -H 'Host: api.culvoy.com' http://127.0.0.1:8088/health
