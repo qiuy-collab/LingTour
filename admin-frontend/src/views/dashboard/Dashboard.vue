@@ -148,7 +148,7 @@ function withAlpha(hexColor: string, alpha: number) {
 }
 
 function getDashboardPalette() {
-  const primary = resolveThemeColor('--lt-primary', '#409eff')
+  const primary = resolveThemeColor('--lt-primary', '#236554')
   const success = resolveThemeColor('--lt-success', '#67c23a')
   const warning = resolveThemeColor('--lt-warning', '#e6a23c')
   const info = resolveThemeColor('--lt-info', '#909399')

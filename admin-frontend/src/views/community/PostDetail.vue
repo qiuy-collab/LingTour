@@ -211,7 +211,7 @@ onMounted(() => { fetchPost() })
 .post-excerpt {
   padding: 12px 16px;
   background: #f5f7fa;
-  border-left: 3px solid #409eff;
+  border-left: 3px solid var(--lt-primary, #236554);
   margin-bottom: 20px;
   border-radius: 0 4px 4px 0;
   color: #606266;

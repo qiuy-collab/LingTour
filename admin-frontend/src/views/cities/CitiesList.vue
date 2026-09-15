@@ -104,7 +104,7 @@ async function togglePublished(city: City) {
 
 function regionColor(region: string) {
   const map: Record<string, string> = {
-    'Pearl River Delta': '#409EFF',
+    'Pearl River Delta': '#236554',
     'Southern coast': '#67C23A',
     'Eastern coast': '#E6A23C',
   }

@@ -26,7 +26,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
 }
 
 export const NOTIFICATION_TYPE_COLORS: Record<string, string> = {
-  order: '#409eff',
+  order: '#236554',
   booking: '#67c23a',
   review: '#e6a23c',
   system: '#909399',
