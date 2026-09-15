@@ -100,13 +100,32 @@ export default function ShopPageClient({
 
             <div className="relative w-full min-w-0 self-end lg:col-span-4 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[3/4] w-full rotate-2 bg-white p-1.5 scrapbook-shadow sm:p-3 lg:aspect-square lg:rotate-6 lg:p-4">
-                  <div
-                    data-pastoral-hero-media
-                    className="h-full w-full bg-contain bg-center bg-no-repeat sm:bg-cover"
-                    style={{ backgroundImage: `url(${heroImage})` }}
-                  />
-                </div>
+                {/* Shop hero: a catalogue plate of the shelf — square, flat,
+                    and captioned like an archive record, distinct from the
+                    polaroid gesture the culture pages own. */}
+                <figure className="relative border border-[var(--line)] bg-white p-2 scrapbook-shadow sm:p-2.5">
+                  <span aria-hidden className="absolute -left-1 -top-1 h-4 w-4 border-l-2 border-t-2 border-[var(--gold)]" />
+                  <span aria-hidden className="absolute -right-1 -top-1 h-4 w-4 border-r-2 border-t-2 border-[var(--gold)]" />
+                  <span aria-hidden className="absolute -bottom-1 -left-1 h-4 w-4 border-b-2 border-l-2 border-[var(--gold)]" />
+                  <span aria-hidden className="absolute -bottom-1 -right-1 h-4 w-4 border-b-2 border-r-2 border-[var(--gold)]" />
+                  <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/10]">
+                    <div
+                      data-pastoral-hero-media
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${heroImage})` }}
+                      role="img"
+                      aria-label="Work on a Lingnan ceramic object"
+                    />
+                  </div>
+                  <figcaption className="flex items-center justify-between px-1 pb-1 pt-2.5">
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]/60">
+                      The Lingnan shelf
+                    </span>
+                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+                      Plate 01
+                    </span>
+                  </figcaption>
+                </figure>
               </Reveal>
             </div>
           </div>

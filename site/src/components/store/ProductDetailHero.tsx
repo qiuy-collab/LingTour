@@ -245,20 +245,30 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
             </div>
           </div>
 
-          <div data-product-frame className="relative order-2 min-w-0 rotate-1 lg:order-none lg:col-span-5">
-            <div ref={plateRef} className="relative aspect-[4/5] w-full bg-white p-5 scrapbook-shadow transform-gpu sm:p-9 xl:p-12">
-              <div className="absolute -top-3 left-1/2 z-20 h-8 w-24 -translate-x-1/2 rotate-2 border border-white/20 bg-white/45 backdrop-blur-sm sm:-top-4 sm:h-10 sm:w-32" />
-              <div className="relative flex h-full w-full items-center justify-center">
-                <div data-product-media className="h-full w-full">
-                  <MediaFrame
-                    asset={activeMedia}
-                    fallbackSrc={product.image}
-                    alt={product.name}
-                    mode={activeMedia?.type === "video" ? "interactive" : "image"}
-                    eager
-                    mediaClassName="object-contain"
-                  />
-                </div>
+          <div data-product-frame className="relative order-2 min-w-0 lg:order-none lg:col-span-5">
+            {/* Product hero: a flat object-file mount with a document header —
+                the catalogue gesture, not a fourth polaroid. */}
+            <div ref={plateRef} className="relative flex aspect-[4/5] w-full flex-col border border-[var(--line)] bg-white p-5 scrapbook-shadow transform-gpu sm:p-7 xl:p-9">
+              <div className="mb-4 flex shrink-0 items-center justify-between gap-4 border-b border-[var(--river-deep)]/15 pb-3">
+                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)]/55">
+                  Object file
+                </span>
+                <span className="max-w-[11rem] truncate font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+                  {collectionLabel}
+                </span>
+              </div>
+              <div className="relative min-h-0 flex-1">
+                <div className="flex h-full w-full items-center justify-center">
+                  <div data-product-media className="h-full w-full">
+                    <MediaFrame
+                      asset={activeMedia}
+                      fallbackSrc={product.image}
+                      alt={product.name}
+                      mode={activeMedia?.type === "video" ? "interactive" : "image"}
+                      eager
+                      mediaClassName="object-contain"
+                    />
+                  </div>
 
                 {media.length > 1 ? (
                   <>
@@ -280,6 +290,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                     </button>
                   </>
                 ) : null}
+                </div>
               </div>
               <div className="absolute bottom-3 right-4 handwritten text-lg text-[var(--gold)] sm:bottom-6 sm:right-6 sm:text-xl">
                 {media.length > 0 ? `${activeIndex + 1} / ${media.length}` : "—"}

@@ -68,8 +68,9 @@ export default function RoutesPageClient({
       (!audience || route.audience === audience)
     );
   });
-  const heroImage = SEED_IMAGES.routesHero ?? placeholderFor("portrait");
   const ctaImage = SEED_IMAGES.routesCta ?? placeholderFor("hero");
+  const manifestCities = uniqueValues(storyRoutes.map((route) => route.city));
+  const manifestDurations = uniqueValues(storyRoutes.map((route) => route.duration));
 
   return (
     <PastoralPageMotion
@@ -78,7 +79,7 @@ export default function RoutesPageClient({
     >
       <section className="relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:pb-24 lg:pt-32">
         <div className="site-container relative">
-          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="grid grid-cols-1 items-center gap-10 sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
                 <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
@@ -98,17 +99,70 @@ export default function RoutesPageClient({
               </Reveal>
             </div>
 
-            <div className="relative w-full min-w-0 self-end lg:col-span-5 lg:max-w-none lg:self-center">
+            <div className="relative w-full min-w-0 lg:col-span-5">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
-                  <div
-                    data-pastoral-hero-media
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none"
-                    style={{ backgroundImage: `url(${heroImage})` }}
-                    role="img"
-                    aria-label="Landscape from a Guangdong route"
-                  />
-                  <div className="absolute inset-0 bg-black/10" />
+                {/* Routes hero: an itinerary ticket, not another polaroid. The
+                    rows are computed from the live route list, so the sheet
+                    always states what is actually on file. */}
+                <div className="relative border border-[var(--line)] bg-[var(--paper)] scrapbook-shadow">
+                  <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-3.5">
+                    <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]/70">
+                      Route manifest
+                    </p>
+                    <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                      GD-{String(storyRoutes.length).padStart(2, "0")}
+                    </p>
+                  </div>
+
+                  <div className="relative px-5" aria-hidden="true">
+                    <div className="border-t border-dashed border-[var(--river-deep)]/25" />
+                    <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border border-[var(--line)] bg-[var(--paper-deep)]" />
+                    <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border border-[var(--line)] bg-[var(--paper-deep)]" />
+                  </div>
+
+                  <dl className="px-5">
+                    <div className="flex items-baseline justify-between gap-6 border-b border-[var(--line)] py-4">
+                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                        Routes on file
+                      </dt>
+                      <dd className="text-right font-[family:var(--font-display)] text-2xl leading-none text-[var(--river-deep)]">
+                        {storyRoutes.length}
+                      </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-6 border-b border-[var(--line)] py-4">
+                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                        Ground covered
+                      </dt>
+                      <dd className="min-w-0 text-right font-[family:var(--font-display)] text-lg leading-snug text-[var(--river-deep)]">
+                        {manifestCities.length > 0 ? manifestCities.join(" · ") : "—"}
+                      </dd>
+                    </div>
+                    <div className="flex items-baseline justify-between gap-6 py-4">
+                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                        Time on the road
+                      </dt>
+                      <dd className="min-w-0 text-right font-[family:var(--font-display)] text-lg leading-snug text-[var(--river-deep)]">
+                        {manifestDurations.length > 0 ? manifestDurations.join(" · ") : "—"}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="flex items-center justify-between border-t border-[var(--line)] px-5 py-4">
+                    <div
+                      aria-hidden="true"
+                      className="h-7 w-24 bg-[repeating-linear-gradient(90deg,var(--river-deep)_0_2px,transparent_2px_5px,var(--river-deep)_5px_8px,transparent_8px_11px)] opacity-70"
+                    />
+                    <div
+                      data-pastoral-stamp
+                      className="grid h-16 w-16 rotate-6 place-items-center rounded-full border-2 border-[var(--cinnabar)]/60 text-center"
+                    >
+                      <span className="px-1 font-mono text-[7px] font-bold uppercase leading-[1.5] tracking-[0.14em] text-[var(--cinnabar)]">
+                        Guangdong
+                        <br />
+                        field transit
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </Reveal>
             </div>
