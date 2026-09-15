@@ -8,7 +8,7 @@
 
 已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。当前为空。
 
-## 2026-09-15 — Profile 一致性与注册验证码（root `0c02161`）
+## 2026-09-15 — Profile 一致性与注册验证码（root `b3df634`）
 
 ### Fixed
 
@@ -19,6 +19,8 @@
 
 - site: 注册流程支持邮箱验证码注册，发送/验证的 `purpose` 区分登录与注册，并传递新用户姓名。
 - site: 注册表单的国家和旅行偏好改用受控 listbox，保留键盘打开、方向键移动和 Escape 关闭。
+
+部署：`Deploy LingTour Docker Stack` run `34937099768` 完成 build、迁移、容器重建与 nginx 重启后，在 health 等待阶段触发 ssh-action 10 分钟命令超时；人工确认服务器 HEAD `b3df634`，api/admin/nginx/redis 健康，站点 200。无新增迁移。
 
 ## 2026-09-15 — 站点审阅与 Profile 页面重构（root `008dbbf`）
 

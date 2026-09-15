@@ -478,3 +478,13 @@ Owner requested the browser-review fixes and a structural Profile page refactor,
 - Deploy: root `main` was pushed through `4f2bc30`; `Deploy LingTour Docker Stack` run `34875955514` succeeded in 8m14s. Server HEAD is `4f2bc30`; admin remains `a9430cf`.
 - Smoke: `https://api.culvoy.com/health` returned 200 with database `up`; Home, Culture detail, Route detail, Shop, Login, Profile route, and Admin returned 200. Unauthenticated Profile correctly returned 307 to Login. `lingtour-site-1` remains Docker `unhealthy` while serving successfully, matching the documented healthcheck false alarm.
 - Release: GitHub Release/tag `deploy-2026-09-15-4f2bc30` was created from deployed root HEAD. No production data, migration, or admin code changed.
+
+## 26. 2026-09-15 profile consistency and signup email code deployed
+
+Owner requested categorized commits, merge, and production deployment.
+
+- Commits: `fd22880` `fix(site): align profile surfaces and avatar entry`; `0c02161` `feat(site): support email-code signup`; `b3df634` `docs(release): record profile and signup changes`. The independent admin repository remained unchanged at `a9430cf`.
+- Pre-deploy validation: site TypeScript passed; 18/18 test files and 101/101 tests passed (initial Vitest run lost workers to local memory pressure, then passed with one worker and file parallelism disabled); lint passed with 0 errors and the existing 1083 warnings; production build passed after the local server-data origin was overridden to the read-only production API because local Docker/Postgres was unavailable.
+- Deploy: root `main` was pushed through `b3df634` and `Deploy LingTour Docker Stack` run `34937099768` completed build, migration, container recreation, and nginx restart steps but hit the 10-minute ssh-action command timeout during the final health wait. Manual server confirmation showed root HEAD `b3df634`; api/admin/nginx/redis healthy and site serving 200 while its container healthcheck was still starting.
+- Smoke: API health, Home, Culture detail, Route detail, Interpreting, Shop, product detail, Login, Profile, Community, and Admin returned 200 via Cloudflare. Production `/login` was checked in a real 390px browser: signup mode, full name, verification code, and country controls rendered with zero console errors. No account was submitted or created.
+- Release: GitHub Release/tag `deploy-2026-09-15-b3df634` was created from the deployed root HEAD.
