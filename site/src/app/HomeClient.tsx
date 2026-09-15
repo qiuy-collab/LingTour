@@ -82,7 +82,7 @@ export default function HomeClient({
     new Set(
       interpreterProfiles
         .flatMap((profile) => profile.language.split(/[,/·]+/))
-        .map((lang) => lang.trim())
+        .map((lang) => lang.replace(/\s+support$/i, "").trim())
         .filter(Boolean),
     ),
   ).slice(0, 4);
