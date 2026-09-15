@@ -111,47 +111,49 @@ export class OrdersService {
       );
     }
 
-    const products = await this.productRepo.find({
-      where: {
-        id: In([...quantities.keys()]),
-        published: true,
-      },
-    });
-    if (products.length !== quantities.size) {
-      throw new BadRequestException('One or more products are unavailable');
-    }
-
-    const currencies = new Set(products.map((product) => product.currency));
-    if (currencies.size !== 1) {
-      throw new BadRequestException('All order items must use one currency');
-    }
-    const currency = [...currencies][0].toUpperCase();
-    const items = products.map((product) => {
-      const quantity = quantities.get(product.id)!;
-      if (product.stock < quantity) {
-        throw new BadRequestException(
-          `Insufficient stock for product "${product.slug}"`,
-        );
-      }
-      return {
-        productId: product.id,
-        productName: product.name.en || product.name.zh,
-        productImage: product.image,
-        quantity,
-        unitPrice: Number(product.price),
-      };
-    });
-
-    const subtotalCents = items.reduce(
-      (sum, item) => sum + Math.round(item.unitPrice * 100) * item.quantity,
-      0,
-    );
-    const handlingCents = Math.max(800, Math.round(subtotalCents * 0.06));
-    const totalCents = subtotalCents + handlingCents;
-    const publicStatusToken = this.createPublicStatusToken();
-
     const checkout = await this.orderRepo.manager.transaction(
       async (manager) => {
+        const products = await manager.find(StoreProduct, {
+          where: {
+            id: In([...quantities.keys()]),
+            published: true,
+          },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (products.length !== quantities.size) {
+          throw new BadRequestException('One or more products are unavailable');
+        }
+
+        const currencies = new Set(products.map((product) => product.currency));
+        if (currencies.size !== 1) {
+          throw new BadRequestException('All order items must use one currency');
+        }
+        const currency = [...currencies][0].toUpperCase();
+        const items = products.map((product) => {
+          const quantity = quantities.get(product.id)!;
+          if (product.stock < quantity) {
+            throw new BadRequestException(
+              `Insufficient stock for product "${product.slug}"`,
+            );
+          }
+          product.stock -= quantity;
+          return {
+            productId: product.id,
+            productName: product.name.en || product.name.zh,
+            productImage: product.image,
+            quantity,
+            unitPrice: Number(product.price),
+          };
+        });
+        await manager.save(StoreProduct, products);
+
+        const subtotalCents = items.reduce(
+          (sum, item) => sum + Math.round(item.unitPrice * 100) * item.quantity,
+          0,
+        );
+        const handlingCents = Math.max(800, Math.round(subtotalCents * 0.06));
+        const totalCents = subtotalCents + handlingCents;
+        const publicStatusToken = this.createPublicStatusToken();
         const order = manager.create(Order, {
           orderNo: this.generateOrderNo(),
           userId: null,
@@ -166,6 +168,7 @@ export class OrdersService {
           orderType: 'shop',
           paymentMethod: dto.paymentMethod === 'paypal' ? 'paypal' : 'stripe',
           publicStatusTokenHash: publicStatusToken.hash,
+          stockReserved: true,
           shippingAddr: dto.shippingAddress as unknown as Record<string, any>,
         });
         const saved = await manager.save(Order, order);
@@ -226,6 +229,8 @@ export class OrdersService {
           paypalOrderId,
           paypalApprovalUrl,
           paymentMethod,
+          currency,
+          publicStatusToken: publicStatusToken.token,
         };
       },
     );
@@ -233,7 +238,7 @@ export class OrdersService {
     await this.notificationsService.notifyStaff({
       type: 'order',
       title: `新订单 ${checkout.saved.orderNo}`,
-      body: `金额 ${currency} ${Number(checkout.saved.totalAmount).toFixed(2)}，请及时确认付款与履约信息。`,
+      body: `金额 ${checkout.currency} ${Number(checkout.saved.totalAmount).toFixed(2)}，请及时确认付款与履约信息。`,
       resourceType: 'order',
       resourceId: checkout.saved.id,
       link: `/admin/orders/${checkout.saved.id}`,
@@ -245,14 +250,14 @@ export class OrdersService {
       subtotal: checkout.saved.subtotal,
       handlingAmount: checkout.saved.handlingAmount,
       totalAmount: checkout.saved.totalAmount,
-      currency,
+      currency: checkout.currency,
       status: checkout.saved.status,
       paymentStatus: checkout.saved.paymentStatus,
       paymentMethod: checkout.paymentMethod,
       stripeClientSecret: checkout.stripeClientSecret,
       paypalOrderId: checkout.paypalOrderId,
       paypalApprovalUrl: checkout.paypalApprovalUrl,
-      publicStatusToken: publicStatusToken.token,
+      publicStatusToken: checkout.publicStatusToken,
     };
   }
 
@@ -627,6 +632,7 @@ export class OrdersService {
         order.paymentId = paymentIntent.id;
         order.paidAt = new Date();
         order.paymentFailureReason = null;
+        order.stockReserved = false;
         if (order.status === 'pending') order.status = 'confirmed';
         await manager.save(Order, order);
       }
@@ -682,6 +688,7 @@ export class OrdersService {
           order.paymentId = paymentId;
           order.paidAt = new Date();
           order.paymentFailureReason = null;
+          order.stockReserved = false;
 
           if (order.status === 'pending') {
             order.status = 'confirmed';
@@ -723,6 +730,7 @@ export class OrdersService {
 
           order.paymentStatus = 'failed';
           order.paymentFailureReason = reason ?? 'Unknown';
+          await this.releaseReservedStock(manager, order);
           return await manager.save(Order, order);
         });
       } catch (error) {
@@ -787,6 +795,9 @@ export class OrdersService {
         );
       }
 
+      if (next === 'cancelled') {
+        await this.releaseReservedStock(manager, order);
+      }
       order.status = next;
       return manager.save(Order, order);
     });
@@ -842,6 +853,23 @@ export class OrdersService {
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `LT${timestamp}${random}`;
+  }
+
+  private async releaseReservedStock(
+    manager: EntityManager,
+    order: Order,
+  ): Promise<void> {
+    if (!order.stockReserved) return;
+
+    for (const item of order.items ?? []) {
+      await manager.increment(
+        StoreProduct,
+        { id: item.productId },
+        'stock',
+        item.quantity,
+      );
+    }
+    order.stockReserved = false;
   }
 
   private deriveGuestEmail(contact: string): string {

@@ -142,6 +142,9 @@ export class Order {
   })
   bookingSubmissionId: string | null;
 
+  @Column({ type: 'boolean', name: 'stock_reserved', default: false })
+  stockReserved: boolean;
+
   @Column({
     type: 'varchar',
     length: 30,

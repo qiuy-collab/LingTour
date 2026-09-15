@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   Query,
+  Headers,
   ParseUUIDPipe,
   UseInterceptors,
 } from '@nestjs/common';
@@ -53,8 +54,11 @@ export class InterpretingController {
   @Public()
   @Post('public/bookings')
   @ApiOperation({ summary: 'Submit booking request' })
-  async submitBooking(@Body() dto: CreateBookingDto) {
-    return this.interpretingService.submitBooking(dto);
+  async submitBooking(
+    @Body() dto: CreateBookingDto,
+    @Headers('idempotency-key') idempotencyKey?: string,
+  ) {
+    return this.interpretingService.submitBooking(dto, idempotencyKey);
   }
 
   @Public()
@@ -62,8 +66,11 @@ export class InterpretingController {
   @ApiOperation({
     summary: 'Submit booking request and create deposit checkout',
   })
-  async submitBookingWithDeposit(@Body() dto: CreateBookingDto) {
-    return this.interpretingService.submitBookingWithDeposit(dto);
+  async submitBookingWithDeposit(
+    @Body() dto: CreateBookingDto,
+    @Headers('idempotency-key') idempotencyKey?: string,
+  ) {
+    return this.interpretingService.submitBookingWithDeposit(dto, idempotencyKey);
   }
 
   // ── Admin: Config ──

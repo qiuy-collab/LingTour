@@ -38,6 +38,10 @@ export class BookingSubmission {
   @Column({ type: 'varchar', length: 20, default: 'new' })
   status: string;
 
+  @Column({ type: 'varchar', length: 100, name: 'idempotency_key', nullable: true })
+  @Index({ unique: true })
+  idempotencyKey: string | null;
+
   @Column({ type: 'uuid', name: 'assigned_interpreter_id', nullable: true })
   assignedInterpreterId: string | null;
 

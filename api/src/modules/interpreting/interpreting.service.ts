@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, EntityTarget, Repository } from 'typeorm';
 import { ServiceMode } from './entities/service-mode.entity';
@@ -313,7 +318,15 @@ export class InterpretingService {
 
   // ── Bookings: Public submit ──
 
-  async submitBooking(dto: CreateBookingDto) {
+  async submitBooking(dto: CreateBookingDto, idempotencyKey?: string) {
+    const key = this.normalizeIdempotencyKey(idempotencyKey);
+    if (key) {
+      const existing = await this.bookingRepo.findOne({
+        where: { idempotencyKey: key },
+      });
+      if (existing) return this.bookingResponse(existing);
+    }
+
     const booking = this.bookingRepo.create({
       name: dto.name,
       contact: dto.contact,
@@ -323,33 +336,52 @@ export class InterpretingService {
       groupSize: dto.groupSize ?? null,
       routeOrNeed: dto.routeOrNeed ?? null,
       status: 'new',
+      idempotencyKey: key ?? null,
     });
-    const saved = await this.bookingRepo.save(booking);
+    let saved: BookingSubmission;
+    try {
+      saved = await this.bookingRepo.save(booking);
+    } catch (error: unknown) {
+      if (!key || (error as { code?: string })?.code !== '23505') throw error;
+      const existing = await this.bookingRepo.findOne({
+        where: { idempotencyKey: key },
+      });
+      if (!existing) throw error;
+      return this.bookingResponse(existing);
+    }
     await this.notifyNewBooking(saved.id, dto);
+    return this.bookingResponse(saved);
+  }
+
+  private bookingResponse(booking: BookingSubmission) {
     return {
-      id: saved.id,
+      id: booking.id,
       message: 'Booking request received. We will contact you within 24 hours.',
-      created_at: saved.createdAt,
+      created_at: booking.createdAt,
     };
   }
 
-  async submitBookingWithDeposit(dto: CreateBookingDto) {
-    const depositAmount = this.calculateDepositAmount(dto);
-    const checkout = await this.dataSource.transaction(async (manager) => {
-      const booking = manager.create(BookingSubmission, {
-        name: dto.name,
-        contact: dto.contact,
-        city: dto.city,
-        serviceDate: dto.serviceDate,
-        supportMode: dto.supportMode,
-        groupSize: dto.groupSize ?? null,
-        routeOrNeed: dto.routeOrNeed ?? null,
-        status: 'deposit_pending',
+  async submitBookingWithDeposit(dto: CreateBookingDto, idempotencyKey?: string) {
+    const key = this.normalizeIdempotencyKey(idempotencyKey);
+    if (key) {
+      const existing = await this.bookingRepo.findOne({
+        where: { idempotencyKey: key },
       });
-      const saved = await manager.save(BookingSubmission, booking);
-      const depositOrder = await this.ordersService.createInterpretingDeposit(
-        {
-          bookingSubmissionId: saved.id,
+      if (existing) {
+        throw new ConflictException('This booking request was already submitted');
+      }
+    }
+
+    const depositAmount = this.calculateDepositAmount(dto);
+    let checkout: {
+      booking: BookingSubmission;
+      depositOrder: Awaited<
+        ReturnType<OrdersService['createInterpretingDeposit']>
+      >;
+    };
+    try {
+      checkout = await this.dataSource.transaction(async (manager) => {
+        const booking = manager.create(BookingSubmission, {
           name: dto.name,
           contact: dto.contact,
           city: dto.city,
@@ -357,14 +389,34 @@ export class InterpretingService {
           supportMode: dto.supportMode,
           groupSize: dto.groupSize ?? null,
           routeOrNeed: dto.routeOrNeed ?? null,
-          depositAmount,
-          currency: 'SGD',
-        },
-        manager,
-      );
+          status: 'deposit_pending',
+          idempotencyKey: key ?? null,
+        });
+        const saved = await manager.save(BookingSubmission, booking);
+        const depositOrder = await this.ordersService.createInterpretingDeposit(
+          {
+            bookingSubmissionId: saved.id,
+            name: dto.name,
+            contact: dto.contact,
+            city: dto.city,
+            serviceDate: dto.serviceDate,
+            supportMode: dto.supportMode,
+            groupSize: dto.groupSize ?? null,
+            routeOrNeed: dto.routeOrNeed ?? null,
+            depositAmount,
+            currency: 'SGD',
+          },
+          manager,
+        );
 
-      return { booking: saved, depositOrder };
-    });
+        return { booking: saved, depositOrder };
+      });
+    } catch (error: unknown) {
+      if (key && (error as { code?: string })?.code === '23505') {
+        throw new ConflictException('This booking request was already submitted');
+      }
+      throw error;
+    }
 
     await this.notifyNewBooking(checkout.booking.id, dto);
 
@@ -384,6 +436,15 @@ export class InterpretingService {
         publicStatusToken: checkout.depositOrder.publicStatusToken,
       },
     };
+  }
+
+  private normalizeIdempotencyKey(value?: string): string | undefined {
+    const key = value?.trim();
+    if (!key) return undefined;
+    if (key.length > 100) {
+      throw new BadRequestException('Idempotency-Key must be 100 characters or fewer');
+    }
+    return key;
   }
 
   // ── Bookings: Admin list ──

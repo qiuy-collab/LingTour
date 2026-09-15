@@ -49,6 +49,7 @@ describe('OrdersService shop checkout', () => {
     };
     const productRepo = { find: jest.fn().mockResolvedValue([product]) };
     const manager = {
+      find: jest.fn().mockResolvedValue([product]),
       create: jest.fn((_entity, value) => ({ ...value, id: 'order-id' })),
       save: jest.fn(async (_entity, value) => value),
     };
@@ -94,6 +95,12 @@ describe('OrdersService shop checkout', () => {
       }),
     );
     expect(result.totalAmount).toBe(72);
+    expect(product.stock).toBe(3);
+    expect(manager.save).toHaveBeenCalledWith(expect.anything(), [product]);
+    expect(manager.create).toHaveBeenCalledWith(
+      Order,
+      expect.objectContaining({ stockReserved: true }),
+    );
     expect(result.publicStatusToken).toEqual(expect.any(String));
     expect(result.publicStatusToken).toHaveLength(43);
     expect(manager.create).toHaveBeenCalledWith(
@@ -108,7 +115,13 @@ describe('OrdersService shop checkout', () => {
 
   it('rejects unavailable products instead of trusting request prices', async () => {
     const service = new OrdersService(
-      { manager: { transaction: jest.fn() } } as any,
+      {
+        manager: {
+          transaction: jest.fn((work) =>
+            work({ find: jest.fn().mockResolvedValue([]) }),
+          ),
+        },
+      } as any,
       { find: jest.fn().mockResolvedValue([]) } as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
@@ -133,6 +146,7 @@ describe('OrdersService shop checkout', () => {
       stock: 5,
     };
     const manager = {
+      find: jest.fn().mockResolvedValue([product]),
       create: jest.fn((_entity, value) => ({ ...value, id: 'order-id' })),
       save: jest.fn(async (_entity, value) => value),
     };
@@ -158,6 +172,45 @@ describe('OrdersService shop checkout', () => {
         },
       }),
     ).rejects.toThrow('PayPal checkout is not configured');
+  });
+});
+
+describe('OrdersService stock reservations', () => {
+  it('releases reserved stock when payment fails', async () => {
+    const order = makeOrder({
+      orderType: 'shop',
+      items: [
+        {
+          productId: 'product-id',
+          productName: 'Tea Bowl',
+          productImage: '',
+          quantity: 2,
+          unitPrice: 32,
+        },
+      ],
+      stockReserved: true,
+    });
+    const manager = {
+      findOne: jest.fn().mockResolvedValue(order),
+      increment: jest.fn().mockResolvedValue(undefined),
+      save: jest.fn().mockResolvedValue(order),
+    };
+    const service = new OrdersService(
+      { manager: { transaction: jest.fn((work) => work(manager)) } } as any,
+      {} as any,
+      { get: jest.fn() } as any,
+      {} as any,
+    );
+
+    await service.markPaymentFailed(order.orderNo, 'declined');
+
+    expect(manager.increment).toHaveBeenCalledWith(
+      expect.anything(),
+      { id: 'product-id' },
+      'stock',
+      2,
+    );
+    expect(order.stockReserved).toBe(false);
   });
 });
 

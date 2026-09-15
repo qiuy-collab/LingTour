@@ -147,11 +147,11 @@ interface ApiCity {
 interface ApiStoreCollection {
   id: string;
   slug: string;
-  title: string;
-  routeName: string;
+  title: LocalizedText;
+  routeName: LocalizedText;
   routeSlug: string;
   image: string;
-  body: string;
+  body: LocalizedText;
   productCount?: number;
 }
 
@@ -197,7 +197,7 @@ interface PaginatedResponse<T> {
   total: number;
 }
 
-type LocalizedText = string | { en?: string; zh?: string };
+type LocalizedText = string | { en?: string; zh?: string; EN?: string; ZH?: string };
 
 interface ApiHomeConfig {
   hero?: {
@@ -402,11 +402,11 @@ function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
 
 function mapCollection(apiCol: ApiStoreCollection): StoreCollection {
   return {
-    title: apiCol.title,
-    route: apiCol.routeName,
+    title: pickLocalized(apiCol.title),
+    route: pickLocalized(apiCol.routeName),
     href: `/routes/${apiCol.routeSlug}`,
     image: apiCol.image,
-    body: apiCol.body,
+    body: pickLocalized(apiCol.body),
   };
 }
 
@@ -452,7 +452,7 @@ function pickLocalized(
 ): string {
   if (!value) return "";
   if (typeof value === "string") return value;
-  return value.en ?? value.zh ?? "";
+  return value.en ?? value.EN ?? value.zh ?? value.ZH ?? "";
 }
 
 export interface ApiInterpretingMode {
@@ -549,10 +549,12 @@ export async function fetchInterpreting(
 
 export async function createInterpretingDepositCheckout(
   payload: InterpretingBookingPayload,
+  idempotencyKey?: string,
 ): Promise<InterpretingDepositCheckout> {
   return apiPost<InterpretingDepositCheckout>(
     "/public/bookings/checkout",
     payload,
+    idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : {},
   );
 }
 

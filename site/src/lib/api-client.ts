@@ -146,8 +146,9 @@ export function apiGet<T = unknown>(
 export function apiPost<T = unknown>(
   endpoint: string,
   body?: unknown,
+  options: Omit<RequestOptions, "body" | "method"> = {},
 ): Promise<T> {
-  return apiClient<T>(endpoint, { method: "POST", body });
+  return apiClient<T>(endpoint, { ...options, method: "POST", body });
 }
 
 export function apiPut<T = unknown>(

@@ -1,5 +1,6 @@
 jest.mock('uuid', () => ({ v4: () => 'test-order-id' }));
 
+import { ConflictException } from '@nestjs/common';
 import { InterpretingService } from './interpreting.service';
 
 describe('InterpretingService public profiles', () => {
@@ -100,5 +101,36 @@ describe('InterpretingService public profiles', () => {
       }),
     ).rejects.toThrow('stripe failed');
     expect(notificationsService.notifyStaff).not.toHaveBeenCalled();
+  });
+
+  it('rejects a duplicate booking idempotency key before creating another booking', async () => {
+    const bookingRepo = {
+      findOne: jest.fn().mockResolvedValue({ id: 'existing-booking' }),
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+    const service = new InterpretingService(
+      {} as any,
+      {} as any,
+      {} as any,
+      bookingRepo as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    await expect(
+      service.submitBookingWithDeposit(
+        {
+          name: 'Guest',
+          contact: 'guest@example.com',
+          city: 'Zhanjiang',
+          serviceDate: '2026-08-01',
+          supportMode: 'City companion support',
+        },
+        'booking-key-1',
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(bookingRepo.create).not.toHaveBeenCalled();
   });
 });

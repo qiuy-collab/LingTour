@@ -64,6 +64,7 @@ function MultiStepFormInner({
   });
   const [depositSession, setDepositSession] = useState<InterpretingDepositCheckout | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const idempotencyKeyRef = useRef<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -171,7 +172,13 @@ function MultiStepFormInner({
         fastTrack,
       };
 
-      const session = await createInterpretingDepositCheckout(payload);
+      const idempotencyKey =
+        idempotencyKeyRef.current ??
+        (idempotencyKeyRef.current =
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      const session = await createInterpretingDepositCheckout(payload, idempotencyKey);
       setDepositSession(session);
       setStep(fastTrack ? 1 : 3);
       onStepChange?.(fastTrack ? 1 : 3, fastTrack);
