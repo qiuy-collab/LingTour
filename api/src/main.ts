@@ -9,6 +9,17 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
+  const trustProxyHops = Number.parseInt(
+    configService.get<string>('TRUST_PROXY_HOPS', '2'),
+    10,
+  );
+  app.getHttpAdapter().getInstance().set(
+    'trust proxy',
+    Number.isFinite(trustProxyHops) && trustProxyHops >= 0
+      ? trustProxyHops
+      : 2,
+  );
+
   // Process-level safety net for unhandled errors
   process.on('unhandledRejection', (reason) => {
     logger.error('Unhandled Rejection:', reason);

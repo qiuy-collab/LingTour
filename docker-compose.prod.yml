@@ -44,6 +44,7 @@ services:
       FRONTEND_URL: https://culvoy.com
       ADMIN_FRONTEND_URL: https://admin.culvoy.com
       REDIS_URL: redis://redis:6379
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-2}
     depends_on:
       redis:
         condition: service_healthy

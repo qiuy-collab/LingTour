@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventEntity } from './entities/event.entity';
+import {
+  EVENT_STATUSES,
+  EventEntity,
+  type EventStatus,
+} from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
@@ -100,7 +104,10 @@ export class EventsService {
     return this.repo.save(event);
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatus(id: string, status: EventStatus) {
+    if (!EVENT_STATUSES.includes(status)) {
+      throw new BadRequestException('Invalid event status');
+    }
     const event = await this.getAdminById(id);
     event.status = status;
     return this.repo.save(event);

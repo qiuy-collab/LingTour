@@ -28,6 +28,7 @@ import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { UsersService } from '../users/users.service';
 import { UploadService } from '../upload/upload.service';
+import { hasValidUploadSignature } from '../upload/upload-policy';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -155,7 +156,7 @@ export class AuthController {
       throw new BadRequestException('File is required');
     }
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowed.includes(file.mimetype)) {
+    if (!allowed.includes(file.mimetype) || !hasValidUploadSignature(file)) {
       throw new BadRequestException(
         'Unsupported file type. Allowed: jpg, png, webp',
       );

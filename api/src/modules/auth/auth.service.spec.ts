@@ -9,8 +9,12 @@ import { EmailVerificationService } from './email-verification.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let usersService: jest.Mocked<Partial<UsersService>>;
-  let jwtService: jest.Mocked<Partial<JwtService>>;
+  type MockedMethods<T> = Partial<{
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? jest.Mock : T[K];
+  }>;
+
+  let usersService: MockedMethods<UsersService>;
+  let jwtService: MockedMethods<JwtService>;
   let emailVerificationService: {
     sendCode: jest.Mock;
     consumeCode: jest.Mock;
@@ -36,6 +40,7 @@ describe('AuthService', () => {
 
     jwtService = {
       sign: jest.fn().mockReturnValue('mock-jwt-token'),
+      verify: jest.fn(),
     };
 
     emailVerificationService = {
@@ -145,6 +150,25 @@ describe('AuthService', () => {
           role: mockUser.role,
         },
         { expiresIn: '24h' },
+      );
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('rejects a banned account even when its token is within the grace period', async () => {
+      jwtService.verify!.mockReturnValue({
+        sub: mockUser.id,
+        email: mockUser.email,
+        role: mockUser.role,
+        exp: Math.floor(Date.now() / 1000) - 60,
+      } as any);
+      usersService.findById!.mockResolvedValue({
+        ...mockUser,
+        status: 'banned',
+      } as any);
+
+      await expect(authService.refreshToken('expired-token')).rejects.toThrow(
+        'This account is disabled',
       );
     });
   });

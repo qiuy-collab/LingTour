@@ -256,10 +256,13 @@ export class AuthService {
       }
     }
 
-    // 3. Confirm the user still exists
+    // 3. Re-check account status before issuing a fresh token.
     const user = await this.usersService.findById(decoded.sub);
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
+    }
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('This account is disabled');
     }
 
     // 4. Build a fresh auth response (new 24h token)

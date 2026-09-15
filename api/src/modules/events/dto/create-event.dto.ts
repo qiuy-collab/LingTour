@@ -4,10 +4,12 @@ import {
   IsDateString,
   IsObject,
   IsOptional,
+  IsIn,
   IsString,
   MaxLength,
 } from 'class-validator';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
+import { EVENT_STATUSES } from '../entities/event.entity';
 
 export class CreateEventDto {
   @ApiProperty() @IsString() @MaxLength(120) slug: string;
@@ -33,7 +35,10 @@ export class CreateEventDto {
   @IsString()
   @IsMediaLibraryPath()
   image?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() status?: string;
+  @ApiPropertyOptional({ enum: EVENT_STATUSES })
+  @IsOptional()
+  @IsIn(EVENT_STATUSES)
+  status?: (typeof EVENT_STATUSES)[number];
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()

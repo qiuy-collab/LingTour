@@ -7,6 +7,9 @@
   UpdateDateColumn,
 } from 'typeorm';
 
+export const EVENT_STATUSES = ['upcoming', 'ongoing', 'past', 'draft'] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
+
 @Entity('events')
 export class EventEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -47,7 +50,7 @@ export class EventEntity {
 
   @Index()
   @Column({ type: 'varchar', length: 30, default: 'draft' })
-  status: string;
+  status: EventStatus;
 
   @Column({ type: 'jsonb', name: 'related_route_slugs', default: [] })
   relatedRouteSlugs: string[];

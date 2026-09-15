@@ -20,6 +20,7 @@ import { UploadService } from './upload.service';
 import {
   isAllowedImageUpload,
   isAllowedVideoUpload,
+  hasValidUploadSignature,
   MAX_IMAGE_FILE_SIZE,
   MAX_VIDEO_FILE_SIZE,
 } from './upload-policy';
@@ -218,6 +219,11 @@ export class UploadController {
   ) {
     if (!file) {
       throw new BadRequestException('File is required');
+    }
+    if (!hasValidUploadSignature(file)) {
+      throw new BadRequestException(
+        'File content does not match its declared type',
+      );
     }
 
     const authUser = request['user'] as { sub?: string } | undefined;

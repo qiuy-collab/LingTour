@@ -16,6 +16,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
+import type { EventStatus } from './entities/event.entity';
 import {
   AuditInterceptor as AuditLogInterceptor,
   AuditAction,
@@ -106,7 +107,10 @@ export class EventsController {
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)
   @AuditAction('update', 'event')
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: EventStatus,
+  ) {
     return this.service.updateStatus(id, status);
   }
 
