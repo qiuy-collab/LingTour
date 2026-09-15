@@ -94,7 +94,7 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
               <div className="absolute left-1/2 top-0 h-8 w-28 -translate-x-1/2 -translate-y-1/2 rotate-2 border border-white/10 bg-white/15 backdrop-blur-sm" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.14),transparent_70%)]" />
               <div className="relative z-10 mx-auto max-w-2xl">
-                <p className="handwritten text-xl text-[var(--gold)] sm:text-2xl">Continue exploring</p>
+                <p className="handwritten text-xl text-[var(--gold-light)] sm:text-2xl">Continue exploring</p>
                 <h2 className="mt-6 font-[family:var(--font-display)] text-4xl leading-tight sm:mt-8 md:text-6xl">
                   Let the next object lead you <span className="italic">back</span> into the journey.
                 </h2>

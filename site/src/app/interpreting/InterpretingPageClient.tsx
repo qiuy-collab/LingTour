@@ -48,6 +48,13 @@ const clampCopy = (text: string, maxLength: number) => {
   return `${clean}...`;
 };
 
+/**
+ * Present CMS-authored price strings in one notation. The pricing matrix
+ * uses "¥680", so a service mode stored as "From RMB 680 / half day" is
+ * displayed as "From ¥680 / half day" instead of mixing RMB / ¥ on screen.
+ */
+const normalizePriceNotation = (price: string) => price.replace(/RMB\s*/gi, "¥");
+
 const serviceImagePool = [
   SEED_IMAGES.interpretingHero,
   SEED_IMAGES.interpretingShowcase,
@@ -161,7 +168,7 @@ export default function InterpretingPageClient({
       image:
         serviceImagePool[index % serviceImagePool.length] ??
         placeholderFor("hero"),
-      duration: mode.price,
+      duration: normalizePriceNotation(mode.price),
       body: clampCopy(mode.body, 110),
       tags: mode.includes?.slice(0, 3) ?? [],
     }));
@@ -297,7 +304,7 @@ export default function InterpretingPageClient({
                 </h1>
 
                 <div className="grid grid-cols-1 items-end gap-5 border-t border-[var(--line)] pt-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 lg:pt-7">
-                  <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-[13px] leading-6 text-[var(--river-deep)]/70 sm:text-base sm:leading-relaxed lg:text-lg">
+                  <p data-pastoral-subtitle className="max-w-[34rem] handwritten text-[13px] leading-6 text-[var(--river-deep)]/85 sm:text-base sm:leading-relaxed lg:text-lg">
                     {t("interpreting.hero.subtitle")}
                   </p>
 

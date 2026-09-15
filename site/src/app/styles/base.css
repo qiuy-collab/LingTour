@@ -14,6 +14,10 @@
   --cinnabar-deep: #842b23;
   --jade: #7c9b86;
   --gold: #9a6d2e;
+  /* Lightened brass for text ON dark surfaces (river-deep / night): the
+     base gold manages only 2.9:1 on river-deep and 3.9:1 on night, while
+     this derivative clears 6.7:1 and 8.9:1. Never use it on light surfaces. */
+  --gold-light: #d9b36a;
   --night: #111923;
   --shadow-soft: 0 22px 70px rgba(17, 25, 35, 0.12);
   --site-max-width: 82rem;

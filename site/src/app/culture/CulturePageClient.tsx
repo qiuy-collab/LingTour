@@ -254,7 +254,7 @@ export default function CulturePageClient({
             />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold-light)]">
                   {t("culture.cta.eyebrow")}
                 </p>
                 <h2 className="mt-8 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl md:text-6xl">

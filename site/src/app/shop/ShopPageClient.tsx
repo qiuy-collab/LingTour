@@ -234,7 +234,7 @@ export default function ShopPageClient({
                 <div className="mt-8">
                   <Link
                     href="/shop/products"
-                    className="inline-block bg-[var(--gold)] px-10 py-5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--night)] transition-all hover:bg-white"
+                    className="inline-block bg-[var(--gold-light)] px-10 py-5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--night)] transition-all hover:bg-white"
                   >
                     {t("shop.cta.button")}
                   </Link>

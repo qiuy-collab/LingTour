@@ -200,12 +200,12 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
           <div className="contents lg:col-span-3 lg:block lg:min-w-0">
             <div className="order-1 col-span-1 space-y-5 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:space-y-10">
               <div data-product-collection className="relative inline-block max-w-full -rotate-2 bg-[var(--river-deep)] p-5 scrapbook-shadow sm:p-6">
-                <p className="handwritten text-xl text-[var(--gold)]">Collection</p>
+                <p className="handwritten text-xl text-[var(--gold-light)]">Collection</p>
                 <p className="mt-2 font-[family:var(--font-display)] text-2xl leading-tight text-white">
                   {collectionLabel}
                 </p>
-                <div className="absolute -right-3 -top-3 grid h-14 w-14 rotate-12 place-items-center rounded-full border-2 border-dashed border-[var(--gold)]/30 sm:-right-4 sm:-top-4 sm:h-16 sm:w-16">
-                  <span className="text-center text-[8px] font-bold uppercase tracking-widest text-[var(--gold)]/55 sm:text-[9px]">
+                <div className="absolute -right-3 -top-3 grid h-14 w-14 rotate-12 place-items-center rounded-full border-2 border-dashed border-[var(--gold-light)]/50 sm:-right-4 sm:-top-4 sm:h-16 sm:w-16">
+                  <span className="text-center text-[8px] font-bold uppercase tracking-widest text-[var(--gold-light)]/90 sm:text-[9px]">
                     Authentic<br />Object
                   </span>
                 </div>
@@ -341,7 +341,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                       }`}
                     >
                       <span className="text-[10px] font-bold uppercase tracking-[0.16em] sm:text-xs sm:tracking-widest">{option}</span>
-                      {finish === option ? <span className="handwritten text-lg text-[var(--gold)]">Picked</span> : null}
+                      {finish === option ? <span className="handwritten text-lg text-[var(--gold-light)]">Picked</span> : null}
                     </button>
                   ))}
                 </div>
@@ -358,7 +358,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                       aria-pressed={edition === option}
                       className={`min-h-12 border-2 px-2 py-3 text-[9px] font-bold uppercase tracking-[0.14em] transition-all sm:text-[10px] sm:tracking-widest ${
                         edition === option
-                          ? "border-[var(--gold)] bg-[var(--gold)] text-[var(--river-deep)]"
+                          ? "border-[var(--gold-light)] bg-[var(--gold-light)] text-[var(--night)]"
                           : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/65 hover:border-[var(--river-deep)]/30"
                       }`}
                     >

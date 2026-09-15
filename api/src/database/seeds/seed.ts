@@ -535,7 +535,7 @@ async function seed() {
       (1, $6, $7, $8, $9, $10, 'dark', true);`,
     [
       j({ en: 'City companion interpreting', zh: '城市同行口译' }),
-      j({ en: 'From RMB 680 / half day', zh: 'RMB 680 / 半天起' }),
+      j({ en: 'From ¥680 / half day', zh: '¥680 / 半天起' }),
       j({ en: 'Independent visitors', zh: '独立访客' }),
       j({
         en: 'Ground support for transit, ordering, ticketing and etiquette.',
@@ -543,7 +543,7 @@ async function seed() {
       }),
       j(['English support', 'Restaurant help', 'Local etiquette']),
       j({ en: 'Story route guided support', zh: '故事路线引导支持' }),
-      j({ en: 'From RMB 1,280 / half day', zh: 'RMB 1,280 / 半天起' }),
+      j({ en: 'From ¥1,280 / half day', zh: '¥1,280 / 半天起' }),
       j({ en: 'Route followers', zh: '路线探索者' }),
       j({
         en: 'Keep route pacing and cultural thread clear across all stops.',
