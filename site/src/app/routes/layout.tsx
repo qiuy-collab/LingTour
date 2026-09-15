@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Story Routes | Culvoy Guangdong",
   description:
-    "Follow curated story-driven routes across Guangdong. Each route weaves together local food, cultural landmarks, and hidden stops with a dedicated interpreter guide.",
+    "Walked and timed Guangdong routes — from Huguangyan's crater lake to a Zhanjiang seafood table, or Chaozhou's tea streets — with honest itineraries, not checklists.",
   openGraph: {
     title: "Story Routes | Culvoy Guangdong",
     description:
-      "Follow curated story-driven routes across Guangdong with food, culture, and hidden stops.",
+      "Timed, walked Guangdong routes — Huguangyan's crater lake, Zhanjiang's seafood table, Chaozhou's tea streets.",
   },
 };
 

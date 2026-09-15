@@ -49,7 +49,7 @@ export const routes = {
     "routes.atlas.eyebrow": "Story Routes / Selection",
     "routes.atlas.titlePrimary": "Guangdong",
     "routes.atlas.titleItalic": "Story Routes.",
-    "routes.atlas.lede": "A first impression, a turning point, a table, and a place that stays with you.",
+    "routes.atlas.lede": "Each route is written the way you would actually walk it: an 08:00 start, a market in the middle, a slow last hour before dinner.",
     "routes.atlas.archiveBadge": "Archive · Story routes",
     "routes.atlas.dispatchInfo": "Dispatch info",
     "routes.atlas.waypoints": "Waypoints:",

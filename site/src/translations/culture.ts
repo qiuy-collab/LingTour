@@ -35,7 +35,7 @@ export const culture = {
     "culture.atlas.eyebrow": "City Culture · The Atlas",
     "culture.atlas.titlePrimary": "Guangdong",
     "culture.atlas.titleItalic": "City Culture.",
-    "culture.atlas.lede": "Each city carries a different Guangdong: a coastline, a dialect, a table, a craft memory, and a rhythm you only notice when you slow down.",
+    "culture.atlas.lede": "Guangdong does not hold still between cities. Chaozhou pours tea into thimble cups, Guangzhou does its loudest talking over morning dim sum, and the Hakka hills keep a language of their own.",
     "culture.atlas.archiveLabel": "Archive No.",
     "culture.atlas.archiveCode": "GD-020-0755",
     "culture.atlas.empty.title": "No city records",

@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Shop | Culvoy Guangdong",
   description:
-    "Browse Lingnan-inspired cultural products — handcrafted goods, local delicacies, and artisan collections tied to Guangdong's story routes.",
+    "Objects from the Lingnan shelf: Leizhou volcanic-clay bowls, Chaozhou teacups, and everyday pieces still made inside the province.",
   openGraph: {
     title: "Shop | Culvoy Guangdong",
     description:
-      "Browse Lingnan-inspired cultural products and artisan collections from Guangdong.",
+      "Leizhou clay bowls, Chaozhou teacups, and pieces still made inside Guangdong.",
   },
 };
 

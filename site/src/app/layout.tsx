@@ -10,7 +10,7 @@ import { LocaleProvider } from "@/lib/locale-context";
 export const metadata: Metadata = {
   title: "Culvoy Guangdong",
   description:
-    "Culvoy connects Guangdong culture, story-driven routes, interpreting services, and Lingnan-inspired retail for international visitors.",
+    "Story routes through Guangdong's three cultures — a crater lake in Zhanjiang, gongfu tea in Chaozhou, morning dim sum in Guangzhou — with a local interpreter at your side.",
 };
 
 export const viewport: Viewport = {

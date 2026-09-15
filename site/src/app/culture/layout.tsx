@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Culture & Cities | Culvoy Guangdong",
   description:
-    "Explore Guangdong's diverse city cultures — from Cantonese heritage in Guangzhou to Teochew traditions in Shantou. Discover food, history, and hidden stories across Lingnan.",
+    "City culture across Guangdong: Chaozhou's gongfu tea, Guangzhou's qilou arcades and morning tea, Hakka round-walled houses in the hills — three traditions, one province.",
   openGraph: {
     title: "Culture & Cities | Culvoy Guangdong",
     description:
-      "Explore Guangdong's diverse city cultures — from Cantonese heritage in Guangzhou to Teochew traditions in Shantou.",
+      "Chaozhou's gongfu tea, Guangzhou's qilou arcades, Hakka round-walled houses — three traditions, one province.",
   },
 };
 

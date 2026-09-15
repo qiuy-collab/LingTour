@@ -19,7 +19,7 @@ export default async function ProductsPage() {
         <Reveal>
           <EditorialIntro
             eyebrow={`${String(products.length).padStart(2, "0")} field objects / All products`}
-            title="The full shelf of carried memory."
+            title="From Zhanjiang clay to Chaozhou teacups."
             description={
               <>
                 <p>

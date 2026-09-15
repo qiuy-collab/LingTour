@@ -31,7 +31,7 @@ export const shop = {
 
     "shop.atlas.titlePrimary": "Lingnan",
     "shop.atlas.titleItalic": "Objects.",
-    "shop.atlas.lede": "Craft, tea, wood, clay, cloth: objects chosen because they still carry the route, the maker, and the place they came from.",
+    "shop.atlas.lede": "A bowl pressed from Leizhou volcanic clay, teacups off a Chaozhou workshop shelf — objects that were in use here long before they were in a shop.",
     "shop.atlas.collectionsTitle": "Collections by Place",
     "shop.atlas.featuredTitle": "Featured Objects",
     "shop.atlas.viewAll": "View all",

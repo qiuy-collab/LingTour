@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Interpreting Services | Culvoy Guangdong",
   description:
-    "Book professional interpreters for your Guangdong trip. City walks, multi-day routes, and group travel support — available in English, Mandarin, and Cantonese.",
+    "English-speaking interpreters for Guangdong's markets, temples, and tea tables — half-day city walks, full-day routes, group trips, and remote support.",
   openGraph: {
     title: "Interpreting Services | Culvoy Guangdong",
     description:
-      "Book professional interpreters for city walks, routes, and group travel in Guangdong.",
+      "Interpreters for Guangdong's markets, temples, and tea tables — in person or remote.",
   },
 };
 
