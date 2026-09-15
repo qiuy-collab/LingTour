@@ -1,6 +1,6 @@
 # Culvoy Current State
 
-> **Live status source — 2026-09-15.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
+> **Live status source — 2026-09-16.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
 
 ## 1. Production baseline
 
@@ -508,3 +508,14 @@ Owner reported `Cannot POST /api/auth/session` in production.
 - Fix: commit `3343209` added exact-match locations for `/api/auth/session` (and its trailing-slash form) proxying to `site_frontend`; syntax pre-checked on the server with a one-off `nginx:alpine nginx -t`.
 - Deploy: run `34993271372`; server root HEAD `3343209`; gateway conf md5 matches the repo; site container healthy.
 - Verification 7/7 against production: POST wrong credentials → 401 "Invalid email or password" (real auth flow reached); POST invalid action → 400 from the site handler; DELETE → `{ok:true}` cookie cleared; direct `/api/v1/auth/login` forward unaffected; a real browser on `/login` submitting bad credentials shows the visible auth error with no "Cannot POST" and zero page errors. A successful login was not exercised (no production credentials; success and failure share the same handler forward branch).
+
+## 29. 2026-09-16 full rebrand to Culvoy deployed, legacy domains kept compatible
+
+Owner requested renaming every `lingtour` brand reference to `Culvoy` and consolidating on the `culvoy.com` domains. Confirmed boundary: brand copy, domains, and technical keys renamed; infrastructure identifiers kept (`qiuy-collab/LingTour`, `/root/LingTour`, database name, `lingtour-*` container names, retired PM2 names); migration files untouched; historical docs rewritten; gateway `server_name` restricted to the `culvoy.com` family with legacy-domain compatibility preserved at the host layer.
+
+- Root commits (in order): `728b382` API rebrand (API surface, emails, seeds, cookie `lingtour_session` → `culvoy_session`, `lingtour-*` localStorage keys, event names, BroadcastChannel → `culvoy-*`); `b51ca6e` site rebrand; `dbda668` admin rebrand mirror (independent admin `be74c41`: preview channel, storage keys, allowed hosts, vite config); `686b5c4` gateway `server_names` restricted to the culvoy family; `9cb4eb0` guides/tools/archive docs renamed. Breaking note: existing visitors are signed out once and local carts/favorites reset because cookie/localStorage keys changed.
+- Validation: site tsc/lint (0 errors, baseline warnings)/tests 101/101/build green; api tsc/tests 154/154/build green (pre-existing `cities.service.spec.ts` mock type error unrelated); admin build green.
+- Deploy: run `34998367122`; server root HEAD `9cb4eb0`; api/site/admin/nginx containers healthy.
+- Production smoke: 13/14 then 14/14 in substance — the single FAIL was the smoke script's own request-body format; a `node fetch` retest with the correct protocol returned 401 "Invalid email or password" from the real NestJS auth chain, and `/api/v1/*` direct forwards were unaffected.
+- Legacy-domain compatibility: restricting gateway `server_names` silently pushed legacy `admin.`/`api.lingfengtranstour.cn` onto the `_` default (admin served main-site content; API `/health` → 308). Fixed in the host TLS layer (BT panel vhosts, not in repo, not overwritten by deploys): the three `lingfengtranstour.cn` vhosts now send `proxy_set_header Host culvoy.com|admin.culvoy.com|api.culvoy.com` instead of `$http_host` (server-side backups `*.bak-culvoy-compat-<ts>`). Verified via the host TLS layer: legacy site 200, legacy admin 200 with `<title>Culvoy Admin</title>`, legacy API `/health` 200 `{"status":"ok","database":"up"}`; culvoy family regression 200 ×3.
+
