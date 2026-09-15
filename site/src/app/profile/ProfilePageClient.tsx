@@ -45,7 +45,7 @@ const PROFILE_LABEL_CLASS =
   "text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
 
 const ARCHIVE_ACTION_CLASS =
-  "btn-outline min-h-12 w-full text-[10px] leading-none sm:w-auto";
+  "btn-outline flex min-h-12 w-full items-center justify-center text-[10px] leading-none sm:inline-flex sm:w-auto";
 
 function readFavorites(): FavoriteItem[] {
   try {
@@ -304,7 +304,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       className="min-h-[100dvh] bg-[var(--background)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20"
       motionKey={`${activeTab}:${collectionItems.length}:${savedNotes.length}`}
     >
-      <header className="border-b border-[var(--line)] bg-[var(--background)] py-10 sm:py-12 lg:py-16">
+      <header className="border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain py-10 sm:py-12 lg:py-16">
         <div className="site-container grid min-w-0 gap-8 md:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)] md:items-end md:gap-12 lg:gap-16">
           <div className="flex min-w-0 flex-col gap-7 sm:flex-row sm:items-center">
             <button type="button" onClick={() => avatarInputRef.current?.click()} className="group relative w-fit shrink-0 rounded-full" aria-label={t("account.profile.changeAvatar")}>
@@ -368,7 +368,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </div>
       </header>
 
-      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--background)]">
+      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain">
         <nav
           className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3"
           aria-label={t("account.profile.tabLabel")}

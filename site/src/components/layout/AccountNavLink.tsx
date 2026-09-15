@@ -61,10 +61,18 @@ export function AccountNavLink({
       <Link
         href="/profile?tab=notes"
         onClick={onNavigate}
-        className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--cinnabar)] font-[family:var(--font-display)] text-sm text-white transition hover:bg-[var(--river-deep)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
+        className="relative z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--paper)] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)] hover:bg-[var(--river-deep)] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--gold)]"
         aria-label="Open your traveler profile"
       >
-        {getInitials(user.name)}
+        {user.avatarUrl ? (
+          <span aria-hidden="true" className="h-10 w-10 overflow-hidden rounded-full">
+            <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+          </span>
+        ) : (
+          <span aria-hidden="true" className="font-[family:var(--font-display)] text-sm">
+            {getInitials(user.name)}
+          </span>
+        )}
       </Link>
     </div>
   );
