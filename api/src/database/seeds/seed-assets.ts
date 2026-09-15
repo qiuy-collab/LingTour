@@ -1,5 +1,13 @@
 export const SEED_ASSET_BASE = '/uploads/seed';
 
+/**
+ * Marker used instead of a remote URL when a slot has no verified real photo.
+ * The download script writes a neutral "imagery pending" card for these slots
+ * instead of silently substituting a random image — a placeholder that admits
+ * it is a placeholder, never a stock photo pretending to be the place.
+ */
+export const PENDING_CARD_SOURCE = 'pending-card';
+
 export const SEED_ASSETS = {
   // Zhanjiang
   zhanjiangHero1200: `${SEED_ASSET_BASE}/zhanjiang-hero-1200.jpg`,
@@ -66,14 +74,17 @@ export const SEED_ASSET_SOURCES: Record<string, string> = {
     'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1200&q=82',
   [SEED_ASSETS.pottery1200]:
     'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1200&q=82',
-  // Routes
+  // Routes — real photography of the named places (Wikimedia Commons).
+  // Attribution is recorded in assets/ATTRIBUTION.md next to this file.
   [SEED_ASSETS.routeCover]:
-    'https://picsum.photos/seed/zhanjiang-coast/1400/900',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/Aerial_view_of_Zhanjiang_Bay.jpg?width=1600',
   [SEED_ASSETS.routeHuguangyan]:
-    'https://picsum.photos/seed/huguangyan-lake/1200/800',
-  [SEED_ASSETS.routeDongfeng]:
-    'https://picsum.photos/seed/dongfeng-market/1200/800',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/Huguangyan_Maar_Lake.jpg?width=1600',
+  // No verified photo of Dongfeng Seafood Market exists in the image library.
+  // Serve the honest pending card rather than a random image of somewhere else.
+  [SEED_ASSETS.routeDongfeng]: PENDING_CARD_SOURCE,
   [SEED_ASSETS.routeXiashan]:
-    'https://picsum.photos/seed/xiashan-french/1200/800',
-  [SEED_ASSETS.routeJinsha]: 'https://picsum.photos/seed/jinsha-bay/1200/800',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/Cathedral_of_St._Victor_in_Zhanjiang_-_20181030.jpg?width=1600',
+  [SEED_ASSETS.routeJinsha]:
+    'https://commons.wikimedia.org/wiki/Special:FilePath/Zhanjiang_beach.jpg?width=1600',
 };

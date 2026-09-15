@@ -1,12 +1,24 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { SEED_ASSET_SOURCES } from './seed-assets';
+import {
+  PENDING_CARD_SOURCE,
+  SEED_ASSET_SOURCES,
+} from './seed-assets';
+
+/** Committed neutral card served when no verified photo of a place exists. */
+const PENDING_CARD_FILE = path.join(__dirname, 'assets', 'imagery-pending-card.jpg');
 
 async function downloadOne(targetUrlPath: string, sourceUrl: string) {
   const relativePath = targetUrlPath.replace(/^\/uploads\//, '');
   const outputPath = path.join(process.cwd(), 'uploads', relativePath);
 
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
+
+  if (sourceUrl === PENDING_CARD_SOURCE) {
+    await fs.copyFile(PENDING_CARD_FILE, outputPath);
+    console.log(`Saved ${relativePath} (imagery pending card)`);
+    return;
+  }
 
   const response = await fetch(sourceUrl);
   if (!response.ok) {
