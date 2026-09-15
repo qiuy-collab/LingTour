@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { getSettings } from '@/api/settings'
+import { useAuthStore } from '@/store/auth'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
+const authStore = useAuthStore()
+
 onMounted(async () => {
+  if (!authStore.isLoggedIn) return
   try {
     const res = await getSettings()
     const settings = res.data.data

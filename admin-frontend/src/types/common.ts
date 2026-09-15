@@ -42,7 +42,7 @@ export function readContentValue(val: unknown): string {
   }
   if (typeof val === 'object' && val !== null) {
     const obj = val as Record<string, unknown>
-    return String(obj.en || obj.zh || '')
+    return String(obj.en || obj.EN || obj.zh || obj.ZH || '')
   }
   return String(val)
 }
@@ -66,7 +66,8 @@ export function toI18n(val: unknown): I18nObject {
     }
   }
   if (typeof val === 'object' && val !== null) {
-    const raw = (val as Record<string, unknown>).zh
+    const rawValue = val as Record<string, unknown>
+    const raw = rawValue.zh || rawValue.ZH
     if (typeof raw === 'string') legacyZh = raw
   }
 
@@ -81,7 +82,7 @@ export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string 
       try {
         const parsed = JSON.parse(val)
         if (typeof parsed === 'object' && parsed !== null) {
-          return String(parsed[locale] || parsed.en || parsed.zh || val)
+          return String(parsed[locale] || parsed.en || parsed.EN || parsed.zh || parsed.ZH || val)
         }
       } catch { /* not JSON, return as-is */ }
     }
@@ -89,7 +90,7 @@ export function pickI18n(val: unknown, locale: keyof I18nObject = 'en'): string 
   }
   if (typeof val === 'object') {
     const obj = val as Record<string, unknown>
-    return String(obj[locale] || obj.en || obj.zh || '')
+    return String(obj[locale] || obj.en || obj.EN || obj.zh || obj.ZH || '')
   }
   return String(val)
 }
