@@ -109,7 +109,10 @@ export default function CulturePageClient({
 
             <div className="relative w-full min-w-0 self-start sm:self-end lg:col-span-5 lg:max-w-none lg:self-center">
               <Reveal delay={200}>
-                <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden border-[0.35rem] border-white scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
+                <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden border-[0.35rem] border-white bg-[var(--parchment-deep)] scrapbook-shadow rotate-2 sm:aspect-[3/4] sm:border-8 lg:aspect-[4/5]">
+                  {/* React 19 hoists this into <head>, so the hero photo starts
+                      loading with the document instead of after CSS/paint. */}
+                  <link rel="preload" as="image" href={heroImage} />
                   <div
                     data-pastoral-hero-media
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"

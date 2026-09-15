@@ -9,6 +9,7 @@ import { MediaFrame } from "@/components/ui/MediaFrame";
 import { gsap, motionEase, useGSAP } from "@/lib/motion";
 import {
   dedupeMedia,
+  mediaPoster,
   resolveMediaGallery,
   resolvePrimaryMedia,
 } from "@/types/media";
@@ -172,6 +173,10 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
       ref={rootRef}
       className="overflow-hidden bg-[var(--paper-deep)] bg-grain pb-14 pt-6 sm:pb-16 sm:pt-8 lg:pb-20 lg:pt-12"
     >
+      {/* React 19 hoists this into <head>: the lead media starts fetching with
+          the document, so the object-file mount opens on parchment instead of
+          a long "opening field media" beat. */}
+      <link rel="preload" as="image" href={mediaPoster(activeMedia, product.image)} />
       <div className="border-y border-[rgba(20,33,47,0.1)] bg-[var(--paper-deep)] bg-grain py-4">
         <div className="site-container">
           <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">

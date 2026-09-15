@@ -108,7 +108,9 @@ export default function ShopPageClient({
                   <span aria-hidden className="absolute -right-1 -top-1 h-4 w-4 border-r-2 border-t-2 border-[var(--gold)]" />
                   <span aria-hidden className="absolute -bottom-1 -left-1 h-4 w-4 border-b-2 border-l-2 border-[var(--gold)]" />
                   <span aria-hidden className="absolute -bottom-1 -right-1 h-4 w-4 border-b-2 border-r-2 border-[var(--gold)]" />
-                  <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/10]">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[var(--parchment-deep)] sm:aspect-[16/10]">
+                    {/* React 19 hoists this into <head> for an early hero fetch. */}
+                    <link rel="preload" as="image" href={heroImage} />
                     <div
                       data-pastoral-hero-media
                       className="absolute inset-0 bg-cover bg-center"
