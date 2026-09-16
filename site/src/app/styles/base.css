@@ -104,14 +104,20 @@ main > #profile-panel {
   background-color: transparent;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+/* Element resets must live in @layer base: unlayered rules outrank every
+   Tailwind cascade layer, so an unlayered `a { color: inherit }` silently
+   kills utilities like `text-white` on dark anchor CTAs (e.g. the header
+   Book button rendered dark-on-dark). */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-button {
-  border: 0;
-  font: inherit;
+  button {
+    border: 0;
+    font: inherit;
+  }
 }
 
 .site-container {
