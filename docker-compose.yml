@@ -1,9 +1,26 @@
-version: "3.9"
+# Local three-tier stack: site (3000), admin (5173), api (8000).
+#
+# The api container connects to the PostgreSQL already running on the host
+# (localhost:5432) through host.docker.internal, so the local dev database
+# and its migration state are shared with the previous npm-based workflow.
+#
+# Optional profiles:
+#   --profile selfhost  start a bundled PostgreSQL instead (mapped to host
+#                       5433 to avoid clashing with the host instance); then
+#                       override api's DB_HOST=postgres, e.g. with a compose
+#                       override file.
+#   --profile gateway   start the nginx gateway on 80/443 for same-origin
+#                       /api proxying; not needed for the default split-port
+#                       local addresses documented in AGENT.md.
+#
+# API configuration comes from api/.env via env_file (single source of
+# truth); only DB_HOST is overridden here for the container network.
 
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    profiles: ["selfhost"]
     environment:
       POSTGRES_DB: lingtour
       POSTGRES_USER: lingtour
@@ -11,7 +28,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lingtour"]
       interval: 5s
@@ -23,22 +40,14 @@ services:
       context: ./api
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
+    env_file:
+      - ./api/.env
     environment:
       NODE_ENV: production
       PORT: 8000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: lingtour
-      DB_USERNAME: lingtour
-      DB_PASSWORD: ${DB_PASSWORD:-lingtour_dev}
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      DB_HOST: host.docker.internal
     volumes:
-      - uploads:/app/uploads
+      - ./api/uploads:/app/uploads
     ports:
       - "8000:8000"
     healthcheck:
@@ -50,11 +59,15 @@ services:
 
   site:
     build:
-      context: ./site
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: site/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://api:8000/api/v1
+        # Browser-side requests go straight to the api port mapping on the
+        # host; server-side (SSR) requests use the container network below.
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+    environment:
+      INTERNAL_API_ORIGIN: http://api:8000/api/v1
     restart: unless-stopped
     depends_on:
       api:
@@ -68,9 +81,36 @@ services:
       start_period: 20s
       retries: 3
 
+  admin:
+    build:
+      context: .
+      dockerfile: admin-frontend/Dockerfile
+      args:
+        VITE_MEDIA_ORIGIN: http://localhost:8000
+        VITE_SITE_ORIGIN: http://localhost:3000
+    environment:
+      NODE_ENV: production
+      PORT: 4173
+      HOST: 0.0.0.0
+      # server.cjs proxies browser /api/admin calls to the api container.
+      VITE_API_ORIGIN: http://api:8000
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "5173:4173"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4173').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));\""]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
   nginx:
     image: nginx:alpine
     restart: unless-stopped
+    profiles: ["gateway"]
     depends_on:
       - api
       - site
