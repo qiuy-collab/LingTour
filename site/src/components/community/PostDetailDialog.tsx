@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { CommunityFeedPost } from "@/lib/api-data";
 import { Avatar } from "@/components/ui/Avatar";
 import { useLocale } from "@/lib/locale-context";
@@ -19,17 +19,51 @@ type Props = {
 
 export function PostDetailDialog({ post, onClose }: Props) {
   const { t } = useLocale();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (!post) return;
     const previous = document.body.style.overflow;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !containerRef.current) return;
+
+      const focusable = Array.from(
+        containerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null);
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!containerRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
+    const focusFrame = window.requestAnimationFrame(() =>
+      closeButtonRef.current?.focus(),
+    );
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", handleKeyDown);
+      window.cancelAnimationFrame(focusFrame);
+      previouslyFocused?.focus();
     };
   }, [onClose, post]);
 
@@ -46,7 +80,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
   const hasText = Boolean(post.excerpt.trim());
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
+    <div ref={containerRef} className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
       <button
         type="button"
         aria-label="Close post detail"
@@ -69,6 +103,7 @@ export function PostDetailDialog({ post, onClose }: Props) {
           </div>
           <button
             type="button"
+            ref={closeButtonRef}
             onClick={onClose}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
             aria-label="Close post detail"
