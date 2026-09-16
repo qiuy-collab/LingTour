@@ -509,3 +509,12 @@ Owner requested categorized commits and deployment for three validated work batc
 - Pre-existing CI issue (recorded, not repaired here): the push-triggered CI's Docker Build job has failed on every push since at least `d52162b` with an empty build context (`"/site": not found`, `"/shared": not found`); API and Site check jobs pass. Deploys via workflow_dispatch are unaffected; fix the workflow's build-context config as a separate task.
 - Unreleased CHANGELOG entry for the homepage hero redesign (root `bd209fe`, run `35075106931`) was folded into the new `2026-09-16` section.
 - Root worktree clean of tracked changes; untracked items intentionally kept per standing practice (`review/`, `reviews/`, `lingtour-frontend-documentation/`, `api/src/database/seeds/seed-local-preview.ts`, `admin-backoffice-visual-reference.png`, plus this session's `tmp/` scratch files).
+
+## 33. 2026-09-16 CI Docker Build job fixed (root `d60ede4`)
+
+Owner requested the CI repair flagged in §32.
+
+- Root cause: `ci.yml` built the site image with `./site` as build context while `site/Dockerfile` copies `site/package.json`, `shared/`, and `site/` from the repository root — the same root context `docker-compose.prod.yml` uses (`context: .`, `dockerfile: site/Dockerfile`). The context therefore contained neither `site/` nor `shared/` (`"/site": not found`, `transferring context: 2B`).
+- Fix: commit `d60ede4` — site image now builds with `-f site/Dockerfile` from `.`; added a root `.dockerignore` (the per-app file stops applying once the context is the repository root) excluding `**/node_modules`, `**/.next`, `**/dist`, `.env*`, `**/*.log`, and local docs/review/tmp artifacts. `admin-frontend/Dockerfile` also builds from the root context, so the ignore list was verified against both site and admin COPY needs (`site/`, `admin-frontend/`, `shared/` all preserved); api keeps its own `./api` context and `api/.dockerignore`.
+- Side benefit: production root-context builds (site and admin) now skip host `node_modules`/`.next`/`dist` copies, reducing deploy build time that contributed to the §32 timeout failure.
+- Verification: push-triggered CI run `35091712918` on `d60ede4` — all three jobs green (Site, API, Docker Build). Docker Build passed for the first time since at least `d52162b`. No production impact; the workflow change takes effect on the next deploy automatically.
