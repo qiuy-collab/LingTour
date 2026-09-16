@@ -40,8 +40,12 @@ typography:
     fontStyle: "italic"
     lineHeight: 1.75
 rounded:
-  sm: "9999px"
   none: "0px"
+  sm: "0.5rem"
+  md: "0.9rem"
+  lg: "1.4rem"
+  xl: "2rem"
+  pill: "9999px"
 spacing:
   site-max: "82rem"
   section-y: "clamp(4rem, 10vw, 10rem)"
@@ -70,6 +74,11 @@ components:
     backgroundColor: "rgba(17, 25, 35, 0.58)"
     textColor: "{colors.white}"
     rounded: "{rounded.none}"
+  action-pill:
+    backgroundColor: "{colors.river-deep}"
+    textColor: "{colors.white}"
+    rounded: "{rounded.pill}"
+    minHeight: "3rem"
 ---
 
 # Design System: Culvoy Guangdong
@@ -165,14 +174,15 @@ This is a **layered, tactile** system. Surfaces lift on hover with shadow and di
 
 ### Buttons
 
-**Character:** Tactile and confident. Every button lifts on hover; transitions are `cubic-bezier(0.22, 1, 0.36, 1)` with 300–400ms duration. Uppercase labels at 0.2em tracking. No rounded corners — straight edges reinforce the editorial, print-derived aesthetic.
+**Character:** Tactile and confident. Every button lifts on hover; transitions are `cubic-bezier(0.22, 1, 0.36, 1)` with 300–400ms duration. Uppercase labels at 0.2em tracking. Two corner vocabularies coexist by intent: straight edges carry the editorial, print-derived aesthetic in forms and inline contexts; the full-pill `.lt-action` family carries hero CTAs and persistent navigation actions.
 
-- **Shape:** Straight corners (0px radius).
+- **Shape:** Either straight corners (0px radius, the `btn-*` family) or full pill (9999px, the `.lt-action` family). Do not invent intermediate radii on buttons.
 - **Primary (btn-primary):** bg river-deep, white text, padding 1.25rem 2.5rem. Hover: bg shifts to cinnabar, lift -2px, shadow expands. Active: bg cinnabar-deep.
 - **Gold (btn-gold):** bg gold, white text. Hover: bg shifts to river-deep. Used on dark-section CTAs.
 - **Outline (btn-outline):** 1px river-deep border, transparent bg, river-deep text. Hover: bg fills river-deep, text → white.
 - **Paper (btn-paper):** 1px line border, white bg at 94% opacity, river-deep text. Hover: border darkens to river-deep, lift -2px.
 - **Ghost Dark (btn-ghost-dark):** rgba(17,25,35,0.58) bg with backdrop-blur, white text. Hover: bg → near-white, text → night. Used on river-deep/night backgrounds.
+- **Action Pill (lt-action / -primary / -secondary / -gold):** 9999px pill, min-height 3rem, 0.72rem bold uppercase labels at 0.16em tracking. Primary: river-deep bg → cinnabar on hover. Secondary: white/72 bg with 1px line border → river-deep border on hover. Gold: gold bg with night text → white bg on hover. This is the vocabulary for hero CTAs and header/card persistent actions; the straight `btn-*` family remains for forms and inline contexts.
 - **Focus-visible:** All buttons: 2px gold outline, 3px offset.
 
 **The Kinetic Link.** A shimmer effect on primary CTAs — a diagonal light sweep on hover via `::before` pseudo-element with `translateX(-120%)` → `translateX(120%)` transition. Reserved for the highest-priority action on each page; never used on secondary links.
@@ -181,7 +191,7 @@ This is a **layered, tactile** system. Surfaces lift on hover with shadow and di
 
 **Character:** Archival, not generic. Cards use white/paper bg, 1px line border, and scrapbook-shadow. Hover lifts the card (-2px in Y, slight scale-up) and shifts border toward gold. Image-first cards use white border frames (0.5–1rem) with slight rotation (±2°), mimicking a physical photo album.
 
-- **Corner Style:** 0px (straight).
+- **Corner Style:** Soft-radius scale — `--radius-sm` 0.5rem, `--radius-md` 0.9rem, `--radius-lg` 1.4rem, `--radius-xl` 2rem. Glass `.lt-surface` panels use `--radius-lg`, stepping down to `--radius-md` below 768px. Chips and tags keep the 9999px pill. Pure 0px remains valid for framed, flat, or deliberately editorial cards — pick one vocabulary per component, don't mix within a component.
 - **Background:** paper / white at 70–94% opacity.
 - **Shadow:** scrapbook-shadow at rest; deepens on hover.
 - **Hover:** `translateY(-2px) scale(1.01)`, shadow expands, border shifts to gold/50.
@@ -226,7 +236,7 @@ A follow-mouse radial gradient effect on `.spotlight-panel`. A cinnabar-tinted r
 
 - **Don't** use cream/sand/beige body backgrounds — paper-deep is chroma-neutral. "Warmth" comes from accent + type + imagery.
 - **Don't** use gradient text (`background-clip: text`) — prohibited. Use a single solid color; emphasis via weight or size.
-- **Don't** use glassmorphism as a default surface treatment. Glass effects (backdrop-blur) are reserved for ghost-dark buttons on dark backgrounds only.
+- **Don't** use glassmorphism as a default surface treatment. Backdrop-blur is a controlled vocabulary with five sanctioned forms: (1) sticky navigation/toolbar frost — paper-deep at 48–92% opacity with blur-xl (SiteHeader states, mega menu, mobile sticky bars); (2) glass panels — `.lt-surface` with 18px blur, which drops the blur and steps the radius down below 768px; (3) dialog scrims — night at ~42% with ≤3px blur; (4) controls and badges sitting on imagery — ghost-dark buttons, video controls, photo captions; (5) 1–3px tape/paper-scrap accents. Anything else — especially blurring content-heavy cards on light backgrounds for polish — is prohibited.
 - **Don't** use the hero-metric template (big number, small label, gradient accent). This is a SaaS cliché, not a field journal.
 - **Don't** use identical-card grids. Vary card shapes, rotations, and layouts — the scrapbook is hand-assembled, not factory-stamped.
 - **Don't** put an eyebrow label above every section heading. One deliberate kicker is voice; every section is AI grammar.
