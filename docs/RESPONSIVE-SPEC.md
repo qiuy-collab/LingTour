@@ -30,11 +30,11 @@ Implementation:
 
 ```
 padding: 12px;          /* mobile default */
-@screen md { padding: 16px; }
-@screen lg { padding: 24px; }
+@media (min-width: 768px) { padding: 16px; }   /* md */
+@media (min-width: 1024px) { padding: 24px; }  /* lg */
 ```
 
-Or Tailwind: `p-3 md:p-4 lg:p-6`
+Or Tailwind: `p-3 md:p-4 lg:p-6`. Note: Tailwind 4 removed the v2/v3 `@screen` directive — use standard media queries or responsive variants.
 
 ---
 
@@ -42,15 +42,17 @@ Or Tailwind: `p-3 md:p-4 lg:p-6`
 
 | Device  | Base font size |
 |---------|----------------|
-| Mobile  | 14px           |
+| Mobile  | 16px           |
 | Tablet  | 15px           |
 | Desktop | 16px           |
+
+The 16px mobile base is a hard floor: iOS Safari auto-zooms focused inputs smaller than 16px, and 2026-09-16 browser measurement confirmed site form controls render at 16px. The former 14px figure is obsolete.
 
 Headings scale proportionally. Use Tailwind responsive prefixes:
 
 ```html
 <h1 class="text-2xl md:text-3xl lg:text-4xl">Title</h1>
-<p class="text-sm md:text-base">Body</p>
+<p class="text-base">Body</p>
 ```
 
 ---
@@ -86,6 +88,12 @@ Headings scale proportionally. Use Tailwind responsive prefixes:
 - **font-size >= 16px on mobile** — prevents iOS Safari auto-zoom on focus
 - Use `text-base` (16px) as the minimum for all `<input>`, `<select>`, `<textarea>`
 - On desktop, can reduce to `text-sm` (14px)
+
+### Horizontal Scroll Tracks
+
+- Horizontal scroll-snap tracks (route cards, event carousels, filmstrips) are an established pattern: `overflow-x-auto` with `snap-x snap-mandatory` and consistent item padding
+- A scrollable track must have a visible affordance (dots, arrows, or edge fade) — a track with no visible scroll hint fails mobile review
+- Filter/chip rows may scroll freely without snap
 
 ### Tables
 
@@ -237,23 +245,18 @@ Or Tailwind: `hover:md:shadow-lg` (requires custom config or `@media (hover: hov
 
 | Breakpoint | Behavior                          |
 |------------|-----------------------------------|
-| < md       | Hamburger menu, full-screen overlay |
+| < md       | Hamburger menu, full-width header dropdown panel (implemented 2026-09; a full-screen overlay is not required) |
 | >= md      | Horizontal nav bar                |
 
 ---
 
 ## Testing Checklist
 
-Run the mobile verification script before any responsive change:
+Validate responsive changes in a real browser first (AGENT.md §9 viewports and interaction checks). The scripts below are supplemental only: they cover a subset of viewports, may require undeclared Puppeteer dependencies, and write temporary reports/screenshots that must not be committed.
 
 ```bash
-node tools/mobile-verify.mjs
-```
-
-Run performance analysis:
-
-```bash
-node tools/mobile-perf.mjs
+node tools/mobile-verify.mjs   # supplemental mobile checks
+node tools/mobile-perf.mjs     # supplemental performance analysis
 ```
 
 Manual checks:
@@ -275,10 +278,12 @@ Manual checks:
 
 | Device             | Width  | Height | Scale |
 |--------------------|--------|--------|-------|
+| Compact phone      | 320    | 568    | 2x    |
 | iPhone SE          | 375    | 667    | 2x    |
 | iPhone 12/13/14    | 390    | 844    | 3x    |
 | iPhone 14 Pro Max  | 430    | 932    | 3x    |
 | iPad Mini          | 768    | 1024   | 2x    |
 | iPad Pro 11"       | 834    | 1194   | 2x    |
 | MacBook Air 13"    | 1280   | 800    | 2x    |
+| Large laptop       | 1440   | 900    | 2x    |
 | 1080p Monitor      | 1920   | 1080   | 1x    |
