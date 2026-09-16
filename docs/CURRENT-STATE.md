@@ -4,12 +4,12 @@
 
 ## 1. Production baseline
 
-- Root production and root `origin/main`: `6216454d0d6927fafb95e1b17a8c3e176082225b`.
+- Root production and root `origin/main`: `e5a46cc` before this English-only rollout.
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 28 applied migrations; all 28 reported `[X]`, including `AddStockReservationsAndBookingIdempotency1762200000000`.
+- Production has 28 applied migrations; all 28 reported `[X]`, including `AddStockReservationsAndBookingIdempotency1762200000000`. The English-only migration is pending deployment.
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `6216454` (2026-09-16, "test(api): restore type-safe mocks")
+- Local HEAD before this rollout: `e5a46cc` (2026-09-16, "docs(release): record review fixes deployment")
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -47,7 +47,7 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD: `228b55c` (2026-09-16, "fix(admin): avoid unauthenticated settings load")
+- Local HEAD after this rollout: `38475be` (2026-09-16, English-only content editing)
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 
 Formerly unpushed commits (pushed since; kept as record):
@@ -61,7 +61,13 @@ The paired root/admin files have matching blobs. Before cleanup the complete tra
 
 ## 3. Protected uncommitted work
 
-No protected uncommitted source changes remain in either repository. The onboarding work and its review follow-ups are committed in the current admin history; the remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
+No protected uncommitted source changes remain in either repository. The remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
+
+### 2026-09-16 English-only content rollout
+
+- Functional commits: root `0a94b70` (API and migration), root `6a7e0f8` (site and shared contract), root `1f53eaa` (admin mirror); independent admin `38475be`.
+- Local validation passed: API tsc, 22 suites/98 tests/build; site tsc, 18 suites/101 tests/build; admin build; 390px browser smoke for site and admin login.
+- Production backup, migration status, deployment run, and post-deploy smoke are pending.
 
 ## 4. Verification matrix
 
@@ -125,17 +131,10 @@ Recovery incidents:
 
 ## 6. Deployment queue
 
-1. Fix onboarding review blockers and add focused automated coverage.
-2. Validate admin build and visible-tab desktop/mobile/keyboard flows.
-3. Commit onboarding precisely in the independent admin repository and root repository.
-4. Push independent admin `main`.
-5. Push root `main`.
-6. Back up production PostgreSQL.
-7. Confirm production still has only migrations 1–21 applied.
-8. Deploy root `main` with `tools/deploy-pm2.sh` after reviewing the triggered GitHub Actions path.
-9. Confirm `SecureInterpretingDeposits1761600000000` is applied.
-10. Verify PM2 and external health.
-11. Verify product checkout, interpreting deposit, Stripe webhook, order and booking state, popup draft preview, booking completion, mixed-media feedback, detail SEO titles, and onboarding.
+1. Push root `main` after the independent admin `38475be` commit is available.
+2. Back up production PostgreSQL and confirm the 28 applied migrations read-only.
+3. Deploy the English-only migration and synchronized site/admin/API stack through the Docker workflow.
+4. Verify public English-only payloads and admin create/edit/save/refresh flows.
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 
