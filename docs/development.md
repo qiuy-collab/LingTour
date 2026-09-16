@@ -34,13 +34,28 @@ cd admin-frontend && npm ci
 
 ### 启动
 
+**默认方式：本地 Docker 三端**（2026-09-17 起）。前提：Docker Desktop 在运行、本地 PostgreSQL（宿主机 5432）可用且 `api/.env` 指向它。
+
 ```bash
-cd site && npm run dev            # http://localhost:3000
+docker compose up -d --build      # site http://localhost:3000 / admin http://localhost:5173 / api http://localhost:8000
+docker compose ps                 # 三容器应均为 healthy
+docker compose logs -f api        # 排查单个服务
+docker compose down               # 停止（加 -v 会连卷删除，谨慎）
+```
+
+要点：
+
+- api 容器经 `host.docker.internal:5432` 复用宿主机本地 PostgreSQL 与迁移状态（配置来自 `api/.env`，compose 只覆盖 `DB_HOST`）；上传目录 bind mount 到 `api/uploads`。
+- site 浏览器端请求 `http://localhost:8000/api/v1`（构建期注入），SSR 端走容器网络 `http://api:8000/api/v1`；admin 的 `/api/admin` 由其 `server.cjs` 代理到 api 容器。
+- **容器跑的是构建产物，不是热更新 dev server**：改代码后需要 `docker compose up -d --build site`（或 admin/api）重建对应镜像。日常高频迭代改代码时，仍可退回 npm dev 方式：
+
+```bash
+cd site && npm run dev            # http://localhost:3000（热更新；先 docker compose stop site 腾出端口）
 cd admin-frontend && npm run dev  # http://localhost:5173
 cd api && npm run start:dev       # http://localhost:8000
 ```
 
-本地只做 API 相关工作时才启动本地 API；不要为了给 UI 取数据而启动或重置它。
+本地只做 API 相关工作时才启动本地 API；不要为了给 UI 取数据而启动或重置它。PM2 与 `ecosystem.config.js` 已于 2026-09-17 移除，不再是本地启动方式。
 
 ## 2. 分支规范
 
