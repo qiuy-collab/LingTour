@@ -158,8 +158,20 @@ export default function HomeClient({
           t("home.hero.tag.cultureContext"),
           t("home.hero.tag.languageSupport"),
         ]}
-        stats={heroStats}
       />
+
+      {heroStats.length > 0 ? (
+        <section className="home-signal-strip border-b border-[var(--line)] bg-[var(--paper)]" aria-label="Culvoy at a glance">
+          <div className="site-container grid grid-cols-2 divide-x divide-y divide-[var(--line)] sm:grid-cols-4 sm:divide-y-0">
+            {heroStats.slice(0, 4).map((stat) => (
+              <div key={`${stat.title}-${stat.body}`} className="min-w-0 px-4 py-6 first:pl-0 sm:px-6 sm:py-7 sm:first:pl-0">
+                <p className="font-[family:var(--font-display)] text-2xl leading-none text-[var(--river-deep)]">{stat.title}</p>
+                <p className="mt-2 max-w-[12rem] font-mono text-[9px] font-bold uppercase leading-relaxed tracking-[0.16em] text-[var(--muted)]">{stat.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="relative z-10">
         <HomeVideoChapter video={hero.video} />

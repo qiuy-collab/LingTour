@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import type { HomeHeroStat } from "@/types/content";
 import { gsap, motionEase, useGSAP } from "@/lib/motion";
 
 type HomeAtlasHeroProps = {
@@ -15,7 +14,6 @@ type HomeAtlasHeroProps = {
   primaryLabel: string;
   secondaryLabel: string;
   tags: string[];
-  stats: HomeHeroStat[];
 };
 
 export function HomeAtlasHero({
@@ -28,7 +26,6 @@ export function HomeAtlasHero({
   primaryLabel,
   secondaryLabel,
   tags,
-  stats,
 }: HomeAtlasHeroProps) {
   const scope = useRef<HTMLElement | null>(null);
 
@@ -45,7 +42,6 @@ export function HomeAtlasHero({
           const root = scope.current;
           if (!root) return;
           const copyItems = gsap.utils.toArray<HTMLElement>("[data-home-copy] > *", root);
-          const statItems = gsap.utils.toArray<HTMLElement>("[data-home-stat]", root);
           const heroMedia = root.querySelector<HTMLElement>("[data-home-media]");
           const timeline = gsap.timeline({ defaults: { ease: motionEase.enter } });
           if (copyItems.length > 0) {
@@ -55,15 +51,6 @@ export function HomeAtlasHero({
               { autoAlpha: 1, y: 0, duration: 0.76, stagger: 0.07 },
             );
           }
-          if (statItems.length > 0) {
-            timeline.fromTo(
-              statItems,
-              { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.055 },
-              "-=0.35",
-            );
-          }
-
           if (context.conditions?.desktop && heroMedia) {
             gsap.fromTo(
               heroMedia,
@@ -92,60 +79,54 @@ export function HomeAtlasHero({
   return (
     <section
       ref={scope}
-      className="relative isolate flex min-h-[44rem] overflow-hidden border-b border-[var(--line)] bg-[var(--night)] text-white lg:min-h-[calc(100svh-4.5rem)] lg:bg-[var(--background)] lg:text-[var(--river-deep)]"
+      className="home-hero relative isolate flex min-h-[100dvh] overflow-hidden border-b border-[var(--line)] bg-[var(--paper-deep)] text-[var(--river-deep)]"
     >
-      <div className="absolute inset-0 overflow-hidden lg:left-[43%]">
+      <div className="absolute inset-0 overflow-hidden bg-[var(--paper-deep)]">
         <img
           data-home-media
           src={image}
           alt="Guangdong landscape showcasing cultural heritage and scenic beauty"
           fetchPriority="high"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-[62%_center]"
         />
       </div>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,18,24,0.12),rgba(8,18,24,0.36)_45%,rgba(8,18,24,0.92))] lg:bg-[linear-gradient(90deg,var(--background)_0%,var(--background)_40%,rgba(236,233,226,0.9)_49%,rgba(236,233,226,0.16)_72%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(236,233,226,0.97)_0%,rgba(236,233,226,0.91)_22%,rgba(236,233,226,0.58)_43%,rgba(236,233,226,0.14)_66%,rgba(236,233,226,0.02)_84%)] max-lg:bg-[linear-gradient(180deg,rgba(236,233,226,0)_0%,rgba(236,233,226,0.02)_25%,rgba(236,233,226,0.26)_38%,rgba(236,233,226,0.94)_55%,#ece9e2_70%)]" />
 
-      <div className="site-container relative z-10 flex w-full flex-col justify-end pb-7 pt-28 sm:pb-10 lg:justify-center lg:pb-12 lg:pt-16">
-        <div data-home-copy className="max-w-[46rem] lg:max-w-[50rem]">
-          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-white/68 lg:text-[var(--cinnabar)]">
+      <div className="site-container relative z-10 flex w-full flex-col justify-end pb-10 pt-36 sm:pb-12 lg:justify-center lg:pb-28 lg:pt-32 max-lg:pb-7 max-lg:pt-[36svh]">
+        <div data-home-copy className="max-w-[46rem] lg:max-w-[53rem]">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {eyebrow}
           </p>
-          <h1 className="mt-7 max-w-[10.5ch] font-[family:var(--font-display)] text-[clamp(3.35rem,7.8vw,8rem)] leading-[0.82] tracking-[-0.07em]">
+          <h1 className="home-hero-title mt-7 max-w-[8.5ch] font-[family:var(--font-sans)] text-[clamp(4rem,8.6vw,8.4rem)] font-medium leading-[0.86] max-lg:mt-5 max-lg:text-[clamp(3.1rem,14.2vw,4.25rem)] max-lg:leading-[0.9]">
             {titleLine1}
             <span className="mt-1 block italic text-[var(--gold)]">{accent}</span>
             <span className="block">{titleLine3}</span>
           </h1>
-          <p className="mt-7 max-w-[35rem] text-sm leading-7 text-white/72 sm:text-base lg:mt-9 lg:text-[var(--muted)]">
+          <p className="mt-8 max-w-[38rem] text-sm leading-7 text-[var(--muted)] sm:text-base lg:mt-10 max-lg:mt-5 max-lg:max-w-[25rem] max-lg:text-[0.86rem] max-lg:leading-6">
             {body}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/interpreting" className="lt-action lt-action-gold">
-              {primaryLabel} <span aria-hidden>↗</span>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row max-lg:mt-6">
+            <Link href="/interpreting#interpreting-booking" className="lt-action lt-action-gold min-w-[12rem]">
+              {primaryLabel} <span aria-hidden>→</span>
             </Link>
-            <Link href="/routes" className="btn-ghost-dark inline-flex min-h-12 items-center justify-center rounded-full px-6 py-3 text-[10px]">
+            <Link href="/routes" className="lt-action lt-action-secondary min-w-[12rem]">
               {secondaryLabel}
             </Link>
           </div>
         </div>
 
-        <div className="mt-10 grid gap-5 border-t border-white/22 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end lg:absolute lg:bottom-10 lg:left-[var(--space-gutter)] lg:right-[var(--space-gutter)] lg:mt-0 lg:border-[var(--line)]">
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
+        <div className="mt-12 grid gap-5 border-t border-[var(--line)] pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end lg:absolute lg:bottom-10 lg:left-[var(--space-gutter)] lg:right-[var(--space-gutter)] lg:mt-0 max-lg:mt-8 max-lg:gap-3 max-lg:pt-4">
+          <div className="flex max-w-[95%] flex-wrap gap-x-7 gap-y-2 max-lg:gap-x-5 max-lg:gap-y-1.5">
             {tags.map((label) => (
-              <span key={label} className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-white/64 sm:tracking-[0.18em] lg:text-[var(--muted)]">
+              <span key={label} className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                 {label}
               </span>
             ))}
           </div>
-          {stats.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-6 sm:flex sm:gap-7">
-              {stats.slice(0, 4).map((stat) => (
-                <div data-home-stat key={`${stat.title}-${stat.body}`} className="min-w-0">
-                  <p className="font-[family:var(--font-display)] text-2xl text-white lg:text-[var(--river-deep)]">{stat.title}</p>
-                  <p className="mt-1 max-w-[9rem] font-mono text-[10px] uppercase leading-snug tracking-[0.08em] text-white/60 sm:text-[11px] sm:tracking-[0.12em] lg:text-[var(--muted)]">{stat.body}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
+          <span className="hidden items-center gap-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)] sm:flex">
+            <span className="h-8 w-px bg-[var(--gold)]" />
+            Scroll to explore
+          </span>
         </div>
       </div>
     </section>

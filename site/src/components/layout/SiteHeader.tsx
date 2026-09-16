@@ -34,6 +34,7 @@ export function SiteHeader() {
   const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isRegionsOpen, setIsRegionsOpen] = useState(false);
+  const [homeScrolled, setHomeScrolled] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const mobilePanelRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +48,20 @@ export function SiteHeader() {
     setIsOpen(false);
     setIsRegionsOpen(false);
   }, [pathname]);
+
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    if (!isHome) {
+      setHomeScrolled(false);
+      return;
+    }
+
+    const handleScroll = () => setHomeScrolled(window.scrollY > 28);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -101,7 +116,21 @@ export function SiteHeader() {
   const rightNavigation = siteNavigation.filter((item) => ["/shop", "/community"].includes(item.href));
 
   return (
-    <header ref={headerRef} className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl transition-colors duration-500">
+    <header
+      ref={headerRef}
+      data-home-header={isHome ? "true" : undefined}
+      className={[
+        "z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500",
+        isHome
+          ? "fixed inset-x-0 top-0"
+          : "sticky top-0 border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl",
+        isHome && homeScrolled
+          ? "border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain shadow-[0_10px_32px_rgba(20,52,61,0.08)] backdrop-blur-xl"
+          : isHome
+            ? "border-white/25 bg-[var(--paper-deep)]/48 backdrop-blur-sm"
+            : "",
+      ].filter(Boolean).join(" ")}
+    >
       <Container className="grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 lg:grid-cols-[1fr_auto_1fr] lg:gap-5">
         <nav className="hidden items-center justify-start gap-1 lg:flex" aria-label="Primary navigation">
           {leftNavigation.map((item) => {
@@ -129,7 +158,7 @@ export function SiteHeader() {
         </nav>
 
         <Link href="/" className="justify-self-start leading-none lg:justify-self-center" onClick={() => setIsOpen(false)}>
-          <p className="font-[family:var(--font-display)] text-2xl tracking-[0.08em] text-[var(--river-deep)]">
+          <p className="font-[family:var(--font-sans)] text-2xl font-medium tracking-[0.08em] text-[var(--river-deep)]">
             Culvoy
           </p>
           <p className="mt-1 text-center text-[0.62rem] uppercase tracking-[0.3em] text-[var(--muted)]">
@@ -161,7 +190,7 @@ export function SiteHeader() {
           <AccountNavLink />
           <Link
             href="/interpreting#interpreting-booking"
-            className="ml-1 inline-flex min-h-11 items-center justify-center bg-[var(--river-deep)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--river-deep)]/85"
+            className="ml-1 inline-flex min-h-11 min-w-[5.8rem] items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
           >
             {t("common.nav.planTrip")}
           </Link>
@@ -274,7 +303,7 @@ export function SiteHeader() {
               />
               <Link
                 href="/interpreting#interpreting-booking"
-                className="inline-flex min-h-11 items-center justify-center bg-[var(--river-deep)] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--river-deep)]/85"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
                 onClick={() => setIsOpen(false)}
               >
                 {t("common.nav.planTrip")}

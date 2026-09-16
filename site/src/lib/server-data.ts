@@ -32,10 +32,6 @@ import {
 import { SEED_IMAGES } from "./seed-images";
 import { placeholderFor } from "./placeholders";
 import {
-  DEFAULT_ROUTE_REGIONS,
-  type RouteRegion,
-} from "./route-regions";
-import {
   hasVisibleCityContent,
   hasVisibleRegionContent,
   sanitizeCityCulture,
@@ -533,10 +529,6 @@ export async function fetchHomeDataServer(
         }
       : undefined,
   };
-
-  const featured =
-    routes.find((r) => homeConfig.featuredRouteSlugs?.includes(r.slug)) ??
-    routes[0];
 
   const regionShowcase: Region[] = cities
     .map((c) =>
