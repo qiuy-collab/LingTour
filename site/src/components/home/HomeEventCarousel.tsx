@@ -92,14 +92,22 @@ export function HomeEventCarousel({ events = [] }: Props) {
           {events.map((_, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setCurrentIndex(idx)}
-              className={`h-1 transition-all duration-500 ${
-                idx === currentIndex
-                  ? "w-12 bg-[var(--gold)]"
-                  : "w-6 bg-white/20 hover:bg-white/40"
+              className={`group flex min-h-[44px] items-center transition-all duration-500 ${
+                idx === currentIndex ? "w-12" : "w-6"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
-            />
+            >
+              {/* The bar stays 4px; the button around it carries the touch target. */}
+              <span
+                className={`h-1 w-full transition-colors duration-500 ${
+                  idx === currentIndex
+                    ? "bg-[var(--gold)]"
+                    : "bg-white/20 group-hover:bg-white/40"
+                }`}
+              />
+            </button>
           ))}
         </div>
       </div>
