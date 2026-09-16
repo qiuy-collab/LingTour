@@ -243,7 +243,7 @@ const currentSectionTitle = computed(() => {
   const match = menuGroups.find((group) =>
     group.items.some((item) => item.path === activeMenu.value),
   )
-  return match?.title || 'Culvoy Operations'
+  return match?.title || 'Culvoy 工作台'
 })
 
 function handleMenuSelect(path: string) {
@@ -370,7 +370,7 @@ watch(() => route.fullPath, closeMobileMenu)
         <div class="header-right">
           <div class="api-status hide-on-mobile">
             <span class="status-dot" />
-            <span>Online API</span>
+            <span>线上数据</span>
           </div>
           <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
             <button

@@ -44,21 +44,21 @@ const visible = computed({
   set: (value: boolean) => emit('update:modelValue', value),
 })
 const mediaNoun = computed(() =>
-  props.mediaType === 'video' ? 'video' : props.mediaType === 'image' ? 'image' : 'media file',
+  props.mediaType === 'video' ? '视频' : props.mediaType === 'image' ? '图片' : '媒体文件',
 )
 const dialogTitle = computed(() =>
-  props.multiple ? 'Select media files' : `Select a ${mediaNoun.value}`,
+  props.multiple ? '选择媒体文件' : `选择${mediaNoun.value}`,
 )
 const selectionLabel = computed(() => {
   if (!selectionCount.value) {
-    return props.multiple ? 'No media selected yet' : `No ${mediaNoun.value} selected yet`
+    return props.multiple ? '尚未选择媒体文件' : `尚未选择${mediaNoun.value}`
   }
 
   if (props.multiple) {
-    return `${selectionCount.value} of ${props.limit} selected`
+    return `已选择 ${selectionCount.value}/${props.limit} 项`
   }
 
-  return `1 ${mediaNoun.value} selected`
+  return '已选择 1 项'
 })
 
 watch(
@@ -74,7 +74,7 @@ watch(
 function handleConfirm() {
   const urls = browserRef.value?.getSelectedUrls() || []
   if (!urls.length) {
-    ElMessage.warning(`Please select at least one ${mediaNoun.value} first`)
+    ElMessage.warning(`请先选择至少一个${mediaNoun.value}`)
     return
   }
   emit('confirm', urls)
@@ -98,8 +98,8 @@ function handleSelectionChange(files: Array<{ url: string }>) {
     <div class="dialog-intro">
       <p class="dialog-summary">{{ selectionLabel }}</p>
       <p class="dialog-meta">
-        <span>{{ multiple ? `Select up to ${limit}` : `Choose one ${mediaNoun}` }}</span>
-        <span v-if="module">Folder: {{ module }}</span>
+        <span>{{ multiple ? `最多可选 ${limit} 项` : `选择一个${mediaNoun}` }}</span>
+        <span v-if="module">目录：{{ module }}</span>
       </p>
     </div>
 
@@ -119,9 +119,9 @@ function handleSelectionChange(files: Array<{ url: string }>) {
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="visible = false">Cancel</el-button>
+        <el-button @click="visible = false">取消</el-button>
         <el-button type="primary" :disabled="selectionCount === 0" @click="handleConfirm">
-          {{ selectionCount === 0 ? 'Select media' : `Use ${selectionCount} selected` }}
+          {{ selectionCount === 0 ? '选择媒体' : `使用所选 ${selectionCount} 项` }}
         </el-button>
       </div>
     </template>
