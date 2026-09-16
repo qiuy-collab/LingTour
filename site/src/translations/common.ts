@@ -14,7 +14,6 @@ export const common = {
     "common.nav.home": "Home",
     "common.nav.planTrip": "Book",
     "common.nav.mobile.explore": "Explore",
-    "common.nav.mobile.chooseRegion": "Routes — Choose a region",
     "common.nav.routesMega.eyebrow": "Routes / Field discovery",
     "common.nav.routesMega.viewAll": "View all routes",
     "common.nav.routesMega.open": "Open route regions",

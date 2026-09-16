@@ -8,9 +8,6 @@ import { siteNavigation } from "@/data/navigation";
 import { AccountNavLink } from "@/components/layout/AccountNavLink";
 import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
-import {
-  DEFAULT_ROUTE_REGIONS,
-} from "@/lib/route-regions";
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
@@ -33,7 +30,6 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
-  const [isRegionsOpen, setIsRegionsOpen] = useState(false);
   const [homeScrolled, setHomeScrolled] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -46,7 +42,6 @@ export function SiteHeader() {
 
   useEffect(() => {
     setIsOpen(false);
-    setIsRegionsOpen(false);
   }, [pathname]);
 
   const isHome = pathname === "/";
@@ -256,51 +251,7 @@ export function SiteHeader() {
               })}
             </div>
 
-            <div className="border-t border-[var(--line)] pt-4">
-              <button
-                type="button"
-                className="flex min-h-11 w-full items-center justify-between gap-3 px-1 text-left text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]"
-                aria-expanded={isRegionsOpen}
-                aria-controls="site-mobile-route-regions"
-                onClick={() => setIsRegionsOpen((open) => !open)}
-              >
-                {t("common.nav.mobile.chooseRegion")}
-                <span aria-hidden className="text-lg leading-none">{isRegionsOpen ? "−" : "+"}</span>
-              </button>
-
-              {isRegionsOpen ? (
-                <div id="site-mobile-route-regions" className="mt-2 grid gap-1.5">
-                  {DEFAULT_ROUTE_REGIONS.map((region) => {
-                    const regionTitle = region.title;
-                    const regionNote = region.note;
-
-                    return (
-                      <Link
-                        key={region.key}
-                        href={`/routes?region=${region.key}`}
-                        className="flex min-h-11 items-center gap-3 border border-[var(--line)] bg-white/40 px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--river-deep)] hover:text-white"
-                        onClick={() => {
-                          setIsRegionsOpen(false);
-                          setIsOpen(false);
-                        }}
-                      >
-                        <span className="h-2 w-2 flex-shrink-0 bg-[var(--cinnabar)]/60" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">{regionTitle}</span>
-                          <span className="text-[10px] text-[var(--muted)]">{regionNote}</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4 [&>a]:ml-0 [&>a]:justify-center [&>button]:justify-center [&>button]:border [&>button]:border-[var(--line)] [&>button]:bg-white/40 [&>button]:py-3">
-              <AccountNavLink
-                onNavigate={() => setIsOpen(false)}
-                hideWhenAuthenticated
-              />
+            <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4">
               <Link
                 href="/interpreting#interpreting-booking"
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
