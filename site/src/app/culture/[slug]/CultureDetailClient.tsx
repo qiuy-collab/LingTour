@@ -1,7 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { gsap, motionEase, useGSAP } from "@/lib/motion";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCityBySlug, fetchCities, fetchRoutes } from "@/lib/api-data";
 import { usePreviewBridge } from "@/lib/preview";
@@ -30,6 +32,24 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
   const { data: cities } = useApiQuery(() => fetchCities(), [], { initialData: initialCityCultures, revalidateOnMount: previewOnly });
   const { data: routes } = useApiQuery(() => fetchRoutes(), [], { initialData: initialRoutes, revalidateOnMount: previewOnly });
   const activeCity = previewData ?? city;
+  const mastheadRef = useRef<HTMLElement | null>(null);
+
+  useGSAP(
+    () => {
+      if (!mastheadRef.current) return;
+      const media = gsap.matchMedia();
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        const timeline = gsap.timeline({ defaults: { ease: motionEase.enter } });
+        timeline
+          .from("[data-culture-brief-media]", { autoAlpha: 0, y: 22, rotation: -1.2, duration: 0.8 })
+          .from("[data-culture-brief-title]", { autoAlpha: 0, y: 30, duration: 0.76 }, "-=0.52")
+          .from("[data-culture-brief-summary]", { autoAlpha: 0, y: 18, duration: 0.58 }, "-=0.4")
+          .from("[data-culture-brief-meta]", { autoAlpha: 0, y: 12, duration: 0.45 }, "-=0.28");
+      });
+      return () => media.revert();
+    },
+    { scope: mastheadRef, dependencies: [activeCity?.slug], revertOnUpdate: true },
+  );
 
   if (previewOnly && !previewData) return <LoadingSpinner text="Loading preview..." />;
   if (previewEnabled && !previewData) return <LoadingSpinner text="Loading preview..." />;
@@ -47,28 +67,41 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
   const isMediaInArticle = Boolean(
     activeCity.primaryMedia && activeCity.contentMarkdown?.includes(activeCity.primaryMedia.url),
   );
+  const mastheadMedia = activeCity.primaryMedia && !isMediaInArticle ? activeCity.primaryMedia : null;
+  const briefTextClassName = mastheadMedia
+    ? "relative z-10 order-2 mx-2 -mt-8 min-w-0 max-w-3xl border border-[var(--line)] bg-[var(--background)] p-4 scrapbook-shadow sm:mx-3 sm:-mt-12 sm:p-5 min-[620px]:order-none min-[620px]:mx-0 min-[620px]:mt-0 min-[620px]:border-0 min-[620px]:bg-transparent min-[620px]:p-0 min-[620px]:shadow-none lg:max-w-none"
+    : "relative z-10 min-w-0 max-w-3xl lg:max-w-none";
 
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-[var(--background)] bg-grain text-[var(--river-deep)]">
-      <header id="section-masthead" className="site-container relative pb-8 pt-8 sm:pb-10 lg:pb-12 lg:pt-12">
-        <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(19rem,0.88fr)] lg:items-center lg:gap-12">
-          <div className="order-2 min-w-0 lg:order-none">
-            <Link href="/culture" className="relative z-20 mx-2 -mt-8 mb-2 inline-flex min-h-11 items-center bg-[var(--background)] px-1 text-sm text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4 lg:mx-0 lg:mb-7 lg:mt-0 lg:bg-transparent lg:px-0">
-              All cities
-            </Link>
-            <div className="relative z-10 mx-2 max-w-3xl border border-[var(--line)] bg-[var(--background)] p-4 scrapbook-shadow sm:mx-3 sm:p-5 lg:mx-0 lg:mt-0 lg:max-w-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+      <header id="section-masthead" className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
+        <div className="site-container py-7 sm:py-10 lg:py-14">
+          <div className="grid min-w-0 items-center gap-6 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
+            {mastheadMedia ? (
+              <figure
+                data-culture-brief-media
+                className="relative order-1 aspect-[4/3] min-w-0 overflow-hidden border-[0.55rem] border-white bg-[var(--paper)] scrapbook-shadow sm:border-[0.75rem] min-[620px]:order-none lg:aspect-[4/5] lg:border-[0.9rem]"
+              >
+                <MediaFrame asset={mastheadMedia} alt={activeCity.name} mode={mastheadMedia.type === "video" ? "interactive" : "image"} eager />
+              </figure>
+            ) : null}
+
+            <div className={briefTextClassName}>
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
                 {activeCity.label}
               </p>
-              <h1 className="mt-3 max-w-full text-balance font-[family:var(--font-display)] text-[clamp(3rem,7vw,6.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
+              <h1
+                data-culture-brief-title
+                className="mt-3 max-w-[13ch] text-balance font-[family:var(--font-display)] text-4xl leading-[1] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-6xl xl:text-7xl"
+              >
                 {activeCity.name}
               </h1>
               {activeCity.summary && !isSummaryInArticle ? (
-                <p className="mt-6 max-w-[65ch] text-lg leading-[1.7] text-[var(--river-deep)] sm:text-xl">
+                <p data-culture-brief-summary className="mt-6 max-w-[65ch] text-lg leading-[1.7] text-[var(--river-deep)] sm:text-xl">
                   {activeCity.summary}
                 </p>
               ) : null}
-              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
+              <div data-culture-brief-meta className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
                 {activeCity.publishedAt ? (
                   <time dateTime={activeCity.publishedAt}>
                     {new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(activeCity.publishedAt))}
@@ -81,14 +114,6 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
               </div>
             </div>
           </div>
-
-          {activeCity.primaryMedia && !isMediaInArticle ? (
-            <div className="relative order-1 min-w-0 lg:order-none lg:pb-2">
-              <div className="relative aspect-[4/3] overflow-hidden border-[0.5rem] border-white bg-[var(--paper)] scrapbook-shadow sm:border-8 lg:-rotate-2">
-                <MediaFrame asset={activeCity.primaryMedia} alt={activeCity.name} mode={activeCity.primaryMedia.type === "video" ? "interactive" : "image"} eager />
-              </div>
-            </div>
-          ) : null}
         </div>
       </header>
 
@@ -107,16 +132,20 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
         {relatedRoutes.length ? <RelatedRouteHub routes={relatedRoutes} cityAdcode={activeCity.adcode} cityName={activeCity.name} cities={cities ?? []} /> : <RelatedCitiesHub allCities={cities ?? []} currentCity={activeCity} />}
       </section>
 
-      <nav aria-label="City archives" className="site-container flex flex-wrap justify-between gap-6 border-t border-[var(--line)] py-8">
-        <Link href={previous ? `/culture/${previous.slug}` : "/culture"} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
-          {previous ? `Previous: ${previous.name}` : "All cities"}
-        </Link>
-        {next ? (
-          <Link href={`/culture/${next.slug}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
-            Next: {next.name}
-          </Link>
-        ) : null}
-      </nav>
+      {previous || next ? (
+        <nav aria-label="City archives" className="site-container flex flex-wrap justify-between gap-6 border-t border-[var(--line)] py-8">
+          {previous ? (
+            <Link href={`/culture/${previous.slug}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
+              Previous: {previous.name}
+            </Link>
+          ) : null}
+          {next ? (
+            <Link href={`/culture/${next.slug}`} className="inline-flex min-h-11 items-center text-[var(--river-deep)] underline decoration-[var(--cinnabar)]/55 underline-offset-4">
+              Next: {next.name}
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
     </main>
   );
 }

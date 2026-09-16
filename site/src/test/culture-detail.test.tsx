@@ -9,6 +9,11 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/locale-context", () => ({ useLocale: () => ({ t: (key: string) => key }) }));
 vi.mock("@/lib/preview", () => ({ usePreviewBridge: () => mocks.preview }));
+vi.mock("@/lib/motion", () => ({
+  gsap: { matchMedia: () => ({ add: () => {}, revert: () => {} }) },
+  motionEase: { enter: "power3.out" },
+  useGSAP: () => {},
+}));
 vi.mock("@/lib/use-api-query", () => ({
   useApiQuery: mocks.query,
   LoadingSpinner: ({ text }: { text: string }) => <p>{text}</p>,
