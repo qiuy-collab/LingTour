@@ -4,6 +4,22 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。`1.0.0` 基线之后本项目采用 `workflow_dispatch` 滚动部署且不使用 git tag，因此已发布变更按**生产部署日期**分节（最新在上），每节以当时的根仓库 HEAD SHA 为锚点；admin-frontend 独立仓库的对应提交随各条目一并生效，双仓库对应关系见 `docs/CURRENT-STATE.md`。
 
+## 2026-09-17 — 09-17 评审一致性修复上线（root `a522c77`）
+
+### Changed
+
+- docs: DESIGN.md 圆角/玻璃拟态词汇按线上现状裁决改写（radius 六档 `none/sm/md/lg/xl/pill`、`action-pill` 组件族、受控玻璃拟态五形态）；RESPONSIVE-SPEC 对齐实现现实（16px 实证背书、Tailwind 4 语法、S3 下拉面板与 S2 横滑轨道条款、九档视口表）；rebrand `9cb4eb0` 文档污染批次修复（AGENT.md/release.md/CHANGELOG 域名还原、backend 设计文档 17 处 `oss.lingtour.cn` 还原、5 个 archive 文件失真标注）；development.md 部署口径改 workflow_dispatch-only；AGENT.md 撤销 zh 保留规则、`INTERNAL_API_ORIGIN` 示例补 `/api/v1`、§10 部署块改写为 Docker workflow 通道、SSH 别名修正为 `Ravi-server`；CURRENT-STATE 基线同步。
+- admin: index.html `lang="zh-CN"`、中文启动文案与中文字体栈；AdminLayout 后备标题与「线上数据」标签。
+
+### Fixed
+
+- admin: MediaPickerDialog 全组件中文化；coarse-pointer 表单控件 16px（预防 iOS 聚焦自动缩放）；`useTheme` matchMedia 监听器卸载清理。
+- site: PostDetailDialog 焦点陷阱/移入/还原并新增回归测试；首页轮播指示点 44px 触控承载层；路线详情 StickyComposeBar 底部 safe-area 留白。
+
+部署：`Deploy LingTour Docker Stack` run `35120749831` 在服务器镜像构建阶段撞 ssh-action 10 分钟超时失败（与 2026-09-16 首次 `594d183` 部署同型）；ssh 断开导致服务器侧 compose 构建成孤儿进程，将 2GB 主机压入约 7 分钟冻结（公网全端不可达后自愈，同 2026-09-11 事件型态）；清场后按脚本等价步骤以**串行构建**（api → admin → site）完成部署，规避并行构建 OOM 风险。无新增迁移（部署前只读核验生产 29 个迁移全部已应用）。部署前数据库备份 `/root/backups/lingtour-db-pre-0917-fixes-20260917-001031.dump`（131,965 bytes）。服务器 root `a522c77`；admin-frontend 对应三提交 `1e1a233`/`cac7634`/`56afcf4`。
+
+验证：push CI run `35120439660` 三 job 全绿（Docker Build 自 `d60ede4` 修复后首次随常规 push 通过）；site tsc / test:ci（含新增 PostDetailDialog 用例）/ lint 0 errors（1081 既有 warnings）/ build；admin build；双仓 `git diff --check` 干净、admin 文件双仓 blob 逐字节一致。生产冒烟：API health `database: up`；首页/路线列表/社区/登录/路线详情（`/routes/southern-sea-table`）200；admin HTML `lang="zh-CN"` 与中文启动文案在位；生产 CSS `index-DIRMW8Vi.css` 含 coarse-pointer 16px 规则全链；详情页 SSR HTML 含 `pb-[env(safe-area-inset-bottom)]`。首页轮播（活动数据空窗未渲染）与社区对话框（0 帖子）运行时不可达，由新增单测与 CI 构建覆盖；admin 登录后页面无凭据未验证。
+
 ## 2026-09-16 — 文化详情页 masthead 与移动端体验修复（root `594d183`）
 
 ### Changed

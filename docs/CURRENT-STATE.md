@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `002708a`; homepage redesign `92a4f96` is pending deployment.
+- Production deployed application commit: `594d183` (2026-09-16, deployed via `tools/deploy-docker.sh`, see §32). Post-deploy commits `d60ede4` (CI workflow fix) and `7beaac8`/`27b70b2` (docs) contain no application code and need no redeploy.
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `92a4f96` homepage redesign on top of the English-only production rollout.
+- Local HEAD: `27b70b2` (docs recording the 2026-09-16 branch/worktree cleanup, §34) on top of the English-only production rollout.
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -71,7 +71,7 @@ No protected uncommitted source changes remain in either repository. The remaini
 
 ### 2026-09-16 Homepage redesign
 
-- Root commit `92a4f96`; no API or database changes. Local site tsc, tests, lint, build, and 390px/1440px browser smoke passed. Deployment is pending.
+- Root commit `92a4f96`; no API or database changes. Local site tsc, tests, lint, build, and 390px/1440px browser smoke passed. Deployed 2026-09-16: `92a4f96` is an ancestor of `bd209fe` (homepage redeploy, run `35075106931`) and of production `594d183`.
 
 ## 4. Verification matrix
 
@@ -154,8 +154,6 @@ Do not deploy unpushed code or run the new migration manually on the old product
 ### Product, SEO, accessibility, and operations
 
 - Unknown route/city/product slugs render not-found UI with HTTP 200: soft 404.
-- Root metadata lacks `metadataBase`.
-- `site/src/app/interpreting/InterpretingPageClient.tsx` still fabricates interpreter dispatch counts.
 - Rerun the responsive audit; historical hotspots include `CityArchivalBook`, admin `ProductEdit`, Dashboard, and responsive styles.
 - Investigate high cumulative PM2 restart counts.
 - Audit large Site/Admin vendor chunks and restore-time performance after functional blockers are closed.
@@ -164,15 +162,14 @@ Do not deploy unpushed code or run the new migration manually on the old product
 
 Protected:
 
-- Current session worktree: `E:/workspace/LingTour/.claude/worktrees/epic-lovelace-02e615`.
-- Local branch `claude/compassionate-pike-10f12f` (three commits not on current main). Its worktree was removed on 2026-09-13 (see below); the branch itself is retained.
+- No auxiliary worktrees remain: the former session worktree `epic-lovelace-02e615` was removed and the branch `claude/compassionate-pike-10f12f` was deleted on 2026-09-16 per owner instruction (see §34); both repositories now hold only `main`, and deleted-branch commits are preserved in the §34 bundle backups.
 - Root stash object `4650b3a0b398d187b94acf1d790e7c5574cb8032`, created 2026-05-16; preserve pending explicit review.
 - Onboarding WIP listed above.
 - `api/uploads/`, all local env/config, formal test suites, lockfiles, and committed operational tools.
 
 A cleanup recovery package was created outside the workspace at `E:/workspace/LingTour-recovery-20260727` before deletion. It contains tracked patches, untracked-source archives, status baselines, stash identity, and SHA-256 checksums for onboarding and the protected 3D worktree. It intentionally contains no env values, token, private key, or uploads.
 
-Worktree cleanup on 2026-09-13 (owner-approved; branches retained, no commit/push/deploy): removed two stale dirty worktrees whose uncommitted changes were older than two weeks — `stoic-dijkstra-eb7870` (detached at `deb12b1`; Shaoguan culture-article WIP last touched 2026-08-24) and `compassionate-pike-10f12f` (3D route/map experiment last touched 2026-05-16; its three unique commits stay on the retained branch). Before removal, every modified/untracked file plus HEAD/status and the full diff patch were copied to `E:/workspace/LingTour/.claude/backups/stale-worktrees-20260913/` (ignored; 271 KiB). Remaining auxiliary worktrees: `blissful-mendel-b2030c`, `epic-lovelace-02e615`, `inspiring-mestorf-0bde0d` (login refactor WIP, 2026-09-05/06), `musing-elbakyan-5e8d76`, `optimistic-ellis-4598a1`, `recursing-wozniak-71f4a1`.
+Worktree cleanup on 2026-09-13 (owner-approved; branches retained, no commit/push/deploy): removed two stale dirty worktrees whose uncommitted changes were older than two weeks — `stoic-dijkstra-eb7870` (detached at `deb12b1`; Shaoguan culture-article WIP last touched 2026-08-24) and `compassionate-pike-10f12f` (3D route/map experiment last touched 2026-05-16; its three unique commits stay on the retained branch). Before removal, every modified/untracked file plus HEAD/status and the full diff patch were copied to `E:/workspace/LingTour/.claude/backups/stale-worktrees-20260913/` (ignored; 271 KiB). Remaining auxiliary worktrees: `blissful-mendel-b2030c`, `epic-lovelace-02e615`, `inspiring-mestorf-0bde0d` (login refactor WIP, 2026-09-05/06), `musing-elbakyan-5e8d76`, `optimistic-ellis-4598a1`, `recursing-wozniak-71f4a1`. All were removed on 2026-09-16 (see §34); `git worktree list` now shows only the primary working tree.
 
 Cleanup rules:
 
@@ -313,6 +310,8 @@ Origin divergence discovered immediately after, read-only, not integrated:
 - 15 files overlap between the remote changes and this workspace's uncommitted WIP (admin `CityEdit.vue`/`city.ts`, api cities entity/DTO/service and cache interceptor, site culture detail client, `TimeAxisItinerary`, `api-data.ts`, `server-api.ts`, `server-data.ts`, package manifests); the 8 newly committed guide documents also differ from origin.
 - Consequence: pull/rebase/merge and push require an owner decision on integration strategy and were not executed. The 21 foreign staged files remain staged and untouched.
 
+> 编号说明：§14–§15 为历史修订遗留的空缺，原文去向无记录；编号保持现状以维持既有交叉引用。
+
 ## 16. 2026-09-09 integration completed onto origin/main
 
 Owner decision: remote-first with cherry-picks. Both repositories were reorganized without force-push and without `reset --hard`/`checkout --`/`stash`:
@@ -379,12 +378,12 @@ Nothing was committed, pushed, deployed, migrated, or written to production.
 
 The owner created proxied Cloudflare A records for `culvoy.com`, `admin.culvoy.com`, and `api.culvoy.com` pointing at `199.68.217.212` and authorized the full cutover with legacy parallel support.
 
-- Repository: 13 active files replaced `culvoy.com` with `culvoy.com` (compose environment/build args, `nginx.docker.conf` server names, deploy and smoke scripts, site/admin build-time domains, guides); `nginx.docker.conf` keeps legacy domains alongside the new ones; `hello@culvoy.cn` unified to `hello@culvoy.com`. Committed as `5bec3bf` (brand) and `4e21907` (domains) in both repositories and pushed.
+- Repository: 13 active files replaced `lingfengtranstour.cn` with `culvoy.com` (compose environment/build args, `nginx.docker.conf` server names, deploy and smoke scripts, site/admin build-time domains, guides); `nginx.docker.conf` keeps legacy domains alongside the new ones; `hello@culvoy.cn` unified to `hello@culvoy.com`. Committed as `5bec3bf` (brand) and `4e21907` (domains) in both repositories and pushed.
 - Server: `/root/LingTour/.env` (`GOOGLE_CALLBACK_URL`) and `api/.env` (`FRONTEND_URL`) switched after backup to `/root/backups/env-*-pre-domain-*.bak`; BT-panel vhosts `html_culvoy.com.conf`, `html_admin.culvoy.com.conf`, and `api.culvoy.com.conf` were derived from the legacy confs (proxy cache zone renamed to avoid a duplicate-zone collision, well-known includes created) and reloaded; the database was backed up to `/root/backups/lingtour-db-pre-domain-20260911-225953.dump`.
 - Deploy: `deploy.yml` is `workflow_dispatch`-only, so the AGENT.md claim that pushing to `main` triggers deployment is wrong; deployment ran `tools/deploy-docker.sh` directly on the server and HEAD is now `4e21907`. Site and admin image builds on the 2 GB host caused a roughly six-minute memory-exhaustion outage (TCP ports answered but userland froze); the host self-recovered and the build completed with swap absorbing the peak. The script's health check reported 502 because `lingtour-nginx-1` (up 2 days) kept stale upstream DNS after the app containers were recreated; `docker restart lingtour-nginx-1` fixed it. `tools/deploy-docker.sh` now restarts nginx after `up -d` to re-resolve upstreams.
-- Verification over Cloudflare: `https://culvoy.com` 200 (title "Culvoy Guangdong"), `https://admin.culvoy.com` 200 ("Culvoy Admin"), `https://api.culvoy.com/health` 200 JSON; the legacy `culvoy.com` family stays 200 in parallel; the new homepage contains zero `lingtour` strings.
+- Verification over Cloudflare: `https://culvoy.com` 200 (title "Culvoy Guangdong"), `https://admin.culvoy.com` 200 ("Culvoy Admin"), `https://api.culvoy.com/health` 200 JSON; the legacy `lingfengtranstour.cn` family stays 200 in parallel; the new homepage contains zero `lingtour` strings.
 - Pending: CI remains red on `Build Site image` (pre-existing; `7046446` failed the same way), while server-side builds succeed. Recommended follow-up for the zone owner: switch Cloudflare SSL/TLS mode to Full (strict) — see the 2026-09-12 origin certificate entry below.
-- 2026-09-12 origin certificate: the owner-provided Cloudflare Origin CA (SAN `culvoy.com` + `*.culvoy.com`, valid 2026-09-11 to 2041-09-07; key match verified by public-key sha256; upload verified by matching local/server md5) is installed at `/www/server/panel/vhost/cert/culvoy.com/` (`fullchain.pem` 644, `privkey.pem` 600). The three culvoy vhosts now reference it; the prior confs are backed up in `/root/conf-backup-cert-20260912/`. `nginx -t` passed and nginx reloaded; SNI handshakes on `127.0.0.1:443` return the new certificate for all three hostnames, and the Cloudflare end-to-end checks stay 200 (site title "Culvoy Guangdong", api health JSON `database: up`). The legacy `culvoy.com` vhosts keep serving their own legacy certificate unchanged.
+- 2026-09-12 origin certificate: the owner-provided Cloudflare Origin CA (SAN `culvoy.com` + `*.culvoy.com`, valid 2026-09-11 to 2041-09-07; key match verified by public-key sha256; upload verified by matching local/server md5) is installed at `/www/server/panel/vhost/cert/culvoy.com/` (`fullchain.pem` 644, `privkey.pem` 600). The three culvoy vhosts now reference it; the prior confs are backed up in `/root/conf-backup-cert-20260912/`. `nginx -t` passed and nginx reloaded; SNI handshakes on `127.0.0.1:443` return the new certificate for all three hostnames, and the Cloudflare end-to-end checks stay 200 (site title "Culvoy Guangdong", api health JSON `database: up`). The legacy `lingfengtranstour.cn` vhosts keep serving their own legacy certificate unchanged.
 
 ## 22. 2026-09-14 mobile fixes squashed and deployed
 
@@ -528,3 +527,23 @@ Owner instructed to keep only the current main branch and delete everything else
 - Admin: removed worktree `admin-markdown-route-authoring`; deleted local `backup/local-parallel-20260909`, `local-parallel`, `claude/markdown-route-authoring`; deleted remote `claude/markdown-route-authoring`.
 - Both repositories now hold only `main` locally and on origin. Main SHAs unchanged by the cleanup: root `7beaac8`, admin `38475be` (admin main advanced from `be74c41` by parallel-session work earlier today, unrelated to this cleanup).
 - Retained: `.claude/worktrees/shared/route-regions.json` (1.3KB shared data, not branch material) and the three `tmp/` backup files. Restore a branch via `git fetch tmp/lingtour-branches-backup-20260916.bundle <ref>:<branch>`.
+
+## 35. 2026-09-16 review/09-17 consistency fixes (committed and deployed 2026-09-17, see §36)
+
+Based on `review/09-17/report.md` §8 priority order. No commits, pushes, deploys, or migrations were performed; all changes are working-tree only (root `main` at `27b70b2`, admin `main` at `38475be` before this task).
+
+- Docs (root): rebrand `9cb4eb0` legacy-domain mis-replacements restored to `lingfengtranstour.cn` (AGENT.md §2, release.md §2, CHANGELOG, CURRENT-STATE §21); `oss.lingtour.cn` restored in three backend design docs; distortion notices added to five `docs/archive/` files. development.md deploy wording corrected to workflow_dispatch-only; AGENT.md zh-preservation rule replaced (migration `1762300000000-EnglishOnlyContent` already deployed); SSH alias fixed to `Ravi-server` (matches `~/.ssh/config`); `INTERNAL_API_ORIGIN` example now includes `/api/v1`; release.md §7 port table moved to the Docker topology; CURRENT-STATE baselines resynced (production `594d183`, local HEAD `27b70b2`, completed backlog items removed, §8 worktree list updated, §14–15 gap annotated).
+- Admin code: global 16px input rule for coarse pointers (iOS zoom prevention), MediaPickerDialog and AdminLayout strings localized to Chinese, `useTheme` matchMedia listener removed on unmount, index.html `lang="zh-CN"` + Chinese boot copy + font stack aligned to theme.css.
+- Site code: PostDetailDialog focus trap / focus-in / focus-restore plus a new formal test file; HomeEventCarousel indicator touch targets raised to 44px; StickyComposeBar safe-area inset added. RESPONSIVE-SPEC: mobile base corrected 14px→16px (measurement-backed), `@screen` examples migrated to Tailwind 4, scroll-snap track section added, header dropdown panel documented, viewport list aligned to AGENT.md nine widths, verify scripts demoted to supplemental.
+- Validation: admin build passed; site tsc, tests, lint (0 errors, 1081 pre-existing warnings), build passed; both repositories `git diff --check` clean; admin files byte-identical across both repositories; local-dev browser spot-checks confirmed the safe-area class and page health (community/homepage data empty, so the dialog fix is covered by the new unit test).
+- Known-not-done (report items requiring owner decision or out of scope): admin palette `#236554` DESIGN.md write-back (A-P2-1/2), S-P2 hover/shadow consistency batch, DESIGN.md admin chapter, monospace-label documentation, AGENT.md §10 command block still referencing the retired PM2 flow (`deploy-pm2.sh`).
+
+## 36. 2026-09-17 review/09-17 fixes committed and deployed (root `a522c77`)
+
+Owner instructed categorized commits and deployment, plus the AGENT.md §10 repair. Live state after this entry: production root `a522c77`, admin `56afcf4`, both repositories main-only with clean tracked trees (root keeps untracked `review/`, `reviews/`, `lingtour-frontend-documentation/`, `api/src/database/seeds/seed-local-preview.ts`, `admin-backoffice-visual-reference.png` per standing practice).
+
+- Root commits in order: `e25b86f` / `ab56df1` / `a357d0f` (admin-frontend mirrors of admin `1e1a233` / `cac7634` / `56afcf4`), `3c4f4e1` PostDetailDialog focus trap + regression test, `f3bcbd4` carousel 44px dot targets, `314e2b4` StickyComposeBar safe-area, `1c0d762` DESIGN.md shipped-vocabulary adjudication, `a9536e2` rebrand corruption + stale-spec repair (including the AGENT.md §10 rewrite to the Docker workflow deploy channel), `a522c77` RESPONSIVE-SPEC modernization.
+- Deploy event chain: workflow run `35120749831` hit the ssh-action 10-minute timeout during server-side image builds (same pattern as the first `594d183` attempt); the ssh disconnect orphaned the compose build on the server, which pushed the 2GB host into a ~7-minute freeze with all public endpoints unreachable before self-recovery (same shape as the 2026-09-11 incident). After the orphaned build was cleared, deployment completed via the script-equivalent step sequence with **serial** image builds (api → admin → site) to avoid the known parallel-build OOM risk. `migration:run` was a no-op — all 29 production migrations verified applied read-only beforehand. Pre-deploy DB backup `/root/backups/lingtour-db-pre-0917-fixes-20260917-001031.dump` (131,965 bytes).
+- Production smoke: API health `database: up`; home, routes, community, login and route detail (`/routes/southern-sea-table`) all 200; admin HTML carries `lang="zh-CN"` and the Chinese boot copy; production CSS `index-DIRMW8Vi.css` contains the full coarse-pointer 16px rule chain; the detail-page SSR HTML carries `pb-[env(safe-area-inset-bottom)]`. Carousel dots (no event data rendered) and PostDetailDialog (0 community posts) were not runtime-verifiable and are covered by the new unit test plus CI; admin post-login surfaces remain unverifiable without credentials.
+- Pre-existing CI note cleared: push-triggered run `35120439660` passed all three jobs including Docker Build, first time since `d60ede4`; the stale "known issue" paragraph in CHANGELOG's 2026-09-16 section now describes a resolved state.
+- Follow-ups still open: admin palette `#236554` DESIGN.md write-back, DESIGN.md admin chapter, S-P2 hover/shadow batch, monospace-label documentation. New doc inconsistency spotted: release.md §5 still prescribes deploy tags and GitHub Releases while the CHANGELOG header (and practice since 1.0.0) states rolling deploys use no tags — reconcile as a docs task. During the deploy window an external change was observed (not this session): `reviews/culvoy-AI感评审报告-2026-09-15.md` deleted and `review/assets/09-17/browser-evidence.md` modified; flagged to the owner for confirmation.
