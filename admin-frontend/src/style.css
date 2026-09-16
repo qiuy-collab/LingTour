@@ -36,6 +36,18 @@ select {
   font: inherit;
 }
 
+/* Prevent iOS Safari focus auto-zoom: form controls must render >= 16px on touch devices */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-select__input {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--lt-primary);
   outline-offset: 3px;
