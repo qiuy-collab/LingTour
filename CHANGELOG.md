@@ -4,13 +4,24 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。`1.0.0` 基线之后本项目采用 `workflow_dispatch` 滚动部署且不使用 git tag，因此已发布变更按**生产部署日期**分节（最新在上），每节以当时的根仓库 HEAD SHA 为锚点；admin-frontend 独立仓库的对应提交随各条目一并生效，双仓库对应关系见 `docs/CURRENT-STATE.md`。
 
-## [Unreleased]
-
-已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。
+## 2026-09-16 — 文化详情页 masthead 与移动端体验修复（root `594d183`）
 
 ### Changed
 
-- site: 首页改为全宽海岸 Hero，首屏导航叠加在 Hero 上，滚动后恢复纸面导航；优化桌面与移动端标题、CTA、信息带和图片衔接。
+- site: 文化详情页 masthead 重构为路线页 brief 同款双栏布局（桌面左图右文、620px/768px/lg 三档响应式，移动端保持上图下文卡片）；新增 `useGSAP` + `matchMedia` 入场动画（含 reduced-motion 守卫与清理）；h1 字号阶梯对齐 RouteBrief 样板；移除装饰性旋转与 "All cities" 返回链接（产品决策删除）。
+
+### Fixed
+
+- site: 移动端菜单抽屉删除与顶栏重复的 Login 入口和 "Routes — Choose a region" 折叠区（连同 state/import/翻译键一并清理）。
+- site: `/routes` 列表页移动端从横向 snap 滑动轨道（下一张卡片被视口边缘切成半张）改为纵向单列堆叠，md+ 双列网格不变。
+- site: 路线 stop 的 `culturalStory`/`story` 在两处数据清洗点归一化——此前任一 CMS stop 保存 null 字段会导致整条路线详情页浏览器崩溃白屏。
+- site: `base.css` 的 `a`/`button` 元素 reset 移入 `@layer base`——unlayered 规则此前优先于所有 Tailwind utilities，静默压掉 Header Book 按钮与抽屉激活项的 `text-white`，造成深底深字看不清。
+
+部署：`Deploy LingTour Docker Stack` run `35088747834` 服务器构建超时失败后，run `35089749795` 成功；服务器 root `594d183`；无新增迁移。本节同时归档上一批首页海岸 Hero 改版（root `bd209fe`，run `35075106931` 部署）。
+
+验证：site tsc 0 错误、lint 0 错误（1080 条既有警告不变）、101/101 测试、build 通过；375/430px 浏览器验证 10/10（列表纵列堆叠、详情无溢出、抽屉两项清理、Book/激活项白字计算样式实测）。生产冒烟：API health `database: up`；`/culture/chaozhou/` 200 且 "All cities" 已删、双栏网格与 h1 阶梯在位；两条路线详情 200；`/login` 旧段落保持删除；生产 CSS 产物中 `a{color:inherit}` 位于 `@layer base` 块内、layers 之后无 unlayered 重复；site/api/admin/redis 容器 healthy。
+
+已知问题（与本批无关，待独立处理）：push 触发的 CI 中 Docker Build job 自 `d52162b` 起持续失败（build context 异常为空、找不到 `site/`、`shared/`；API/Site 检查 job 均通过）；部署走 workflow_dispatch 不受影响。
 
 ## 2026-09-16 — English-only content contract (root `d52162b`)
 
