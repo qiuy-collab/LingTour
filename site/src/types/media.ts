@@ -4,7 +4,7 @@ export type MediaAsset = {
   type: MediaType;
   url: string;
   poster?: string;
-  alt?: string | { en?: string; zh?: string };
+  alt?: string;
 };
 
 export function isMediaAsset(value: unknown): value is MediaAsset {
@@ -51,8 +51,7 @@ export function mediaAlt(
   asset: MediaAsset | null | undefined,
   fallback: string,
 ): string {
-  if (typeof asset?.alt === "string") return asset.alt || fallback;
-  return asset?.alt?.en || fallback;
+  return asset?.alt || fallback;
 }
 
 export function dedupeMedia(assets: MediaAsset[]): MediaAsset[] {

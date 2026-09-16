@@ -12,24 +12,9 @@ import regionsData from "../../../shared/route-regions.json";
 
 export type RouteRegion = {
   key: string;
-  title: { zh: string; en: string };
-  note: { zh: string; en: string };
+  title: string;
+  note: string;
   adcodes: number[];
 };
 
 export const DEFAULT_ROUTE_REGIONS: RouteRegion[] = regionsData as RouteRegion[];
-
-export function pickRouteRegionText(
-  value: { zh?: string; en?: string } | string | undefined,
-) {
-  if (!value) return "";
-  if (typeof value === "string") return value;
-  return value.en ?? value.zh ?? "";
-}
-
-export function pickSecondaryRouteRegionText(
-  value: { zh?: string; en?: string } | string | undefined,
-) {
-  if (!value || typeof value === "string") return "";
-  return value.zh ?? "";
-}

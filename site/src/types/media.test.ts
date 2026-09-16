@@ -50,20 +50,15 @@ describe("mixed media helpers", () => {
     ]);
   });
 
-  it("reads English alt text, ignoring any legacy zh field still on the record", () => {
+  it("reads the single English alt text", () => {
     const media = {
       type: "image" as const,
       url: "/detail.webp",
-      alt: { en: "Temple detail", zh: "古寺细节" },
+      alt: "Temple detail",
     };
 
     expect(mediaAlt(media, "Fallback")).toBe("Temple detail");
     expect(mediaAlt(null, "Fallback")).toBe("Fallback");
-  });
-
-  it("falls back when a record only carries legacy zh alt text", () => {
-    const media = { type: "image" as const, url: "/detail.webp", alt: { zh: "古寺细节" } };
-    expect(mediaAlt(media, "Fallback")).toBe("Fallback");
   });
 
   it("accepts a plain string alt", () => {

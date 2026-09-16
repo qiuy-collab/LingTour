@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh an expired JWT (1h grace period) */
+        post: operations["AuthController_refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -38,6 +55,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/email-code/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send an email verification code for login or signup */
+        post: operations["AuthController_sendEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/email-code/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify email code and sign in or create account */
+        post: operations["AuthController_verifyEmailCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/google": {
         parameters: {
             query?: never;
@@ -47,7 +98,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Google quick login for local preview */
+        /** Google Sign-In (verifies id_token server-side) */
         post: operations["AuthController_google"];
         delete?: never;
         options?: never;
@@ -69,7 +120,96 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /** Update current user profile */
+        patch: operations["AuthController_updateMe"];
+        trace?: never;
+    };
+    "/api/v1/auth/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload an avatar image for the current user */
+        post: operations["AuthController_uploadAvatar"];
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current user favorites */
+        get: operations["AuthController_getFavorites"];
+        put?: never;
+        /** Add a favorite */
+        post: operations["AuthController_addFavorite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me/favorites/{targetType}/{targetId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a favorite */
+        delete: operations["AuthController_removeFavorite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List administrator and editor accounts */
+        get: operations["UsersController_listStaff"];
+        put?: never;
+        /** Create an administrator or editor account */
+        post: operations["UsersController_createStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an administrator or editor account */
+        delete: operations["UsersController_deleteStaff"];
+        options?: never;
+        head?: never;
+        /** Update an administrator or editor account */
+        patch: operations["UsersController_updateStaff"];
         trace?: never;
     };
     "/api/v1/admin/users": {
@@ -106,6 +246,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/{id}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update user profile for admin */
+        patch: operations["UsersController_updateProfile"];
+        trace?: never;
+    };
     "/api/v1/admin/users/{id}/status": {
         parameters: {
             query?: never;
@@ -121,6 +278,108 @@ export interface paths {
         head?: never;
         /** Update user status */
         patch: operations["UsersController_updateStatus"];
+        trace?: never;
+    };
+    "/api/v1/admin/upload/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List uploaded files (media library) */
+        get: operations["UploadController_listFiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/upload/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Query media files with filters (from media_files table) */
+        get: operations["UploadController_queryMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/upload/media/orphans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Find files on disk not tracked in media_files */
+        get: operations["UploadController_findOrphans"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/upload/files/{filename}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an uploaded file and its media_files record */
+        delete: operations["UploadController_deleteFile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload image file */
+        post: operations["UploadController_uploadFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/upload/video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload video file */
+        post: operations["UploadController_uploadVideo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/public/cities": {
@@ -808,6 +1067,23 @@ export interface paths {
         patch: operations["InterpretingController_assignInterpreter"];
         trace?: never;
     };
+    "/api/v1/account/interpreting/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List interpreting bookings for the signed-in traveler */
+        get: operations["TravelerBookingsController_listMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orders/checkout": {
         parameters: {
             query?: never;
@@ -819,6 +1095,40 @@ export interface paths {
         put?: never;
         /** Create order (guest or logged-in user) */
         post: operations["OrdersController_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get limited public order status with a capability token */
+        get: operations["OrdersController_publicStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/paypal/capture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture a PayPal checkout order and mark the local order paid */
+        post: operations["OrdersController_capturePayPal"];
         delete?: never;
         options?: never;
         head?: never;
@@ -876,7 +1186,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/upload": {
+    "/api/v1/admin/orders/{id}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -885,9 +1195,128 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Upload file (image) */
-        post: operations["UploadController_uploadFile"];
+        post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        /** Update order status (admin) */
+        patch: operations["OrdersController_updateOrderStatus"];
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark order as shipped (admin) */
+        patch: operations["OrdersController_shipOrder"];
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Refund order (admin) */
+        patch: operations["OrdersController_refundOrder"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List notifications for the current staff account */
+        get: operations["NotificationsController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get unread notification count */
+        get: operations["NotificationsController_getUnreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark all notifications as read */
+        patch: operations["NotificationsController_markAllAsRead"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark a notification as read */
+        patch: operations["NotificationsController_markAsRead"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a notification */
+        delete: operations["NotificationsController_remove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1013,6 +1442,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/community/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload image for community post (public) */
+        post: operations["CommunityController_uploadCommunityImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/community/me/reactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current user community reactions */
+        get: operations["CommunityController_getMyCommunityReactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/community/me/saves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get posts saved by the current user */
+        get: operations["CommunityController_getMySavedCommunityPosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/community/posts/{id}/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Toggle like on a post */
+        post: operations["CommunityController_likePost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/community/posts/{id}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Toggle save on a post */
+        post: operations["CommunityController_savePost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/community/posts": {
         parameters: {
             query?: never;
@@ -1039,6 +1553,7 @@ export interface paths {
         get: operations["CommunityController_getAdminPost"];
         put: operations["CommunityController_updateAdminPost"];
         post?: never;
+        /** Soft-delete a post */
         delete: operations["CommunityController_deleteAdminPost"];
         options?: never;
         head?: never;
@@ -1091,6 +1606,72 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["CommunityController_toggleFeatured"];
+        trace?: never;
+    };
+    "/api/v1/admin/community/posts/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore a soft-deleted post */
+        post: operations["CommunityController_restoreAdminPost"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/community/briefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active community field briefs (public) */
+        get: operations["CommunityController_getPublicBriefs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/community/briefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_getAdminBriefs"];
+        put?: never;
+        post: operations["CommunityController_createAdminBrief"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/community/briefs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_getAdminBrief"];
+        put: operations["CommunityController_updateAdminBrief"];
+        post?: never;
+        delete: operations["CommunityController_deleteAdminBrief"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/public/events": {
@@ -1173,105 +1754,218 @@ export interface paths {
         patch: operations["EventsController_updateStatus"];
         trace?: never;
     };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health check */
+        get: operations["HealthController_healthCheck"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/audit-logs/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取审计日志统计数据 */
+        get: operations["AuditController_getStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取审计日志列表（分页 + 筛选） */
+        get: operations["AuditController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/audit-logs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 获取单条审计日志详情 */
+        get: operations["AuditController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         LoginDto: {
-            /** @example admin@culvoy.com */
+            /** @example user@example.com */
             email: string;
-            /** @example Culvoy2026! */
+            /** @example ******** */
             password: string;
         };
         RegisterDto: Record<string, never>;
+        SendEmailCodeDto: {
+            /** @example traveler@example.com */
+            email: string;
+            /** @enum {string} */
+            purpose: "login" | "signup";
+        };
+        VerifyEmailCodeDto: {
+            /** @example traveler@example.com */
+            email: string;
+            /** @example 248613 */
+            code: string;
+            /** @enum {string} */
+            purpose: "login" | "signup";
+            /** @example Maya Chen */
+            name?: string;
+        };
         GoogleLoginDto: Record<string, never>;
+        UpdateProfileDto: {
+            /** @example 0 */
+            sortOrder?: number;
+            /** @example Culture Route Lead */
+            name?: string;
+            /** @example English / Mandarin / Cantonese */
+            language?: string;
+            /** @example Guangdong city history... */
+            focus?: string;
+            /** @default [] */
+            helps: string[];
+            avatar?: string;
+            /** @example Bio */
+            bio?: string;
+            /** @default pending_review */
+            status: string;
+            city?: string;
+        };
+        CreateStaffAccountDto: {
+            /** @example editor@culvoy.com */
+            email: string;
+            password: string;
+            /** @example Content Editor */
+            name: string;
+            /**
+             * @default editor
+             * @enum {string}
+             */
+            role: "admin" | "editor";
+            /**
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "banned";
+        };
+        UpdateStaffAccountDto: {
+            /** @example editor@culvoy.com */
+            email?: string;
+            password?: string;
+            /** @example Content Editor */
+            name?: string;
+            /**
+             * @default editor
+             * @enum {string}
+             */
+            role: "admin" | "editor";
+            /**
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "banned";
+        };
+        MediaAssetDto: {
+            /**
+             * @example video
+             * @enum {string}
+             */
+            type: "image" | "video";
+            /** @example /uploads/routes/arrival.mp4 */
+            url: string;
+            /** @example /uploads/routes/arrival-poster.webp */
+            poster?: string;
+            /** @example Temple arrival */
+            alt?: string;
+        };
         CreateSectionDto: {
-            /**
-             * @example {
-             *       "en": "Southern coast",
-             *       "zh": "南部海岸"
-             *     }
-             */
-            title: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Zhanjiang is famous...",
-             *       "zh": "湛江以...闻名"
-             *     }
-             */
-            body: Record<string, never>;
-            /** @example https://oss.culvoy.com/cities/xxx.jpg */
+            /** @example Southern coast */
+            title: string;
+            /** @example Zhanjiang is famous... */
+            body: string;
+            /** @example /uploads/cities/section.jpg */
             image: string;
-            /**
-             * @example {
-             *       "en": "Coastline",
-             *       "zh": "海岸线长度"
-             *     }
-             */
-            statLabel?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "1,243 km",
-             *       "zh": "1,243 公里"
-             *     }
-             */
-            statValue?: Record<string, never>;
+            primaryMedia?: components["schemas"]["MediaAssetDto"];
+            /** @default [] */
+            images: string[];
+            /** @default [] */
+            media: components["schemas"]["MediaAssetDto"][];
+            /** @example Coastline */
+            statLabel?: string;
+            /** @example 1,243 km */
+            statValue?: string;
             breathImage?: string;
-            breathQuote?: Record<string, never>;
+            breathQuote?: string;
             /** @default 0 */
             sortOrder: number;
         };
         CreateCityDto: {
             /** @example guangzhou */
             slug: string;
-            /**
-             * @example {
-             *       "en": "Guangzhou",
-             *       "zh": "广州"
-             *     }
-             */
-            name: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Bay Area Core",
-             *       "zh": "大湾区核心"
-             *     }
-             */
-            regionLabel: Record<string, never>;
-            /** @example https://oss.culvoy.com/cities/gz-hero.jpg */
-            heroImage: string;
-            /**
-             * @example {
-             *       "en": "Guangzhou, the starting point...",
-             *       "zh": "广州，海上丝绸之路的起点..."
-             *     }
-             */
-            heroNarrative: Record<string, never>;
+            /** @example Guangzhou */
+            name: string;
+            /** @example Bay Area Core */
+            regionLabel?: string;
+            /** @example /uploads/cities/guangzhou-hero.jpg */
+            heroImage?: string;
+            heroMedia?: components["schemas"]["MediaAssetDto"];
+            /** @example Guangzhou, the starting point... */
+            heroNarrative?: string;
             /** @default [] */
             tags: string[];
             /**
-             * @example {
-             *       "en": "## Guangzhou: A River City\n\n...",
-             *       "zh": "## 广州：河畔之城\n\n..."
-             *     }
+             * @example ## Guangzhou: A River City
+             *
+             *     ...
              */
-            editorIntro: Record<string, never>;
+            editorIntro?: string;
+            /** @default  */
+            contentMarkdown: string;
             /** @default [] */
             galleryImages: string[];
-            /**
-             * @example {
-             *       "en": "Flavours of Guangzhou",
-             *       "zh": "广州味道"
-             *     }
-             */
-            foodTitle: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Dim sum, roast goose...",
-             *       "zh": "点心、烧鹅..."
-             *     }
-             */
-            foodDescription: Record<string, never>;
+            /** @default [] */
+            galleryMedia: components["schemas"]["MediaAssetDto"][];
+            /** @example Flavours of Guangzhou */
+            foodTitle?: string;
+            /** @example Dim sum, roast goose... */
+            foodDescription?: string;
             /** @default [] */
             foodImages: string[];
             /** @example 440800 */
@@ -1296,54 +1990,33 @@ export interface components {
         UpdateCityDto: {
             /** @example guangzhou */
             slug?: string;
-            /**
-             * @example {
-             *       "en": "Guangzhou",
-             *       "zh": "广州"
-             *     }
-             */
-            name?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Bay Area Core",
-             *       "zh": "大湾区核心"
-             *     }
-             */
-            regionLabel?: Record<string, never>;
-            /** @example https://oss.culvoy.com/cities/gz-hero.jpg */
+            /** @example Guangzhou */
+            name?: string;
+            /** @example Bay Area Core */
+            regionLabel?: string;
+            /** @example /uploads/cities/guangzhou-hero.jpg */
             heroImage?: string;
-            /**
-             * @example {
-             *       "en": "Guangzhou, the starting point...",
-             *       "zh": "广州，海上丝绸之路的起点..."
-             *     }
-             */
-            heroNarrative?: Record<string, never>;
+            heroMedia?: components["schemas"]["MediaAssetDto"];
+            /** @example Guangzhou, the starting point... */
+            heroNarrative?: string;
             /** @default [] */
             tags: string[];
             /**
-             * @example {
-             *       "en": "## Guangzhou: A River City\n\n...",
-             *       "zh": "## 广州：河畔之城\n\n..."
-             *     }
+             * @example ## Guangzhou: A River City
+             *
+             *     ...
              */
-            editorIntro?: Record<string, never>;
+            editorIntro?: string;
+            /** @default  */
+            contentMarkdown: string;
             /** @default [] */
             galleryImages: string[];
-            /**
-             * @example {
-             *       "en": "Flavours of Guangzhou",
-             *       "zh": "广州味道"
-             *     }
-             */
-            foodTitle?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Dim sum, roast goose...",
-             *       "zh": "点心、烧鹅..."
-             *     }
-             */
-            foodDescription?: Record<string, never>;
+            /** @default [] */
+            galleryMedia: components["schemas"]["MediaAssetDto"][];
+            /** @example Flavours of Guangzhou */
+            foodTitle?: string;
+            /** @example Dim sum, roast goose... */
+            foodDescription?: string;
             /** @default [] */
             foodImages: string[];
             /** @example 440800 */
@@ -1368,88 +2041,54 @@ export interface components {
         CreateStopDto: {
             /** @example 0 */
             sortOrder: number;
+            /** @default false */
+            isFeatured: boolean;
             /** @example 08:00 */
             time: string;
-            /**
-             * @example {
-             *       "en": "Huguangyan Maar Lake",
-             *       "zh": "湖光岩玛珥湖"
-             *     }
-             */
-            stopName: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Begin where the land remembers fire...",
-             *       "zh": "从大地记住火的地方开始..."
-             *     }
-             */
-            story: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Huguangyan formed roughly...",
-             *       "zh": "湖光岩形成于约16万年前..."
-             *     }
-             */
-            culturalStory: Record<string, never>;
+            /** @example Huguangyan Maar Lake */
+            stopName: string;
+            /** @example Begin where the land remembers fire... */
+            story: string;
+            /** @example Huguangyan formed roughly... */
+            culturalStory: string;
             /** @default [] */
             details: string[];
-            /** @example https://oss.culvoy.com/routes/stop-0.jpg */
+            /** @example /uploads/routes/stop-0.jpg */
             image: string;
+            primaryMedia?: components["schemas"]["MediaAssetDto"];
+            /** @default [] */
+            images: string[];
+            /** @default [] */
+            media: components["schemas"]["MediaAssetDto"][];
             lat?: number;
             lng?: number;
-            meal?: Record<string, never>;
-            hotel?: Record<string, never>;
-            transit?: Record<string, never>;
+            meal?: string;
+            hotel?: string;
+            transit?: string;
+            /** @example A full day exploring the coast... */
+            plan?: string;
         };
         CreateRouteDto: {
             /** @example southern-sea-table */
             slug: string;
-            /**
-             * @example {
-             *       "en": "A Southern Sea Table",
-             *       "zh": "南部海宴"
-             *     }
-             */
-            title: Record<string, never>;
+            /** @example A Southern Sea Table */
+            title: string;
             /** @example Coastal */
             cultureTag: string;
-            /**
-             * @example {
-             *       "en": "Zhanjiang",
-             *       "zh": "湛江"
-             *     }
-             */
-            cityName: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "1 day",
-             *       "zh": "1 天"
-             *     }
-             */
-            duration: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Curious travellers",
-             *       "zh": "好奇的旅行者"
-             *     }
-             */
-            audience: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "From a pre-dawn seafood auction...",
-             *       "zh": "从黎明前的海鲜拍卖..."
-             *     }
-             */
-            summary: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Most people meet Guangdong...",
-             *       "zh": "大多数人通过城市认识广东..."
-             *     }
-             */
-            story: Record<string, never>;
-            /** @example https://oss.culvoy.com/routes/cover.jpg */
+            /** @example Zhanjiang */
+            cityName: string;
+            /** @example 1 day */
+            duration: string;
+            /** @example Curious travellers */
+            audience: string;
+            /** @example From a pre-dawn seafood auction... */
+            summary: string;
+            /** @example Most people meet Guangdong... */
+            story: string;
+            /** @example /uploads/routes/cover.jpg */
             coverImage: string;
+            /** @example southern-sea */
+            routeRegionKey?: string;
             /** @default false */
             published: boolean;
             /**
@@ -1463,52 +2102,24 @@ export interface components {
         UpdateRouteDto: {
             /** @example southern-sea-table */
             slug?: string;
-            /**
-             * @example {
-             *       "en": "A Southern Sea Table",
-             *       "zh": "南部海宴"
-             *     }
-             */
-            title?: Record<string, never>;
+            /** @example A Southern Sea Table */
+            title?: string;
             /** @example Coastal */
             cultureTag?: string;
-            /**
-             * @example {
-             *       "en": "Zhanjiang",
-             *       "zh": "湛江"
-             *     }
-             */
-            cityName?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "1 day",
-             *       "zh": "1 天"
-             *     }
-             */
-            duration?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Curious travellers",
-             *       "zh": "好奇的旅行者"
-             *     }
-             */
-            audience?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "From a pre-dawn seafood auction...",
-             *       "zh": "从黎明前的海鲜拍卖..."
-             *     }
-             */
-            summary?: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Most people meet Guangdong...",
-             *       "zh": "大多数人通过城市认识广东..."
-             *     }
-             */
-            story?: Record<string, never>;
-            /** @example https://oss.culvoy.com/routes/cover.jpg */
+            /** @example Zhanjiang */
+            cityName?: string;
+            /** @example 1 day */
+            duration?: string;
+            /** @example Curious travellers */
+            audience?: string;
+            /** @example From a pre-dawn seafood auction... */
+            summary?: string;
+            /** @example Most people meet Guangdong... */
+            story?: string;
+            /** @example /uploads/routes/cover.jpg */
             coverImage?: string;
+            /** @example southern-sea */
+            routeRegionKey?: string;
             /** @default false */
             published: boolean;
             /**
@@ -1522,26 +2133,16 @@ export interface components {
         CreateCollectionDto: {
             /** @example coastal-life-kit */
             slug: string;
-            /**
-             * @example {
-             *       "en": "Coastal Life Kit",
-             *       "zh": "海岸生活套装"
-             *     }
-             */
-            title: Record<string, never>;
+            /** @example Coastal Life Kit */
+            title: string;
             /** @example A Southern Sea Table */
             routeName: string;
             /** @default  */
             routeSlug: string;
-            /** @example https://oss.culvoy.com/shop/coastal-cover.jpg */
+            /** @example /uploads/shop/coastal-cover.jpg */
             image: string;
-            /**
-             * @example {
-             *       "en": "Curated objects from the Zhanjiang coast...",
-             *       "zh": "来自湛江海岸的精选物品..."
-             *     }
-             */
-            body: Record<string, never>;
+            /** @example Curated objects from the Zhanjiang coast... */
+            body: string;
             /** @default 0 */
             sortOrder: number;
             /** @default false */
@@ -1550,26 +2151,16 @@ export interface components {
         UpdateCollectionDto: {
             /** @example coastal-life-kit */
             slug?: string;
-            /**
-             * @example {
-             *       "en": "Coastal Life Kit",
-             *       "zh": "海岸生活套装"
-             *     }
-             */
-            title?: Record<string, never>;
+            /** @example Coastal Life Kit */
+            title?: string;
             /** @example A Southern Sea Table */
             routeName?: string;
             /** @default  */
             routeSlug: string;
-            /** @example https://oss.culvoy.com/shop/coastal-cover.jpg */
+            /** @example /uploads/shop/coastal-cover.jpg */
             image?: string;
-            /**
-             * @example {
-             *       "en": "Curated objects from the Zhanjiang coast...",
-             *       "zh": "来自湛江海岸的精选物品..."
-             *     }
-             */
-            body?: Record<string, never>;
+            /** @example Curated objects from the Zhanjiang coast... */
+            body?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default false */
@@ -1578,42 +2169,30 @@ export interface components {
         CreateProductDto: {
             /** @example volcanic-soil-bowl */
             slug: string;
-            /**
-             * @example {
-             *       "en": "Volcanic Soil Tea Bowl",
-             *       "zh": "火山泥茶杯"
-             *     }
-             */
-            name: Record<string, never>;
+            /** @example Volcanic Soil Tea Bowl */
+            name: string;
             /** @example uuid-of-collection */
             collectionId?: string;
             /** @example 32 */
             price: number;
             /** @default SGD */
             currency: string;
-            /**
-             * @example {
-             *       "en": "Handcrafted",
-             *       "zh": "手工制作"
-             *     }
-             */
-            tag: Record<string, never>;
-            /** @example https://oss.culvoy.com/shop/bowl.jpg */
+            /** @example Handcrafted */
+            tag: string;
+            /** @example /uploads/shop/bowl.jpg */
             image: string;
-            /**
-             * @example {
-             *       "en": "A bowl fired using clay...",
-             *       "zh": "使用黏土烧制的碗..."
-             *     }
-             */
-            story: Record<string, never>;
-            material?: Record<string, never>;
-            dimensions?: Record<string, never>;
-            origin?: Record<string, never>;
-            care?: Record<string, never>;
+            primaryMedia?: components["schemas"]["MediaAssetDto"];
+            /** @example A bowl fired using clay... */
+            story: string;
+            material?: string;
+            dimensions?: string;
+            origin?: string;
+            care?: string;
             originTrace?: Record<string, never>;
             /** @default [] */
             gallery: string[];
+            /** @default [] */
+            galleryMedia: components["schemas"]["MediaAssetDto"][];
             /** @default 0 */
             stock: number;
             /** @default false */
@@ -1622,42 +2201,30 @@ export interface components {
         UpdateProductDto: {
             /** @example volcanic-soil-bowl */
             slug?: string;
-            /**
-             * @example {
-             *       "en": "Volcanic Soil Tea Bowl",
-             *       "zh": "火山泥茶杯"
-             *     }
-             */
-            name?: Record<string, never>;
+            /** @example Volcanic Soil Tea Bowl */
+            name?: string;
             /** @example uuid-of-collection */
             collectionId?: string;
             /** @example 32 */
             price?: number;
             /** @default SGD */
             currency: string;
-            /**
-             * @example {
-             *       "en": "Handcrafted",
-             *       "zh": "手工制作"
-             *     }
-             */
-            tag?: Record<string, never>;
-            /** @example https://oss.culvoy.com/shop/bowl.jpg */
+            /** @example Handcrafted */
+            tag?: string;
+            /** @example /uploads/shop/bowl.jpg */
             image?: string;
-            /**
-             * @example {
-             *       "en": "A bowl fired using clay...",
-             *       "zh": "使用黏土烧制的碗..."
-             *     }
-             */
-            story?: Record<string, never>;
-            material?: Record<string, never>;
-            dimensions?: Record<string, never>;
-            origin?: Record<string, never>;
-            care?: Record<string, never>;
+            primaryMedia?: components["schemas"]["MediaAssetDto"];
+            /** @example A bowl fired using clay... */
+            story?: string;
+            material?: string;
+            dimensions?: string;
+            origin?: string;
+            care?: string;
             originTrace?: Record<string, never>;
             /** @default [] */
             gallery: string[];
+            /** @default [] */
+            galleryMedia: components["schemas"]["MediaAssetDto"][];
             /** @default 0 */
             stock: number;
             /** @default false */
@@ -1698,34 +2265,14 @@ export interface components {
         ServiceModeItemDto: {
             /** @example 0 */
             sortOrder: number;
-            /**
-             * @example {
-             *       "en": "City companion interpreting",
-             *       "zh": "城市同行口译"
-             *     }
-             */
-            title: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "From RMB 680 / half day",
-             *       "zh": "半天 RMB 680 起"
-             *     }
-             */
-            price: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Best for independent visitors",
-             *       "zh": "适合独立游客"
-             *     }
-             */
-            bestFor: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "For travelers who want...",
-             *       "zh": "需要英语支持的旅客..."
-             *     }
-             */
-            body: Record<string, never>;
+            /** @example City companion interpreting */
+            title: string;
+            /** @example From RMB 680 / half day */
+            price: string;
+            /** @example Best for independent visitors */
+            bestFor: string;
+            /** @example For travelers who want... */
+            body: string;
             /** @default [] */
             includes: string[];
             /**
@@ -1742,27 +2289,16 @@ export interface components {
         ProfileItemDto: {
             /** @example 0 */
             sortOrder: number;
+            /** @example Culture Route Lead */
+            name: string;
             /**
              * @example {
-             *       "en": "Culture Route Lead",
-             *       "zh": "文化路线领队"
+             *       "en": "English / Mandarin / Cantonese support"
              *     }
              */
-            name: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "English / Mandarin / Cantonese support",
-             *       "zh": "英语/普通话/粤语支持"
-             *     }
-             */
-            language: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "Guangdong city history...",
-             *       "zh": "广东城市历史..."
-             *     }
-             */
-            focus: Record<string, never>;
+            language: string;
+            /** @example Guangdong city history... */
+            focus: string;
             /** @default [] */
             helps: string[];
         };
@@ -1772,23 +2308,105 @@ export interface components {
         FaqItemDto: {
             /** @example 0 */
             sortOrder: number;
+            /** @example Is this a tour guide service? */
+            question: string;
             /**
              * @example {
-             *       "en": "Is this a tour guide service?",
-             *       "zh": "这是导游服务吗？"
+             *       "en": "It is designed as cultural interpreting..."
              *     }
              */
-            question: Record<string, never>;
-            /**
-             * @example {
-             *       "en": "It is designed as cultural interpreting...",
-             *       "zh": "它被设计为文化口译..."
-             *     }
-             */
-            answer: Record<string, never>;
+            answer: string;
         };
         SetFaqsDto: {
             faqs: components["schemas"]["FaqItemDto"][];
+        };
+        CreateModeDto: {
+            /** @example 0 */
+            sortOrder: number;
+            /** @example City companion interpreting */
+            title: string;
+            /** @example From RMB 680 / half day */
+            price: string;
+            /** @example Best for independent visitors */
+            bestFor: string;
+            /** @example For travelers who want... */
+            body: string;
+            /** @default [] */
+            includes: string[];
+            /**
+             * @default light
+             * @enum {string}
+             */
+            accent: "light" | "dark";
+            /** @default false */
+            featured: boolean;
+        };
+        UpdateModeDto: {
+            /** @example 0 */
+            sortOrder?: number;
+            /** @example City companion interpreting */
+            title?: string;
+            /** @example From RMB 680 / half day */
+            price?: string;
+            /** @example Best for independent visitors */
+            bestFor?: string;
+            /** @example For travelers who want... */
+            body?: string;
+            /** @default [] */
+            includes: string[];
+            /**
+             * @default light
+             * @enum {string}
+             */
+            accent: "light" | "dark";
+            /** @default false */
+            featured: boolean;
+        };
+        CreateProfileDto: {
+            /** @example 0 */
+            sortOrder: number;
+            /** @example Culture Route Lead */
+            name: string;
+            /** @example English / Mandarin / Cantonese */
+            language: string;
+            /** @example Guangdong city history... */
+            focus: string;
+            /** @default [] */
+            helps: string[];
+            avatar?: string;
+            /** @example Bio */
+            bio?: string;
+            /** @default pending_review */
+            status: string;
+            city?: string;
+        };
+        CreateFaqDto: {
+            /** @example 0 */
+            sortOrder: number;
+            /** @example Is this a tour guide service? */
+            question: string;
+            /**
+             * @example {
+             *       "en": "It is designed as cultural interpreting..."
+             *     }
+             */
+            answer: string;
+            /** @default interpreting */
+            category: string;
+        };
+        UpdateFaqDto: {
+            /** @example 0 */
+            sortOrder?: number;
+            /** @example Is this a tour guide service? */
+            question?: string;
+            /**
+             * @example {
+             *       "en": "It is designed as cultural interpreting..."
+             *     }
+             */
+            answer?: string;
+            /** @default interpreting */
+            category: string;
         };
         UpdateBookingStatusDto: {
             /**
@@ -1824,8 +2442,31 @@ export interface components {
             guestEmail: string;
             items: components["schemas"]["OrderItemDto"][];
             shippingAddress: components["schemas"]["ShippingAddressDto"];
-            /** @default stripe */
-            paymentMethod: string;
+            /**
+             * @default stripe
+             * @enum {string}
+             */
+            paymentMethod: "stripe" | "paypal";
+        };
+        CapturePayPalOrderDto: {
+            /** @example 5O190127TN364715T */
+            paypalOrderId: string;
+        };
+        UpdateOrderStatusDto: {
+            /**
+             * @description 订单履约状态（pending/confirmed/shipped/delivered/cancelled）
+             * @example confirmed
+             * @enum {string}
+             */
+            status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+        };
+        ShipOrderDto: {
+            /** @example SF1234567890 */
+            trackingNo?: string;
+        };
+        RefundOrderDto: {
+            /** @example Customer requested refund */
+            reason?: string;
         };
         UpdateHomeConfigDto: {
             hero?: Record<string, never>;
@@ -1834,19 +2475,24 @@ export interface components {
             cultureHighlights?: Record<string, never>[];
             testimonials?: Record<string, never>[];
             featuredRouteSlugs?: string[];
-            featuredProductSlugs?: string[];
-            featuredCitySlugs?: string[];
+            routeRegions?: Record<string, never>[];
         };
         UpdateSettingsDto: {
             payload?: Record<string, never>;
         };
         UpsertCommunityPostDto: {
             channel: string;
-            /** @default published */
-            status: string;
+            /**
+             * @description 管理后台创建时可指定；公开提交端点会忽略此字段并强制 pending_review
+             * @default published
+             * @enum {string}
+             */
+            status: "pending_review" | "published" | "hidden";
             user: Record<string, never>;
-            title: Record<string, never>;
-            excerpt: Record<string, never>;
+            userId?: string;
+            userEmail?: string;
+            title: string;
+            excerpt: string;
             tags?: string[];
             image?: string;
             location?: string;
@@ -1858,37 +2504,64 @@ export interface components {
             comments: number;
             /** @default 0 */
             saves: number;
+            /** @default false */
+            featured: boolean;
         };
         UpdateCommunityStatusDto: {
-            /** @example published */
-            status: string;
+            /**
+             * @description pending_review = 待审, published = 已发布, hidden = 已隐藏（不删除）
+             * @example published
+             * @enum {string}
+             */
+            status: "pending_review" | "published" | "hidden";
+            /** @description 退回 / 隐藏的说明（仅运营内部留痕，不对外展示） */
+            reason?: string;
+        };
+        UpsertCommunityBriefDto: {
+            /** @description 稳定 slug，用作 URL 与 React key */
+            slug: string;
+            /** @description English title */
+            title: string;
+            /** @description English prompt copy */
+            prompt: string;
+            /** @default Field Notes */
+            channel: string;
+            location?: string;
+            route?: string;
+            mood?: string;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            active: boolean;
         };
         CreateEventDto: {
             slug: string;
-            title: Record<string, never>;
-            summary?: Record<string, never>;
-            description?: Record<string, never>;
+            title: string;
+            summary?: string;
+            description?: string;
             city?: string;
             citySlug?: string;
             date: string;
             endDate?: string;
             tags?: string[];
             image?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "upcoming" | "ongoing" | "past" | "draft";
             relatedRouteSlugs?: string[];
         };
         UpdateEventDto: {
             slug?: string;
-            title?: Record<string, never>;
-            summary?: Record<string, never>;
-            description?: Record<string, never>;
+            title?: string;
+            summary?: string;
+            description?: string;
             city?: string;
             citySlug?: string;
             date?: string;
             endDate?: string;
             tags?: string[];
             image?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "upcoming" | "ongoing" | "past" | "draft";
             relatedRouteSlugs?: string[];
         };
     };
@@ -1921,6 +2594,23 @@ export interface operations {
             };
         };
     };
+    AuthController_refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AuthController_register: {
         parameters: {
             query?: never;
@@ -1935,6 +2625,48 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_sendEmailCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendEmailCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_verifyEmailCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyEmailCodeDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1971,6 +2703,189 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_uploadAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_getFavorites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_addFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_removeFavorite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                targetType: string;
+                targetId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_listStaff: {
+        parameters: {
+            query: {
+                keyword: string;
+                role: string;
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_createStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStaffAccountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_deleteStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_updateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStaffAccountDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -2019,6 +2934,29 @@ export interface operations {
             };
         };
     };
+    UsersController_updateProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     UsersController_updateStatus: {
         parameters: {
             query?: never;
@@ -2031,6 +2969,149 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_listFiles: {
+        parameters: {
+            query: {
+                module: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_queryMedia: {
+        parameters: {
+            query: {
+                module: string;
+                entityType: string;
+                entityId: string;
+                search: string;
+                dateFrom: string;
+                dateTo: string;
+                type: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_findOrphans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_deleteFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                filename: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_uploadFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Image file (jpg, png, webp, max 10MB)
+                     */
+                    file?: string;
+                    /** @description Module name for path prefix (cities, routes, shop, etc.) */
+                    module?: string;
+                    /** @description Entity type for ownership tracking (city, route, product, etc.) */
+                    entityType?: string;
+                    /** @description Entity ID for ownership tracking */
+                    entityId?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UploadController_uploadVideo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Video file (mp4, webm, mov, m4v, max 100MB)
+                     */
+                    file?: string;
+                    module?: string;
+                    entityType?: string;
+                    entityId?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2080,6 +3161,8 @@ export interface operations {
     CitiesController_findAllAdmin: {
         parameters: {
             query?: {
+                q?: string;
+                published?: boolean;
                 limit?: number;
                 page?: number;
             };
@@ -2598,6 +3681,7 @@ export interface operations {
             query?: {
                 collectionId?: string;
                 q?: string;
+                published?: string;
                 limit?: unknown;
                 page?: unknown;
             };
@@ -2757,7 +3841,9 @@ export interface operations {
     InterpretingController_submitBooking: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "idempotency-key": string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2778,7 +3864,9 @@ export interface operations {
     InterpretingController_submitBookingWithDeposit: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "idempotency-key": string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2881,7 +3969,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProfileDto"];
+            };
+        };
         responses: {
             201: {
                 headers: {
@@ -2938,7 +4030,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFaqDto"];
+            };
+        };
         responses: {
             201: {
                 headers: {
@@ -2972,7 +4068,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateModeDto"];
+            };
+        };
         responses: {
             201: {
                 headers: {
@@ -3010,7 +4110,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateModeDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -3086,7 +4190,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -3162,7 +4270,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFaqDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -3215,6 +4327,7 @@ export interface operations {
             query?: {
                 status?: string;
                 q?: string;
+                date?: string;
                 size?: unknown;
                 page?: unknown;
             };
@@ -3293,6 +4406,26 @@ export interface operations {
             };
         };
     };
+    TravelerBookingsController_listMine: {
+        parameters: {
+            query?: {
+                pageSize?: unknown;
+                page?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     OrdersController_checkout: {
         parameters: {
             query?: never;
@@ -3303,6 +4436,47 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CreateOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_publicStatus: {
+        parameters: {
+            query: {
+                orderNo: string;
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_capturePayPal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CapturePayPalOrderDto"];
             };
         };
         responses: {
@@ -3336,7 +4510,8 @@ export interface operations {
     OrdersController_getOrders: {
         parameters: {
             query?: {
-                status?: string;
+                status?: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
+                paymentStatus?: "unpaid" | "paid" | "failed" | "refunded";
                 limit?: unknown;
                 page?: unknown;
             };
@@ -3373,28 +4548,157 @@ export interface operations {
             };
         };
     };
-    UploadController_uploadFile: {
+    OrdersController_updateOrderStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrderStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_shipOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OrdersController_refundOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_findAll: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /**
-                     * Format: binary
-                     * @description Image file (jpg, png, webp, max 10MB)
-                     */
-                    file?: string;
-                    /** @description Module name for path prefix (cities, routes, shop, etc.) */
-                    module?: string;
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
             };
         };
+    };
+    NotificationsController_getUnreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
-            201: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_markAllAsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_markAsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3533,6 +4837,9 @@ export interface operations {
         parameters: {
             query?: {
                 channel?: string;
+                route?: string;
+                location?: string;
+                tag?: string;
                 q?: string;
                 limit?: unknown;
                 page?: unknown;
@@ -3591,12 +4898,102 @@ export interface operations {
             };
         };
     };
+    CommunityController_uploadCommunityImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_getMyCommunityReactions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_getMySavedCommunityPosts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_likePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_savePost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     CommunityController_getAdminPosts: {
         parameters: {
-            query: {
-                status: string;
-                channel: string;
-                q: string;
+            query?: {
+                status?: "pending_review" | "published" | "hidden";
+                channel?: string;
+                q?: string;
+                includeDeleted?: boolean;
             };
             header?: never;
             path?: never;
@@ -3759,6 +5156,141 @@ export interface operations {
             };
         };
     };
+    CommunityController_restoreAdminPost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_getPublicBriefs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_getAdminBriefs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_createAdminBrief: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertCommunityBriefDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_getAdminBrief: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_updateAdminBrief: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertCommunityBriefDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_deleteAdminBrief: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EventsController_listPublic: {
         parameters: {
             query?: {
@@ -3804,6 +5336,8 @@ export interface operations {
             query: {
                 status: string;
                 city: string;
+                startDate?: string;
+                endDate?: string;
             };
             header?: never;
             path?: never;
@@ -3902,6 +5436,91 @@ export interface operations {
         };
     };
     EventsController_updateStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    HealthController_healthCheck: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuditController_getStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuditController_findAll: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                /** @description Filter by action type */
+                action?: string;
+                /** @description Filter by resource type */
+                resource?: string;
+                /** @description Filter by user ID */
+                userId?: string;
+                /** @description Start date (ISO 8601) */
+                startDate?: string;
+                /** @description End date (ISO 8601) */
+                endDate?: string;
+                /** @description Search keyword in resource name or user name */
+                keyword?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuditController_findOne: {
         parameters: {
             query?: never;
             header?: never;

@@ -35,7 +35,6 @@ import { SEED_IMAGES } from "@/lib/seed-images";
 import { placeholderFor } from "@/lib/placeholders";
 import {
   DEFAULT_ROUTE_REGIONS,
-  pickRouteRegionText,
   type RouteRegion,
 } from "@/lib/route-regions";
 import {
@@ -147,11 +146,11 @@ interface ApiCity {
 interface ApiStoreCollection {
   id: string;
   slug: string;
-  title: LocalizedText;
-  routeName: LocalizedText;
+  title: string;
+  routeName: string;
   routeSlug: string;
   image: string;
-  body: LocalizedText;
+  body: string;
   productCount?: number;
 }
 
@@ -179,9 +178,9 @@ interface ApiStoreProduct {
 interface ApiEvent {
   id: string;
   slug: string;
-  title: LocalizedText;
-  summary: LocalizedText;
-  description?: LocalizedText;
+  title: string;
+  summary: string;
+  description?: string;
   city: string;
   citySlug: string;
   date: string;
@@ -197,48 +196,46 @@ interface PaginatedResponse<T> {
   total: number;
 }
 
-type LocalizedText = string | { en?: string; zh?: string; EN?: string; ZH?: string };
-
 interface ApiHomeConfig {
   hero?: {
     image?: string;
-    caption?: LocalizedText;
+    caption?: string;
     ctaImage?: string;
-    badge?: { value?: string; label?: LocalizedText };
-    interpretingLabel?: LocalizedText;
+    badge?: { value?: string; label?: string };
+    interpretingLabel?: string;
     interpretingImage?: string;
     video?: {
       url?: string;
       poster?: string;
-      title?: LocalizedText;
-      description?: LocalizedText;
+      title?: string;
+      description?: string;
       duration?: string;
       resolution?: string;
     };
-    stats?: Array<{ title: LocalizedText; description: LocalizedText }>;
+    stats?: Array<{ title: string; description: string }>;
   };
-  heroStats?: Array<{ title: LocalizedText; description: LocalizedText }>;
-  trustMetrics?: Array<{ value: string; label: LocalizedText }>;
+  heroStats?: Array<{ title: string; description: string }>;
+  trustMetrics?: Array<{ value: string; label: string }>;
   entryCards?: Array<{
     id: string;
-    title: LocalizedText;
-    body: LocalizedText;
+    title: string;
+    body: string;
     href: string;
     image?: string;
   }>;
   cultureHighlights?: Array<{
     slug: string;
-    title: LocalizedText;
-    body: LocalizedText;
+    title: string;
+    body: string;
     href?: string;
     image?: string;
   }>;
-  testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
+  testimonials?: Array<{ quote: string; name: string }>;
   featuredRouteSlugs?: string[];
   routeRegions?: Array<{
     key: string;
-    title: LocalizedText;
-    note: LocalizedText;
+    title: string;
+    note: string;
     adcodes: number[];
   }>;
 }
@@ -402,11 +399,11 @@ function mapProduct(apiProduct: ApiStoreProduct): StoreProduct {
 
 function mapCollection(apiCol: ApiStoreCollection): StoreCollection {
   return {
-    title: pickLocalized(apiCol.title),
-    route: pickLocalized(apiCol.routeName),
+    title: apiCol.title,
+    route: apiCol.routeName,
     href: `/routes/${apiCol.routeSlug}`,
     image: apiCol.image,
-    body: pickLocalized(apiCol.body),
+    body: apiCol.body,
   };
 }
 
@@ -435,24 +432,16 @@ function mapEvent(apiEvent: ApiEvent): EventData {
   return {
     id: apiEvent.id,
     slug: apiEvent.slug,
-    title: pickLocalized(apiEvent.title),
+    title: apiEvent.title,
     date: apiEvent.date,
     city: apiEvent.city,
     citySlug: apiEvent.citySlug,
     tags: apiEvent.tags ?? [],
-    summary: pickLocalized(apiEvent.summary),
-    description: pickLocalized(apiEvent.description),
+    summary: apiEvent.summary,
+    description: apiEvent.description ?? "",
     relatedRouteSlugs: apiEvent.relatedRouteSlugs ?? [],
     image: apiEvent.image || eventFallbackImage,
   };
-}
-
-function pickLocalized(
-  value: LocalizedText | undefined,
-): string {
-  if (!value) return "";
-  if (typeof value === "string") return value;
-  return value.en ?? value.EN ?? value.zh ?? value.ZH ?? "";
 }
 
 export interface ApiInterpretingMode {
@@ -707,18 +696,12 @@ export interface HomeData {
 
 export async function fetchRouteRegions(): Promise<RouteRegion[]> {
   try {
-    const homeConfig = await apiGet<ApiHomeConfig>("/public/home", { rawI18n: "true" });
+    const homeConfig = await apiGet<ApiHomeConfig>("/public/home");
     if (!homeConfig.routeRegions?.length) return DEFAULT_ROUTE_REGIONS;
     return homeConfig.routeRegions.map((region) => ({
       key: region.key,
-      title: {
-        zh: pickRouteRegionText(region.title),
-        en: pickRouteRegionText(region.title),
-      },
-      note: {
-        zh: pickRouteRegionText(region.note),
-        en: pickRouteRegionText(region.note),
-      },
+      title: region.title,
+      note: region.note,
       adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
     }));
   } catch {
@@ -731,7 +714,7 @@ export async function fetchHomeData(): Promise<HomeData> {
     await Promise.allSettled([
       fetchRoutes(),
       fetchCities(),
-      apiGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
+      apiGet<ApiHomeConfig>("/public/home"),
     ]);
 
   const routes = routesResult.status === "fulfilled" ? routesResult.value : [];
@@ -794,12 +777,12 @@ export async function fetchHomeData(): Promise<HomeData> {
       return {
         slug: linkedSlug || item.slug,
         title:
-          pickLocalized(item.title) ||
+          item.title ||
           linkedCity?.label ||
           linkedCity?.name ||
           "",
         body:
-          pickLocalized(item.body) || linkedCity?.summary || "",
+          item.body || linkedCity?.summary || "",
         href: item.href ?? `/culture/${linkedSlug || item.slug}`,
         image:
           item.image ||
@@ -827,29 +810,29 @@ export async function fetchHomeData(): Promise<HomeData> {
   const heroSrc = homeConfig.hero ?? {};
   const hero: HomeHero = {
     image: heroSrc.image || undefined,
-    caption: heroSrc.caption ? pickLocalized(heroSrc.caption) : undefined,
+    caption: heroSrc.caption || undefined,
     ctaImage: heroSrc.ctaImage || undefined,
     interpretingImage: heroSrc.interpretingImage || undefined,
     video: heroSrc.video?.url
       ? {
           url: heroSrc.video.url,
           poster: heroSrc.video.poster || undefined,
-          title: heroSrc.video.title ? pickLocalized(heroSrc.video.title) : undefined,
+          title: heroSrc.video.title || undefined,
           description: heroSrc.video.description
-            ? pickLocalized(heroSrc.video.description)
+            ? heroSrc.video.description
             : undefined,
           duration: heroSrc.video.duration || undefined,
           resolution: heroSrc.video.resolution || undefined,
         }
       : undefined,
     interpretingLabel: heroSrc.interpretingLabel
-      ? pickLocalized(heroSrc.interpretingLabel)
+      ? heroSrc.interpretingLabel
       : undefined,
     badge: heroSrc.badge
       ? {
           value: heroSrc.badge.value ?? "",
           label: heroSrc.badge.label
-            ? pickLocalized(heroSrc.badge.label)
+            ? heroSrc.badge.label
             : "",
         }
       : undefined,
@@ -859,14 +842,8 @@ export async function fetchHomeData(): Promise<HomeData> {
     homeConfig.routeRegions?.length
       ? homeConfig.routeRegions.map((region) => ({
           key: region.key,
-          title: {
-            zh: pickRouteRegionText(region.title),
-            en: pickRouteRegionText(region.title),
-          },
-          note: {
-            zh: pickRouteRegionText(region.note),
-            en: pickRouteRegionText(region.note),
-          },
+          title: region.title,
+          note: region.note,
           adcodes: Array.isArray(region.adcodes) ? region.adcodes : [],
         }))
       : DEFAULT_ROUTE_REGIONS;
@@ -874,8 +851,8 @@ export async function fetchHomeData(): Promise<HomeData> {
   // heroStats: admin stores these as hero.stats (nested) or heroStats (top-level)
   const rawHeroStats = homeConfig.hero?.stats ?? homeConfig.heroStats ?? [];
   const heroStats: HomeHeroStat[] = rawHeroStats.map((s) => ({
-    title: pickLocalized(s.title),
-    body: pickLocalized(s.description),
+    title: s.title,
+    body: s.description,
   }));
 
   // Testimonials: CMS-only. When the admin has not authored any, return an
@@ -883,8 +860,8 @@ export async function fetchHomeData(): Promise<HomeData> {
   // back to invented traveller quotes.
   const cmsTestimonials = (homeConfig.testimonials ?? [])
     .map((item) => ({
-      quote: pickLocalized(item.quote),
-      name: pickLocalized(item.name),
+      quote: item.quote,
+      name: item.name,
     }))
     .filter((item) => item.quote && item.name);
 
@@ -897,7 +874,7 @@ export async function fetchHomeData(): Promise<HomeData> {
     testimonials: cmsTestimonials,
     trustMetrics: homeConfig.trustMetrics?.map((item) => ({
       value: item.value,
-      label: pickLocalized(item.label),
+      label: item.label,
     })) ?? [
       {
         value: String(cities.length || 1),
@@ -915,8 +892,8 @@ export async function fetchHomeData(): Promise<HomeData> {
     homeEntryCards:
       homeConfig.entryCards?.map((item) => ({
         id: item.id,
-        title: pickLocalized(item.title),
-        body: pickLocalized(item.body),
+        title: item.title,
+        body: item.body,
         href: item.href,
         image: item.image || undefined,
       })) ?? [],
@@ -963,8 +940,8 @@ interface ApiCommunityPost {
   channel: string;
   status: string;
   user: Record<string, unknown>;
-  title: { en: string; zh: string } | string;
-  excerpt: { en: string; zh: string } | string;
+  title: string;
+  excerpt: string;
   tags?: string[];
   image: string | null;
   location: string;
@@ -976,13 +953,6 @@ interface ApiCommunityPost {
   liked?: boolean;
   saved?: boolean;
   createdAt: string;
-}
-
-function pickLocaleString(
-  value: { en: string; zh: string } | string,
-): string {
-  if (typeof value === "string") return value;
-  return value.en ?? value.zh ?? "";
 }
 
 function formatPostDate(createdAt: string): string {
@@ -1012,8 +982,8 @@ function mapCommunityPost(
   const tags = api.tags ?? [];
   return {
     id: api.id,
-    title: pickLocaleString(api.title),
-    excerpt: pickLocaleString(api.excerpt),
+    title: api.title,
+    excerpt: api.excerpt,
     channel: normalizeCommunityChannel(api.channel),
     user: {
       name: typeof userObj.name === "string" ? userObj.name : "Field Agent",
@@ -1134,8 +1104,8 @@ export async function createCommunityPost(
     user: input.user as Record<string, unknown>,
     userId: input.user.id,
     userEmail: input.user.email,
-    title: { en: title, zh: title },
-    excerpt: { en: excerpt, zh: excerpt },
+    title,
+    excerpt,
     location: input.stop?.name ?? input.routeCity,
     route: input.routeSlug,
     mood: input.stop
@@ -1252,8 +1222,8 @@ export async function createCommunityFeedPost(
     user: input.user as Record<string, unknown>,
     userId: input.user.id,
     userEmail: input.user.email,
-    title: { en: safeTitle, zh: safeTitle },
-    excerpt: { en: safeExcerpt, zh: safeExcerpt },
+    title: safeTitle,
+    excerpt: safeExcerpt,
     location: input.location,
     route: input.route,
     mood: input.mood,
@@ -1273,8 +1243,8 @@ export async function createCommunityFeedPost(
 interface ApiCommunityBrief {
   id: string;
   slug: string;
-  title: { en: string; zh: string };
-  prompt: { en: string; zh: string };
+  title: string;
+  prompt: string;
   channel: string;
   location: string;
   route: string;
@@ -1298,8 +1268,8 @@ function mapBrief(api: ApiCommunityBrief): FieldBrief {
   return {
     id: api.id,
     slug: api.slug,
-    title: pickLocaleString(api.title),
-    prompt: pickLocaleString(api.prompt),
+    title: api.title,
+    prompt: api.prompt,
     channel: api.channel || "Field Notes",
     location: api.location || "",
     route: api.route || "",

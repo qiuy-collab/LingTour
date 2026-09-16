@@ -10,7 +10,6 @@ import { RoutesMegaMenu } from "@/components/layout/RoutesMegaMenu";
 import { Container } from "@/components/ui/Container";
 import {
   DEFAULT_ROUTE_REGIONS,
-  pickRouteRegionText,
 } from "@/lib/route-regions";
 
 function isActivePath(pathname: string, href: string) {
@@ -243,8 +242,8 @@ export function SiteHeader() {
               {isRegionsOpen ? (
                 <div id="site-mobile-route-regions" className="mt-2 grid gap-1.5">
                   {DEFAULT_ROUTE_REGIONS.map((region) => {
-                    const regionTitle = pickRouteRegionText(region.title);
-                    const regionNote = pickRouteRegionText(region.note);
+                    const regionTitle = region.title;
+                    const regionNote = region.note;
 
                     return (
                       <Link

@@ -19,7 +19,6 @@ import { fetchRouteRegions, fetchRoutes } from "@/lib/api-data";
 import type { StoryRoute } from "@/data/routes";
 import {
   DEFAULT_ROUTE_REGIONS,
-  pickRouteRegionText,
   type RouteRegion,
 } from "@/lib/route-regions";
 
@@ -159,8 +158,8 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                 const regionRoutes = routes.filter(
                   (route) => route.routeRegionKey === region.key,
                 );
-                const regionTitle = pickRouteRegionText(region.title);
-                const regionNote = pickRouteRegionText(region.note);
+                const regionTitle = region.title;
+                const regionNote = region.note;
 
                 return (
                   <motion.div

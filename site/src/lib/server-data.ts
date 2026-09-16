@@ -33,7 +33,6 @@ import { SEED_IMAGES } from "./seed-images";
 import { placeholderFor } from "./placeholders";
 import {
   DEFAULT_ROUTE_REGIONS,
-  pickRouteRegionText,
   type RouteRegion,
 } from "./route-regions";
 import {
@@ -44,17 +43,6 @@ import {
 } from "./content-cleaners";
 
 // 鈹€鈹€ Shared helpers (duplicated from api-data.ts to avoid importing client code) 鈹€鈹€
-
-function pickLocalized(
-  val: string | { en?: string; zh?: string; EN?: string; ZH?: string } | undefined,
-  fallback = "",
-): string {
-  if (typeof val === "string") return val;
-  if (val && typeof val === "object") {
-    return val.en ?? val.EN ?? val.zh ?? val.ZH ?? fallback;
-  }
-  return fallback;
-}
 
 // 鈹€鈹€ API response types (subset needed for home page) 鈹€鈹€
 
@@ -139,48 +127,46 @@ interface ApiCity {
   relatedCitySlugs?: string[];
 }
 
-type LocalizedText = string | { en?: string; zh?: string; EN?: string; ZH?: string };
-
 interface ApiHomeConfig {
   hero?: {
     image?: string;
-    caption?: LocalizedText;
+    caption?: string;
     ctaImage?: string;
-    badge?: { value?: string; label?: LocalizedText };
-    interpretingLabel?: LocalizedText;
+    badge?: { value?: string; label?: string };
+    interpretingLabel?: string;
     interpretingImage?: string;
     video?: {
       url?: string;
       poster?: string;
-      title?: LocalizedText;
-      description?: LocalizedText;
+      title?: string;
+      description?: string;
       duration?: string;
       resolution?: string;
     };
-    stats?: Array<{ title: LocalizedText; description: LocalizedText }>;
+    stats?: Array<{ title: string; description: string }>;
   };
-  heroStats?: Array<{ title: LocalizedText; description: LocalizedText }>;
-  trustMetrics?: Array<{ value: string; label: LocalizedText }>;
+  heroStats?: Array<{ title: string; description: string }>;
+  trustMetrics?: Array<{ value: string; label: string }>;
   entryCards?: Array<{
     id: string;
-    title: LocalizedText;
-    body: LocalizedText;
+    title: string;
+    body: string;
     href: string;
     image?: string;
   }>;
   cultureHighlights?: Array<{
     slug: string;
-    title: LocalizedText;
-    body: LocalizedText;
+    title: string;
+    body: string;
     href?: string;
     image?: string;
   }>;
-  testimonials?: Array<{ quote: LocalizedText; name: LocalizedText }>;
+  testimonials?: Array<{ quote: string; name: string }>;
   featuredRouteSlugs?: string[];
   routeRegions?: Array<{
     key: string;
-    title: LocalizedText;
-    note: LocalizedText;
+    title: string;
+    note: string;
     adcodes: number[];
   }>;
 }
@@ -203,19 +189,19 @@ interface ApiStoreProduct {
 interface ApiStoreCollection {
   id: string;
   slug: string;
-  title: LocalizedText;
-  routeName: LocalizedText;
+  title: string;
+  routeName: string;
   routeSlug: string;
   image: string;
-  body: LocalizedText;
+  body: string;
 }
 
 interface ApiEvent {
   id: string;
   slug: string;
-  title: LocalizedText;
-  summary: LocalizedText;
-  description?: LocalizedText;
+  title: string;
+  summary: string;
+  description?: string;
   city: string;
   citySlug: string;
   date: string;
@@ -308,11 +294,11 @@ function mapProduct(p: ApiStoreProduct): StoreProduct {
 
 function mapCollection(c: ApiStoreCollection): StoreCollection {
   return {
-    title: pickLocalized(c.title),
-    route: pickLocalized(c.routeName),
+    title: c.title,
+    route: c.routeName,
     href: `/routes/${c.routeSlug}`,
     image: c.image,
-    body: pickLocalized(c.body),
+    body: c.body,
   };
 }
 
@@ -329,14 +315,14 @@ function mapEvent(raw: ApiEvent): EventData {
   return {
     id: raw.id,
     slug: raw.slug,
-    title: pickLocalized(raw.title),
+    title: raw.title,
     date: raw.date,
     city: raw.city,
     citySlug: raw.citySlug,
     tags: raw.tags ?? [],
-    summary: pickLocalized(raw.summary),
+    summary: raw.summary,
     description: raw.description
-      ? pickLocalized(raw.description)
+      ? raw.description
       : "",
     relatedRouteSlugs: raw.relatedRouteSlugs ?? [],
     image: raw.image || eventFallbackImage,
@@ -515,21 +501,21 @@ export async function fetchHomeDataServer(
   const [routes, cities, homeConfig] = await Promise.all([
     routesPromise,
     fetchCitiesServer(),
-    serverGet<ApiHomeConfig>("/public/home", { rawI18n: "true" }),
+    serverGet<ApiHomeConfig>("/public/home"),
   ]);
 
   const hero: HomeHero = {
     image: homeConfig.hero?.image,
-    caption: pickLocalized(homeConfig.hero?.caption),
+    caption: homeConfig.hero?.caption,
     ctaImage: homeConfig.hero?.ctaImage,
     badge: homeConfig.hero?.badge
       ? {
           value: homeConfig.hero.badge.value ?? "",
-          label: pickLocalized(homeConfig.hero.badge.label),
+          label: homeConfig.hero.badge.label || "",
         }
       : undefined,
     interpretingLabel: homeConfig.hero?.interpretingLabel
-      ? pickLocalized(homeConfig.hero.interpretingLabel)
+      ? homeConfig.hero.interpretingLabel
       : undefined,
     interpretingImage: homeConfig.hero?.interpretingImage,
     video: homeConfig.hero?.video?.url
@@ -537,10 +523,10 @@ export async function fetchHomeDataServer(
           url: homeConfig.hero.video.url,
           poster: homeConfig.hero.video.poster || undefined,
           title: homeConfig.hero.video.title
-            ? pickLocalized(homeConfig.hero.video.title)
+            ? homeConfig.hero.video.title
             : undefined,
           description: homeConfig.hero.video.description
-            ? pickLocalized(homeConfig.hero.video.description)
+            ? homeConfig.hero.video.description
             : undefined,
           duration: homeConfig.hero.video.duration || undefined,
           resolution: homeConfig.hero.video.resolution || undefined,
@@ -577,12 +563,12 @@ export async function fetchHomeDataServer(
       return {
         slug: linkedSlug || item.slug,
         title:
-          pickLocalized(item.title) ||
+          item.title ||
           linkedCity?.label ||
           linkedCity?.name ||
           '',
         body:
-          pickLocalized(item.body) || linkedCity?.summary || '',
+          item.body || linkedCity?.summary || '',
         href: item.href ?? `/culture/${linkedSlug || item.slug}`,
         image:
           item.image ||
@@ -610,37 +596,37 @@ export async function fetchHomeDataServer(
   // honest empty state instead.
   const testimonials: Testimonial[] = (homeConfig.testimonials ?? []).map(
     (t) => ({
-      quote: pickLocalized(t.quote),
-      name: pickLocalized(t.name),
+      quote: t.quote,
+      name: t.name,
     }),
   );
 
   const trustMetrics: TrustMetric[] = (
     homeConfig.trustMetrics ?? [
-      { value: String(cities.length || 1), label: { en: "cities", zh: "城市" } },
+      { value: String(cities.length || 1), label: "cities" },
       {
         value: String(routes.length || 1),
-        label: { en: "story routes", zh: "故事路线" },
+        label: "story routes",
       },
     ]
   ).map((m) => ({
     value: m.value,
-    label: pickLocalized(m.label),
+    label: m.label,
   }));
 
   // heroStats: admin stores these as hero.stats (nested) or heroStats (top-level)
   const rawHeroStats = homeConfig.hero?.stats ?? homeConfig.heroStats ?? [];
   const heroStats: HomeHeroStat[] = rawHeroStats.map((s) => ({
-    title: pickLocalized(s.title),
-    body: pickLocalized(s.description),
+    title: s.title,
+    body: s.description,
   }));
 
   // entryCards: quick-access editorial links (e.g. "Explore Routes", "Book Interpreting")
   const homeEntryCards: HomeEntryCard[] =
     homeConfig.entryCards?.map((item) => ({
       id: item.id,
-      title: pickLocalized(item.title),
-      body: pickLocalized(item.body),
+      title: item.title,
+      body: item.body,
       href: item.href,
       image: item.image || undefined,
     })) ?? [];
