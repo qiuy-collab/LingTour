@@ -1,0 +1,28 @@
+# Build context for root-context image builds (site/Dockerfile,
+# admin-frontend/Dockerfile — same as docker-compose.prod.yml).
+# Builds only need site/, admin-frontend/, and shared/; api builds use
+# ./api as context with api/.dockerignore.
+
+# VCS and local noise
+.git
+.gitignore
+
+# Dependencies and build outputs — never needed inside the context and
+# large enough to cause deploy timeouts when the host has stale copies
+**/node_modules
+**/.next
+**/dist
+**/coverage
+
+# Root-level env files (image builds receive ARGs, never local files)
+.env
+.env.*
+
+# Local docs, review artifacts, and scratch space
+docs
+review
+reviews
+tmp
+lingtour-frontend-documentation
+admin-backoffice-visual-reference.png
+**/*.log

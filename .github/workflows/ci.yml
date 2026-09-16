@@ -75,4 +75,6 @@ jobs:
       - name: Build API image
         run: docker build -t lingtour-api:${{ github.sha }} ./api
       - name: Build Site image
-        run: docker build -t lingtour-site:${{ github.sha }} ./site
+        # site/Dockerfile copies from the repository root (site/, shared/),
+        # matching docker-compose.prod.yml which builds with context "."
+        run: docker build -f site/Dockerfile -t lingtour-site:${{ github.sha }} .
