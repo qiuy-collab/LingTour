@@ -215,7 +215,7 @@ export function StickyComposeBar({
       />
 
       <div
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-[var(--background)] shadow-[0_-12px_40px_rgba(17,25,35,0.10)]"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-[var(--background)] pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_40px_rgba(17,25,35,0.10)]"
         role="region"
         aria-label="Leave a field note on this route"
       >
