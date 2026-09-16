@@ -4,12 +4,12 @@
 
 ## 1. Production baseline
 
-- Root production and root `origin/main`: `e5a46cc` before this English-only rollout.
+- Root production and root `origin/main`: `d52162b` before the final documentation sync deployment.
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 28 applied migrations; all 28 reported `[X]`, including `AddStockReservationsAndBookingIdempotency1762200000000`. The English-only migration is pending deployment.
+- Production has 29 applied migrations; all reported `[X]`, including `EnglishOnlyContent1762300000000`.
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD before this rollout: `e5a46cc` (2026-09-16, "docs(release): record review fixes deployment")
+- Local HEAD before the final documentation sync deployment: `d52162b` (2026-09-16, English-only content rollout)
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -47,7 +47,7 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD after this rollout: `38475be` (2026-09-16, English-only content editing)
+- Local HEAD: `38475be` (2026-09-16, English-only content editing)
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 
 Formerly unpushed commits (pushed since; kept as record):
@@ -67,7 +67,7 @@ No protected uncommitted source changes remain in either repository. The remaini
 
 - Functional commits: root `0a94b70` (API and migration), root `6a7e0f8` (site and shared contract), root `1f53eaa` (admin mirror); independent admin `38475be`.
 - Local validation passed: API tsc, 22 suites/98 tests/build; site tsc, 18 suites/101 tests/build; admin build; 390px browser smoke for site and admin login.
-- Production backup, migration status, deployment run, and post-deploy smoke are pending.
+- Production backup `/root/backups/lingtour-db-pre-english-only-20260916.dump` (144856 bytes), read-only status (28 applied before deployment), deployment run `35063493183`, and post-deploy smoke all passed. The final documentation sync deployment remains to be recorded after its run.
 
 ## 4. Verification matrix
 
@@ -131,10 +131,8 @@ Recovery incidents:
 
 ## 6. Deployment queue
 
-1. Push root `main` after the independent admin `38475be` commit is available.
-2. Back up production PostgreSQL and confirm the 28 applied migrations read-only.
-3. Deploy the English-only migration and synchronized site/admin/API stack through the Docker workflow.
-4. Verify public English-only payloads and admin create/edit/save/refresh flows.
+1. Record the final documentation sync deployment SHA and run.
+2. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 
