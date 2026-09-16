@@ -1,13 +1,13 @@
 # Culvoy Current State
 
-> **Live status source — 2026-09-16.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
+> **Live status source — 2026-09-17.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
 
 ## 1. Production baseline
 
-- Production deployed application commit: `594d183` (2026-09-16, deployed via `tools/deploy-docker.sh`, see §32). Post-deploy commits `d60ede4` (CI workflow fix) and `7beaac8`/`27b70b2` (docs) contain no application code and need no redeploy.
+- Production deployed application commit: `a522c77` (2026-09-17, deployed via the deploy-docker step sequence with serial image builds after run `35120749831` timed out, see §36). Post-deploy commit `e859873` (deployment docs) contains no application code and needs no redeploy.
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
-- `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
+- `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment.
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
 - Production has 29 applied migrations; all reported `[X]`, including `EnglishOnlyContent1762300000000`.
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `27b70b2` (docs recording the 2026-09-16 branch/worktree cleanup, §34) on top of the English-only production rollout.
+- Local HEAD: `e859873` (docs recording the 2026-09-17 deployment, §36) on top of the deployed `a522c77`.
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -47,7 +47,7 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD: `38475be` (2026-09-16, English-only content editing)
+- Local HEAD: `56afcf4` (2026-09-17, 16px coarse-pointer inputs / Chinese chrome / useTheme leak fixes)
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 
 Formerly unpushed commits (pushed since; kept as record):
