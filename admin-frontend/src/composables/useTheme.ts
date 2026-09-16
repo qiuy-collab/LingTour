@@ -1,4 +1,4 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -40,17 +40,28 @@ export function useTheme() {
     setTheme(next)
   }
 
+  let systemDarkMql: MediaQueryList | null = null
+  let systemDarkHandler: (() => void) | null = null
+
   onMounted(() => {
     applyTheme(themeMode.value)
 
     // Listen for system theme changes
-    const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => {
+    systemDarkMql = window.matchMedia('(prefers-color-scheme: dark)')
+    systemDarkHandler = () => {
       if (themeMode.value === 'system') {
         applyTheme('system')
       }
     }
-    mql.addEventListener('change', handler)
+    systemDarkMql.addEventListener('change', systemDarkHandler)
+  })
+
+  onUnmounted(() => {
+    if (systemDarkMql && systemDarkHandler) {
+      systemDarkMql.removeEventListener('change', systemDarkHandler)
+    }
+    systemDarkMql = null
+    systemDarkHandler = null
   })
 
   watch(themeMode, (mode) => {
