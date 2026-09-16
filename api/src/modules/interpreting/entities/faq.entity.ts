@@ -17,10 +17,10 @@ export class Faq {
   sortOrder: number;
 
   @Column({ type: 'jsonb' })
-  question: { en: string; zh: string };
+  question: string;
 
   @Column({ type: 'jsonb' })
-  answer: { en: string; zh: string };
+  answer: string;
 
   @Column({ type: 'varchar', length: 40, default: 'interpreting' })
   category: string;

@@ -17,22 +17,22 @@ export class InterpreterProfile {
   sortOrder: number;
 
   @Column({ type: 'jsonb' })
-  name: { en: string; zh: string };
+  name: string;
 
   @Column({ type: 'jsonb' })
-  language: { en: string; zh: string };
+  language: string;
 
   @Column({ type: 'jsonb' })
-  focus: { en: string; zh: string };
+  focus: string;
 
   @Column({ type: 'jsonb', default: [] })
-  helps: { en: string; zh: string }[];
+  helps: string[];
 
   @Column({ type: 'varchar', length: 500, default: '' })
   avatar: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  bio: { en: string; zh: string } | null;
+  bio: string | null;
 
   @Column({ type: 'varchar', length: 30, default: 'pending_review' })
   status: string;

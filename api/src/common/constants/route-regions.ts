@@ -12,8 +12,8 @@ import regionsData from './route-regions.json';
 
 export interface RouteRegion {
   key: string;
-  title: { zh: string; en: string };
-  note: { zh: string; en: string };
+  title: string;
+  note: string;
   adcodes: number[];
 }
 

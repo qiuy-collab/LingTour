@@ -14,7 +14,6 @@ import appConfig from './config/app.config';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { I18nInterceptor } from './common/interceptors/i18n.interceptor';
 import { PublicContentCacheModule } from './common/cache/public-content-cache.module';
 import { PublicContentCacheInterceptor } from './common/cache/public-content-cache.interceptor';
 
@@ -122,10 +121,6 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     {
       provide: APP_INTERCEPTOR,
       useClass: PublicContentCacheInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: I18nInterceptor,
     },
   ],
 })

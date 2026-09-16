@@ -17,7 +17,7 @@ export class StoreCollection {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'varchar', length: 200, name: 'route_name' })
   routeName: string;
@@ -29,7 +29,7 @@ export class StoreCollection {
   image: string;
 
   @Column({ type: 'jsonb' })
-  body: { en: string; zh: string };
+  body: string;
 
   @Column({ type: 'int', name: 'sort_order', default: 0 })
   sortOrder: number;

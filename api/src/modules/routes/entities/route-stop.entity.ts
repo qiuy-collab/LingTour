@@ -34,16 +34,16 @@ export class RouteStop {
   time: string;
 
   @Column({ type: 'jsonb', name: 'stop_name' })
-  stopName: { en: string; zh: string };
+  stopName: string;
 
   @Column({ type: 'jsonb' })
-  story: { en: string; zh: string };
+  story: string;
 
   @Column({ type: 'jsonb', name: 'cultural_story' })
-  culturalStory: { en: string; zh: string };
+  culturalStory: string;
 
   @Column({ type: 'jsonb', default: [] })
-  details: { en: string; zh: string }[];
+  details: string[];
 
   @Column({ type: 'varchar', length: 500 })
   image: string;
@@ -64,13 +64,13 @@ export class RouteStop {
   lng: number | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  meal: { en: string; zh: string } | null;
+  meal: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  hotel: { en: string; zh: string } | null;
+  hotel: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  transit: { en: string; zh: string } | null;
+  transit: string | null;
 
   @Column({ type: 'text', nullable: true })
   plan: string | null;

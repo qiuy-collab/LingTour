@@ -10,53 +10,19 @@ import {
   MaxLength,
   IsNotEmpty,
   ValidateIf,
-  registerDecorator,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  IsI18nObject,
-  IsI18nArray,
-} from '../../../common/validators/i18n.validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
-// City metadata is authored in English; omitted legacy translations are retained.
-export type CityTextInput = { en: string; zh?: string };
-
-function IsCityText() {
-  return (object: object, propertyName: string) => {
-    registerDecorator({
-      name: 'isCityText',
-      target: object.constructor,
-      propertyName,
-      validator: {
-        validate(value: unknown) {
-          if (!value || typeof value !== 'object' || Array.isArray(value)) {
-            return false;
-          }
-          const text = value as CityTextInput;
-          return (
-            typeof text.en === 'string' &&
-            (text.zh === undefined || typeof text.zh === 'string')
-          );
-        },
-        defaultMessage: () =>
-          `${propertyName} must be { en: string, zh?: string }`,
-      },
-    });
-  };
-}
-
 export class CreateSectionDto {
-  @ApiProperty({ example: { en: 'Southern coast', zh: '南部海岸' } })
-  @IsI18nObject({ message: 'Section title must be { en: string, zh: string }' })
-  title: { en: string; zh: string };
+  @ApiProperty({ example: 'Southern coast' })
+  @IsString()
+  title: string;
 
-  @ApiProperty({
-    example: { en: 'Zhanjiang is famous...', zh: '湛江以...闻名' },
-  })
-  @IsI18nObject({ message: 'Section body must be { en: string, zh: string }' })
-  body: { en: string; zh: string };
+  @ApiProperty({ example: 'Zhanjiang is famous...' })
+  @IsString()
+  body: string;
 
   @ApiProperty({ example: '/uploads/cities/section.jpg' })
   @IsString()
@@ -84,15 +50,15 @@ export class CreateSectionDto {
   @Type(() => MediaAssetDto)
   media?: MediaAssetDto[];
 
-  @ApiPropertyOptional({ example: { en: 'Coastline', zh: '海岸线长度' } })
+  @ApiPropertyOptional({ example: 'Coastline' })
   @IsOptional()
-  @IsI18nObject()
-  statLabel?: { en: string; zh: string };
+  @IsString()
+  statLabel?: string;
 
-  @ApiPropertyOptional({ example: { en: '1,243 km', zh: '1,243 公里' } })
+  @ApiPropertyOptional({ example: '1,243 km' })
   @IsOptional()
-  @IsI18nObject()
-  statValue?: { en: string; zh: string };
+  @IsString()
+  statValue?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -102,8 +68,8 @@ export class CreateSectionDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  breathQuote?: { en: string; zh: string };
+  @IsString()
+  breathQuote?: string;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
@@ -119,14 +85,14 @@ export class CreateCityDto {
   @MaxLength(100)
   slug: string;
 
-  @ApiProperty({ example: { en: 'Guangzhou' } })
-  @IsCityText()
-  name: CityTextInput;
+  @ApiProperty({ example: 'Guangzhou' })
+  @IsString()
+  name: string;
 
-  @ApiPropertyOptional({ example: { en: 'Bay Area Core' } })
+  @ApiPropertyOptional({ example: 'Bay Area Core' })
   @ValidateIf((_object, value) => value !== undefined)
-  @IsCityText()
-  regionLabel?: CityTextInput;
+  @IsString()
+  regionLabel?: string;
 
   @ApiPropertyOptional({ example: '/uploads/cities/guangzhou-hero.jpg' })
   @ValidateIf((_object, value) => value !== undefined)
@@ -140,20 +106,21 @@ export class CreateCityDto {
   @Type(() => MediaAssetDto)
   heroMedia?: MediaAssetDto;
 
-  @ApiPropertyOptional({ example: { en: 'Guangzhou, the starting point...' } })
+  @ApiPropertyOptional({ example: 'Guangzhou, the starting point...' })
   @ValidateIf((_object, value) => value !== undefined)
-  @IsCityText()
-  heroNarrative?: CityTextInput;
+  @IsString()
+  heroNarrative?: string;
 
   @ApiPropertyOptional({ default: [] })
   @IsOptional()
-  @IsI18nArray()
-  tags?: { en: string; zh: string }[];
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 
-  @ApiPropertyOptional({ example: { en: '## Guangzhou: A River City\n\n...' } })
+  @ApiPropertyOptional({ example: '## Guangzhou: A River City\n\n...' })
   @ValidateIf((_object, value) => value !== undefined)
-  @IsCityText()
-  editorIntro?: CityTextInput;
+  @IsString()
+  editorIntro?: string;
 
   @ApiPropertyOptional({ default: '', maxLength: 200000 })
   @ValidateIf((_object, value) => value !== undefined)
@@ -176,15 +143,15 @@ export class CreateCityDto {
   @Type(() => MediaAssetDto)
   galleryMedia?: MediaAssetDto[];
 
-  @ApiPropertyOptional({ example: { en: 'Flavours of Guangzhou' } })
+  @ApiPropertyOptional({ example: 'Flavours of Guangzhou' })
   @ValidateIf((_object, value) => value !== undefined)
-  @IsCityText()
-  foodTitle?: CityTextInput;
+  @IsString()
+  foodTitle?: string;
 
-  @ApiPropertyOptional({ example: { en: 'Dim sum, roast goose...' } })
+  @ApiPropertyOptional({ example: 'Dim sum, roast goose...' })
   @ValidateIf((_object, value) => value !== undefined)
-  @IsCityText()
-  foodDescription?: CityTextInput;
+  @IsString()
+  foodDescription?: string;
 
   @ApiPropertyOptional({ default: [] })
   @IsOptional()

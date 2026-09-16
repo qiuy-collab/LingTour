@@ -96,8 +96,8 @@ export class HomeService {
           return null;
 
         const key = typeof item.key === 'string' ? item.key.trim() : '';
-        const title = this.normalizeI18nObject(item.title);
-        const note = this.normalizeI18nObject(item.note);
+        const title = typeof item.title === 'string' ? item.title.trim() : '';
+        const note = typeof item.note === 'string' ? item.note.trim() : '';
         const adcodes = Array.isArray(item.adcodes)
           ? item.adcodes
               .map((adcode: unknown) => Number(adcode))
@@ -121,14 +121,4 @@ export class HomeService {
       : DEFAULT_ROUTE_REGIONS;
   }
 
-  private normalizeI18nObject(value: any) {
-    if (!value || typeof value !== 'object') {
-      return { en: '', zh: '' };
-    }
-
-    return {
-      en: typeof value.en === 'string' ? value.en.trim() : '',
-      zh: typeof value.zh === 'string' ? value.zh.trim() : '',
-    };
-  }
 }

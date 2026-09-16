@@ -41,7 +41,7 @@ describe('OrdersService shop checkout', () => {
     const product = {
       id: 'product-id',
       slug: 'tea-bowl',
-      name: { en: 'Tea Bowl', zh: '茶碗' },
+      name: 'Tea Bowl',
       image: '/uploads/products/tea-bowl.webp',
       price: 32,
       currency: 'SGD',

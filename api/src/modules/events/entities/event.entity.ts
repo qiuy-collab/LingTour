@@ -20,13 +20,13 @@ export class EventEntity {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
-  @Column({ type: 'jsonb', default: { en: '', zh: '' } })
-  summary: { en: string; zh: string };
+  @Column({ type: 'jsonb', default: '' })
+  summary: string;
 
-  @Column({ type: 'jsonb', default: { en: '', zh: '' } })
-  description: { en: string; zh: string };
+  @Column({ type: 'jsonb', default: '' })
+  description: string;
 
   @Column({ type: 'varchar', length: 120, default: '' })
   city: string;

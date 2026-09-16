@@ -139,7 +139,7 @@ export class OrdersService {
           product.stock -= quantity;
           return {
             productId: product.id,
-            productName: product.name.en || product.name.zh,
+            productName: product.name,
             productImage: product.image,
             quantity,
             unitPrice: Number(product.price),

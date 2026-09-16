@@ -49,7 +49,6 @@ export class PublicContentCacheInterceptor implements NestInterceptor {
       'Cache-Control',
       `public, max-age=60, s-maxage=${ttlSeconds}, stale-while-revalidate=600`,
     );
-    response.setHeader('Vary', 'Accept-Language');
 
     return from(this.cache.get<unknown>(key)).pipe(
       mergeMap((cached) => {
@@ -111,8 +110,6 @@ export class PublicContentCacheInterceptor implements NestInterceptor {
   }): string {
     const url = new URL(request.originalUrl, 'http://public-cache');
     url.searchParams.sort();
-    const language = request.headers['accept-language'];
-    const normalizedLanguage = Array.isArray(language) ? language[0] : language ?? 'en';
-    return `${url.pathname}?${url.searchParams.toString()}|lang=${normalizedLanguage}`;
+    return `${url.pathname}?${url.searchParams.toString()}`;
   }
 }

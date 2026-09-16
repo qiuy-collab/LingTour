@@ -146,7 +146,7 @@ export class CommunityService {
         type: 'review',
         title: '新的社区内容待审核',
         body:
-          this.localizedText(saved.title) ||
+          saved.title ||
           `${saved.user} 提交了一篇社区内容。`,
         resourceType: 'community_post',
         resourceId: saved.id,
@@ -411,12 +411,4 @@ export class CommunityService {
     return { deleted: true };
   }
 
-  private localizedText(value: unknown): string {
-    if (typeof value === 'string') return value;
-    if (value && typeof value === 'object') {
-      const localized = value as { zh?: string; en?: string };
-      return localized.zh ?? localized.en ?? '';
-    }
-    return '';
-  }
 }

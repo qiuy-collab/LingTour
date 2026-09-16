@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsInt,
-  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -20,13 +19,13 @@ export class UpsertCommunityBriefDto {
   })
   slug: string;
 
-  @ApiProperty({ type: Object, description: '中英标题，例：{ en, zh }' })
-  @IsObject()
-  title: { en: string; zh: string };
+  @ApiProperty({ description: 'English title' })
+  @IsString()
+  title: string;
 
-  @ApiProperty({ type: Object, description: '中英 prompt 文案' })
-  @IsObject()
-  prompt: { en: string; zh: string };
+  @ApiProperty({ description: 'English prompt copy' })
+  @IsString()
+  prompt: string;
 
   @ApiPropertyOptional({ default: 'Field Notes' })
   @IsOptional()

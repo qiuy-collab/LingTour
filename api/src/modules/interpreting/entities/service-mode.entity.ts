@@ -17,19 +17,19 @@ export class ServiceMode {
   sortOrder: number;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'jsonb' })
-  price: { en: string; zh: string };
+  price: string;
 
   @Column({ type: 'jsonb', name: 'best_for' })
-  bestFor: { en: string; zh: string };
+  bestFor: string;
 
   @Column({ type: 'jsonb' })
-  body: { en: string; zh: string };
+  body: string;
 
   @Column({ type: 'jsonb', default: [] })
-  includes: { en: string; zh: string }[];
+  includes: string[];
 
   @Column({ type: 'varchar', length: 10, default: 'light' })
   accent: string;

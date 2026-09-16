@@ -21,10 +21,10 @@ export class City {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  name: { en: string; zh: string };
+  name: string;
 
   @Column({ type: 'jsonb', name: 'region_label' })
-  regionLabel: { en: string; zh: string };
+  regionLabel: string;
 
   @Column({ type: 'varchar', length: 500, name: 'hero_image' })
   heroImage: string;
@@ -33,13 +33,13 @@ export class City {
   heroMedia: MediaAsset | null;
 
   @Column({ type: 'jsonb', name: 'hero_narrative' })
-  heroNarrative: { en: string; zh: string };
+  heroNarrative: string;
 
   @Column({ type: 'jsonb', default: [] })
-  tags: { en: string; zh: string }[];
+  tags: string[];
 
   @Column({ type: 'jsonb', name: 'editor_intro' })
-  editorIntro: { en: string; zh: string };
+  editorIntro: string;
 
   @Column({ type: 'text', name: 'content_markdown', default: '' })
   contentMarkdown: string;
@@ -51,10 +51,10 @@ export class City {
   galleryMedia: MediaAsset[];
 
   @Column({ type: 'jsonb', name: 'food_title' })
-  foodTitle: { en: string; zh: string };
+  foodTitle: string;
 
   @Column({ type: 'jsonb', name: 'food_description' })
-  foodDescription: { en: string; zh: string };
+  foodDescription: string;
 
   @Column({ type: 'jsonb', name: 'food_images', default: [] })
   foodImages: string[];

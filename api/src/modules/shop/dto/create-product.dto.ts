@@ -13,7 +13,6 @@ import {
   IsObject,
   IsNotEmpty,
 } from 'class-validator';
-import { IsI18nObject } from '../../../common/validators/i18n.validator';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
@@ -25,9 +24,9 @@ export class CreateProductDto {
   @MaxLength(120)
   slug: string;
 
-  @ApiProperty({ example: { en: 'Volcanic Soil Tea Bowl', zh: '火山泥茶杯' } })
-  @IsI18nObject()
-  name: { en: string; zh: string };
+  @ApiProperty({ example: 'Volcanic Soil Tea Bowl' })
+  @IsString()
+  name: string;
 
   @ApiPropertyOptional({ example: 'uuid-of-collection' })
   @IsOptional()
@@ -44,9 +43,9 @@ export class CreateProductDto {
   @IsString()
   currency?: string;
 
-  @ApiProperty({ example: { en: 'Handcrafted', zh: '手工制作' } })
-  @IsI18nObject()
-  tag: { en: string; zh: string };
+  @ApiProperty({ example: 'Handcrafted' })
+  @IsString()
+  tag: string;
 
   @ApiProperty({ example: '/uploads/shop/bowl.jpg' })
   @IsString()
@@ -60,31 +59,29 @@ export class CreateProductDto {
   @Type(() => MediaAssetDto)
   primaryMedia?: MediaAssetDto;
 
-  @ApiProperty({
-    example: { en: 'A bowl fired using clay...', zh: '使用黏土烧制的碗...' },
-  })
-  @IsI18nObject()
-  story: { en: string; zh: string };
+  @ApiProperty({ example: 'A bowl fired using clay...' })
+  @IsString()
+  story: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  material?: { en: string; zh: string };
+  @IsString()
+  material?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  dimensions?: { en: string; zh: string };
+  @IsString()
+  dimensions?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  origin?: { en: string; zh: string };
+  @IsString()
+  origin?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  care?: { en: string; zh: string };
+  @IsString()
+  care?: string;
 
   @ApiPropertyOptional({ type: Object })
   @IsOptional()

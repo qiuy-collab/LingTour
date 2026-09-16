@@ -20,25 +20,25 @@ export class StoryRoute {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'varchar', length: 50, name: 'culture_tag' })
   cultureTag: string;
 
   @Column({ type: 'jsonb', name: 'city_name' })
-  cityName: { en: string; zh: string };
+  cityName: string;
 
   @Column({ type: 'jsonb' })
-  duration: { en: string; zh: string };
+  duration: string;
 
   @Column({ type: 'jsonb' })
-  audience: { en: string; zh: string };
+  audience: string;
 
   @Column({ type: 'jsonb' })
-  summary: { en: string; zh: string };
+  summary: string;
 
   @Column({ type: 'jsonb' })
-  story: { en: string; zh: string };
+  story: string;
 
   @Column({ type: 'varchar', length: 500, name: 'cover_image' })
   coverImage: string;

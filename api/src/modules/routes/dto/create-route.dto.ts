@@ -13,10 +13,6 @@ import {
   IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  IsI18nObject,
-  IsI18nArray,
-} from '../../../common/validators/i18n.validator';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
@@ -37,32 +33,23 @@ export class CreateStopDto {
   @MaxLength(20)
   time: string;
 
-  @ApiProperty({ example: { en: 'Huguangyan Maar Lake', zh: '湖光岩玛珥湖' } })
-  @IsI18nObject()
-  stopName: { en: string; zh: string };
+  @ApiProperty({ example: 'Huguangyan Maar Lake' })
+  @IsString()
+  stopName: string;
 
-  @ApiProperty({
-    example: {
-      en: 'Begin where the land remembers fire...',
-      zh: '从大地记住火的地方开始...',
-    },
-  })
-  @IsI18nObject()
-  story: { en: string; zh: string };
+  @ApiProperty({ example: 'Begin where the land remembers fire...' })
+  @IsString()
+  story: string;
 
-  @ApiProperty({
-    example: {
-      en: 'Huguangyan formed roughly...',
-      zh: '湖光岩形成于约16万年前...',
-    },
-  })
-  @IsI18nObject()
-  culturalStory: { en: string; zh: string };
+  @ApiProperty({ example: 'Huguangyan formed roughly...' })
+  @IsString()
+  culturalStory: string;
 
   @ApiPropertyOptional({ default: [] })
   @IsOptional()
-  @IsI18nArray()
-  details?: { en: string; zh: string }[];
+  @IsArray()
+  @IsString({ each: true })
+  details?: string[];
 
   @ApiProperty({ example: '/uploads/routes/stop-0.jpg' })
   @IsString()
@@ -102,18 +89,18 @@ export class CreateStopDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  meal?: { en: string; zh: string };
+  @IsString()
+  meal?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  hotel?: { en: string; zh: string };
+  @IsString()
+  hotel?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsI18nObject()
-  transit?: { en: string; zh: string };
+  @IsString()
+  transit?: string;
 
   @ApiPropertyOptional({ example: 'A full day exploring the coast...' })
   @IsOptional()
@@ -127,44 +114,34 @@ export class CreateRouteDto {
   @MaxLength(100)
   slug: string;
 
-  @ApiProperty({ example: { en: 'A Southern Sea Table', zh: '南部海宴' } })
-  @IsI18nObject()
-  title: { en: string; zh: string };
+  @ApiProperty({ example: 'A Southern Sea Table' })
+  @IsString()
+  title: string;
 
   @ApiProperty({ example: 'Coastal' })
   @IsString()
   @MaxLength(50)
   cultureTag: string;
 
-  @ApiProperty({ example: { en: 'Zhanjiang', zh: '湛江' } })
-  @IsI18nObject()
-  cityName: { en: string; zh: string };
+  @ApiProperty({ example: 'Zhanjiang' })
+  @IsString()
+  cityName: string;
 
-  @ApiProperty({ example: { en: '1 day', zh: '1 天' } })
-  @IsI18nObject()
-  duration: { en: string; zh: string };
+  @ApiProperty({ example: '1 day' })
+  @IsString()
+  duration: string;
 
-  @ApiProperty({ example: { en: 'Curious travellers', zh: '好奇的旅行者' } })
-  @IsI18nObject()
-  audience: { en: string; zh: string };
+  @ApiProperty({ example: 'Curious travellers' })
+  @IsString()
+  audience: string;
 
-  @ApiProperty({
-    example: {
-      en: 'From a pre-dawn seafood auction...',
-      zh: '从黎明前的海鲜拍卖...',
-    },
-  })
-  @IsI18nObject()
-  summary: { en: string; zh: string };
+  @ApiProperty({ example: 'From a pre-dawn seafood auction...' })
+  @IsString()
+  summary: string;
 
-  @ApiProperty({
-    example: {
-      en: 'Most people meet Guangdong...',
-      zh: '大多数人通过城市认识广东...',
-    },
-  })
-  @IsI18nObject()
-  story: { en: string; zh: string };
+  @ApiProperty({ example: 'Most people meet Guangdong...' })
+  @IsString()
+  story: string;
 
   @ApiProperty({ example: '/uploads/routes/cover.jpg' })
   @IsString()

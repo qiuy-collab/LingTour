@@ -7,7 +7,6 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { IsI18nObject } from '../../../common/validators/i18n.validator';
 import { ContainsOnlyMediaLibraryPaths } from '../../../common/validators/media-library.validator';
 
 class RouteRegionConfigDto {
@@ -16,12 +15,12 @@ class RouteRegionConfigDto {
   key: string;
 
   @ApiPropertyOptional({ type: Object })
-  @IsI18nObject()
-  title: { en: string; zh: string };
+  @IsString()
+  title: string;
 
   @ApiPropertyOptional({ type: Object })
-  @IsI18nObject()
-  note: { en: string; zh: string };
+  @IsString()
+  note: string;
 
   @ApiPropertyOptional({ type: [Number] })
   @IsArray()
@@ -35,9 +34,8 @@ export class UpdateHomeConfigDto {
   @ContainsOnlyMediaLibraryPaths()
   hero?: Record<string, unknown>;
 
-  // @Type(() => Object) is load-bearing on every free-form object array below.
-  // Without it, the global ValidationPipe's enableImplicitConversion turns each
-  // element into [] and the PUT silently wipes the section.
+  // @Type(() => Object) keeps free-form object arrays intact while request
+  // scalar validation remains strict.
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()

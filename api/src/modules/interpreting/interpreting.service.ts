@@ -497,7 +497,7 @@ export class InterpretingService {
     const booking = await this.findBookingByIdAdmin(id);
     const interpreter = await this.findProfileByIdAdmin(interpreterId);
     booking.assignedInterpreterId = interpreter.id;
-    booking.assignedInterpreterName = this.localizedString(interpreter.name);
+    booking.assignedInterpreterName = interpreter.name;
     if (booking.status === 'new' || booking.status === 'pending') {
       booking.status = 'confirmed';
     }
@@ -510,11 +510,11 @@ export class InterpretingService {
   ): Partial<ServiceMode> {
     return {
       sortOrder: data.sortOrder ?? fallback?.sortOrder ?? 0,
-      title: this.i18n(data.title ?? fallback?.title),
-      price: this.i18n(data.price ?? fallback?.price),
-      bestFor: this.i18n(data.bestFor ?? fallback?.bestFor),
-      body: this.i18n(data.body ?? fallback?.body),
-      includes: this.i18nArray(data.includes ?? fallback?.includes ?? []),
+      title: data.title ?? fallback?.title ?? '',
+      price: data.price ?? fallback?.price ?? '',
+      bestFor: data.bestFor ?? fallback?.bestFor ?? '',
+      body: data.body ?? fallback?.body ?? '',
+      includes: data.includes ?? fallback?.includes ?? [],
       accent: data.accent ?? fallback?.accent ?? 'light',
       featured: data.featured ?? fallback?.featured ?? false,
     };
@@ -526,12 +526,12 @@ export class InterpretingService {
   ): Partial<InterpreterProfile> {
     return {
       sortOrder: data.sortOrder ?? fallback?.sortOrder ?? 0,
-      name: this.i18n(data.name ?? fallback?.name),
-      language: this.i18n(data.language ?? fallback?.language),
-      focus: this.i18n(data.focus ?? fallback?.focus),
-      helps: this.i18nArray(data.helps ?? fallback?.helps ?? []),
+      name: data.name ?? fallback?.name ?? '',
+      language: data.language ?? fallback?.language ?? '',
+      focus: data.focus ?? fallback?.focus ?? '',
+      helps: data.helps ?? fallback?.helps ?? [],
       avatar: data.avatar ?? fallback?.avatar ?? '',
-      bio: this.i18n(data.bio ?? fallback?.bio),
+      bio: data.bio ?? fallback?.bio ?? null,
       status: data.status ?? fallback?.status ?? 'pending_review',
       city: data.city ?? fallback?.city ?? '',
     };
@@ -540,8 +540,8 @@ export class InterpretingService {
   private normalizeFaq(data: Partial<Faq>, fallback?: Faq): Partial<Faq> {
     return {
       sortOrder: data.sortOrder ?? fallback?.sortOrder ?? 0,
-      question: this.i18n(data.question ?? fallback?.question),
-      answer: this.i18n(data.answer ?? fallback?.answer),
+      question: data.question ?? fallback?.question ?? '',
+      answer: data.answer ?? fallback?.answer ?? '',
       category: data.category ?? fallback?.category ?? 'interpreting',
     };
   }
@@ -613,27 +613,6 @@ export class InterpretingService {
         .where('id = :id', { id: items[index].id })
         .execute();
     }
-  }
-
-  private i18n(value: any): { en: string; zh: string } {
-    if (typeof value === 'string') return { en: value, zh: value };
-    if (value && typeof value === 'object') {
-      return {
-        en: String(value.en ?? value.zh ?? ''),
-        zh: String(value.zh ?? value.en ?? ''),
-      };
-    }
-    return { en: '', zh: '' };
-  }
-
-  private i18nArray(value: any): { en: string; zh: string }[] {
-    if (!Array.isArray(value)) return [];
-    return value.map((item) => this.i18n(item));
-  }
-
-  private localizedString(value: any): string {
-    if (typeof value === 'string') return value;
-    return value?.zh ?? value?.en ?? '';
   }
 
   private calculateDepositAmount(dto: CreateBookingDto): number {

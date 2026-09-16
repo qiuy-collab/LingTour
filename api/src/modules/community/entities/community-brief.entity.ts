@@ -28,10 +28,10 @@ export class CommunityBrief {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'jsonb' })
-  prompt: { en: string; zh: string };
+  prompt: string;
 
   /** 关联到哪个 channel（Field Notes / Food Map / Hidden Stop / Culture Desk） */
   @Column({ type: 'varchar', length: 80, default: 'Field Notes' })

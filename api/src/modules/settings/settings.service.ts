@@ -24,6 +24,8 @@ export class SettingsService {
     settings.payload = {
       ...settings.payload,
       ...payload,
+      languages: ['en'],
+      defaultLocale: 'en',
     };
     return this.settingsRepo.save(settings);
   }
@@ -38,6 +40,8 @@ export class SettingsService {
         payload: {
           seoTitle: 'Culvoy',
           seoDescription: 'Culvoy public site settings',
+          languages: ['en'],
+          defaultLocale: 'en',
           enableMarkdownEditor: true,
           pageTitleFontSize: 20,
           sectionTitleFontSize: 15,

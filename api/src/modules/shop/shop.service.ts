@@ -100,7 +100,7 @@ export class ShopService {
       qb.andWhere('collection.slug = :collection', { collection });
     }
     if (tag) {
-      qb.andWhere("p.tag->>'en' ILIKE :tag OR p.tag->>'zh' ILIKE :tag", {
+      qb.andWhere("p.tag #>> '{}' ILIKE :tag", {
         tag: `%${tag}%`,
       });
     }
@@ -114,8 +114,7 @@ export class ShopService {
     // Get distinct tags & collections for filters
     const allTags = await this.productRepo
       .createQueryBuilder('p')
-      .select("p.tag->>'en'", 'tag_en')
-      .addSelect("p.tag->>'zh'", 'tag_zh')
+      .select("p.tag #>> '{}'", 'tag')
       .distinct(true)
       .where('p.published = :published', { published: true })
       .getRawMany();
@@ -134,7 +133,7 @@ export class ShopService {
       pageSize: +limit,
       filters: {
         collections: allCollections.map((c) => c.slug),
-        tags: allTags.map((t) => [t.tag_en, t.tag_zh]).flat(),
+        tags: allTags.map((t) => t.tag).filter(Boolean),
       },
     };
   }

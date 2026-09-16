@@ -343,15 +343,12 @@ export class UsersService {
   }
 
   private normalizeLatestDispatchTitle(
-    title: Record<string, string> | string | null,
+    title: unknown,
   ) {
     if (!title) {
       return null;
     }
-    if (typeof title === 'string') {
-      return title;
-    }
-    return title.en ?? title.zh ?? null;
+    return typeof title === 'string' ? title : null;
   }
 
   private async loadManagedUserStats(users: User[]) {

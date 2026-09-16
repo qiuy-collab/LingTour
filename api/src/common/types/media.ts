@@ -6,7 +6,7 @@ export interface MediaAsset {
   type: MediaType;
   url: string;
   poster?: string;
-  alt?: { en: string; zh: string };
+  alt?: string;
 }
 
 export function isMediaAsset(value: unknown): value is MediaAsset {

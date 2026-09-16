@@ -22,7 +22,7 @@ export class StoreProduct {
   slug: string;
 
   @Column({ type: 'jsonb' })
-  name: { en: string; zh: string };
+  name: string;
 
   @Index()
   @Column({ type: 'uuid', name: 'collection_id', nullable: true })
@@ -39,7 +39,7 @@ export class StoreProduct {
   currency: string;
 
   @Column({ type: 'jsonb' })
-  tag: { en: string; zh: string };
+  tag: string;
 
   @Column({ type: 'varchar', length: 500 })
   image: string;
@@ -48,19 +48,19 @@ export class StoreProduct {
   primaryMedia: MediaAsset | null;
 
   @Column({ type: 'jsonb' })
-  story: { en: string; zh: string };
+  story: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  material: { en: string; zh: string } | null;
+  material: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  dimensions: { en: string; zh: string } | null;
+  dimensions: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  origin: { en: string; zh: string } | null;
+  origin: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  care: { en: string; zh: string } | null;
+  care: string | null;
 
   @Column({ type: 'jsonb', name: 'origin_trace', nullable: true })
   originTrace: Record<string, unknown> | null;

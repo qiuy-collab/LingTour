@@ -6,7 +6,6 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { IsI18nObject } from '../validators/i18n.validator';
 import { IsMediaLibraryPath } from '../validators/media-library.validator';
 import { MEDIA_TYPES, type MediaAsset, type MediaType } from '../types/media';
 
@@ -29,8 +28,8 @@ export class MediaAssetDto implements MediaAsset {
   @MaxLength(2000)
   poster?: string;
 
-  @ApiPropertyOptional({ example: { en: 'Temple arrival', zh: '抵达古寺' } })
+  @ApiPropertyOptional({ example: 'Temple arrival' })
   @IsOptional()
-  @IsI18nObject()
-  alt?: { en: string; zh: string };
+  @IsString()
+  alt?: string;
 }

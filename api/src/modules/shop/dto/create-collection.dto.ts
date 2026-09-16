@@ -8,7 +8,6 @@ import {
   MaxLength,
   IsNotEmpty,
 } from 'class-validator';
-import { IsI18nObject } from '../../../common/validators/i18n.validator';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateCollectionDto {
@@ -17,9 +16,9 @@ export class CreateCollectionDto {
   @MaxLength(100)
   slug: string;
 
-  @ApiProperty({ example: { en: 'Coastal Life Kit', zh: '海岸生活套装' } })
-  @IsI18nObject()
-  title: { en: string; zh: string };
+  @ApiProperty({ example: 'Coastal Life Kit' })
+  @IsString()
+  title: string;
 
   @ApiProperty({ example: 'A Southern Sea Table' })
   @IsString()
@@ -38,14 +37,9 @@ export class CreateCollectionDto {
   @IsMediaLibraryPath()
   image: string;
 
-  @ApiProperty({
-    example: {
-      en: 'Curated objects from the Zhanjiang coast...',
-      zh: '来自湛江海岸的精选物品...',
-    },
-  })
-  @IsI18nObject()
-  body: { en: string; zh: string };
+  @ApiProperty({ example: 'Curated objects from the Zhanjiang coast...' })
+  @IsString()
+  body: string;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()

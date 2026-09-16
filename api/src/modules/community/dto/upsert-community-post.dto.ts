@@ -47,13 +47,13 @@ export class UpsertCommunityPostDto {
   @MaxLength(255)
   userEmail?: string;
 
-  @ApiProperty({ type: Object })
-  @IsObject()
-  title: { en: string; zh: string };
+  @ApiProperty()
+  @IsString()
+  title: string;
 
-  @ApiProperty({ type: Object })
-  @IsObject()
-  excerpt: { en: string; zh: string };
+  @ApiProperty()
+  @IsString()
+  excerpt: string;
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()

@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
-import { IsI18nObject } from '../../../common/validators/i18n.validator';
 
 export class CreateFaqDto {
   @ApiProperty({ example: 0 })
@@ -9,19 +8,18 @@ export class CreateFaqDto {
   sortOrder: number;
 
   @ApiProperty({
-    example: { en: 'Is this a tour guide service?', zh: '这是导览服务吗？' },
+    example: 'Is this a tour guide service?',
   })
-  @IsI18nObject()
-  question: { en: string; zh: string };
+  @IsString()
+  question: string;
 
   @ApiProperty({
     example: {
       en: 'It is designed as cultural interpreting...',
-      zh: '它更接近文化解读与陪伴支持。',
     },
   })
-  @IsI18nObject()
-  answer: { en: string; zh: string };
+  @IsString()
+  answer: string;
 
   @ApiPropertyOptional({ default: 'interpreting' })
   @IsOptional()

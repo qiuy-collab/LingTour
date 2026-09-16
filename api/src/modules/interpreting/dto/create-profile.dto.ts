@@ -1,9 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import {
-  IsI18nObject,
-  IsI18nArray,
-} from '../../../common/validators/i18n.validator';
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  IsArray,
+} from 'class-validator';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
 export class CreateProfileDto {
@@ -12,25 +15,26 @@ export class CreateProfileDto {
   @Min(0)
   sortOrder: number;
 
-  @ApiProperty({ example: { en: 'Culture Route Lead', zh: '文化路线领队' } })
-  @IsI18nObject()
-  name: { en: string; zh: string };
+  @ApiProperty({ example: 'Culture Route Lead' })
+  @IsString()
+  name: string;
 
   @ApiProperty({
-    example: { en: 'English / Mandarin / Cantonese', zh: '英语/普通话/粤语' },
+    example: 'English / Mandarin / Cantonese',
   })
-  @IsI18nObject()
-  language: { en: string; zh: string };
+  @IsString()
+  language: string;
 
   @ApiProperty({
-    example: { en: 'Guangdong city history...', zh: '广东城市历史...' },
+    example: 'Guangdong city history...',
   })
-  @IsI18nObject()
-  focus: { en: string; zh: string };
+  @IsString()
+  focus: string;
 
   @ApiProperty({ default: [] })
-  @IsI18nArray()
-  helps: { en: string; zh: string }[];
+  @IsArray()
+  @IsString({ each: true })
+  helps: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -39,10 +43,10 @@ export class CreateProfileDto {
   @MaxLength(500)
   avatar?: string;
 
-  @ApiPropertyOptional({ example: { en: 'Bio', zh: '简介' } })
+  @ApiPropertyOptional({ example: 'Bio' })
   @IsOptional()
-  @IsI18nObject()
-  bio?: { en: string; zh: string };
+  @IsString()
+  bio?: string;
 
   @ApiPropertyOptional({ default: 'pending_review' })
   @IsOptional()

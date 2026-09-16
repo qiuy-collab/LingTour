@@ -125,7 +125,7 @@ export class CitiesService {
             name: Raw(
               (alias) => {
                 const column = alias.split('.').map((part) => `"${part}"`).join('.');
-                return `(${column}->>'en' ILIKE :q OR ${column}->>'zh' ILIKE :q)`;
+                return `(${column} #>> '{}' ILIKE :q)`;
               },
               { q: pattern },
             ),
@@ -187,17 +187,17 @@ export class CitiesService {
     try {
       const city = queryRunner.manager.create(City, {
         slug: dto.slug,
-        name: this.normalizeI18nObject(dto.name),
-        regionLabel: this.normalizeI18nObject(dto.regionLabel),
+        name: dto.name,
+        regionLabel: dto.regionLabel ?? '',
         heroImage: dto.heroImage ?? '',
         heroMedia: dto.heroMedia ?? null,
-        heroNarrative: this.normalizeI18nObject(dto.heroNarrative),
-        tags: this.normalizeI18nArray(dto.tags),
-        editorIntro: this.normalizeI18nObject(dto.editorIntro),
+        heroNarrative: dto.heroNarrative ?? '',
+        tags: dto.tags ?? [],
+        editorIntro: dto.editorIntro ?? '',
         galleryImages: dto.galleryImages ?? [],
         galleryMedia: dto.galleryMedia ?? [],
-        foodTitle: this.normalizeI18nObject(dto.foodTitle),
-        foodDescription: this.normalizeI18nObject(dto.foodDescription),
+        foodTitle: dto.foodTitle ?? '',
+        foodDescription: dto.foodDescription ?? '',
         foodImages: dto.foodImages ?? [],
         relatedCitySlugs: dto.relatedCitySlugs ?? [],
         adcode: dto.adcode,
@@ -212,21 +212,21 @@ export class CitiesService {
         const sections = dto.sections.map((s, i) =>
           queryRunner.manager.create(CityCultureSection, {
             cityId: saved.id,
-            title: this.normalizeI18nObject(s.title),
-            body: this.normalizeI18nObject(s.body),
+            title: s.title,
+            body: s.body,
             image: s.image,
             primaryMedia: s.primaryMedia ?? null,
             images: s.images ?? [],
             media: s.media ?? [],
             statLabel: s.statLabel
-              ? this.normalizeI18nObject(s.statLabel)
+              ? s.statLabel
               : null,
             statValue: s.statValue
-              ? this.normalizeI18nObject(s.statValue)
+              ? s.statValue
               : null,
             breathImage: s.breathImage ?? null,
             breathQuote: s.breathQuote
-              ? this.normalizeI18nObject(s.breathQuote)
+              ? s.breathQuote
               : null,
             sortOrder: s.sortOrder ?? i,
           }),
@@ -260,10 +260,7 @@ export class CitiesService {
       routeSlugs: _routeSlugsFromDto,
       ...scalarUpdates
     } = dto;
-    const normalizedScalarUpdates = this.normalizeCityScalarUpdates(
-      scalarUpdates,
-      city,
-    );
+    const normalizedScalarUpdates = this.normalizeCityScalarUpdates(scalarUpdates);
     const contentMarkdown =
       dto.contentMarkdown === undefined
         ? city.contentMarkdown
@@ -315,21 +312,21 @@ export class CitiesService {
           const sections = dto.sections.map((s, i) =>
             queryRunner.manager.create(CityCultureSection, {
               cityId: id,
-              title: this.normalizeI18nObject(s.title),
-              body: this.normalizeI18nObject(s.body),
+              title: s.title,
+              body: s.body,
               image: s.image,
               primaryMedia: s.primaryMedia ?? null,
               images: s.images ?? [],
               media: s.media ?? [],
               statLabel: s.statLabel
-                ? this.normalizeI18nObject(s.statLabel)
+                ? s.statLabel
                 : null,
               statValue: s.statValue
-                ? this.normalizeI18nObject(s.statValue)
+                ? s.statValue
                 : null,
               breathImage: s.breathImage ?? null,
               breathQuote: s.breathQuote
-                ? this.normalizeI18nObject(s.breathQuote)
+                ? s.breathQuote
                 : null,
               sortOrder: s.sortOrder ?? i,
             }),
@@ -419,11 +416,11 @@ export class CitiesService {
   }
 
   private validatePublication(
-    name: { en?: string } | undefined,
+    name: string | undefined,
     content: unknown,
   ): void {
     this.validateMarkdown(content);
-    if (typeof name?.en !== 'string' || !name.en.trim() || !content.trim()) {
+    if (!name?.trim() || !content.trim()) {
       throw new BadRequestException(
         'Publishing requires a nonblank English name and contentMarkdown',
       );
@@ -432,7 +429,6 @@ export class CitiesService {
 
   private normalizeCityScalarUpdates(
     scalarUpdates: Partial<CreateCityDto>,
-    city: City,
   ): Partial<City> {
     const updates: Partial<City> = {};
     const textKeys = [
@@ -445,10 +441,7 @@ export class CitiesService {
     ] as const;
     for (const key of textKeys) {
       if (scalarUpdates[key] !== undefined) {
-        updates[key] = this.normalizeI18nObject({
-          ...city[key],
-          ...scalarUpdates[key],
-        });
+        updates[key] = scalarUpdates[key] as never;
       }
     }
     const otherKeys = [
@@ -469,34 +462,8 @@ export class CitiesService {
       }
     }
     if (scalarUpdates.tags !== undefined) {
-      updates.tags = this.normalizeI18nArray(scalarUpdates.tags);
+      updates.tags = scalarUpdates.tags;
     }
     return updates;
-  }
-
-  private normalizeI18nArray(
-    value: Array<{ en: string; zh: string }> | undefined,
-  ): Array<{ en: string; zh: string }> {
-    if (!Array.isArray(value)) return [];
-    return value.map((item) => this.normalizeI18nObject(item));
-  }
-
-  private normalizeI18nObject(value: any): { en: string; zh: string } {
-    const arrayLikeValue = value as Array<any> & {
-      en?: unknown;
-      zh?: unknown;
-    };
-    const source =
-      Array.isArray(value) && value !== null
-        ? {
-            en: arrayLikeValue.en,
-            zh: arrayLikeValue.zh,
-          }
-        : (value ?? {});
-
-    return {
-      en: typeof source.en === 'string' ? source.en : '',
-      zh: typeof source.zh === 'string' ? source.zh : '',
-    };
   }
 }

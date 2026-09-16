@@ -25,10 +25,10 @@ export class CityCultureSection {
   city: City;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'jsonb' })
-  body: { en: string; zh: string };
+  body: string;
 
   @Column({ type: 'varchar', length: 500 })
   image: string;
@@ -43,10 +43,10 @@ export class CityCultureSection {
   media: MediaAsset[];
 
   @Column({ type: 'jsonb', name: 'stat_label', nullable: true })
-  statLabel: { en: string; zh: string } | null;
+  statLabel: string | null;
 
   @Column({ type: 'jsonb', name: 'stat_value', nullable: true })
-  statValue: { en: string; zh: string } | null;
+  statValue: string | null;
 
   @Column({
     type: 'varchar',
@@ -57,7 +57,7 @@ export class CityCultureSection {
   breathImage: string | null;
 
   @Column({ type: 'jsonb', name: 'breath_quote', nullable: true })
-  breathQuote: { en: string; zh: string } | null;
+  breathQuote: string | null;
 
   @Column({ type: 'int', name: 'sort_order', default: 0 })
   sortOrder: number;

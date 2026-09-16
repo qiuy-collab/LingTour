@@ -47,10 +47,10 @@ export class CommunityPost {
   userEmail: string;
 
   @Column({ type: 'jsonb' })
-  title: { en: string; zh: string };
+  title: string;
 
   @Column({ type: 'jsonb' })
-  excerpt: { en: string; zh: string };
+  excerpt: string;
 
   @Column({ type: 'jsonb', default: [] })
   tags: string[];

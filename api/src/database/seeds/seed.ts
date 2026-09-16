@@ -9,8 +9,22 @@ import {
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
-// Helper: JSON shorthand
-const j = JSON.stringify;
+// Seed data follows the production English-only content contract. The second
+// legacy language key is ignored when old fixtures are still present below.
+function englishContent(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(englishContent);
+  if (!value || typeof value !== 'object') return value;
+  const record = value as Record<string, unknown>;
+  if (typeof record.en === 'string') return record.en;
+  if (typeof record.EN === 'string') return record.EN;
+  return Object.fromEntries(
+    Object.entries(record)
+      .filter(([key]) => key !== 'zh' && key !== 'ZH')
+      .map(([key, item]) => [key, englishContent(item)]),
+  );
+}
+
+const j = (value: unknown) => JSON.stringify(englishContent(value));
 
 async function seed() {
   const dataSource = new DataSource({

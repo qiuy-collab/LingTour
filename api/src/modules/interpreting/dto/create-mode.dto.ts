@@ -1,9 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsBoolean, IsOptional, Min, IsIn } from 'class-validator';
 import {
-  IsI18nObject,
-  IsI18nArray,
-} from '../../../common/validators/i18n.validator';
+  IsInt,
+  IsBoolean,
+  IsOptional,
+  Min,
+  IsIn,
+  IsString,
+  IsArray,
+} from 'class-validator';
 
 export class CreateModeDto {
   @ApiProperty({ example: 0 })
@@ -12,33 +16,34 @@ export class CreateModeDto {
   sortOrder: number;
 
   @ApiProperty({
-    example: { en: 'City companion interpreting', zh: '城市同行口译' },
+    example: 'City companion interpreting',
   })
-  @IsI18nObject()
-  title: { en: string; zh: string };
+  @IsString()
+  title: string;
 
   @ApiProperty({
-    example: { en: 'From RMB 680 / half day', zh: '半天 RMB 680 起' },
+    example: 'From RMB 680 / half day',
   })
-  @IsI18nObject()
-  price: { en: string; zh: string };
+  @IsString()
+  price: string;
 
   @ApiProperty({
-    example: { en: 'Best for independent visitors', zh: '适合独立游客' },
+    example: 'Best for independent visitors',
   })
-  @IsI18nObject()
-  bestFor: { en: string; zh: string };
+  @IsString()
+  bestFor: string;
 
   @ApiProperty({
-    example: { en: 'For travelers who want...', zh: '需要英语支持的旅客...' },
+    example: 'For travelers who want...',
   })
-  @IsI18nObject()
-  body: { en: string; zh: string };
+  @IsString()
+  body: string;
 
   @ApiPropertyOptional({ default: [] })
   @IsOptional()
-  @IsI18nArray()
-  includes?: { en: string; zh: string }[];
+  @IsArray()
+  @IsString({ each: true })
+  includes?: string[];
 
   @ApiPropertyOptional({ default: 'light', enum: ['light', 'dark'] })
   @IsOptional()

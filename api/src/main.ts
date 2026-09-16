@@ -107,7 +107,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
+        // Keep request types strict. Content fields are English strings and
+        // must not coerce legacy objects or numbers into text.
+        enableImplicitConversion: false,
       },
     }),
   );

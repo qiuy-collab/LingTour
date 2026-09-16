@@ -129,7 +129,7 @@ export class DashboardService {
     try {
       const rows = await this.dataSource.query(`
         SELECT
-          c.name->>'en' AS city,
+          c.name #>> '{}' AS city,
           c.slug AS "citySlug",
           COUNT(rcl.route_id)::int AS "routeCount"
         FROM cities c
@@ -146,7 +146,7 @@ export class DashboardService {
           b.city,
           COUNT(*)::int AS count
         FROM booking_submissions b
-        INNER JOIN cities c ON c.name->>'en' = b.city
+        INNER JOIN cities c ON c.name #>> '{}' = b.city
         WHERE b.city IS NOT NULL
         GROUP BY b.city, c.slug
       `);

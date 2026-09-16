@@ -6,26 +6,26 @@ const pipe = new ValidationPipe({
   whitelist: true,
   forbidNonWhitelisted: true,
   transform: true,
-  transformOptions: { enableImplicitConversion: true },
+  transformOptions: { enableImplicitConversion: false },
 });
 
 describe('City Markdown DTO validation', () => {
   it('accepts a fresh empty English-only draft without legacy fields', async () => {
     const dto = await pipe.transform(
-      { slug: 'new-city', name: { en: '' }, contentMarkdown: '' },
+      { slug: 'new-city', name: '', contentMarkdown: '' },
       { type: 'body', metatype: CreateCityDto },
     );
-    expect(dto.name).toEqual({ en: '' });
+    expect(dto.name).toBe('');
     expect(dto.contentMarkdown).toBe('');
   });
 
   it('keeps partial scalar translations and Markdown verbatim', async () => {
     const contentMarkdown = '# Heading\n\n![Image](/uploads/image.jpg)\n';
     const dto = await pipe.transform(
-      { name: { en: 'City' }, contentMarkdown },
+      { name: 'City', contentMarkdown },
       { type: 'body', metatype: UpdateCityDto },
     );
-    expect(dto).toEqual({ name: { en: 'City' }, contentMarkdown });
+    expect(dto).toEqual(expect.objectContaining({ name: 'City', contentMarkdown }));
   });
 
   it.each([CreateCityDto, UpdateCityDto])(
@@ -34,7 +34,7 @@ describe('City Markdown DTO validation', () => {
       for (const contentMarkdown of [null, 42, {}, [], 'x'.repeat(200001)]) {
         await expect(
           pipe.transform(
-            { slug: 'city', name: { en: 'City' }, contentMarkdown },
+            { slug: 'city', name: 'City', contentMarkdown },
             { type: 'body', metatype },
           ),
         ).rejects.toThrow();
@@ -58,12 +58,7 @@ describe('City Markdown DTO validation', () => {
   });
 
   it('rejects null or malformed city scalar metadata rather than erasing translations', async () => {
-    for (const name of [
-      null,
-      { zh: '中文' },
-      { en: 42 },
-      { en: 'City', zh: null },
-    ]) {
+    for (const name of [null, 42, {}, []]) {
       await expect(
         pipe.transform({ name }, { type: 'body', metatype: UpdateCityDto }),
       ).rejects.toThrow();

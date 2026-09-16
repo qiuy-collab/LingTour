@@ -6,7 +6,7 @@ describe('CreateEventDto status', () => {
     for (const status of ['draft', 'upcoming', 'ongoing', 'past']) {
       const dto = Object.assign(new CreateEventDto(), {
         slug: 'sample-event',
-        title: { en: 'Sample', zh: '示例' },
+        title: 'Sample',
         date: '2026-09-16',
         status,
       });
@@ -17,7 +17,7 @@ describe('CreateEventDto status', () => {
   it('rejects arbitrary statuses', async () => {
     const dto = Object.assign(new CreateEventDto(), {
       slug: 'sample-event',
-      title: { en: 'Sample', zh: '示例' },
+      title: 'Sample',
       date: '2026-09-16',
       status: 'broken',
     });

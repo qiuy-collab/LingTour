@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, ValidateNested, IsInt, Min } from 'class-validator';
+import { IsArray, ValidateNested, IsInt, Min, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsI18nObject } from '../../../common/validators/i18n.validator';
 
 export class FaqItemDto {
   @ApiProperty({ example: 0 })
@@ -10,19 +9,18 @@ export class FaqItemDto {
   sortOrder: number;
 
   @ApiProperty({
-    example: { en: 'Is this a tour guide service?', zh: '这是导游服务吗？' },
+    example: 'Is this a tour guide service?',
   })
-  @IsI18nObject()
-  question: { en: string; zh: string };
+  @IsString()
+  question: string;
 
   @ApiProperty({
     example: {
       en: 'It is designed as cultural interpreting...',
-      zh: '它被设计为文化口译...',
     },
   })
-  @IsI18nObject()
-  answer: { en: string; zh: string };
+  @IsString()
+  answer: string;
 }
 
 export class SetFaqsDto {

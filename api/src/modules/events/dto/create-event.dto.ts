@@ -2,7 +2,6 @@
 import {
   IsArray,
   IsDateString,
-  IsObject,
   IsOptional,
   IsIn,
   IsString,
@@ -13,15 +12,9 @@ import { EVENT_STATUSES } from '../entities/event.entity';
 
 export class CreateEventDto {
   @ApiProperty() @IsString() @MaxLength(120) slug: string;
-  @ApiProperty({ type: Object }) @IsObject() title: { en: string; zh: string };
-  @ApiPropertyOptional({ type: Object }) @IsOptional() @IsObject() summary?: {
-    en: string;
-    zh: string;
-  };
-  @ApiPropertyOptional({ type: Object })
-  @IsOptional()
-  @IsObject()
-  description?: { en: string; zh: string };
+  @ApiProperty() @IsString() title: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() summary?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() city?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() citySlug?: string;
   @ApiProperty() @IsDateString() date: string;

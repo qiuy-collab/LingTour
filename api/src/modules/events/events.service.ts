@@ -85,8 +85,8 @@ export class EventsService {
     return this.repo.save(
       this.repo.create({
         ...dto,
-        summary: dto.summary ?? { en: '', zh: '' },
-        description: dto.description ?? { en: '', zh: '' },
+        summary: dto.summary ?? '',
+        description: dto.description ?? '',
         city: dto.city ?? '',
         citySlug: dto.citySlug ?? '',
         endDate: dto.endDate ?? null,

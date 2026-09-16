@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, ValidateNested, IsInt, Min } from 'class-validator';
+import { IsArray, ValidateNested, IsInt, Min, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  IsI18nObject,
-  IsI18nArray,
-} from '../../../common/validators/i18n.validator';
 
 export class ProfileItemDto {
   @ApiProperty({ example: 0 })
@@ -12,28 +8,28 @@ export class ProfileItemDto {
   @Min(0)
   sortOrder: number;
 
-  @ApiProperty({ example: { en: 'Culture Route Lead', zh: '文化路线领队' } })
-  @IsI18nObject()
-  name: { en: string; zh: string };
+  @ApiProperty({ example: 'Culture Route Lead' })
+  @IsString()
+  name: string;
 
   @ApiProperty({
     example: {
       en: 'English / Mandarin / Cantonese support',
-      zh: '英语/普通话/粤语支持',
     },
   })
-  @IsI18nObject()
-  language: { en: string; zh: string };
+  @IsString()
+  language: string;
 
   @ApiProperty({
-    example: { en: 'Guangdong city history...', zh: '广东城市历史...' },
+    example: 'Guangdong city history...',
   })
-  @IsI18nObject()
-  focus: { en: string; zh: string };
+  @IsString()
+  focus: string;
 
   @ApiProperty({ default: [] })
-  @IsI18nArray()
-  helps: { en: string; zh: string }[];
+  @IsArray()
+  @IsString({ each: true })
+  helps: string[];
 }
 
 export class SetProfilesDto {
