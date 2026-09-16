@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Root production and root `origin/main`: `d52162b` before the final documentation sync deployment.
+- Production deployed application commit: `002708a`; root `origin/main` contains this release plus the documentation-only follow-up.
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-16 deployment.
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD before the final documentation sync deployment: `d52162b` (2026-09-16, English-only content rollout)
+- Local HEAD: the English-only production rollout plus its documentation-only follow-up.
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -67,7 +67,7 @@ No protected uncommitted source changes remain in either repository. The remaini
 
 - Functional commits: root `0a94b70` (API and migration), root `6a7e0f8` (site and shared contract), root `1f53eaa` (admin mirror); independent admin `38475be`.
 - Local validation passed: API tsc, 22 suites/98 tests/build; site tsc, 18 suites/101 tests/build; admin build; 390px browser smoke for site and admin login.
-- Production backup `/root/backups/lingtour-db-pre-english-only-20260916.dump` (144856 bytes), read-only status (28 applied before deployment), deployment run `35063493183`, and post-deploy smoke all passed. The final documentation sync deployment remains to be recorded after its run.
+- Production backup `/root/backups/lingtour-db-pre-english-only-20260916.dump` (144856 bytes), read-only status (28 applied before deployment), deployment runs `35063493183` and `35064138513`, and post-deploy smoke all passed.
 
 ## 4. Verification matrix
 
@@ -131,8 +131,7 @@ Recovery incidents:
 
 ## 6. Deployment queue
 
-1. Record the final documentation sync deployment SHA and run.
-2. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
+1. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 

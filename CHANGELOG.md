@@ -15,7 +15,7 @@
 - platform: 下线业务内容多语言兼容，新增 `EnglishOnlyContent1762300000000` 迁移，将现有 JSONB 内容递归收敛为 English 值并移除 `zh/ZH`。
 - api/site/admin: 内容 DTO、实体、预览、缓存键和编辑表单统一为英文单值；后台不再发送 `rawI18n` 或保留旧中文字段。独立 admin 仓库对应提交为 `38475be`。
 
-部署：`Deploy LingTour Docker Stack` run `35063493183`；服务器 root `d52162b`；生产迁移总数 29。
+部署：`Deploy LingTour Docker Stack` run `35063493183`（功能部署）及 `35064138513`（最终文档同步）；服务器 root `002708a`；生产迁移总数 29。
 部署前数据库备份：`/root/backups/lingtour-db-pre-english-only-20260916.dump`（144856 bytes）。
 
 验证：API/site/admin 容器健康；公网 site、admin、API health 返回 200；公开城市、路线、商品、系列、口译字段均为字符串；业务 JSON `zh` 键抽查为 0；390px 浏览器无横向溢出。
