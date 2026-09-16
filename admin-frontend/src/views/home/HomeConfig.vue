@@ -7,14 +7,14 @@ import { routesApi } from '@/api/routes'
 import { citiesApi } from '@/api/cities'
 import type { HomeConfig, HomeConfigBlock } from '@/types/home'
 import { HomeConfigBlockLabels } from '@/types/home'
-import { pickI18n, toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
-import I18nInput from '@/components/I18nInput.vue'
+import ContentInput from '@/components/ContentInput.vue'
 import {
   DEFAULT_ROUTE_REGIONS,
   GUANGDONG_ADCODE_OPTIONS,
@@ -30,17 +30,17 @@ const activeBlock = ref<HomeConfigBlock>('routeRegions')
 const config = reactive<HomeConfig>({
   hero: {
     image: '',
-    caption: { zh: '', en: '' },
+    caption: '',
     ctaImage: '',
     interpretingImage: '',
-    interpretingLabel: { zh: '', en: '' },
+    interpretingLabel: '',
     badgeValue: '',
-    badgeLabel: { zh: '', en: '' },
+    badgeLabel: '',
     video: {
       url: '',
       poster: '',
-      title: { zh: '', en: '' },
-      description: { zh: '', en: '' },
+      title: '',
+      description: '',
       duration: '',
       resolution: '',
     },
@@ -53,8 +53,8 @@ const config = reactive<HomeConfig>({
   testimonials: [],
   routeRegions: DEFAULT_ROUTE_REGIONS.map((item) => ({
     ...item,
-    title: toI18n(item.title),
-    note: toI18n(item.note),
+    title: readContentValue(item.title),
+    note: readContentValue(item.note),
   })),
 })
 
@@ -70,8 +70,8 @@ const workspaceTabs = computed<EditorWorkspaceTab[]>(() =>
 function createDefaultRouteRegions() {
   return DEFAULT_ROUTE_REGIONS.map((item) => ({
     ...item,
-    title: toI18n(item.title),
-    note: toI18n(item.note),
+    title: readContentValue(item.title),
+    note: readContentValue(item.note),
     adcodes: [...item.adcodes],
   }))
 }
@@ -81,8 +81,8 @@ function normalizeRouteRegions() {
     const currentRegion = config.routeRegions[index]
     return {
       key: currentRegion?.key?.trim() || defaultRegion.key,
-      title: toI18n(currentRegion?.title || defaultRegion.title),
-      note: toI18n(currentRegion?.note || defaultRegion.note),
+      title: readContentValue(currentRegion?.title || defaultRegion.title),
+      note: readContentValue(currentRegion?.note || defaultRegion.note),
       adcodes: Array.isArray(currentRegion?.adcodes)
         ? [...currentRegion.adcodes]
         : [...defaultRegion.adcodes],
@@ -117,12 +117,12 @@ onMounted(async () => {
 
     routeOptions.value = (routeRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      title: pickI18n(item.title) || item.slug,
+      title: readContentValue(item.title) || item.slug,
     }))
 
     cityOptions.value = (cityRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      name: pickI18n(item.name) || item.slug,
+      name: readContentValue(item.name) || item.slug,
     }))
 
     Object.assign(config, homeRes.data.data)
@@ -139,17 +139,17 @@ onMounted(async () => {
 })
 
 function addHeroStat() {
-  config.heroStats.push({ title: { zh: '', en: '' }, description: { zh: '', en: '' } })
+  config.heroStats.push({ title: '', description: '' })
 }
 
 function addTrustMetric() {
-  config.trustMetrics.push({ value: '', label: { zh: '', en: '' } })
+  config.trustMetrics.push({ value: '', label: '' })
 }
 
 function addEntryCard() {
   config.entryCards.push({
-    title: { zh: '', en: '' },
-    description: { zh: '', en: '' },
+    title: '',
+    description: '',
     image: '',
     link: '',
   })
@@ -157,8 +157,8 @@ function addEntryCard() {
 
 function addCultureHighlight() {
   config.cultureHighlights.push({
-    title: { zh: '', en: '' },
-    description: { zh: '', en: '' },
+    title: '',
+    description: '',
     image: '',
     citySlug: '',
   })
@@ -166,8 +166,8 @@ function addCultureHighlight() {
 
 function addTestimonial() {
   config.testimonials.push({
-    quote: { zh: '', en: '' },
-    author: { zh: '', en: '' },
+    quote: '',
+    author: '',
     avatar: '',
   })
 }
@@ -175,15 +175,15 @@ function addTestimonial() {
 function addRouteRegion() {
   config.routeRegions.push({
     key: `region-${Date.now()}`,
-    title: { zh: '', en: '' },
-    note: { zh: '', en: '' },
+    title: '',
+    note: '',
     adcodes: [],
   })
 }
 
 async function handleSave() {
   const hasEmptyHeroTitle = config.heroStats.some(
-    (item) => !item.title?.zh?.trim() && !item.title?.en?.trim(),
+    (item) => !item.title?.trim(),
   )
   if (hasEmptyHeroTitle) {
     ElMessage.warning('首屏统计卡片必须填写标题后才能保存。')
@@ -265,12 +265,12 @@ async function handleSave() {
             </el-col>
           </el-row>
           <el-form-item label="首屏说明">
-            <I18nInput v-model="config.hero.caption" />
+            <ContentInput v-model="config.hero.caption" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="口译入口标题">
-                <I18nInput v-model="config.hero.interpretingLabel" />
+                <ContentInput v-model="config.hero.interpretingLabel" />
               </el-form-item>
             </el-col>
             <el-col :span="4">
@@ -280,7 +280,7 @@ async function handleSave() {
             </el-col>
             <el-col :span="8">
               <el-form-item label="徽标说明">
-                <I18nInput v-model="config.hero.badgeLabel" />
+                <ContentInput v-model="config.hero.badgeLabel" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -299,10 +299,10 @@ async function handleSave() {
             <div class="field-hint">访客播放视频前显示，建议与视频首帧色调一致。</div>
           </el-form-item>
           <el-form-item label="视频标题">
-            <I18nInput v-model="config.hero.video.title" />
+            <ContentInput v-model="config.hero.video.title" />
           </el-form-item>
           <el-form-item label="视频说明">
-            <I18nInput v-model="config.hero.video.description" type="textarea" :rows="2" />
+            <ContentInput v-model="config.hero.video.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
@@ -336,12 +336,12 @@ async function handleSave() {
             </el-col>
             <el-col :span="8">
               <el-form-item label="分组标题">
-                <I18nInput v-model="item.title" />
+                <ContentInput v-model="item.title" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="区域说明">
-                <I18nInput v-model="item.note" />
+                <ContentInput v-model="item.note" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -381,10 +381,10 @@ async function handleSave() {
             </el-button>
           </div>
           <el-form-item label="标题">
-            <I18nInput v-model="item.title" />
+            <ContentInput v-model="item.title" />
           </el-form-item>
           <el-form-item label="说明">
-            <I18nInput v-model="item.description" type="textarea" :rows="2" />
+            <ContentInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
         </div>
         <el-button :icon="Plus" @click="addHeroStat">添加统计卡片</el-button>
@@ -407,7 +407,7 @@ async function handleSave() {
             </el-col>
             <el-col :span="16">
               <el-form-item label="说明">
-                <I18nInput v-model="item.label" />
+                <ContentInput v-model="item.label" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -425,10 +425,10 @@ async function handleSave() {
             </el-button>
           </div>
           <el-form-item label="标题">
-            <I18nInput v-model="item.title" />
+            <ContentInput v-model="item.title" />
           </el-form-item>
           <el-form-item label="说明">
-            <I18nInput v-model="item.description" type="textarea" :rows="2" />
+            <ContentInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
@@ -456,10 +456,10 @@ async function handleSave() {
             </el-button>
           </div>
           <el-form-item label="标题">
-            <I18nInput v-model="item.title" />
+            <ContentInput v-model="item.title" />
           </el-form-item>
           <el-form-item label="说明">
-            <I18nInput v-model="item.description" type="textarea" :rows="2" />
+            <ContentInput v-model="item.description" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
@@ -498,12 +498,12 @@ async function handleSave() {
             </el-button>
           </div>
           <el-form-item label="评价内容">
-            <I18nInput v-model="item.quote" type="textarea" :rows="3" />
+            <ContentInput v-model="item.quote" type="textarea" :rows="3" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="16">
               <el-form-item label="用户署名">
-                <I18nInput v-model="item.author" />
+                <ContentInput v-model="item.author" />
               </el-form-item>
             </el-col>
             <el-col :span="8">

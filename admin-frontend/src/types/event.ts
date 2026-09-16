@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'past' | 'draft'
 
@@ -23,15 +23,15 @@ export interface Event {
 
 export interface EventFormData {
   slug?: string
-  title: I18nObject
+  title: ContentText
   date: string
   endDate?: string
   city: string
   citySlug: string
   adcode: number
   tags: string[]
-  summary: I18nObject
-  description: I18nObject
+  summary: ContentText
+  description: ContentText
   relatedRouteSlugs: string[]
   image: string
   status: EventStatus

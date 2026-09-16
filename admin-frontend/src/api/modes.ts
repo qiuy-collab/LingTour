@@ -11,7 +11,7 @@ export const modesApi = {
   },
 
   getMode(id: string) {
-    return api.get<ApiResponse<ServiceMode>>(`/interpreting/modes/${id}`, { params: { rawI18n: true } })
+    return api.get<ApiResponse<ServiceMode>>(`/interpreting/modes/${id}`)
   },
 
   createMode(data: ServiceModeFormData) {

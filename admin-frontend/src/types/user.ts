@@ -6,7 +6,7 @@ export interface ManagedUser {
   name: string
   email: string
   avatar: string
-  locale: 'en' | 'zh'
+  locale: 'en'
   createdAt: string
   status: UserStatus
   bookingsCount: number
@@ -48,7 +48,6 @@ export const UserStatusColorMap: Record<UserStatus, string> = {
 
 export const LocaleMap: Record<string, string> = {
   en: 'English',
-  zh: '中文',
 }
 
 export const VisibilityMap: Record<ProfileVisibility, string> = {

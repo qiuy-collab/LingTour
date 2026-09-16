@@ -5,9 +5,9 @@ import { useRouter } from 'vue-router'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
 import type { City } from '@/types/city'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { resolveMediaUrl } from '@/utils/media'
-import { extractErrorMessage } from '@/utils/i18n'
+import { extractErrorMessage } from '@/utils/errors'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 
@@ -47,8 +47,8 @@ function isReadableName(value: string) {
   return /[一-鿿A-Za-z0-9]/.test(text)
 }
 
-function displayCityName(city: City, locale: 'zh' | 'en' = 'zh') {
-  return pickI18n(city.name, locale) || (locale === 'zh' ? city.slug : '')
+function displayCityName(city: City) {
+  return readContentValue(city.name) || city.slug
 }
 
 async function hydrateBrokenNames(items: City[]) {
@@ -164,7 +164,6 @@ function regionColor(region: string) {
           <template #default="{ row }">
             <div>
               <div class="city-name">{{ displayCityName(row) }}</div>
-              <div class="city-name-en">{{ displayCityName(row, 'en') || row.slug }}</div>
             </div>
           </template>
         </el-table-column>
@@ -173,8 +172,8 @@ function regionColor(region: string) {
 
         <el-table-column label="地区标签" width="160">
           <template #default="{ row }">
-            <el-tag :color="regionColor(pickI18n(row.regionLabel) || '')" effect="dark" size="small">
-              {{ pickI18n(row.regionLabel) }}
+            <el-tag :color="regionColor(readContentValue(row.regionLabel))" effect="dark" size="small">
+              {{ readContentValue(row.regionLabel) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -187,7 +186,7 @@ function regionColor(region: string) {
               size="small"
               style="margin: 2px"
             >
-              {{ pickI18n(tag) || tag }}
+              {{ readContentValue(tag) || tag }}
             </el-tag>
           </template>
         </el-table-column>

@@ -4,7 +4,6 @@ import type { CommunityBrief, CommunityBriefPayload } from '@/types/community-br
 
 export function getCommunityBriefs() {
   return api.get<ApiResponse<PaginatedResponse<CommunityBrief>>>('/community/briefs', {
-    params: { rawI18n: true },
   })
 }
 

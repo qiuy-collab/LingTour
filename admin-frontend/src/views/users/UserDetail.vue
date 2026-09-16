@@ -16,7 +16,7 @@ import {
   VisibilityMap,
 } from '@/types/user'
 import { formatDateTime } from '@/utils/format'
-import { extractErrorMessage } from '@/utils/i18n'
+import { extractErrorMessage } from '@/utils/errors'
 import ImageUpload from '@/components/ImageUpload.vue'
 
 const route = useRoute()

@@ -1,6 +1,6 @@
 import api from './index'
 import type { ApiResponse } from '@/types/common'
-import { toI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import type { HomeConfig } from '@/types/home'
 import { DEFAULT_ROUTE_REGIONS } from '@/constants/guangdongRegions'
 
@@ -8,53 +8,53 @@ function fromApi(raw: any): HomeConfig {
   return {
     hero: {
       image: raw.hero?.image || '',
-      caption: toI18n(raw.hero?.caption),
+      caption: readContentValue(raw.hero?.caption),
       ctaImage: raw.hero?.ctaImage || '',
       interpretingImage: raw.hero?.interpretingImage || '',
-      interpretingLabel: toI18n(raw.hero?.interpretingLabel),
+      interpretingLabel: readContentValue(raw.hero?.interpretingLabel),
       badgeValue: raw.hero?.badge?.value || '',
-      badgeLabel: toI18n(raw.hero?.badge?.label),
+      badgeLabel: readContentValue(raw.hero?.badge?.label),
       video: {
         url: raw.hero?.video?.url || '',
         poster: raw.hero?.video?.poster || '',
-        title: toI18n(raw.hero?.video?.title),
-        description: toI18n(raw.hero?.video?.description),
+        title: readContentValue(raw.hero?.video?.title),
+        description: readContentValue(raw.hero?.video?.description),
         duration: raw.hero?.video?.duration || '',
         resolution: raw.hero?.video?.resolution || '',
       },
     },
     heroStats: (raw.hero?.stats || raw.heroStats || []).map((s: any) => ({
-      title: toI18n(s.title),
-      description: toI18n(s.description ?? s.body ?? s.label),
+      title: readContentValue(s.title),
+      description: readContentValue(s.description ?? s.body ?? s.label),
     })),
     trustMetrics: (raw.trustMetrics || []).map((m: any) => ({
       value: m.value || '',
-      label: toI18n(m.label),
+      label: readContentValue(m.label),
     })),
     entryCards: (raw.entryCards || []).map((c: any) => ({
-      title: toI18n(c.title),
-      description: toI18n(c.description ?? c.body),
+      title: readContentValue(c.title),
+      description: readContentValue(c.description ?? c.body),
       image: c.image || '',
       link: c.link || c.href || '',
     })),
     featuredRoutes: raw.featuredRoutes || raw.featuredRouteSlugs || [],
     cultureHighlights: (raw.cultureHighlights || []).map((h: any) => ({
-      title: toI18n(h.title),
-      description: toI18n(h.description ?? h.body),
+      title: readContentValue(h.title),
+      description: readContentValue(h.description ?? h.body),
       image: h.image || '',
       citySlug: h.citySlug || h.slug || '',
     })),
     routeRegions: (raw.routeRegions || []).map((region: any) => ({
       key: region.key || '',
-      title: toI18n(region.title),
-      note: toI18n(region.note),
+      title: readContentValue(region.title),
+      note: readContentValue(region.note),
       adcodes: Array.isArray(region.adcodes)
         ? region.adcodes.map((item: any) => Number(item)).filter(Number.isFinite)
         : [],
     })),
     testimonials: (raw.testimonials || []).map((t: any) => ({
-      quote: toI18n(t.quote),
-      author: toI18n(t.author ?? t.name),
+      quote: readContentValue(t.quote),
+      author: readContentValue(t.author ?? t.name),
       avatar: t.avatar || '',
     })),
   }
@@ -116,7 +116,7 @@ function toApi(data: HomeConfig) {
 
 export const homeApi = {
   async getHomeConfig() {
-    const res = await api.get<ApiResponse<any>>('/home', { params: { rawI18n: true } })
+    const res = await api.get<ApiResponse<any>>('/home')
     ;(res as any).data.data = fromApi(res.data.data)
     if (!(res as any).data.data.routeRegions?.length) {
       ;(res as any).data.data.routeRegions = DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item }))

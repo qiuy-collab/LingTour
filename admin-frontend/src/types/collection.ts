@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 
 export interface StoreCollection {
   id: string
@@ -20,11 +20,11 @@ export interface StoreCollection {
 export interface CollectionFormData {
   id?: string
   slug: string
-  title: I18nObject
+  title: ContentText
   routeName: string
   routeSlug: string
   image: string
-  body: I18nObject
+  body: ContentText
   sortOrder: number
   published: boolean
 }

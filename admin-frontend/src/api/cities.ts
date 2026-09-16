@@ -10,7 +10,6 @@ export const citiesApi = {
         page: params.page,
         limit: params.pageSize,
         q: params.keyword?.trim() || undefined,
-        rawI18n: true,
         published:
           params.status === 'published'
             ? true
@@ -33,27 +32,27 @@ export const citiesApi = {
 
   /** 获取单个城市 */
   getCity(id: string) {
-    return request.get<ApiResponse<City>>(`/cities/${id}`, { params: { rawI18n: true } })
+    return request.get<ApiResponse<City>>(`/cities/${id}`)
   },
 
   /** 新增城市 */
   createCity(data: CityFormData) {
-    return request.post<ApiResponse<City>>('/cities', data, { params: { rawI18n: true } })
+    return request.post<ApiResponse<City>>('/cities', data)
   },
 
   /** 更新城市 */
   updateCity(id: string, data: Partial<CityFormData>) {
-    return request.put<ApiResponse<City>>(`/cities/${id}`, data, { params: { rawI18n: true } })
+    return request.put<ApiResponse<City>>(`/cities/${id}`, data)
   },
 
   /** 发布城市 */
   publishCity(id: string) {
-    return request.patch<ApiResponse<City>>(`/cities/${id}/publish`, undefined, { params: { rawI18n: true } })
+    return request.patch<ApiResponse<City>>(`/cities/${id}/publish`)
   },
 
   /** 下架城市 */
   unpublishCity(id: string) {
-    return request.patch<ApiResponse<City>>(`/cities/${id}/unpublish`, undefined, { params: { rawI18n: true } })
+    return request.patch<ApiResponse<City>>(`/cities/${id}/unpublish`)
   },
 
   /** 删除城市 */

@@ -9,14 +9,14 @@ import { eventsApi } from '@/api/events'
 import { routesApi } from '@/api/routes'
 import type { EventFormData } from '@/types/event'
 import { EventStatusMap } from '@/types/event'
-import { pickI18n, toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace, { type EditorWorkspaceTab } from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ContentInput from '@/components/ContentInput.vue'
+import ContentMarkdownEditor from '@/components/ContentMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 
 const router = useRouter()
@@ -35,21 +35,21 @@ const rules = {
     { required: true, message: '请输入 Slug', trigger: 'blur' },
     { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入活动名称', trigger: 'blur' }],
   date: [{ required: true, message: '请选择开始日期', trigger: 'change' }],
 }
 
 const form = reactive<EventFormData>({
   slug: '',
-  title: { zh: '', en: '' },
+  title: '',
   date: '',
   endDate: '',
   city: '',
   citySlug: '',
   adcode: 440100,
   tags: [],
-  summary: { zh: '', en: '' },
-  description: { zh: '', en: '' },
+  summary: '',
+  description: '',
   relatedRouteSlugs: [],
   image: '',
   status: 'draft',
@@ -72,12 +72,12 @@ const selectedRoutes = computed(() =>
 )
 
 const checklist = computed(() => [
-  { label: '活动名称', done: Boolean(form.title.en.trim()) },
+  { label: '活动名称', done: Boolean(form.title.trim()) },
   { label: '开始日期', done: Boolean(form.date) },
   { label: '关联城市', done: Boolean(form.citySlug || form.city.trim()) },
   { label: '封面图片', done: Boolean(form.image) },
-  { label: '摘要', done: Boolean(form.summary.en.trim()) },
-  { label: '详情正文', done: Boolean(form.description.en.trim()) },
+  { label: '摘要', done: Boolean(form.summary.trim()) },
+  { label: '详情正文', done: Boolean(form.description.trim()) },
 ])
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
@@ -107,15 +107,15 @@ function handleCityChange(slug: string) {
 function fillFromApi(data: any) {
   Object.assign(form, {
     slug: data.slug || '',
-    title: toI18n(data.title),
+    title: readContentValue(data.title),
     date: data.date || '',
     endDate: data.endDate || '',
     city: data.city || '',
     citySlug: data.citySlug || '',
     adcode: Number(data.adcode || 0),
     tags: Array.isArray(data.tags) ? [...data.tags] : [],
-    summary: toI18n(data.summary),
-    description: toI18n(data.description),
+    summary: readContentValue(data.summary),
+    description: readContentValue(data.description),
     relatedRouteSlugs: Array.isArray(data.relatedRouteSlugs) ? [...data.relatedRouteSlugs] : [],
     image: data.image || '',
     status: data.status || 'draft',
@@ -132,13 +132,13 @@ onMounted(async () => {
 
     cityOptions.value = (citiesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      name: pickI18n(item.name) || item.slug,
+      name: readContentValue(item.name) || item.slug,
       adcode: Number(item.adcode || 0),
     }))
 
     routeOptions.value = (routesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      title: pickI18n(item.title) || item.slug,
+      title: readContentValue(item.title) || item.slug,
     }))
 
     if (isEdit.value) {
@@ -208,8 +208,8 @@ async function handleSave() {
           <el-form-item label="Slug" prop="slug">
             <el-input v-model="form.slug" placeholder="dragon-boat-2026" />
           </el-form-item>
-          <el-form-item label="活动名称" prop="title.en">
-            <I18nInput v-model="form.title" />
+          <el-form-item label="活动名称" prop="title">
+            <ContentInput v-model="form.title" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="8">
@@ -319,14 +319,14 @@ async function handleSave() {
           <div v-if="activeWorkspace === 'summary'" class="workspace-panel">
             <div class="panel-title">活动摘要</div>
             <el-form-item label="摘要文案">
-              <I18nMarkdownEditor v-model="form.summary" :rows="6" />
+              <ContentMarkdownEditor v-model="form.summary" :rows="6" />
             </el-form-item>
           </div>
 
           <div v-else class="workspace-panel">
             <div class="panel-title">活动正文</div>
             <el-form-item label="详情内容">
-              <I18nMarkdownEditor v-model="form.description" :rows="10" />
+              <ContentMarkdownEditor v-model="form.description" :rows="10" />
             </el-form-item>
           </div>
         </EditorWorkspace>

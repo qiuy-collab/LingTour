@@ -6,8 +6,8 @@ import type { FormInstance } from "element-plus";
 import { citiesApi } from "@/api/cities";
 import { collectionsApi } from "@/api/collections";
 import { productsApi } from "@/api/products";
-import { pickI18n, toI18n } from "@/types/common";
-import { extractErrorMessage, optionalI18n } from "@/utils/i18n";
+import { readContentValue } from "@/types/common";
+import { extractErrorMessage, optionalContent } from "@/utils/errors";
 import { useDirtyForm } from "@/composables/useDirtyForm";
 import EditorPageHeader from "@/components/editor/EditorPageHeader.vue";
 import EditorWorkspace, {
@@ -15,8 +15,8 @@ import EditorWorkspace, {
 } from "@/components/editor/EditorWorkspace.vue";
 import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
 import FrontendPreviewDrawer from "@/components/editor/FrontendPreviewDrawer.vue";
-import I18nInput from "@/components/I18nInput.vue";
-import I18nMarkdownEditor from "@/components/I18nMarkdownEditor.vue";
+import ContentInput from "@/components/ContentInput.vue";
+import ContentMarkdownEditor from "@/components/ContentMarkdownEditor.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
 import {
@@ -46,7 +46,7 @@ const rules = {
       trigger: "blur",
     },
   ],
-  "name.en": [
+  name: [
     { required: true, message: "请输入商品名称", trigger: "blur" },
   ],
   price: [{ required: true, message: "请输入价格", trigger: "blur" }],
@@ -64,18 +64,18 @@ const emptyOriginTrace = () => ({
 
 const form = reactive<any>({
   slug: "",
-  name: { zh: "", en: "" },
+  name: "",
   collectionId: "",
   price: 0,
   currency: "SGD",
-  tag: { zh: "", en: "" },
+  tag: "",
   image: "",
   primaryMedia: null,
-  story: { zh: "", en: "" },
-  material: { zh: "", en: "" },
-  dimensions: { zh: "", en: "" },
-  origin: { zh: "", en: "" },
-  care: { zh: "", en: "" },
+  story: "",
+  material: "",
+  dimensions: "",
+  origin: "",
+  care: "",
   gallery: [],
   galleryMedia: [],
   stock: 0,
@@ -107,7 +107,7 @@ async function fetchCollections() {
   const res = await collectionsApi.getCollections({ page: 1, pageSize: 100 });
   collectionOptions.value = (res.data.data.data || []).map((item: any) => ({
     id: item.id,
-    title: pickI18n(item.title),
+    title: readContentValue(item.title),
   }));
 }
 
@@ -115,7 +115,7 @@ async function fetchCities() {
   const res = await citiesApi.getCities({ page: 1, pageSize: 200 });
   cityOptions.value = (res.data.data.data || []).map((item: any) => ({
     slug: item.slug,
-    name: pickI18n(item.name) || item.slug,
+    name: readContentValue(item.name) || item.slug,
     adcode: Number(item.adcode || 0),
   }));
 }
@@ -131,18 +131,18 @@ function handleOriginCityChange(slug: string) {
 function fillFromApi(data: any) {
   Object.assign(form, {
     slug: data.slug || "",
-    name: toI18n(data.name),
+    name: readContentValue(data.name),
     collectionId: data.collectionId || data.collection?.id || "",
     price: Number(data.price || 0),
     currency: data.currency || "SGD",
-    tag: toI18n(data.tag),
+    tag: readContentValue(data.tag),
     image: data.image || "",
     primaryMedia: resolvePrimaryMedia(data.primaryMedia, data.image || ""),
-    story: toI18n(data.story),
-    material: toI18n(data.material),
-    dimensions: toI18n(data.dimensions),
-    origin: toI18n(data.origin),
-    care: toI18n(data.care),
+    story: readContentValue(data.story),
+    material: readContentValue(data.material),
+    dimensions: readContentValue(data.dimensions),
+    origin: readContentValue(data.origin),
+    care: readContentValue(data.care),
     gallery: data.gallery || [],
     galleryMedia: resolveMediaGallery(data.galleryMedia, data.gallery || []),
     stock: data.stock ?? 0,
@@ -163,10 +163,10 @@ function toPayload() {
     image: legacyImageForMedia(primaryMedia, form.image),
     primaryMedia,
     story: form.story,
-    material: optionalI18n(form.material),
-    dimensions: optionalI18n(form.dimensions),
-    origin: optionalI18n(form.origin),
-    care: optionalI18n(form.care),
+    material: optionalContent(form.material),
+    dimensions: optionalContent(form.dimensions),
+    origin: optionalContent(form.origin),
+    care: optionalContent(form.care),
     gallery: form.gallery,
     galleryMedia: resolveMediaGallery(form.galleryMedia, form.gallery),
     stock: Number(form.stock || 0),
@@ -280,11 +280,11 @@ async function handleSave() {
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="商品名称" prop="name.en">
-            <I18nInput v-model="form.name" />
+          <el-form-item label="商品名称" prop="name">
+            <ContentInput v-model="form.name" />
           </el-form-item>
           <el-form-item label="商品标签">
-            <I18nInput v-model="form.tag" />
+            <ContentInput v-model="form.tag" />
           </el-form-item>
         </el-card>
 
@@ -425,23 +425,23 @@ async function handleSave() {
           <div v-if="activeWorkspace === 'story'" class="workspace-panel">
             <div class="panel-title">商品故事</div>
             <el-form-item label="故事正文">
-              <I18nMarkdownEditor v-model="form.story" :rows="8" />
+              <ContentMarkdownEditor v-model="form.story" :rows="8" />
             </el-form-item>
           </div>
 
           <div v-else class="workspace-panel">
             <div class="panel-title">商品细节</div>
             <el-form-item label="材质">
-              <I18nInput v-model="form.material" />
+              <ContentInput v-model="form.material" />
             </el-form-item>
             <el-form-item label="尺寸">
-              <I18nInput v-model="form.dimensions" />
+              <ContentInput v-model="form.dimensions" />
             </el-form-item>
             <el-form-item label="产地说明">
-              <I18nInput v-model="form.origin" />
+              <ContentInput v-model="form.origin" />
             </el-form-item>
             <el-form-item label="保养说明">
-              <I18nMarkdownEditor v-model="form.care" :rows="6" />
+              <ContentMarkdownEditor v-model="form.care" :rows="6" />
             </el-form-item>
           </div>
         </EditorWorkspace>

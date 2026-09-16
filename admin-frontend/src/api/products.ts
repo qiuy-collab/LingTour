@@ -20,7 +20,7 @@ export const productsApi = {
   },
 
   getProduct(id: string) {
-    return api.get<ApiResponse<Product>>(`/shop/products/${id}`, { params: { rawI18n: true } })
+    return api.get<ApiResponse<Product>>(`/shop/products/${id}`)
   },
 
   createProduct(data: ProductFormData) {

@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { modesApi } from '@/api/modes'
 import type { ServiceMode } from '@/types/interpreting'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 
 const router = useRouter()
@@ -29,7 +29,7 @@ function handleEdit(id: string) {
 }
 
 async function handleDelete(row: ServiceMode) {
-  const title = pickI18n(row.title as any) || '该模式'
+  const title = readContentValue(row.title as any) || '该模式'
   try {
     await ElMessageBox.confirm(
       `确定删除模式「${title}」?该操作不可恢复。`,
@@ -99,13 +99,12 @@ function getAccentLabel(accent: string) {
         </el-table-column>
         <el-table-column label="模式名称" min-width="180">
           <template #default="{ row }">
-            <div>{{ pickI18n(row.title) }}</div>
-            <div style="font-size: 12px; color: #909399">{{ pickI18n(row.title, 'en') }}</div>
+            <div>{{ readContentValue(row.title) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="价格" width="180">
           <template #default="{ row }">
-            <div>{{ pickI18n(row.price) }}</div>
+            <div>{{ readContentValue(row.price) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="推荐" width="80" align="center">
@@ -122,7 +121,7 @@ function getAccentLabel(accent: string) {
           </template>
         </el-table-column>
         <el-table-column label="适用场景" min-width="200" show-overflow-tooltip>
-          <template #default="{ row }">{{ pickI18n(row.bestFor) }}</template>
+          <template #default="{ row }">{{ readContentValue(row.bestFor) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row, $index }">

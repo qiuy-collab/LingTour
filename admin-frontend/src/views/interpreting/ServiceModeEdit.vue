@@ -5,14 +5,14 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { modesApi } from '@/api/modes'
 import type { ServiceModeFormData } from '@/types/interpreting'
-import { toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ContentInput from '@/components/ContentInput.vue'
+import ContentMarkdownEditor from '@/components/ContentMarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,10 +24,10 @@ const formRef = ref<FormInstance>()
 
 const form = reactive<ServiceModeFormData>({
   sortOrder: 1,
-  title: { zh: '', en: '' },
-  price: { zh: '', en: '' },
-  bestFor: { zh: '', en: '' },
-  body: { zh: '', en: '' },
+  title: '',
+  price: '',
+  bestFor: '',
+  body: '',
   includes: [],
   accent: 'light',
   featured: false,
@@ -36,8 +36,8 @@ const form = reactive<ServiceModeFormData>({
 const newIncludeEn = ref('')
 
 const rules = {
-  'title.en': [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
-  'price.en': [{ required: true, message: '请输入价格说明', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入模式名称', trigger: 'blur' }],
+  price: [{ required: true, message: '请输入价格说明', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -46,7 +46,7 @@ function addInclude() {
   const content = newIncludeEn.value.trim()
   if (!content) return
 
-  form.includes.push({ zh: '', en: content })
+  form.includes.push(content)
   newIncludeEn.value = ''
 }
 
@@ -68,11 +68,11 @@ onMounted(async () => {
     const data = res.data.data
     Object.assign(form, {
       sortOrder: data.sortOrder ?? 1,
-      title: toI18n(data.title),
-      price: toI18n(data.price),
-      bestFor: toI18n(data.bestFor),
-      body: toI18n(data.body),
-      includes: Array.isArray(data.includes) ? data.includes.map((item: any) => toI18n(item)) : [],
+      title: readContentValue(data.title),
+      price: readContentValue(data.price),
+      bestFor: readContentValue(data.bestFor),
+      body: readContentValue(data.body),
+      includes: Array.isArray(data.includes) ? data.includes.filter((item: unknown): item is string => typeof item === 'string') : [],
       accent: data.accent || 'light',
       featured: data.featured ?? false,
     })
@@ -125,13 +125,13 @@ async function handleSave() {
       <el-form ref="formRef" :model="form" :rules="rules" class="editor-form" label-position="top">
         <el-card shadow="never" class="section-card">
           <template #header>基础信息</template>
-          <el-form-item label="模式名称" prop="title.en">
-            <I18nInput v-model="form.title" />
+          <el-form-item label="模式名称" prop="title">
+            <ContentInput v-model="form.title" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
-              <el-form-item label="价格" prop="price.en">
-                <I18nInput v-model="form.price" />
+              <el-form-item label="价格" prop="price">
+                <ContentInput v-model="form.price" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -141,7 +141,7 @@ async function handleSave() {
             </el-col>
           </el-row>
           <el-form-item label="适用场景">
-            <I18nInput v-model="form.bestFor" type="textarea" :rows="2" />
+            <ContentInput v-model="form.bestFor" type="textarea" :rows="2" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
@@ -172,7 +172,7 @@ async function handleSave() {
             <div v-if="activePanel === 'body'" class="workspace-panel">
               <div class="panel-title">服务正文</div>
               <el-form-item label="详细描述">
-                <I18nMarkdownEditor v-model="form.body" :rows="8" />
+                <ContentMarkdownEditor v-model="form.body" :rows="8" />
               </el-form-item>
             </div>
 
@@ -181,7 +181,7 @@ async function handleSave() {
               <el-form-item label="服务项目">
                 <div class="tag-list">
                   <el-tag v-for="(item, index) in form.includes" :key="index" closable @close="removeInclude(index)">
-                    {{ item.en || item.zh }}
+                    {{ item }}
                   </el-tag>
                 </div>
                 <div class="tag-input-row">

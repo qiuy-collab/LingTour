@@ -6,7 +6,7 @@ import { interpretersApi } from '@/api/interpreters'
 import type { Booking, BookingStatus } from '@/types/interpreting'
 import type { Interpreter } from '@/types/interpreting'
 import { BookingStatusMap, BookingStatusColorMap } from '@/types/interpreting'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { formatDateTime } from '@/utils/format'
 import { useListPage } from '@/composables/useListPage'
 import { useIsMobile } from '@/composables/useIsMobile'
@@ -89,7 +89,7 @@ async function handleAssignInterpreter() {
   try {
     await bookingsApi.assignInterpreter(selectedBooking.value.id, selectedInterpreterId.value)
     const interp = interpreters.value.find((i) => i.id === selectedInterpreterId.value)
-    ElMessage.success(`已分配口译员:${interp ? pickI18n(interp.name) : selectedInterpreterId.value}`)
+    ElMessage.success(`已分配口译员:${interp ? readContentValue(interp.name) : selectedInterpreterId.value}`)
     await refreshBooking()
     fetchList()
   } catch (err: any) {
@@ -308,12 +308,12 @@ function getBookingStatusLabel(status: string): string {
               <el-option
                 v-for="interp in interpreters"
                 :key="interp.id"
-                :label="`${pickI18n(interp.name)} (${pickI18n(interp.city)})`"
+                :label="`${readContentValue(interp.name)} (${readContentValue(interp.city)})`"
                 :value="interp.id"
               >
                 <div style="display: flex; justify-content: space-between">
-                  <span>{{ pickI18n(interp.name) }}</span>
-                  <span style="color: #909399; font-size: 12px">{{ pickI18n(interp.city) }}</span>
+                  <span>{{ readContentValue(interp.name) }}</span>
+                  <span style="color: #909399; font-size: 12px">{{ readContentValue(interp.city) }}</span>
                 </div>
               </el-option>
             </el-select>

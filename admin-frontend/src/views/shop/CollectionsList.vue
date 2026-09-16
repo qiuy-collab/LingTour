@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { collectionsApi } from '@/api/collections'
 import type { StoreCollection } from '@/types/collection'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 import { resolveMediaUrl } from '@/utils/media'
@@ -22,9 +22,9 @@ const {
   defaultFilters: { keyword: '' },
 })
 
-// ─── 自定义删除（带 i18n 名称） ──────────
+// ─── 自定义删除（带英文名称） ──────────
 function handleDeleteCollection(row: StoreCollection) {
-  const title = pickI18n(row.title as any) || '该系列'
+  const title = readContentValue(row.title as any) || '该系列'
   handleDelete(row.id, title)
 }
 
@@ -66,13 +66,12 @@ function handleEdit(id: string) {
         </el-table-column>
         <el-table-column label="系列名称" min-width="180">
           <template #default="{ row }">
-            <div>{{ pickI18n(row.title) }}</div>
-            <div class="admin-list-meta">{{ pickI18n(row.title, 'en') }}</div>
+            <div>{{ readContentValue(row.title) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="关联路线" width="160">
           <template #default="{ row }">
-            {{ pickI18n(row.routeName) || '-' }}
+            {{ readContentValue(row.routeName) || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="productCount" label="商品数" width="80" align="center">

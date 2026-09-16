@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { readContentValue, type I18nObject } from '@/types/common'
+import { readContentValue, type ContentText } from '@/types/common'
 
 const props = defineProps<{
-  modelValue: I18nObject
+  modelValue: ContentText
   label?: string
   type?: 'input' | 'textarea'
   rows?: number
@@ -11,15 +11,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (event: 'update:modelValue', value: I18nObject): void
+  (event: 'update:modelValue', value: ContentText): void
 }>()
 
 const content = computed(() => readContentValue(props.modelValue))
 
 function updateContent(nextValue: string) {
-  // Preserve the existing zh value — the API persists whatever the client
-  // sends, so resetting zh here would wipe legacy bilingual data on save.
-  emit('update:modelValue', { ...props.modelValue, en: nextValue })
+  emit('update:modelValue', nextValue)
 }
 </script>
 
@@ -37,17 +35,6 @@ function updateContent(nextValue: string) {
 </template>
 
 <style scoped>
-.content-field {
-  display: grid;
-  width: 100%;
-  min-width: 0;
-  gap: 7px;
-}
-
-.content-label {
-  color: var(--lt-text-regular);
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1.3;
-}
+.content-field { display: grid; width: 100%; min-width: 0; gap: 7px; }
+.content-label { color: var(--lt-text-regular); font-size: 12px; font-weight: 650; line-height: 1.3; }
 </style>

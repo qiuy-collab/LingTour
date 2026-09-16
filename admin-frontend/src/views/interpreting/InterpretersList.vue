@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useListPage } from '@/composables/useListPage'
 import { interpretersApi } from '@/api/interpreters'
 import { InterpreterStatusMap, InterpreterStatusColorMap } from '@/types/interpreting'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import type { Interpreter } from '@/types/interpreting'
 import { resolveMediaUrl } from '@/utils/media'
 
@@ -21,9 +21,9 @@ const {
   defaultFilters: { keyword: '', status: '' },
 })
 
-/** 安全提取 I18nObject 中文，用于消息提示和头像首字符 */
+/** Resolve the English name for messages and avatar initials. */
 function nameZh(row: Interpreter): string {
-  return pickI18n(row.name) || '该口译员'
+  return readContentValue(row.name) || '该口译员'
 }
 
 function handleCreate() {
@@ -137,26 +137,24 @@ async function handleEnable(row: Interpreter) {
       </el-table-column>
       <el-table-column label="姓名" width="140">
         <template #default="{ row }">
-          <div>{{ pickI18n(row.name) }}</div>
-          <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
+          <div>{{ readContentValue(row.name) }}</div>
         </template>
       </el-table-column>
       <el-table-column label="服务语种" width="200" show-overflow-tooltip>
-        <template #default="{ row }">{{ pickI18n(row.language) }}</template>
+        <template #default="{ row }">{{ readContentValue(row.language) }}</template>
       </el-table-column>
       <el-table-column label="专注领域" min-width="180" show-overflow-tooltip>
         <template #default="{ row }">
-          <div>{{ pickI18n(row.focus) }}</div>
-          <div class="admin-list-meta">{{ pickI18n(row.focus, 'en') }}</div>
+          <div>{{ readContentValue(row.focus) }}</div>
         </template>
       </el-table-column>
       <el-table-column label="能力标签" min-width="200">
         <template #default="{ row }">
-          <el-tag v-for="(h, i) in row.helps" :key="i" size="small" style="margin: 2px 2px">{{ pickI18n(h) }}</el-tag>
+          <el-tag v-for="(h, i) in row.helps" :key="i" size="small" style="margin: 2px 2px">{{ readContentValue(h) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="服务城市" width="120" align="center">
-        <template #default="{ row }">{{ pickI18n(row.city) }}</template>
+        <template #default="{ row }">{{ readContentValue(row.city) }}</template>
       </el-table-column>
       <el-table-column label="状态" width="100" align="center">
         <template #default="{ row }">

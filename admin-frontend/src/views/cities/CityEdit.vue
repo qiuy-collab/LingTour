@@ -5,8 +5,8 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { Plus } from '@element-plus/icons-vue'
 import { citiesApi } from '@/api/cities'
 import { routesApi } from '@/api/routes'
-import { pickI18n, type I18nObject } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import type { City, CityFormData } from '@/types/city'
 import MarkdownEditor from '@/components/MarkdownEditor.vue'
@@ -41,13 +41,13 @@ const legacy = ref<Partial<City>>({})
 
 const form = reactive<CityFormData & { heroMedia: NonNullable<CityFormData['heroMedia']> | null }>({
   slug: '',
-  name: { zh: '', en: '' },
-  regionLabel: { zh: '', en: '' },
+  name: '',
+  regionLabel: '',
   adcode: null,
   heroImage: '',
   heroMedia: null,
   tags: [],
-  editorIntro: { zh: '', en: '' },
+  editorIntro: '',
   contentMarkdown: '',
   routeSlugs: [],
   relatedCitySlugs: [],
@@ -59,7 +59,7 @@ const rules: FormRules = {
     { required: true, message: '请输入 Slug', trigger: 'blur' },
     { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case 格式', trigger: 'blur' },
   ],
-  'name.en': [{ required: true, whitespace: true, message: '请输入城市名称', trigger: 'blur' }],
+  name: [{ required: true, whitespace: true, message: '请输入城市名称', trigger: 'blur' }],
   contentMarkdown: [{ max: 200000, message: '正文不能超过 200000 字符', trigger: 'change' }],
 }
 const saveState = computed(() => isDirty.value ? '未保存' : savedAt.value ? `已保存 ${formatTime(savedAt.value)}` : '新草稿')
@@ -68,17 +68,9 @@ function formatTime(value: string) {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN')
 }
-function cityI18n(value: unknown): I18nObject {
-  if (typeof value === 'string') return { en: value, zh: '' }
-  const data = value && typeof value === 'object' ? value as Record<string, unknown> : {}
-  return { en: typeof data.en === 'string' ? data.en : '', zh: typeof data.zh === 'string' ? data.zh : '' }
-}
-function normalizeTags(value: unknown): I18nObject[] {
-  return Array.isArray(value) ? value.map(cityI18n).filter(tag => tag.en.trim() || tag.zh.trim()) : []
-}
 function addTag() {
   if (!newTag.value.trim() || busy.value) return
-  form.tags.push({ zh: '', en: newTag.value.trim() })
+  form.tags.push(newTag.value.trim())
   newTag.value = ''
 }
 function fillFromApi(data: City) {
@@ -93,13 +85,13 @@ function fillFromApi(data: City) {
   }
   Object.assign(form, {
     slug: data.slug || '',
-    name: cityI18n(data.name),
-    regionLabel: cityI18n(data.regionLabel),
+    name: readContentValue(data.name),
+    regionLabel: readContentValue(data.regionLabel),
     adcode: data.adcode ?? null,
     heroImage: data.heroImage || '',
     heroMedia: resolvePrimaryMedia(data.heroMedia, data.heroImage || ''),
-    tags: normalizeTags(data.tags),
-    editorIntro: cityI18n(data.editorIntro),
+    tags: Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === 'string') : [],
+    editorIntro: readContentValue(data.editorIntro),
     contentMarkdown: typeof data.contentMarkdown === 'string' ? data.contentMarkdown : '',
     routeSlugs: data.routeSlugs || [],
     relatedCitySlugs: data.relatedCitySlugs || [],
@@ -113,13 +105,13 @@ function toPayload(): CityFormData {
   // Explicit allowlist: never send publication state or legacy sections/food.
   return {
     slug: form.slug,
-    name: { ...form.name },
-    regionLabel: { ...form.regionLabel },
+    name: form.name,
+    regionLabel: form.regionLabel,
     adcode: form.adcode ?? null,
     heroImage: legacyImageForMedia(heroMedia, form.heroImage),
     heroMedia,
-    tags: normalizeTags(form.tags),
-    editorIntro: { ...form.editorIntro },
+    tags: [...form.tags],
+    editorIntro: form.editorIntro,
     contentMarkdown: form.contentMarkdown,
     routeSlugs: [...(form.routeSlugs || [])],
     relatedCitySlugs: [...(form.relatedCitySlugs || [])],
@@ -137,12 +129,12 @@ async function loadOptions() {
   ])
   if (routes.status === 'fulfilled') {
     routeOptions.value = (routes.value.data.data.data || []).map((item: { slug: string; title: unknown }) => ({
-      slug: item.slug, title: pickI18n(item.title, 'en') || item.slug,
+      slug: item.slug, title: readContentValue(item.title) || item.slug,
     }))
   }
   if (cities.status === 'fulfilled') {
     cityOptions.value = (cities.value.data.data.data || []).map((item: City) => ({
-      slug: item.slug, name: pickI18n(item.name, 'en') || item.slug,
+      slug: item.slug, name: readContentValue(item.name) || item.slug,
     }))
   }
   if (routes.status === 'rejected' || cities.status === 'rejected') optionsError.value = '部分关联选项加载失败，已有链接会保留。'
@@ -288,16 +280,16 @@ async function handleUnpublish() {
     </div>
     <el-form v-else ref="formRef" :model="form" :rules="rules" :disabled="busy" :inert="saving || publishing" label-position="top" @submit.prevent="handleSave">
       <section class="metadata-section" aria-label="基础信息">
-        <el-form-item label="城市名称（英文）" prop="name.en" class="title-field">
-          <el-input v-model="form.name.en" placeholder="输入城市名称" />
+        <el-form-item label="城市名称（英文）" prop="name" class="title-field">
+          <el-input v-model="form.name" placeholder="输入城市名称" />
         </el-form-item>
         <el-form-item label="摘要（英文）">
-          <el-input v-model="form.editorIntro.en" type="textarea" :rows="3" placeholder="简要介绍这座城市的文化与旅行亮点" />
+          <el-input v-model="form.editorIntro" type="textarea" :rows="3" placeholder="简要介绍这座城市的文化与旅行亮点" />
         </el-form-item>
         <div class="metadata-grid">
           <div>
             <el-form-item label="Slug" prop="slug"><el-input v-model="form.slug" placeholder="zhanjiang" /></el-form-item>
-            <el-form-item label="地区标签（英文）"><el-input v-model="form.regionLabel.en" /></el-form-item>
+            <el-form-item label="地区标签（英文）"><el-input v-model="form.regionLabel" /></el-form-item>
             <el-form-item label="地图地区">
               <el-select v-model="form.adcode" filterable clearable placeholder="选择广东地图对应地区">
                 <el-option v-for="option in GUANGDONG_ADCODE_OPTIONS" :key="option.adcode" :label="formatAdcodeLabel(option.adcode)" :value="option.adcode" />
@@ -311,7 +303,7 @@ async function handleUnpublish() {
         <el-form-item label="标签（英文）">
           <div class="tags-field">
             <div v-if="form.tags.length" class="tag-list">
-              <el-tag v-for="(tag, index) in form.tags" :key="index" :closable="!busy" @close="form.tags.splice(index, 1)">{{ tag.en || tag.zh }}</el-tag>
+              <el-tag v-for="(tag, index) in form.tags" :key="index" :closable="!busy" @close="form.tags.splice(index, 1)">{{ tag }}</el-tag>
             </div>
             <div class="tag-input"><el-input v-model="newTag" placeholder="输入标签" @keydown.enter.prevent="addTag" /><el-button :icon="Plus" @click="addTag">添加</el-button></div>
           </div>

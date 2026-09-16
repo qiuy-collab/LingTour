@@ -5,7 +5,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { productsApi } from '@/api/products'
 import { collectionsApi } from '@/api/collections'
 import type { Product } from '@/types/product'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 import { resolveMediaUrl } from '@/utils/media'
@@ -33,7 +33,7 @@ async function fetchCollections() {
     const res = await collectionsApi.getCollections({ page: 1, pageSize: 100 } as any)
     collectionOptions.value = (res.data.data.data || []).map((c: any) => ({
       id: c.id,
-      title: pickI18n(c.title) || c.slug || c.id,
+      title: readContentValue(c.title) || c.slug || c.id,
     }))
   } catch {
     /* keep silent */
@@ -54,7 +54,7 @@ function handleEdit(id: string) {
 async function handleToggleStatus(row: Product) {
   const newStatus = !row.published
   const label = newStatus ? '上架' : '下架'
-  const productName = pickI18n(row.name as any) || '该商品'
+  const productName = readContentValue(row.name as any) || '该商品'
   try {
     await ElMessageBox.confirm(`确定${label}「${productName}」?`, `${label}确认`, {
       type: newStatus ? 'success' : 'warning',
@@ -121,13 +121,12 @@ async function handleToggleStatus(row: Product) {
         </el-table-column>
         <el-table-column label="商品名称" min-width="180">
           <template #default="{ row }">
-            <div>{{ pickI18n(row.name) }}</div>
-            <div class="admin-list-meta">{{ pickI18n(row.name, 'en') }}</div>
+            <div>{{ readContentValue(row.name) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="所属系列" width="160">
           <template #default="{ row }">
-            {{ pickI18n(row.collectionName) || '-' }}
+            {{ readContentValue(row.collectionName) || '-' }}
           </template>
         </el-table-column>
         <el-table-column label="价格" width="120" align="right">
@@ -164,7 +163,7 @@ async function handleToggleStatus(row: Product) {
               type="danger"
               link
               size="small"
-              @click="handleDelete(row.id, pickI18n(row.name as any))"
+              @click="handleDelete(row.id, readContentValue(row.name as any))"
             >
               删除
             </el-button>

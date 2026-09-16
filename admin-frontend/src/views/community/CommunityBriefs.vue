@@ -10,11 +10,11 @@ import {
   updateCommunityBrief,
 } from '@/api/community-briefs'
 import type { CommunityBrief, CommunityBriefPayload } from '@/types/community-brief'
-import { extractErrorMessage } from '@/utils/i18n'
+import { extractErrorMessage } from '@/utils/errors'
 import { formatDateTime } from '@/utils/format'
 import { prefersReducedMotion } from '@/utils/motion'
-import { readContentValue, toI18n } from '@/types/common'
-import I18nInput from '@/components/I18nInput.vue'
+import { readContentValue } from '@/types/common'
+import ContentInput from '@/components/ContentInput.vue'
 
 const formRef = ref<FormInstance>()
 const listRef = ref<HTMLElement | null>(null)
@@ -28,8 +28,8 @@ let motionContext: ReturnType<typeof gsap.context> | null = null
 const channels = ['Field Notes', 'Food Map', 'Hidden Stop', 'Culture Desk']
 const form = reactive<CommunityBriefPayload>({
   slug: '',
-  title: { zh: '', en: '' },
-  prompt: { zh: '', en: '' },
+  title: '',
+  prompt: '',
   channel: 'Field Notes',
   location: '',
   route: '',
@@ -58,8 +58,8 @@ function resetForm() {
   editingId.value = ''
   Object.assign(form, {
     slug: '',
-    title: { zh: '', en: '' },
-    prompt: { zh: '', en: '' },
+    title: '',
+    prompt: '',
     channel: 'Field Notes',
     location: '',
     route: '',
@@ -112,8 +112,8 @@ function openEdit(brief: CommunityBrief) {
   editingId.value = brief.id
   Object.assign(form, {
     slug: brief.slug,
-    title: toI18n(brief.title),
-    prompt: toI18n(brief.prompt),
+    title: readContentValue(brief.title),
+    prompt: readContentValue(brief.prompt),
     channel: brief.channel,
     location: brief.location || '',
     route: brief.route || '',
@@ -142,8 +142,8 @@ async function submitForm() {
     const payload: CommunityBriefPayload = {
       ...form,
       slug: form.slug.trim(),
-      title: { ...form.title, en: title },
-      prompt: { ...form.prompt, en: prompt },
+      title,
+      prompt,
       location: form.location.trim(),
       route: form.route.trim(),
       mood: form.mood.trim(),
@@ -166,7 +166,7 @@ async function submitForm() {
 
 async function removeBrief(brief: CommunityBrief) {
   try {
-    await ElMessageBox.confirm(`确定删除“${brief.title.zh || brief.title.en}”？`, '删除发帖引导', {
+    await ElMessageBox.confirm(`确定删除“${brief.title}”？`, '删除发帖引导', {
       type: 'warning',
       confirmButtonText: '删除',
       cancelButtonText: '取消',
@@ -201,8 +201,8 @@ onBeforeUnmount(() => motionContext?.revert())
       </div>
       <article v-for="brief in briefs" :key="brief.id" class="brief-row" data-brief-row>
         <div class="brief-copy">
-          <strong>{{ brief.title.zh || brief.title.en }}</strong>
-          <span>{{ brief.prompt.zh || brief.prompt.en }}</span>
+          <strong>{{ brief.title }}</strong>
+          <span>{{ brief.prompt }}</span>
           <small>{{ brief.slug }}</small>
         </div>
         <div><span class="mobile-label">栏目</span>{{ brief.channel }}</div>
@@ -234,10 +234,10 @@ onBeforeUnmount(() => motionContext?.revert())
           </el-form-item>
 
           <el-form-item label="标题">
-            <I18nInput v-model="form.title" />
+            <ContentInput v-model="form.title" />
           </el-form-item>
           <el-form-item label="引导文案">
-            <I18nInput v-model="form.prompt" type="textarea" :rows="4" />
+            <ContentInput v-model="form.prompt" type="textarea" :rows="4" />
           </el-form-item>
 
           <div class="meta-grid">

@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 import type { MediaAsset } from './media'
 
 export interface OriginTrace {
@@ -47,19 +47,19 @@ export interface Product {
 export interface ProductFormData {
   id?: string
   slug: string
-  name: I18nObject
+  name: ContentText
   collectionId?: string
   collectionName?: string
   price: number
   currency: string
-  tag: I18nObject
+  tag: ContentText
   image: string
   primaryMedia?: MediaAsset | null
-  story: I18nObject
-  material?: I18nObject
-  dimensions?: I18nObject
-  origin?: I18nObject
-  care?: I18nObject
+  story: ContentText
+  material?: ContentText
+  dimensions?: ContentText
+  origin?: ContentText
+  care?: ContentText
   gallery: string[]
   galleryMedia?: MediaAsset[]
   stock: number

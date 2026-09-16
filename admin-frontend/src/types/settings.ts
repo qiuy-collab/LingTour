@@ -14,9 +14,9 @@ export interface AppSettings {
   seoTitle: string
   seoDescription: string
 
-  // 语种与地区
-  languages: string[]          // 支持语种列表，如 ['en', 'zh']
-  defaultLocale?: string       // 默认语言，如 'zh'
+  // Public content language
+  languages: string[]
+  defaultLocale?: string
   defaultCurrency: string      // 默认币种，如 'SGD'
 
   // 税率 (百分比)
@@ -39,8 +39,8 @@ export interface AppSettings {
 export const DefaultSettings: AppSettings = {
   seoTitle: 'Culvoy — Discover Guangdong Through Local Eyes',
   seoDescription: 'Immersive cultural tours, artisan crafts, and local interpreters across Guangdong, China.',
-  languages: ['en', 'zh'],
-  defaultLocale: 'zh',
+  languages: ['en'],
+  defaultLocale: 'en',
   defaultCurrency: 'SGD',
   taxRate: 7.6,
   shippingTemplates: [],

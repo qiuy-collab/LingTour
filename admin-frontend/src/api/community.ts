@@ -1,6 +1,6 @@
 import api from './index'
 import type { ApiResponse, PaginatedResponse, PageParams } from '@/types/common'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import type { CommunityPost, PostStatus } from '@/types/community'
 
 function normalizePost(raw: any): CommunityPost {
@@ -11,9 +11,9 @@ function normalizePost(raw: any): CommunityPost {
     userHandle: user.handle || raw.userHandle || 'guest',
     userAvatar: user.avatar || raw.userAvatar || '',
     image: raw.image || '',
-    title: pickI18n(raw.title),
-    excerpt: pickI18n(raw.excerpt),
-    content: pickI18n(raw.content ?? raw.excerpt),
+    title: readContentValue(raw.title),
+    excerpt: readContentValue(raw.excerpt),
+    content: readContentValue(raw.content ?? raw.excerpt),
     location: raw.location || '',
     route: raw.route || '',
     date: (raw.createdAt && typeof raw.createdAt === 'string') ? new Date(raw.createdAt).toLocaleDateString('zh-CN') : '',

@@ -23,7 +23,7 @@ export const eventsApi = {
   },
 
   getEvent(id: string) {
-    return api.get<ApiResponse<Event>>(`/events/${id}`, { params: { rawI18n: true } })
+    return api.get<ApiResponse<Event>>(`/events/${id}`)
   },
 
   createEvent(data: EventFormData) {

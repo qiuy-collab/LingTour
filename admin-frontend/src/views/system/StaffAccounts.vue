@@ -21,7 +21,7 @@ import type {
   StaffStatus,
 } from '@/types/staff'
 import { formatDateTime } from '@/utils/format'
-import { extractErrorMessage } from '@/utils/i18n'
+import { extractErrorMessage } from '@/utils/errors'
 import { useAuthStore } from '@/store/auth'
 
 const authStore = useAuthStore()

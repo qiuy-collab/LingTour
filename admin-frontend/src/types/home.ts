@@ -1,23 +1,23 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 
 export interface HeroStat {
-  title: I18nObject
-  description: I18nObject
+  title: ContentText
+  description: ContentText
 }
 
 export interface HomeHeroConfig {
   image: string
-  caption: I18nObject
+  caption: ContentText
   ctaImage: string
   interpretingImage: string
-  interpretingLabel: I18nObject
+  interpretingLabel: ContentText
   badgeValue: string
-  badgeLabel: I18nObject
+  badgeLabel: ContentText
   video: {
     url: string
     poster: string
-    title: I18nObject
-    description: I18nObject
+    title: ContentText
+    description: ContentText
     duration: string
     resolution: string
   }
@@ -25,33 +25,33 @@ export interface HomeHeroConfig {
 
 export interface TrustMetric {
   value: string
-  label: I18nObject
+  label: ContentText
 }
 
 export interface EntryCard {
-  title: I18nObject
-  description: I18nObject
+  title: ContentText
+  description: ContentText
   image: string
   link: string
 }
 
 export interface CultureHighlight {
-  title: I18nObject
-  description: I18nObject
+  title: ContentText
+  description: ContentText
   image: string
   citySlug: string
 }
 
 export interface Testimonial {
-  quote: I18nObject
-  author: I18nObject
+  quote: ContentText
+  author: ContentText
   avatar: string
 }
 
 export interface RouteRegionConfig {
   key: string
-  title: I18nObject
-  note: I18nObject
+  title: ContentText
+  note: ContentText
   adcodes: number[]
 }
 

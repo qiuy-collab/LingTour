@@ -7,13 +7,13 @@ import { ArrowDown, ArrowUp, Delete, Plus } from "@element-plus/icons-vue";
 import { routesApi } from "@/api/routes";
 import { citiesApi } from "@/api/cities";
 import { homeApi } from "@/api/home";
-import { pickI18n, toI18n, toI18nArray } from "@/types/common";
-import { extractErrorMessage, optionalI18n } from "@/utils/i18n";
+import { readContentValue } from "@/types/common";
+import { extractErrorMessage, optionalContent } from "@/utils/errors";
 import { useDirtyForm } from "@/composables/useDirtyForm";
 import { usePublishCheck } from "@/composables/usePublishCheck";
 import { ElMessageBox } from "element-plus";
-import I18nInput from "@/components/I18nInput.vue";
-import I18nMarkdownEditor from "@/components/I18nMarkdownEditor.vue";
+import ContentInput from "@/components/ContentInput.vue";
+import ContentMarkdownEditor from "@/components/ContentMarkdownEditor.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
 import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
@@ -56,29 +56,29 @@ const rules = {
       trigger: "blur",
     },
   ],
-  "title.en": [
+  title: [
     { required: true, message: "请输入路线标题", trigger: "blur" },
   ],
 };
 
 const form = reactive<any>({
   slug: "",
-  title: { zh: "", en: "" },
+  title: "",
   cultureTag: "Bay Area",
-  cityName: { zh: "", en: "" },
+  cityName: "",
   citySlugs: [],
   routeRegionKey: "",
-  duration: { zh: "", en: "" },
-  audience: { zh: "", en: "" },
-  summary: { zh: "", en: "" },
-  story: { zh: "", en: "" },
+  duration: "",
+  audience: "",
+  summary: "",
+  story: "",
   coverImage: "",
   stops: [],
   published: false,
 });
 
 const cityOptions = ref<
-  Array<{ slug: string; name: string; nameZh: string; nameEn: string }>
+  Array<{ slug: string; name: string }>
 >([]);
 const routeRegionOptions = ref<RouteRegionConfig[]>(
   DEFAULT_ROUTE_REGIONS.map((item) => ({ ...item })),
@@ -93,9 +93,9 @@ function createStop() {
     sortOrder: form.stops.length,
     time: "",
     isFeatured: form.stops.length === 0,
-    stopName: { zh: "", en: "" },
-    story: { zh: "", en: "" },
-    culturalStory: { zh: "", en: "" },
+    stopName: "",
+    story: "",
+    culturalStory: "",
     details: [],
     image: "",
     primaryMedia: null,
@@ -103,9 +103,9 @@ function createStop() {
     media: [],
     lat: null,
     lng: null,
-    meal: { zh: "", en: "" },
-    hotel: { zh: "", en: "" },
-    transit: { zh: "", en: "" },
+    meal: "",
+    hotel: "",
+    transit: "",
     plan: "",
   };
 }
@@ -150,7 +150,7 @@ function moveActiveStop(delta: -1 | 1) {
 }
 
 function addDetail(stop: any) {
-  stop.details.push({ zh: "", en: "" });
+  stop.details.push("");
 }
 
 function removeDetail(stop: any, index: number | string) {
@@ -162,7 +162,7 @@ const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
   { key: "story", label: "主题叙事" },
   ...form.stops.map((stop: any, index: number) => ({
     key: `stop-${index}`,
-    label: pickI18n(stop.stopName) || `站点 ${index + 1}`,
+    label: readContentValue(stop.stopName) || `站点 ${index + 1}`,
     badge: `#${index + 1}`,
   })),
 ]);
@@ -190,28 +190,21 @@ const activeWorkspaceLabel = computed(() => {
 
 function applySelectedCitiesToDisplayName() {
   if (!selectedCityCards.value.length) return;
-  form.cityName = {
-    zh: selectedCityCards.value
-      .map((item: any) => item.nameZh || item.name)
-      .join(" / "),
-    en: selectedCityCards.value
-      .map((item: any) => item.nameEn || item.name)
-      .join(" / "),
-  };
+  form.cityName = selectedCityCards.value.map((item: any) => item.name).join(" / ");
 }
 
 function fillFromApi(data: any) {
   Object.assign(form, {
     slug: data.slug || "",
-    title: toI18n(data.title),
+    title: readContentValue(data.title),
     cultureTag: normalizeRouteTag(data.cultureTag),
-    cityName: toI18n(data.cityName),
+    cityName: readContentValue(data.cityName),
     citySlugs: Array.isArray(data.citySlugs) ? data.citySlugs : [],
     routeRegionKey: data.routeRegionKey || "",
-    duration: toI18n(data.duration),
-    audience: toI18n(data.audience),
-    summary: toI18n(data.summary),
-    story: toI18n(data.story),
+    duration: readContentValue(data.duration),
+    audience: readContentValue(data.audience),
+    summary: readContentValue(data.summary),
+    story: readContentValue(data.story),
     coverImage: data.coverImage || "",
     published: data.published ?? false,
     stops: (data.stops || []).map((stop: any, index: number) => ({
@@ -219,19 +212,19 @@ function fillFromApi(data: any) {
       sortOrder: stop.sortOrder ?? index,
       time: stop.time || "",
       isFeatured: Boolean(stop.isFeatured),
-      stopName: toI18n(stop.stopName),
-      story: toI18n(stop.story),
-      culturalStory: toI18n(stop.culturalStory),
-      details: toI18nArray(stop.details),
+      stopName: readContentValue(stop.stopName),
+      story: readContentValue(stop.story),
+      culturalStory: readContentValue(stop.culturalStory),
+      details: Array.isArray(stop.details) ? stop.details.filter((item: unknown): item is string => typeof item === "string") : [],
       image: stop.image || "",
       primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: Array.isArray(stop.images) ? stop.images : [],
       media: resolveMediaGallery(stop.media, stop.images || []),
       lat: stop.lat ?? null,
       lng: stop.lng ?? null,
-      meal: toI18n(stop.meal),
-      hotel: toI18n(stop.hotel),
-      transit: toI18n(stop.transit),
+      meal: readContentValue(stop.meal),
+      hotel: readContentValue(stop.hotel),
+      transit: readContentValue(stop.transit),
       plan: stop.plan || "",
     })),
   });
@@ -256,18 +249,18 @@ function toPayload() {
       time: stop.time,
       isFeatured: Boolean(stop.isFeatured),
       stopName: stop.stopName,
-      story: optionalI18n(stop.story),
-      culturalStory: optionalI18n(stop.culturalStory),
-      details: stop.details.filter((detail: any) => detail.zh || detail.en),
+      story: optionalContent(stop.story),
+      culturalStory: optionalContent(stop.culturalStory),
+      details: stop.details.filter((detail: unknown): detail is string => typeof detail === "string" && detail.trim().length > 0),
       image: legacyImageForMedia(stop.primaryMedia, stop.image || ""),
       primaryMedia: resolvePrimaryMedia(stop.primaryMedia, stop.image || ""),
       images: stop.images || [],
       media: resolveMediaGallery(stop.media, stop.images || []),
       lat: stop.lat == null ? null : Number(stop.lat),
       lng: stop.lng == null ? null : Number(stop.lng),
-      meal: optionalI18n(stop.meal),
-      hotel: optionalI18n(stop.hotel),
-      transit: optionalI18n(stop.transit),
+      meal: optionalContent(stop.meal),
+      hotel: optionalContent(stop.hotel),
+      transit: optionalContent(stop.transit),
       plan: stop.plan || "",
     })),
   };
@@ -297,9 +290,7 @@ onMounted(async () => {
 
     cityOptions.value = (cityRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      name: pickI18n(item.name),
-      nameZh: item.name?.zh || "",
-      nameEn: item.name?.en || "",
+      name: readContentValue(item.name),
     }));
 
     routeRegionOptions.value = homeRes.data.data.routeRegions?.length
@@ -411,8 +402,8 @@ async function handleSave() {
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="路线标题" prop="title.en">
-                <I18nInput v-model="form.title" />
+              <el-form-item label="路线标题" prop="title">
+                <ContentInput v-model="form.title" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -482,7 +473,7 @@ async function handleSave() {
               :key="city.slug"
               class="selected-card"
             >
-              <strong>{{ city.nameZh || city.name }}</strong>
+              <strong>{{ city.name }}</strong>
               <span>{{ city.slug }}</span>
             </div>
           </div>
@@ -492,17 +483,17 @@ async function handleSave() {
             >
           </div>
           <el-form-item label="前台显示城市名">
-            <I18nInput v-model="form.cityName" />
+            <ContentInput v-model="form.cityName" />
           </el-form-item>
           <el-row :gutter="16">
             <el-col :span="12">
               <el-form-item label="时长">
-                <I18nInput v-model="form.duration" />
+                <ContentInput v-model="form.duration" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="适合人群">
-                <I18nInput v-model="form.audience" />
+                <ContentInput v-model="form.audience" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -545,14 +536,14 @@ async function handleSave() {
           <div v-if="activeWorkspace === 'hero'" class="workspace-panel">
             <div class="panel-title">路线导语</div>
             <el-form-item label="摘要">
-              <I18nMarkdownEditor v-model="form.summary" :rows="6" />
+              <ContentMarkdownEditor v-model="form.summary" :rows="6" />
             </el-form-item>
           </div>
 
           <div v-else-if="activeWorkspace === 'story'" class="workspace-panel">
             <div class="panel-title">主题叙事</div>
             <el-form-item label="路线故事">
-              <I18nMarkdownEditor v-model="form.story" :rows="10" />
+              <ContentMarkdownEditor v-model="form.story" :rows="10" />
             </el-form-item>
           </div>
 
@@ -566,7 +557,7 @@ async function handleSave() {
               </el-col>
               <el-col :span="16">
                 <el-form-item label="站点名称">
-                  <I18nInput v-model="activeStop.stopName" />
+                  <ContentInput v-model="activeStop.stopName" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -610,10 +601,10 @@ async function handleSave() {
               </el-col>
             </el-row>
             <el-form-item label="现场故事">
-              <I18nMarkdownEditor v-model="activeStop.story" :rows="6" />
+              <ContentMarkdownEditor v-model="activeStop.story" :rows="6" />
             </el-form-item>
             <el-form-item label="文化解读">
-              <I18nMarkdownEditor
+              <ContentMarkdownEditor
                 v-model="activeStop.culturalStory"
                 :rows="6"
               />
@@ -625,7 +616,7 @@ async function handleSave() {
                   :key="index"
                   class="detail-row"
                 >
-                  <I18nInput v-model="activeStop.details[index]" />
+                  <ContentInput v-model="activeStop.details[index]" />
                   <el-button
                     text
                     type="danger"
@@ -649,17 +640,17 @@ async function handleSave() {
             <el-row :gutter="16">
               <el-col :span="8">
                 <el-form-item label="餐饮">
-                  <I18nInput v-model="activeStop.meal" />
+                  <ContentInput v-model="activeStop.meal" />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="住宿">
-                  <I18nInput v-model="activeStop.hotel" />
+                  <ContentInput v-model="activeStop.hotel" />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="交通">
-                  <I18nInput v-model="activeStop.transit" />
+                  <ContentInput v-model="activeStop.transit" />
                 </el-form-item>
               </el-col>
             </el-row>

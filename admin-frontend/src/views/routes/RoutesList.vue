@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { routesApi } from '@/api/routes'
 import type { Route } from '@/types/route'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { formatRouteTagLabel, normalizeRouteTag } from '@/constants/guangdongRegions'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
@@ -136,8 +136,7 @@ async function handleToggleStatus(routeItem: Route) {
         <el-table-column label="标题" min-width="180">
           <template #default="{ row }">
             <div>
-              <div class="route-title">{{ pickI18n(row.title) }}</div>
-              <div class="route-title-en">{{ pickI18n(row.title, 'en') }}</div>
+              <div class="route-title">{{ readContentValue(row.title) }}</div>
             </div>
           </template>
         </el-table-column>
@@ -212,7 +211,7 @@ async function handleToggleStatus(routeItem: Route) {
               link
               :icon="Delete"
               size="small"
-              @click="handleDelete(row.id, pickI18n(row.title as any))"
+              @click="handleDelete(row.id, readContentValue(row.title as any))"
             >
               删除
             </el-button>

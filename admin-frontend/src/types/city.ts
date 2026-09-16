@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 import type { MediaAsset } from './media'
 
 export interface CitySection {
@@ -53,19 +53,19 @@ export interface City {
 export interface CityFormData {
   id?: string
   slug: string
-  name: I18nObject
-  regionLabel: I18nObject
+  name: ContentText
+  regionLabel: ContentText
   adcode?: number | null
   heroImage: string
   heroMedia?: MediaAsset | null
-  heroNarrative?: I18nObject
-  tags: I18nObject[]
-  editorIntro: I18nObject
+  heroNarrative?: ContentText
+  tags: ContentText[]
+  editorIntro: ContentText
   contentMarkdown: string
   galleryImages?: string[]
   galleryMedia?: MediaAsset[]
-  foodTitle?: I18nObject
-  foodDescription?: I18nObject
+  foodTitle?: ContentText
+  foodDescription?: ContentText
   foodImages?: string[]
   sections?: CitySection[]
   published?: boolean

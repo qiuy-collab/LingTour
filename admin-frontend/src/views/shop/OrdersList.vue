@@ -6,7 +6,7 @@ import { ordersApi } from '@/api/orders'
 import { OrderStatusMap, OrderStatusColorMap, PaymentStatusMap, PaymentStatusColorMap } from '@/types/order'
 import type { Order } from '@/types/order'
 import { formatDateTime } from '@/utils/format'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 
@@ -92,7 +92,7 @@ async function handleRefund(row: Order) {
 
 function itemsSummary(items: Order['items']) {
   if (!items || !items.length) return '-'
-  return items.map((i: any) => `${pickI18n(i.productName) || i.productName} ×${i.quantity}`).join('、')
+  return items.map((i: any) => `${readContentValue(i.productName) || i.productName} ×${i.quantity}`).join('、')
 }
 </script>
 

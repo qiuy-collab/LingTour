@@ -11,7 +11,7 @@ export const collectionsApi = {
   },
 
   getCollection(id: string) {
-    return api.get<ApiResponse<StoreCollection>>(`/shop/collections/${id}`, { params: { rawI18n: true } })
+    return api.get<ApiResponse<StoreCollection>>(`/shop/collections/${id}`)
   },
 
   createCollection(data: CollectionFormData) {

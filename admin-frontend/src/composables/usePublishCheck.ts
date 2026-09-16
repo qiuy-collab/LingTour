@@ -25,20 +25,14 @@ export interface CheckResult {
   canPublish: boolean
 }
 
-interface I18nField {
-  zh?: string
-  en?: string
-}
-
 interface StopLike {
-  stopName?: I18nField
   [key: string]: any
 }
 
 interface FormData {
   slug?: string
-  title?: I18nField
-  name?: I18nField
+  title?: string
+  name?: string
   coverImage?: string
   heroImage?: string
   image?: string
@@ -55,14 +49,7 @@ interface FormData {
 function isNonEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return false
   if (typeof value === 'string') return value.trim().length > 0
-  if (typeof value === 'object') {
-    // i18n object: at least one locale has content
-    const i18n = value as I18nField
-    return Boolean(
-      (i18n.zh && i18n.zh.trim()) || (i18n.en && i18n.en.trim()),
-    )
-  }
-  return true
+  return false
 }
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
@@ -111,11 +98,6 @@ function checkCity(data: FormData): { errors: string[]; warnings: string[] } {
     errors.push('至少需要一个内容板块（Section）')
   }
 
-  // Bilingual consistency
-  if (data.name) {
-    checkBilingual(data.name, '城市名称', warnings)
-  }
-
   return { errors, warnings }
 }
 
@@ -145,14 +127,6 @@ function checkRoute(data: FormData): { errors: string[]; warnings: string[] } {
   // At least one stop (content section for routes)
   if (!data.stops || data.stops.length === 0) {
     errors.push('至少需要一个站点（Stop）')
-  }
-
-  // Bilingual consistency
-  if (data.title) {
-    checkBilingual(data.title, '路线标题', warnings)
-  }
-  if (data.summary) {
-    checkBilingual(data.summary, '路线摘要', warnings)
   }
 
   // Validate routeSlugs reference (basic format check)
@@ -190,15 +164,6 @@ function checkProduct(data: FormData): { errors: string[]; warnings: string[] } 
     errors.push('请上传商品图片')
   }
 
-  // Bilingual consistency
-  const nameField = data.name || data.title
-  if (nameField) {
-    checkBilingual(nameField, '商品名称', warnings)
-  }
-  if (data.story) {
-    checkBilingual(data.story, '商品故事', warnings)
-  }
-
   return { errors, warnings }
 }
 
@@ -225,14 +190,6 @@ function checkEvent(data: FormData): { errors: string[]; warnings: string[] } {
     errors.push('请上传活动封面图')
   }
 
-  // Bilingual consistency
-  if (data.title) {
-    checkBilingual(data.title, '活动标题', warnings)
-  }
-  if (data.summary) {
-    checkBilingual(data.summary, '活动摘要', warnings)
-  }
-
   // Validate related route slugs
   if (data.relatedRouteSlugs && data.relatedRouteSlugs.length > 0) {
     for (const slug of data.relatedRouteSlugs) {
@@ -243,26 +200,6 @@ function checkEvent(data: FormData): { errors: string[]; warnings: string[] } {
   }
 
   return { errors, warnings }
-}
-
-// ─── Bilingual consistency check ─────────────────────────────────────
-
-function checkBilingual(
-  value: unknown,
-  fieldName: string,
-  warnings: string[],
-): void {
-  if (!value || typeof value !== 'object') return
-
-  const i18n = value as I18nField
-  const hasZh = Boolean(i18n.zh && i18n.zh.trim())
-  const hasEn = Boolean(i18n.en && i18n.en.trim())
-
-  if (hasZh && !hasEn) {
-    warnings.push(`${fieldName} 已填写中文但缺少英文翻译`)
-  } else if (!hasZh && hasEn) {
-    warnings.push(`${fieldName} 已填写英文但缺少中文翻译`)
-  }
 }
 
 // ── Composable ───────────────────────────────────────────────────────

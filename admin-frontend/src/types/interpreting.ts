@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 
 export interface ServiceMode {
   id: string
@@ -17,11 +17,11 @@ export interface ServiceMode {
 
 export interface ServiceModeFormData {
   sortOrder: number
-  title: I18nObject
-  price: I18nObject
-  bestFor: I18nObject
-  body: I18nObject
-  includes: I18nObject[]
+  title: ContentText
+  price: ContentText
+  bestFor: ContentText
+  body: ContentText
+  includes: ContentText[]
   accent: 'light' | 'dark'
   featured: boolean
 }
@@ -45,12 +45,12 @@ export interface Interpreter {
 
 export interface InterpreterFormData {
   sortOrder: number
-  name: I18nObject
-  language: I18nObject
-  focus: I18nObject
-  helps: I18nObject[]
+  name: ContentText
+  language: ContentText
+  focus: ContentText
+  helps: ContentText[]
   avatar: string
-  bio: I18nObject
+  bio: ContentText
   status: InterpreterStatus
   city: string
 }
@@ -95,8 +95,8 @@ export interface FAQ {
 
 export interface FAQFormData {
   sortOrder: number
-  question: I18nObject
-  answer: I18nObject
+  question: ContentText
+  answer: ContentText
   category: FAQCategory
 }
 

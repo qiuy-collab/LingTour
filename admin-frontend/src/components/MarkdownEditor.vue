@@ -6,7 +6,7 @@ import { MdEditor, NormalToolbar, type ExposeParam, type ToolbarNames } from 'md
 import 'md-editor-v3/lib/style.css'
 import { uploadMediaFile } from '@/api/media'
 import MediaPickerDialog from '@/components/media/MediaPickerDialog.vue'
-import { extractErrorMessage } from '@/utils/i18n'
+import { extractErrorMessage } from '@/utils/errors'
 
 const model = defineModel<string>({ default: '' })
 const props = withDefaults(defineProps<{

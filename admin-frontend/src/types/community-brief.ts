@@ -1,10 +1,10 @@
-import type { I18nObject } from '@/types/common'
+import type { ContentText } from '@/types/common'
 
 export interface CommunityBrief {
   id: string
   slug: string
-  title: I18nObject
-  prompt: I18nObject
+  title: ContentText
+  prompt: ContentText
   channel: string
   location: string
   route: string

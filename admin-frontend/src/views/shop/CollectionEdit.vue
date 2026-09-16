@@ -6,14 +6,14 @@ import type { FormInstance } from 'element-plus'
 import { collectionsApi } from '@/api/collections'
 import { routesApi } from '@/api/routes'
 import type { CollectionFormData } from '@/types/collection'
-import { pickI18n, toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ContentInput from '@/components/ContentInput.vue'
+import ContentMarkdownEditor from '@/components/ContentMarkdownEditor.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
 
 const route = useRoute()
@@ -26,11 +26,11 @@ const routeOptions = ref<Array<{ slug: string; title: string }>>([])
 
 const form = reactive<CollectionFormData>({
   slug: '',
-  title: { zh: '', en: '' },
+  title: '',
   routeName: '',
   routeSlug: '',
   image: '',
-  body: { zh: '', en: '' },
+  body: '',
   sortOrder: 0,
   published: false,
 })
@@ -40,7 +40,7 @@ const rules = {
     { required: true, message: '请输入 Slug', trigger: 'blur' },
     { pattern: /^[a-z0-9]+(-[a-z0-9]+)*$/, message: 'Slug 必须是 kebab-case', trigger: 'blur' },
   ],
-  'title.en': [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -58,7 +58,7 @@ onMounted(async () => {
     const routesRes = await routesApi.getRoutes({ page: 1, pageSize: 200 })
     routeOptions.value = (routesRes.data.data.data || []).map((item: any) => ({
       slug: item.slug,
-      title: pickI18n(item.title) || item.slug,
+      title: readContentValue(item.title) || item.slug,
     }))
 
     const id = route.params.id as string
@@ -66,25 +66,13 @@ onMounted(async () => {
       isEdit.value = true
       const res = await collectionsApi.getCollection(id)
       const data = res.data.data
-      let routeName = data.routeName || ''
-      if (typeof routeName === 'string' && routeName.startsWith('{')) {
-        try {
-          const parsed = JSON.parse(routeName)
-          routeName = parsed.zh || parsed.en || routeName
-        } catch {
-          routeName = data.routeName || ''
-        }
-      } else if (typeof routeName === 'object' && routeName !== null) {
-        routeName = routeName.zh || routeName.en || ''
-      }
-
       Object.assign(form, {
         slug: data.slug,
-        title: toI18n(data.title),
-        routeName,
+        title: readContentValue(data.title),
+        routeName: readContentValue(data.routeName),
         routeSlug: data.routeSlug || '',
         image: data.image || '',
-        body: toI18n(data.body),
+        body: readContentValue(data.body),
         sortOrder: data.sortOrder ?? 0,
         published: data.published ?? false,
       })
@@ -142,8 +130,8 @@ async function handleSave() {
           <el-form-item label="Slug" prop="slug">
             <el-input v-model="form.slug" placeholder="coastal-life-kit" />
           </el-form-item>
-          <el-form-item label="系列名称" prop="title.en">
-            <I18nInput v-model="form.title" />
+          <el-form-item label="系列名称" prop="title">
+            <ContentInput v-model="form.title" />
           </el-form-item>
           <el-form-item label="封面图">
             <ImageUpload v-model="form.image" module="shop" />
@@ -196,7 +184,7 @@ async function handleSave() {
           <div class="workspace-panel">
             <div class="panel-title">系列正文</div>
             <el-form-item label="描述内容">
-              <I18nMarkdownEditor v-model="form.body" :rows="8" />
+              <ContentMarkdownEditor v-model="form.body" :rows="8" />
             </el-form-item>
           </div>
         </EditorWorkspace>

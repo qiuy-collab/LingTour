@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { pickI18n } from "@/types/common";
+import { readContentValue } from "@/types/common";
 import { resolveMediaUrl } from "@/utils/media";
-import { useEditorLocale } from "@/composables/useEditorLocale";
 
 type PreviewType =
   | "city"
@@ -22,7 +21,6 @@ const props = defineProps<{
   mobileMode?: boolean;
 }>();
 
-const { editorLocale } = useEditorLocale();
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const frameShellRef = ref<HTMLDivElement | null>(null);
 
@@ -80,7 +78,7 @@ const desktopHeightMap: Record<PreviewType, number> = {
 const desktopHeight = computed(() => desktopHeightMap[props.type]);
 
 function text(value: unknown, fallback = "") {
-  return pickI18n(value, editorLocale.value) || fallback;
+  return readContentValue(value) || fallback;
 }
 
 function list(values: unknown) {
@@ -88,10 +86,6 @@ function list(values: unknown) {
 }
 
 function buildCityPreview() {
-  function text(value: unknown, fallback = "") {
-    const content = typeof value === "string" ? value : value && typeof value === "object" ? (value as Record<string, unknown>).en : undefined;
-    return typeof content === "string" ? content : fallback;
-  }
   function media(value: any) {
     if (!value || typeof value !== "object") return undefined;
     return {
@@ -391,7 +385,6 @@ function createPreviewEnvelope() {
     channel: "culvoy-preview" as const,
     key: previewKey.value,
     type: props.type,
-    locale: editorLocale.value,
     source: previewSource,
     data: previewPayload.value,
     timestamp: Date.now(),
@@ -479,7 +472,6 @@ function reloadFrame() {
 }
 
 watch(previewPayload, schedulePostPreview, { deep: true });
-watch(editorLocale, schedulePostPreview);
 watch(iframeSrc, () => {
   iframeLoaded.value = false;
   iframeLoading.value = true;

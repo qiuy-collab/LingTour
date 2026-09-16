@@ -4,7 +4,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { faqsApi } from '@/api/faqs'
 import { FAQCategoryMap } from '@/types/interpreting'
 import type { FAQ } from '@/types/interpreting'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 
@@ -28,8 +28,8 @@ const {
     if (!k) return sorted
     return sorted.filter(
       (it) =>
-        (pickI18n(it.question as any) || '').toLowerCase().includes(k) ||
-        (pickI18n(it.answer as any) || '').toLowerCase().includes(k),
+        readContentValue(it.question as any).toLowerCase().includes(k) ||
+        readContentValue(it.answer as any).toLowerCase().includes(k),
     )
   },
 })
@@ -49,7 +49,7 @@ function handleEdit(id: string) {
 }
 
 async function handleDelete(row: FAQ) {
-  const question = pickI18n(row.question as any) || '该FAQ'
+  const question = readContentValue(row.question as any) || '该FAQ'
   try {
     await ElMessageBox.confirm(
       `确定删除FAQ「${question}」?`,
@@ -135,13 +135,12 @@ async function handleMoveDown(index: number) {
         </el-table-column>
         <el-table-column label="问题" min-width="280">
           <template #default="{ row }">
-            <div class="qa-text">{{ pickI18n(row.question) }}</div>
-            <div class="qa-sub">{{ pickI18n(row.question, 'en') }}</div>
+            <div class="qa-text">{{ readContentValue(row.question) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="答案" min-width="320" show-overflow-tooltip>
           <template #default="{ row }">
-            <div class="qa-text">{{ pickI18n(row.answer) }}</div>
+                <div class="qa-text">{{ readContentValue(row.answer) }}</div>
           </template>
         </el-table-column>
         <el-table-column label="分类" width="120" align="center">

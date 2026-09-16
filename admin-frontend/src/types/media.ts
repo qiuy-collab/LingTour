@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 
 export type MediaType = 'image' | 'video'
 
@@ -6,7 +6,7 @@ export interface MediaAsset {
   type: MediaType
   url: string
   poster?: string
-  alt?: I18nObject
+  alt?: ContentText
 }
 
 export function isMediaAsset(value: unknown): value is MediaAsset {

@@ -12,7 +12,7 @@ export const routesApi = {
 
   /** 获取单个路线 */
   getRoute(id: string) {
-    return request.get<ApiResponse<Route>>(`/routes/${id}`, { params: { rawI18n: true } })
+    return request.get<ApiResponse<Route>>(`/routes/${id}`)
   },
 
   /** 新增路线 */

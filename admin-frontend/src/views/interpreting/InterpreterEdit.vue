@@ -5,15 +5,15 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { interpretersApi } from '@/api/interpreters'
 import type { InterpreterFormData } from '@/types/interpreting'
-import { toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
 import ImageUpload from '@/components/ImageUpload.vue'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ContentInput from '@/components/ContentInput.vue'
+import ContentMarkdownEditor from '@/components/ContentMarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,12 +24,12 @@ const formRef = ref<FormInstance>()
 
 const form = reactive<InterpreterFormData>({
   sortOrder: 1,
-  name: { zh: '', en: '' },
-  language: { zh: '', en: '' },
-  focus: { zh: '', en: '' },
+  name: '',
+  language: '',
+  focus: '',
   helps: [],
   avatar: '',
-  bio: { zh: '', en: '' },
+  bio: '',
   status: 'pending_review',
   city: '',
 })
@@ -37,8 +37,8 @@ const form = reactive<InterpreterFormData>({
 const newHelpEn = ref('')
 
 const rules = {
-  'name.en': [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  'language.en': [{ required: true, message: '请输入服务语言', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+  language: [{ required: true, message: '请输入服务语言', trigger: 'blur' }],
   city: [{ required: true, message: '请输入服务城市', trigger: 'blur' }],
 }
 
@@ -47,8 +47,8 @@ const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
 function addHelp() {
   const content = newHelpEn.value.trim()
   if (!content) return
-  if (!form.helps.some((item) => item.en === content || item.zh === content)) {
-    form.helps.push({ zh: '', en: content })
+  if (!form.helps.includes(content)) {
+    form.helps.push(content)
   }
   newHelpEn.value = ''
 }
@@ -71,12 +71,12 @@ onMounted(async () => {
     const data = res.data.data
     Object.assign(form, {
       sortOrder: data.sortOrder ?? 1,
-      name: toI18n(data.name),
-      language: toI18n(data.language),
-      focus: toI18n(data.focus),
-      helps: (data.helps || []).map((item: any) => toI18n(item)),
+      name: readContentValue(data.name),
+      language: readContentValue(data.language),
+      focus: readContentValue(data.focus),
+      helps: (data.helps || []).filter((item: unknown): item is string => typeof item === 'string'),
       avatar: data.avatar || '',
-      bio: toI18n(data.bio),
+      bio: readContentValue(data.bio),
       status: data.status || 'pending_review',
       city: data.city || '',
     })
@@ -164,17 +164,17 @@ async function handleSave() {
             class="section-alert"
           />
 
-          <el-form-item label="姓名" prop="name.en">
-            <I18nInput v-model="form.name" />
+          <el-form-item label="姓名" prop="name">
+            <ContentInput v-model="form.name" />
           </el-form-item>
-          <el-form-item label="服务语言" prop="language.en">
-            <I18nInput v-model="form.language" />
+          <el-form-item label="服务语言" prop="language">
+            <ContentInput v-model="form.language" />
           </el-form-item>
           <el-form-item label="服务城市" prop="city">
             <el-input v-model="form.city" />
           </el-form-item>
           <el-form-item label="专注领域">
-            <I18nInput v-model="form.focus" />
+            <ContentInput v-model="form.focus" />
           </el-form-item>
         </el-card>
 
@@ -182,7 +182,7 @@ async function handleSave() {
           <template #header>能力标签</template>
           <div class="tag-list">
             <el-tag v-for="(item, index) in form.helps" :key="index" closable @close="removeHelp(index)">
-              {{ item.en || item.zh }}
+              {{ item }}
             </el-tag>
           </div>
           <div class="tag-input-row">
@@ -200,7 +200,7 @@ async function handleSave() {
           <div class="workspace-panel">
             <div class="panel-title">个人简介</div>
             <el-form-item label="简介正文">
-              <I18nMarkdownEditor v-model="form.bio" :rows="8" />
+              <ContentMarkdownEditor v-model="form.bio" :rows="8" />
             </el-form-item>
           </div>
         </EditorWorkspace>

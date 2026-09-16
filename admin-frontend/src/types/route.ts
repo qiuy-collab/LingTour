@@ -1,4 +1,4 @@
-import type { I18nObject } from './common'
+import type { ContentText } from './common'
 import type { MediaAsset } from './media'
 
 export type CultureTag =
@@ -61,13 +61,13 @@ export interface Route {
 export interface RouteFormData {
   id?: string
   slug: string
-  title: I18nObject
+  title: ContentText
   cultureTag: string
-  cityName: I18nObject
-  duration: I18nObject
-  audience: I18nObject
-  summary: I18nObject
-  story: I18nObject
+  cityName: ContentText
+  duration: ContentText
+  audience: ContentText
+  summary: ContentText
+  story: ContentText
   coverImage: string
   routeRegionKey?: string
   stops: RouteStop[]

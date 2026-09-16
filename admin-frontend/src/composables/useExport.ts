@@ -23,28 +23,12 @@ export interface ExportOptions {
 }
 
 /**
- * Pick i18n value for export (zh preferred, fallback to en)
- */
-function pickI18nForExport(value: any): string {
-  if (!value) return ''
-  if (typeof value === 'string') return value
-  if (typeof value === 'object') {
-    return value.zh || value.en || ''
-  }
-  return String(value)
-}
-
-/**
  * Extract cell value from a row based on column definition
  */
 function getCellValue(row: any, col: ExportColumn): any {
   if (col.accessor) return col.accessor(row)
   if (!col.key) return ''
   const value = row[col.key]
-  // Auto-detect I18nObject
-  if (value && typeof value === 'object' && !Array.isArray(value) && ('zh' in value || 'en' in value)) {
-    return pickI18nForExport(value)
-  }
   if (value === null || value === undefined) return ''
   return value
 }
@@ -144,6 +128,5 @@ export function useExport() {
   return {
     exportCSV,
     exportExcel,
-    pickI18nForExport,
   }
 }

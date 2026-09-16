@@ -4,7 +4,7 @@ import { productsApi } from '@/api/products'
 import { eventsApi } from '@/api/events'
 import { collectionsApi } from '@/api/collections'
 import { homeApi } from '@/api/home'
-import { pickI18n } from '@/types/common'
+import { readContentValue } from '@/types/common'
 
 type Severity = 'error' | 'warning'
 type Domain = 'city' | 'route' | 'collection' | 'product' | 'event' | 'home'
@@ -36,7 +36,7 @@ export interface AuditReport {
 function hasText(value: unknown) {
   if (!value) return false
   if (typeof value === 'string') return value.trim().length > 0
-  if (typeof value === 'object') return pickI18n(value).trim().length > 0
+  if (typeof value === 'object') return false
   return String(value).trim().length > 0
 }
 
@@ -74,7 +74,7 @@ export async function runContentAudit(): Promise<AuditReport> {
   const issues: AuditIssue[] = []
 
   for (const city of cities) {
-    const title = pickI18n(city.name) || city.slug
+    const title = readContentValue(city.name) || city.slug
     const path = `/admin/cities/${city.id}/edit`
 
     if (city.published && !city.heroImage) {
@@ -143,7 +143,7 @@ export async function runContentAudit(): Promise<AuditReport> {
   }
 
   for (const route of routes) {
-    const title = pickI18n(route.title) || route.slug
+    const title = readContentValue(route.title) || route.slug
     const path = `/admin/routes/${route.id}/edit`
 
     if (route.published && !route.coverImage) {
@@ -224,7 +224,7 @@ export async function runContentAudit(): Promise<AuditReport> {
   }
 
   for (const collection of collections) {
-    const title = pickI18n(collection.title) || collection.slug
+    const title = readContentValue(collection.title) || collection.slug
     const path = `/admin/shop/collections/${collection.id}/edit`
 
     if (collection.routeSlug && !routeSlugSet.has(collection.routeSlug)) {
@@ -241,7 +241,7 @@ export async function runContentAudit(): Promise<AuditReport> {
   }
 
   for (const product of products) {
-    const title = pickI18n(product.name) || product.slug
+    const title = readContentValue(product.name) || product.slug
     const path = `/admin/shop/products/${product.id}/edit`
 
     if (product.published && !product.image) {
@@ -306,7 +306,7 @@ export async function runContentAudit(): Promise<AuditReport> {
   }
 
   for (const event of events) {
-    const title = pickI18n(event.title) || event.id
+    const title = readContentValue(event.title) || event.id
     const path = `/admin/events/${event.id}/edit`
 
     if (event.status !== 'draft' && !event.image) {

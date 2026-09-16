@@ -5,14 +5,14 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { faqsApi } from '@/api/faqs'
 import type { FAQFormData } from '@/types/interpreting'
-import { toI18n } from '@/types/common'
-import { extractErrorMessage } from '@/utils/i18n'
+import { readContentValue } from '@/types/common'
+import { extractErrorMessage } from '@/utils/errors'
 import { useDirtyForm } from '@/composables/useDirtyForm'
 import EditorPageHeader from '@/components/editor/EditorPageHeader.vue'
 import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FrontendPagePreview from '@/components/FrontendPagePreview.vue'
-import I18nInput from '@/components/I18nInput.vue'
-import I18nMarkdownEditor from '@/components/I18nMarkdownEditor.vue'
+import ContentInput from '@/components/ContentInput.vue'
+import ContentMarkdownEditor from '@/components/ContentMarkdownEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,14 +23,14 @@ const formRef = ref<FormInstance>()
 
 const form = reactive<FAQFormData>({
   sortOrder: 1,
-  question: { zh: '', en: '' },
-  answer: { zh: '', en: '' },
+  question: '',
+  answer: '',
   category: 'interpreting',
 })
 
 const rules = {
   category: [{ required: true, message: '请选择分类', trigger: 'change' }],
-  'question.en': [{ required: true, message: '请输入问题', trigger: 'blur' }],
+  question: [{ required: true, message: '请输入问题', trigger: 'blur' }],
 }
 
 const { isDirty, resetDirty, disableDirtyCheck } = useDirtyForm({ form })
@@ -49,8 +49,8 @@ onMounted(async () => {
     const data = res.data.data
     Object.assign(form, {
       sortOrder: data.sortOrder ?? 1,
-      question: toI18n(data.question),
-      answer: toI18n(data.answer),
+      question: readContentValue(data.question),
+      answer: readContentValue(data.answer),
       category: data.category || 'interpreting',
     })
     resetDirty()
@@ -130,11 +130,11 @@ async function handleSave() {
         >
           <div class="workspace-panel">
             <div class="panel-title">问题与答案</div>
-            <el-form-item label="问题" prop="question.en">
-              <I18nInput v-model="form.question" />
+            <el-form-item label="问题" prop="question">
+              <ContentInput v-model="form.question" />
             </el-form-item>
             <el-form-item label="答案">
-              <I18nMarkdownEditor v-model="form.answer" :rows="8" />
+              <ContentMarkdownEditor v-model="form.answer" :rows="8" />
             </el-form-item>
           </div>
         </EditorWorkspace>
