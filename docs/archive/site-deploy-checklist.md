@@ -1,5 +1,7 @@
 # Culvoy Site Deployment Checklist
 
+> ⚠️ **历史文档失真标注（2026-09-16）**：本文中的域名记载曾被 rebrand 提交 `9cb4eb0` 批量误替换——文中出现的 `culvoy.com` 族域名及其证书路径，在本文写作时均为 `lingfengtranstour.cn` 族。阅读时应按此理解，勿当作当时真实配置。
+
 ## Pre-deployment Checklist
 
 ### Build Verification

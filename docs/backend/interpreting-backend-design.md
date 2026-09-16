@@ -329,7 +329,7 @@ Interpreting 页使用 `cities` 表（Culture 模块已有）作为城市下拉�
       "name": "Zhanjiang",
       "label": "Southern coast",
       "tags": ["Coast", "Seafood", "Volcanic landscape"],
-      "gallery": ["https://oss.culvoy.com/cities/zhanjiang/1.jpg"]
+      "gallery": ["https://oss.lingtour.cn/cities/zhanjiang/1.jpg"]
     }
   ]
 }

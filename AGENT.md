@@ -27,7 +27,7 @@ Keep local and production addresses strictly separate. Never point local work at
 
 - API health: production `https://api.culvoy.com/health`; local `http://localhost:8000/health`.
 - Production topology: host Nginx (TLS, BT panel) → `127.0.0.1:8088` → the `lingtour-nginx` Docker gateway, which routes by Host to the `site`/`api`/`admin` containers. Deployment runs `tools/deploy-docker.sh` through the `Deploy LingTour Docker Stack` GitHub Actions workflow, which is `workflow_dispatch`-only (pushes to `main` trigger CI only, never a deploy). PM2 processes on the server are retired and kept stopped. See [`docs/release.md`](docs/release.md) for deployment channels and rollback.
-- Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `culvoy.com` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
+- Domain migration (2026-09): `culvoy.com` / `admin.culvoy.com` / `api.culvoy.com` are the production domains. The legacy `lingfengtranstour.cn` family is kept in parallel (server_name and smoke checks) during the transition and must not be removed until the migration is closed.
 
 ## 3. Mandatory startup
 
@@ -117,12 +117,12 @@ Use `admin-frontend/.env.local`, not an unignored plain `.env`, for local admin 
 
 - Use the real API and production-shaped data; do not introduce fake, placeholder, screenshot-only, or local-only business data.
 - Local site/admin visual work normally reads from `https://api.culvoy.com`; explain impact and obtain authorization before writing production data.
-- Site variables: `NEXT_PUBLIC_API_URL=https://api.culvoy.com/api/v1` and `INTERNAL_API_ORIGIN=https://api.culvoy.com`.
+- Site variables: `NEXT_PUBLIC_API_URL=https://api.culvoy.com/api/v1` and `INTERNAL_API_ORIGIN=https://api.culvoy.com/api/v1`. `server-api.ts` uses `INTERNAL_API_ORIGIN` verbatim as the API base URL, so the value must include the `/api/v1` path (production compose sets `http://api:8000/api/v1`).
 - Admin variables: `VITE_API_ORIGIN`, `VITE_SITE_ORIGIN` or `VITE_SITE_PREVIEW_ORIGIN`, and `VITE_MEDIA_ORIGIN`.
 - The admin client calls `/api/admin`; Vite/Nginx rewrite it to `/api/v1/admin`. Preserve this proxy contract.
 - Start the local API only for API work; do not start or reset it merely to obtain data for UI work.
 - Admin labels, field names, help, and operational messages are Chinese. Business body content is authored once in English and displayed verbatim by the public site.
-- The database still contains legacy `{ en, zh }` JSONB fields. Editing English must preserve existing `zh` values until an approved migration removes them.
+- Content is English-only: the deployed migration `1762300000000-EnglishOnlyContent` collapsed the legacy `{ en, zh }` JSONB values into the single-English contract, and the admin edits a single English value. Do not reintroduce `zh` content fields.
 - Admin save success is insufficient: verify the request, persistence after refresh/re-login, audit/state transitions, and resulting public output.
 - Admin previews must use the real public page/preview route, including unsaved draft transfer. Never build an approximate fake preview in the admin.
 - Preserve routes, slugs, auth flows, SEO entry points, public API paths, image-only records, and compatibility fields unless an explicit migration changes them.
@@ -239,7 +239,7 @@ Check:
 
 ## 10. Deployment and migrations
 
-Full details—release channels, PM2 process table, environment variables, rollback—live in [`docs/release.md`](docs/release.md). Non-negotiable rules:
+Full details—release channels, Docker topology, environment variables, rollback—live in [`docs/release.md`](docs/release.md). Non-negotiable rules:
 
 1. Verify tests/builds and both repository statuses.
 2. Review every migration; add rather than rewrite migrations.
@@ -247,18 +247,25 @@ Full details—release channels, PM2 process table, environment variables, rollb
 4. Push the independent admin repository and root repository only with authorization.
 5. Inspect any GitHub Actions deployment triggered by root `main`.
 
-Approved manual deployment:
+Approved deployment is the standard channel—the `Deploy LingTour Docker Stack` workflow (`workflow_dispatch`-only), which SSHes to the server and runs the authoritative script:
 
 ```bash
-ssh lingtour-server "cd /root/LingTour && git pull --ff-only origin main && bash tools/deploy-pm2.sh"
+gh workflow run deploy.yml --ref main
+gh run watch   # monitor the run to completion
 ```
 
-`tools/deploy-pm2.sh` is the PM2 deployment source of truth. It can reset a dirty server worktree, builds API/site/admin, runs pending TypeORM migrations, restarts PM2, and performs health checks. Its Git backup is not a database backup. Never place unpushed source only on the server.
+Or, after explicit authorization, run the same authoritative script directly on the server:
+
+```bash
+ssh Ravi-server "cd /root/LingTour && bash tools/deploy-docker.sh"
+```
+
+`tools/deploy-docker.sh` is the Docker deployment source of truth. It backs up the server Git state, fast-forwards to `origin/main`, builds the site/api/admin images, runs pending TypeORM migrations (`migration:run`), restarts the containers and the nginx gateway, and performs health checks. Its Git backup is not a database backup—rule 3's database backup is a separate host-level `pg_dump -Fc`. Never place unpushed source only on the server.
 
 Post-deploy:
 
 ```bash
-ssh lingtour-server "cd /root/LingTour && git rev-parse --short HEAD && pm2 status"
+ssh Ravi-server "cd /root/LingTour && git rev-parse --short HEAD && docker compose -f docker-compose.prod.yml ps"
 ```
 
 Then verify production API health, Home, changed pages, representative Culture/Route details, Interpreting/booking, Shop/Checkout, Login/Profile, Community, and changed admin create/edit/save/preview/status flows.

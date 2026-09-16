@@ -1,7 +1,9 @@
 # Culvoy 部署与运维手册
 
+> ⚠️ **历史文档失真标注（2026-09-16）**：本文中的域名记载曾被 rebrand 提交 `9cb4eb0` 批量误替换——文中出现的 `culvoy.com` / `api.culvoy.com` / `admin.culvoy.com` 及其证书路径，在本文写作时均为 `lingfengtranstour.cn` 族（如 `api.lingfengtranstour.cn`）。阅读时应按此理解，勿当作当时真实配置。
+
 > 本文档覆盖 Culvoy 项目从零搭建到日常运维的完整流程。  
-> 域名：`culvoy.com`  
+> 域名：`culvoy.com`（写作时为 `lingfengtranstour.cn`，见上方标注）
 > 最后更新：2026-05-28
 
 ---

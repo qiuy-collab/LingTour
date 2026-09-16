@@ -1,5 +1,7 @@
 # Docker deployment notes
 
+> ⚠️ **Historical distortion notice (2026-09-16):** Domain references in this document were mass-mis-replaced by rebrand commit `9cb4eb0` — at the time of writing, all `culvoy.com`-family domains were `lingfengtranstour.cn`-family domains (e.g. `api.lingfengtranstour.cn`). Read them accordingly; they are not the actual configuration of that period.
+
 Culvoy currently runs in production via PM2. The Docker deployment files are prepared for the next migration/update path without interrupting the existing PM2 services.
 
 ## Files

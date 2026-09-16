@@ -1,5 +1,7 @@
 # Culvoy V1 技术执行与详细规格方案 (Agent 专用版)
 
+> ⚠️ **历史文档失真标注（2026-09-16）**：本文中的域名记载曾被 rebrand 提交 `9cb4eb0` 批量误替换——文中出现的 `culvoy.com` 族域名，在本文写作时均为 `lingfengtranstour.cn` 族（如 `api.lingfengtranstour.cn`）。阅读时应按此理解。
+
 本方案旨在为 Agent 提供清晰、可执行的路径，用于实现 Culvoy 的系统性升级。
 
 ---

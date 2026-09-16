@@ -24,7 +24,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 ## 2. 服务器与运行拓扑
 
 - 服务器：SSH 别名 `Ravi-server`，仓库路径 `/root/LingTour`。
-- 生产域名：`https://culvoy.com`（site）、`https://admin.culvoy.com`（admin）、`https://api.culvoy.com`（api），经 Cloudflare（Origin CA 证书，SAN 覆盖 `culvoy.com` + `*.culvoy.com`）→ 宿主机 Nginx（宝塔 vhost）→ `127.0.0.1:8088` → `lingtour-nginx` Docker 网关按 Host 分发；legacy `culvoy.com` 域名族并行保留直至迁移关闭。
+- 生产域名：`https://culvoy.com`（site）、`https://admin.culvoy.com`（admin）、`https://api.culvoy.com`（api），经 Cloudflare（Origin CA 证书，SAN 覆盖 `culvoy.com` + `*.culvoy.com`）→ 宿主机 Nginx（宝塔 vhost）→ `127.0.0.1:8088` → `lingtour-nginx` Docker 网关按 Host 分发；legacy `lingfengtranstour.cn` 域名族并行保留直至迁移关闭。
 - 容器：`site` / `api` / `admin` / `redis` 由根目录 `docker-compose.prod.yml` 管理；**PostgreSQL 不在 Compose 内**——API 直连宿主机 PostgreSQL（`host.docker.internal:5432`），数据库备份须在宿主机执行 `pg_dump -Fc`。
 - API 健康检查：`https://api.culvoy.com/health`。
 - 已知健康检查误报：`lingtour-site-1` 常报 Docker `unhealthy` 而实际服务正常——healthcheck 以 5 秒超时执行 `node -e fetch(...)`，负载下 node 启动即超时；以站点实际 200 响应为准。
@@ -75,4 +75,4 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 - api：数据库 `DB_*`、`JWT_SECRET`、Stripe 密钥与 webhook secret、媒体/上传相关配置；完整清单见仓库根目录 `.env.production.example`。
 - Actions：仓库 Secrets `SERVER_HOST` / `SERVER_USER` / `SERVER_SSH_KEY` / `SERVER_PORT`。
 
-> 端口口径：本地开发 site 3000 / admin 5173 / api 8000；生产 PM2 内部端口 site 3001 / admin 4173 / api 8000，对外统一经 Nginx 443 反代。
+> 端口口径：本地开发 site 3000 / admin 5173 / api 8000；生产容器端口 site 3000 / admin 4173 / api 8000，由 `lingtour-nginx` 网关（宿主机 `127.0.0.1:8088`）按 Host 分发，再经宿主机 Nginx（宝塔 vhost，443/TLS）对外。PM2 已退役，不再存在 PM2 端口。

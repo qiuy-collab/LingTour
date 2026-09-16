@@ -44,7 +44,7 @@ cd api && npm run start:dev       # http://localhost:8000
 
 ## 2. 分支规范
 
-- `main`：主集成分支。push 即触发 CI（`.github/workflows/ci.yml`）与自动部署（`deploy.yml`，见 release.md）。
+- `main`：主集成分支。push 即触发 CI（`.github/workflows/ci.yml`）；**push 不会触发部署**——`deploy.yml` 仅限 `workflow_dispatch` 手动运行（或在服务器上直接执行 `tools/deploy-docker.sh`），发布流程见 release.md。
 - `develop`：CI 同样覆盖；如需长周期集成再启用。
 - 功能/修复分支建议：`feature/<topic>`、`fix/<topic>`、`chore/<topic>`，从最新 `main` 切出，完成后 PR 或快进合并。
 - 长期未合并的分支/worktree 会腐化：合并或删除前先与 `docs/CURRENT-STATE.md` 核对是否承载受保护工作。

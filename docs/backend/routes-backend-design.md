@@ -239,7 +239,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
       "duration": "1 day",
       "audience": "Curious travellers",
       "summary": "From a pre-dawn seafood auction...",
-      "cover_image": "https://oss.culvoy.com/routes/southern-sea-table/cover.jpg",
+      "cover_image": "https://oss.lingtour.cn/routes/southern-sea-table/cover.jpg",
       "stop_count": 4
     }
   ]
@@ -262,7 +262,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
   "audience": "Curious travellers",
   "summary": "From a pre-dawn seafood auction...",
   "story": "Most people meet Guangdong through its cities...",
-  "cover_image": "https://oss.culvoy.com/routes/southern-sea-table/cover.jpg",
+  "cover_image": "https://oss.lingtour.cn/routes/southern-sea-table/cover.jpg",
   "stops": [
     {
       "sort_order": 0,
@@ -271,7 +271,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
       "story": "Begin where the land remembers fire...",
       "details": ["要点1", "要点2", "要点3", "要点4"],
       "cultural_story": "Huguangyan formed roughly 160,000 years ago...\n\nThe circular lake spans 1.8 km across...",
-      "image": "https://oss.culvoy.com/routes/southern-sea-table/stop-0.jpg",
+      "image": "https://oss.lingtour.cn/routes/southern-sea-table/stop-0.jpg",
       "lat": 21.147,
       "lng": 110.277,
       "meal": null,
@@ -285,7 +285,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
       "name": "Zhanjiang",
       "label": "Southern Coast",
       "tags": ["Coast", "Seafood", "Volcanic landscape"],
-      "gallery": ["https://oss.culvoy.com/cities/zhanjiang/1.jpg"]
+      "gallery": ["https://oss.lingtour.cn/cities/zhanjiang/1.jpg"]
     }
   ]
 }
@@ -346,7 +346,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
   "audience": "Curious travellers",
   "summary": "From a pre-dawn seafood auction...",
   "story": "Most people meet Guangdong through its cities...",
-  "cover_image": "https://oss.culvoy.com/.../cover.jpg",
+  "cover_image": "https://oss.lingtour.cn/.../cover.jpg",
   "published": false,
   "city_slugs": ["zhanjiang"],
   "stops": [
@@ -357,7 +357,7 @@ CREATE INDEX idx_route_city_links_city_id ON route_city_links(city_id);
       "story": "Begin where the land remembers fire...",
       "details": ["要点1", "要点2", "要点3", "要点4"],
       "cultural_story": "Huguangyan formed roughly 160,000 years ago...",
-      "image": "https://oss.culvoy.com/.../stop-0.jpg",
+      "image": "https://oss.lingtour.cn/.../stop-0.jpg",
       "lat": 21.147,
       "lng": 110.277,
       "meal": null,
@@ -423,7 +423,7 @@ COMMIT
 
 ```json
 {
-  "url": "https://oss.culvoy.com/routes/southern-sea-table/cover.jpg",
+  "url": "https://oss.lingtour.cn/routes/southern-sea-table/cover.jpg",
   "width": 1600,
   "height": 900
 }

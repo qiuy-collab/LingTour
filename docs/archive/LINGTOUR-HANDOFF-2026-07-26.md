@@ -1,6 +1,8 @@
 # Culvoy 项目进度迁移交接
 
 > **历史快照（2026-07-26）：** 本文保留当日交接背景，不再代表当前 Git、生产或待办状态。稳定工作规范见 [`../AGENT.md`](../AGENT.md)，实时状态与任务进度见 [`CURRENT-STATE.md`](CURRENT-STATE.md)。
+>
+> ⚠️ **历史失真标注（2026-09-16）**：文中的域名记载曾被 rebrand 提交 `9cb4eb0` 批量误替换——本文写作时（2026-07-26）尚未发生域名迁移，当时真实域名均为 `lingfengtranstour.cn` 族；文中出现的 `culvoy.com` 域名应按此理解。
 
 > 更新时间：2026-07-26
 > 工作区：`E:\workspace\LingTour`
