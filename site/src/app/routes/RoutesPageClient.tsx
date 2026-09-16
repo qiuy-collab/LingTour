@@ -242,14 +242,14 @@ export default function RoutesPageClient({
             </button>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-14 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
+          <div className="grid grid-cols-1 gap-10 pb-8 md:grid-cols-2 md:gap-x-10 md:gap-y-14 lg:gap-x-20 lg:gap-y-20">
             <AnimatePresence initial={false} mode="popLayout">
               {filteredRoutes.map((route, index) => {
                 const cardImage = route.image || placeholderFor("hero");
                 return (
                   <motion.div
                     key={route.slug}
-                    className="w-[82vw] max-w-[25rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none"
+                    className="min-w-0"
                     layout
                     initial={false}
                     animate={{ opacity: 1, y: 0 }}
