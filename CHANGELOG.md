@@ -6,7 +6,11 @@
 
 ## [Unreleased]
 
-当前为空。
+已提交/已验证但尚未部署到生产的变更；随下一次部署移入对应日期分节。
+
+### Changed
+
+- site: 首页改为全宽海岸 Hero，首屏导航叠加在 Hero 上，滚动后恢复纸面导航；优化桌面与移动端标题、CTA、信息带和图片衔接。
 
 ## 2026-09-16 — English-only content contract (root `d52162b`)
 
