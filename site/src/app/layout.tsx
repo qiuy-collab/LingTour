@@ -8,9 +8,21 @@ import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { LocaleProvider } from "@/lib/locale-context";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://culvoy.com"),
   title: "Culvoy Guangdong",
   description:
     "Story routes through Guangdong's three cultures — a crater lake in Zhanjiang, gongfu tea in Chaozhou, morning dim sum in Guangzhou — with a local interpreter at your side.",
+  openGraph: {
+    type: "website",
+    siteName: "Culvoy",
+    url: "/",
+    title: "Culvoy Guangdong",
+    description:
+      "Story routes through Guangdong's three cultures — a crater lake in Zhanjiang, gongfu tea in Chaozhou, morning dim sum in Guangzhou — with a local interpreter at your side.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export const viewport: Viewport = {
