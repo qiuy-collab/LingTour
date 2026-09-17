@@ -4,14 +4,14 @@
 
 # Culvoy · 岭风传译之旅
 
-面向国际旅行者的广东文化旅行产品：城市文化、故事路线、陪同传译与预约、店铺与 Stripe 支付、社区，以及真实的运营/CMS 后台。
+面向国际旅行者的广东文化旅行产品：城市文化、故事路线、陪同传译与预约、店铺与 PayPal 支付、社区，以及真实的运营/CMS 后台。
 
 ## 仓库结构
 
 | 目录 | 应用 | 技术栈 | 说明 |
 | --- | --- | --- | --- |
 | `site/` | 公开站点 | Next.js 16 · React 19 · Tailwind CSS 4 · GSAP | 品牌优先的编辑式前台（Field Journal / Living Field Atlas） |
-| `api/` | API | NestJS 11 · TypeORM · PostgreSQL · JWT · Stripe | 内容、预约、支付与运营接口 |
+| `api/` | API | NestJS 11 · TypeORM · PostgreSQL · JWT · PayPal | 内容、预约、支付与运营接口 |
 | `admin-frontend/` | 运营后台 | Vue 3 · Vite · Element Plus · GSAP | 聚焦工作流的 CMS 后台 |
 | `docs/` | 文档 | — | 当前状态、设计基线、开发与发布规范 |
 | `tools/` | 运维工具 | — | 部署与巡检脚本 |

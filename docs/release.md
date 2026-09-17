@@ -72,7 +72,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 
 - site：`NEXT_PUBLIC_API_URL`（生产为 `https://api.culvoy.com/api/v1`）、`INTERNAL_API_ORIGIN`、`PORT`、`HOST`、`NEXT_OUTPUT`。
 - admin：`VITE_API_ORIGIN`、`VITE_SITE_ORIGIN` 或 `VITE_SITE_PREVIEW_ORIGIN`、`VITE_MEDIA_ORIGIN`、`PORT`、`HOST`。
-- api：数据库 `DB_*`、`JWT_SECRET`、Stripe 密钥与 webhook secret、媒体/上传相关配置；完整清单见仓库根目录 `.env.production.example`。
+- api：数据库 `DB_*`、`JWT_SECRET`、PayPal 凭据、媒体/上传相关配置；完整清单见仓库根目录 `.env.production.example`。
 - Actions：仓库 Secrets `SERVER_HOST` / `SERVER_USER` / `SERVER_SSH_KEY` / `SERVER_PORT`。
 
 > 端口口径：本地开发 site 3000 / admin 5173 / api 8000；生产容器端口 site 3000 / admin 4173 / api 8000，由 `lingtour-nginx` 网关（宿主机 `127.0.0.1:8088`）按 Host 分发，再经宿主机 Nginx（宝塔 vhost，443/TLS）对外。PM2 已退役，不再存在 PM2 端口。

@@ -6,12 +6,12 @@ Companion guides: [`docs/development.md`](docs/development.md) covers environmen
 
 ## 1. Product and repositories
 
-Culvoy is a full-stack Guangdong cultural-travel product for international travellers: city culture, story routes, interpreting and bookings, shop and Stripe payments, community, accounts, and a real operations/CMS admin.
+Culvoy is a full-stack Guangdong cultural-travel product for international travellers: city culture, story routes, interpreting and bookings, shop and PayPal payments, community, accounts, and a real operations/CMS admin.
 
 | Path | Application | Stack |
 | --- | --- | --- |
 | `site/` | Public site | Next.js 16, React 19, Tailwind CSS 4, GSAP |
-| `api/` | API | NestJS 11, TypeORM, PostgreSQL, JWT, Stripe |
+| `api/` | API | NestJS 11, TypeORM, PostgreSQL, JWT, PayPal |
 | `admin-frontend/` | Admin | Vue 3, Vite, Element Plus, GSAP |
 
 The public site is brand-first: an evolved Field Journal / Living Field Atlas—editorial, tactile, cinematic, calm, and culturally specific. The admin is a focused workflow product; design serves operational clarity.

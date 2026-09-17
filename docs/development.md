@@ -28,7 +28,7 @@ cd admin-frontend && npm ci
 | --- | --- | --- |
 | site | `site/.env.local` | `NEXT_PUBLIC_API_URL`、`INTERNAL_API_ORIGIN`（独立部署另需 `NEXT_OUTPUT`） |
 | admin | `admin-frontend/.env.local` | `VITE_API_ORIGIN`、`VITE_SITE_ORIGIN` 或 `VITE_SITE_PREVIEW_ORIGIN`、`VITE_MEDIA_ORIGIN` |
-| api | `api/.env` | 数据库 `DB_*`、`JWT_SECRET`、Stripe 与媒体存储等；完整清单见仓库根目录 `.env.production.example` |
+| api | `api/.env` | 数据库 `DB_*`、`JWT_SECRET`、PayPal 与媒体存储等；完整清单见仓库根目录 `.env.production.example` |
 
 本地默认口径：site 经同源代理 `/api/v1` → `http://127.0.0.1:8000`；admin 经 Vite/Nginx 把 `/api/admin` 重写为 `/api/v1/admin`。**改动该代理契约属于破坏性变更。**
 
