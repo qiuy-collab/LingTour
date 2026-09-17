@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `c7fe7ce` (2026-09-17, register uploads at the path multer actually wrote; deploy run `35205670356`, see §38). Previous deployed commits the same day: `ed014cb` (media-library index rebuild, upload content validation, admin inline-image editor) and `a522c77` (§36).
+- Production deployed application commit: `bb5d18b` (2026-09-17/18, review/09-17-B security and consistency fixes; deploy run `35243331878`, see §39). Previous deployed commits: `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
@@ -601,9 +601,9 @@ Still not verified on production: the new editor's post-login interaction was pr
 
 Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.
 
-## 39. 2026-09-17 review/09-17-B fixes committed (not pushed, not deployed)
+## 39. 2026-09-17 review/09-17-B fixes committed, pushed and deployed (root `bb5d18b`)
 
-Based on `review/09-17-B/report.md` (8 P1 / 15 P2 / ~15 P3, §7.7 batch order). Live state after this entry: root `main` at `63e7cfc` ahead 8 of `origin/main`, admin `main` at `a30a844` ahead 1, both tracked trees clean; production unchanged at `c7fe7ce`. Nothing was pushed, deployed, or migrated — all of that awaits authorization.
+Based on `review/09-17-B/report.md` (8 P1 / 15 P2 / ~15 P3, §7.7 batch order). Live state after this entry: production root `bb5d18b`, admin `a30a844`; root `main` and admin `main` both pushed and in sync with origin (ahead 0); both tracked trees clean; push CI run `35240318583` all green; deploy run `35243331878` succeeded in 4m35s.
 
 Baseline drift handling: the report was written against `3efbeea`, but the working tree carried the uncommitted PayPal-only conversion (drifted to `0532156`). Per owner decision the WIP was committed first in four logical groups (`7bac612` api / `4d67199` site / `9b17bd7` infra / `b04365b` docs), then the review fixes were committed separately.
 
@@ -629,6 +629,10 @@ Decisions recorded (report items intentionally not implemented):
 - Idempotency consistency: not changed. The site only uses the checkout (deposit) endpoint, whose 409 repeat-submit behavior is correct; the non-deposit paths are admin-facing.
 - `seed-local-preview.ts` stays untracked (local gated preview seed, standing policy).
 
-Deployment preconditions for whenever this is approved: the two new migrations (`1762500000000-AddUserFavoritesUserFk`, `1762500100000-AddServiceModeDepositCents`) will run during `deploy-docker.sh`; a production `pg_dump -Fc` backup and a read-only `migration:show` are required first per AGENT.md §10. `b96b49d` adds two api dependencies, so the api image build is not cache-trivial.
+Deployment preconditions and execution (owner authorized push + deploy 2026-09-17/18): pre-deploy database backup `/root/backups/lingtour-db-pre-0917b-20260917-235220.dump` (131,965 bytes, `pg_restore -l` verified). Read-only check of `typeorm_migrations` showed 29 applied rows; the repository holds 32 migration files, so deploy executed **three** migrations — `1762400000000-RemoveStripePaymentIntent` (from the PayPal-only batch, never deployed before), `1762500000000-AddUserFavoritesUserFk`, `1762500100000-AddServiceModeDepositCents` — all reviewed idempotent beforehand. Deploy run `35243331878` succeeded in 4m35s; server root HEAD `bb5d18b`; all three migrations landed in `typeorm_migrations`; api/site/admin/nginx healthy, redis untouched.
+
+Note: the host `api/dist` is stale (2026-09-03 build, 22 migrations), so a host-side `migration:show` under-reports; the authoritative source of truth is the `typeorm_migrations` table plus the freshly built image the deploy script uses (`docker compose run --rm api npx typeorm migration:run`).
+
+Production smoke after deploy (read-only, no credentials): API health `{"status":"ok","database":"up"}`; home, culture detail, route detail, interpreting, shop, community, login and admin all 200 (308s are the pre-existing trailing-slash normalization; `trailingSlash: true` dates to the mono-repo restructure `7823175`, present in the pre-batch baseline `0532156`); site and API responses carry `x-frame-options: DENY`, `nosniff`, HSTS (P2-O live); `GET /public/settings` returns only `seoTitle`/`seoDescription` (P2-D projection); unauthenticated `PATCH /admin/users/:id/status` and `DELETE /admin/events/:id` both 401 (P1-7/8 guards); `/public/shop/featured` 200 (P2-E); a cross-site `Origin` on the session route is rejected 403 while a correctly-shaped login request (`{action, payload}`) traverses Cloudflare → host nginx → docker nginx exact location → site handler → API `/auth/login` DTO validation, returning the API's password-length 400 — the full login chain is intact (P2-L verified together with the §28 regression). Not verified without credentials: successful login, admin post-login CRUD, a real refund/booking write — left to operations.
 
 Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.

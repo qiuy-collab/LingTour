@@ -4,6 +4,20 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。`1.0.0` 基线之后本项目采用 `workflow_dispatch` 滚动部署且不使用 git tag，因此已发布变更按**生产部署日期**分节（最新在上），每节以当时的根仓库 HEAD SHA 为锚点；admin-frontend 独立仓库的对应提交随各条目一并生效，双仓库对应关系见 `docs/CURRENT-STATE.md`。
 
+## 2026-09-17 — review/09-17-B 安全与一致性修复上线（root `bb5d18b`）
+
+### Changed
+
+- api: booking 状态机服务端白名单流转校验、`deposit_paid → confirmed` 指派分支（P1-6）；退款改接 PayPal captures/refund 网关、网关成功才落 refunded（P1-3）；过期未付订单定时取消并释放预留库存、迟到付款在 markPaid 恢复（P1-4，新增 `@nestjs/schedule`）；手续费 handlingCents 配置化（P2-7）；押金按 CMS serviceModeId 显式定价、保留文本回退（P2-8，迁移 `1762500100000`）；公开 settings 端点字段投影 + 写入侧允许列表（P2-D）；shop featured 过滤 published（P2-E）；共享分页夹取工具应用到公开与管理端列表（P2-F）；公开 booking 与社区上传专用限流（P2-9/C）；PayPal 网关调用移出库存事务（P2-5）；Stripe 列移除迁移 `1762400000000`；favorites 外键迁移 `1762500000000`（清孤儿 + CASCADE）。
+- api: 10 处 admin DELETE 补显式 `@Roles('admin','editor')`、`isAdminPath` 大小写不敏感（P1-7）；用户状态端点 admin-only + UpdateUserStatusDto + 管理员连续性校验（P1-8）；dev 验证码生产门控、发送失败 503（P1-1）；验证码原子尝试计数 + 每邮箱冷却（P1-2）；登录不再邮箱枚举（P2-2）；改邮箱双地址确认（P2-3）；未使用的 refresh 端点删除（P2-4）；JwtAuthGuard 走 JwtStrategy 恢复每请求查库（P2-A）；验证码定时清理（P2-N）；helmet 安全头（P2-O）；slug 格式约束、admin 分页夹取、audit Invalid Date 防护、home GET 只读、crypto 订单号、23505 处理等 P3 批次。
+- site: SSG `generateStaticParams` 改服务端 fetcher（P2-K）；`/api/auth/session` POST/DELETE 增加 Origin/Sec-Fetch-Site 同站校验（P2-L）；preview 源限定 `https://admin.culvoy.com` 并补正负测试（P2-M）。
+- admin: 登出调用 `/auth/logout` 吊销服务端 refresh 宽限（P2-I）；媒体删除按实际结果反馈（P2-J）；JWT base64url 归一解码（P3-8）；CSV 导出公式注入防护（P3-9）；列表请求竞态取消（P3-10）；401 不再误报「登录已过期」（P3-15）；editor 不请求 admin-only settings（P3-11）。
+- infra: 四个 server 的 `client_max_body_size` 对齐 105M（P2-H，匹配 100MB 视频上限 + multipart 余量）；server 级基线安全头，uploads 位置补 CORP。
+
+部署：前置生产数据库备份 `/root/backups/lingtour-db-pre-0917b-20260917-235220.dump`（131,965 bytes，`pg_restore -l` 可读）；只读核验 29 个已应用迁移后确认部署将执行 3 个迁移（`1762400000000`/`1762500000000`/`1762500100000`，全部幂等）。`Deploy LingTour Docker Stack` run `35243331878` 一次成功（4m35s）；服务器 root HEAD `bb5d18b`；3 个迁移全部落地；api/site/admin/nginx 容器 healthy，redis 未动。
+
+验证：api tsc + 22 套件/114 测试 + build；site tsc + lint 0 errors + 103 测试 + build；admin build；双仓 `git diff --check` 干净；push CI run `35240318583` 三 job 全绿。生产冒烟：API health `database: up`；首页/文化详情/路线详情/解读/商店/社区/登录/admin 全 200（308 为尾斜杠归一化既有行为）；site 与 API 响应携带 `x-frame-options: DENY`、`nosniff`、HSTS（P2-O 在位）；`GET /public/settings` 仅返回 `seoTitle`/`seoDescription` 投影（P2-D）；无凭据 `PATCH /admin/users/:id/status` 与 `DELETE /admin/events/:id` 均 401（P1-7/8）；`/public/shop/featured` 200（P2-E）；带跨站 Origin 的 session 请求 403 拒绝、正确 payload 的登录请求穿通 site handler 到 API `/auth/login` DTO 校验层（P2-L 与登录链路回归）。admin 登录后的 CRUD、真实退款与下单写流程无凭据未验证，留运营侧执行。
+
 ## 2026-09-17 — 09-17 评审一致性修复上线（root `a522c77`）
 
 ### Changed
