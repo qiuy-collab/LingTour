@@ -127,6 +127,7 @@ export class CitiesController {
     return this.citiesService.unpublish(id);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/cities/:id')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsOptional,
   Min,
+  Max,
   IsIn,
   IsString,
   IsArray,
@@ -54,4 +55,20 @@ export class CreateModeDto {
   @IsOptional()
   @IsBoolean()
   featured?: boolean;
+
+  /**
+   * P2-8: explicit deposit for this mode in minor units. Set an integer to
+   * configure it, send null (or omit on create) to clear / leave unset —
+   * bookings for modes without a deposit fall back to the legacy heuristic.
+   */
+  @ApiPropertyOptional({
+    description: 'Deposit in minor units; null clears it',
+    example: 12000,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10000000)
+  depositCents?: number | null;
 }

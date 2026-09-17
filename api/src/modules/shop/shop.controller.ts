@@ -119,6 +119,7 @@ export class ShopController {
     return this.shopService.updateCollection(id, dto);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/shop/collections/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)
@@ -188,6 +189,7 @@ export class ShopController {
     return this.shopService.updateProduct(id, dto);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/shop/products/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)

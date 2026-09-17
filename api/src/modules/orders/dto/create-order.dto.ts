@@ -8,6 +8,7 @@ import {
   IsEmail,
   IsInt,
   Min,
+  Max,
   MaxLength,
   IsIn,
 } from 'class-validator';
@@ -21,6 +22,7 @@ export class OrderItemDto {
   @ApiProperty({ example: 1 })
   @IsInt()
   @Min(1)
+  @Max(20)
   quantity: number;
 }
 

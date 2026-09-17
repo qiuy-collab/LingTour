@@ -1,6 +1,6 @@
 jest.mock('uuid', () => ({ v4: () => 'test-order-id' }));
 
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { InterpretingService } from './interpreting.service';
 
 describe('InterpretingService public profiles', () => {
@@ -133,5 +133,68 @@ describe('InterpretingService public profiles', () => {
       ),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(bookingRepo.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('InterpretingService booking workflow', () => {
+  const buildService = (booking: Record<string, unknown>) => {
+    const bookingRepo = {
+      findOne: jest.fn().mockResolvedValue(booking),
+      save: jest.fn().mockImplementation(async (b) => b),
+    };
+    const service = new InterpretingService(
+      {} as any,
+      {} as any,
+      {} as any,
+      bookingRepo as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    return { service, bookingRepo };
+  };
+
+  it('allows a legal transition and persists the new status', async () => {
+    const { service } = buildService({ id: 'b1', status: 'new' });
+    const saved = await service.updateBookingStatus('b1', 'contacted');
+    expect(saved.status).toBe('contacted');
+  });
+
+  it('rejects transitions outside the booking state machine', async () => {
+    const { service } = buildService({ id: 'b1', status: 'completed' });
+    await expect(
+      service.updateBookingStatus('b1', 'confirmed'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('keeps deposit workflow statuses reachable', async () => {
+    const { service } = buildService({ id: 'b1', status: 'deposit_pending' });
+    const saved = await service.updateBookingStatus('b1', 'deposit_paid');
+    expect(saved.status).toBe('deposit_paid');
+  });
+
+  it('advances a deposit_paid booking to confirmed when assigning an interpreter', async () => {
+    const profileRepo = {
+      findOne: jest.fn().mockResolvedValue({ id: 'i1', name: 'Lin' }),
+    };
+    const bookingRepo = {
+      findOne: jest
+        .fn()
+        .mockResolvedValue({ id: 'b1', status: 'deposit_paid' }),
+      save: jest.fn().mockImplementation(async (b) => b),
+    };
+    const service = new InterpretingService(
+      {} as any,
+      profileRepo as any,
+      {} as any,
+      bookingRepo as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+
+    const saved = await service.assignInterpreter('b1', 'i1');
+    expect(saved.status).toBe('confirmed');
+    expect(saved.assignedInterpreterId).toBe('i1');
   });
 });

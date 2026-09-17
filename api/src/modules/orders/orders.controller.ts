@@ -43,6 +43,10 @@ export class OrdersController {
   // ── Public: Checkout ──
 
   @Public()
+  // Anonymous checkout reserves stock immediately; the tighter throttle
+  // (on top of the global 60/min) blunts stock-drain abuse while staying
+  // far above any legitimate checkout pace.
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('orders/checkout')
   @ApiOperation({ summary: 'Create order (guest or logged-in user)' })
   async checkout(@Body() dto: CreateOrderDto) {
@@ -137,6 +141,7 @@ export class OrdersController {
 
   @Patch('admin/orders/:id/refund')
   @ApiBearerAuth()
+  @Roles('admin')
   @UseInterceptors(AuditInterceptor)
   @AuditAction('refund', 'order')
   @ApiOperation({ summary: 'Refund order (admin)' })

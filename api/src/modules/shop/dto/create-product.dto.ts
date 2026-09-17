@@ -12,6 +12,7 @@ import {
   IsPositive,
   IsObject,
   IsNotEmpty,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
@@ -22,6 +23,7 @@ export class CreateProductDto {
   @ApiProperty({ example: 'volcanic-soil-bowl' })
   @IsString()
   @MaxLength(120)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, digits and dashes' })
   slug: string;
 
   @ApiProperty({ example: 'Volcanic Soil Tea Bowl' })

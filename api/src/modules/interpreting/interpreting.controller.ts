@@ -12,6 +12,7 @@ import {
   ParseUUIDPipe,
   UseInterceptors,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -52,6 +53,10 @@ export class InterpretingController {
   }
 
   @Public()
+  // Anonymous booking endpoints each fire a staff notification (and the
+  // checkout path creates a PayPal order); the global 60/min would let one
+  // actor flood both (report P2-9).
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('public/bookings')
   @ApiOperation({ summary: 'Submit booking request' })
   async submitBooking(
@@ -62,6 +67,7 @@ export class InterpretingController {
   }
 
   @Public()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('public/bookings/checkout')
   @ApiOperation({
     summary: 'Submit booking request and create deposit checkout',
@@ -158,6 +164,7 @@ export class InterpretingController {
     return this.interpretingService.updateModeSort(id, +sortOrder);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/interpreting/modes/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)
@@ -217,6 +224,7 @@ export class InterpretingController {
     return this.interpretingService.updateProfileStatus(id, status);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/interpreting/profiles/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)
@@ -274,6 +282,7 @@ export class InterpretingController {
     return this.interpretingService.updateFaqSort(id, +sortOrder);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/interpreting/faqs/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditInterceptor)

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { clampPagination } from '../../common/pagination';
 import { StoryRoute } from './entities/story-route.entity';
 import { RouteStop } from './entities/route-stop.entity';
 import { RouteCityLink } from './entities/route-city-link.entity';
@@ -25,7 +26,8 @@ export class RoutesService {
 
   // ── Public read ──
 
-  async findAllPublished(citySlug?: string, page = 1, limit = 20) {
+  async findAllPublished(citySlug?: string, pageInput?: number, limitInput?: number) {
+    const { page, limit, skip } = clampPagination(pageInput, limitInput);
     const qb = this.routeRepository
       .createQueryBuilder('route')
       .where('route.published = :published', { published: true });
@@ -46,7 +48,7 @@ export class RoutesService {
     }
 
     const [data, total] = await qb
-      .skip((page - 1) * limit)
+      .skip(skip)
       .take(limit)
       .orderBy('route.createdAt', 'ASC')
       .getManyAndCount();
@@ -68,7 +70,7 @@ export class RoutesService {
       stopCount: countMap.get(route.id) ?? 0,
     }));
 
-    return { data: enriched, total, page: +page, pageSize: +limit };
+    return { data: enriched, total, page, pageSize: limit };
   }
 
   async findBySlugPublished(slug: string): Promise<any> {
@@ -101,12 +103,13 @@ export class RoutesService {
   // ── Admin CRUD ──
 
   async findAllAdmin(
-    page = 1,
-    limit = 20,
+    pageInput = 1,
+    limitInput = 20,
     q?: string,
     culture?: string,
     published?: boolean,
   ) {
+    const { page, limit } = clampPagination(pageInput, limitInput);
     const qb = this.routeRepository.createQueryBuilder('route').withDeleted();
 
     if (q) {

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { clampPagination } from '../../common/pagination';
 import {
   EVENT_STATUSES,
   EventEntity,
@@ -24,8 +25,7 @@ export class EventsService {
     page?: number;
     limit?: number;
   }) {
-    const page = query.page && query.page > 0 ? query.page : 1;
-    const limit = query.limit && query.limit > 0 ? query.limit : 20;
+    const { page, limit } = clampPagination(query.page, query.limit);
     const qb = this.repo
       .createQueryBuilder('e')
       .where('e.status != :draft', { draft: 'draft' });

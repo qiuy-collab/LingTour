@@ -11,6 +11,7 @@ import { StoreCollection } from './entities/store-collection.entity';
 import { FrontendFeatured } from './entities/featured.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { clampPagination } from '../../common/pagination';
 import { CreateCollectionDto } from './dto/create-collection.dto';
 import { UpdateCollectionDto } from './dto/update-collection.dto';
 import {
@@ -88,9 +89,10 @@ export class ShopService {
   async findAllProducts(
     collection?: string,
     tag?: string,
-    page = 1,
-    limit = 12,
+    pageInput?: number,
+    limitInput?: number,
   ) {
+    const { page, limit, skip } = clampPagination(pageInput, limitInput, 12);
     const qb = this.productRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.collection', 'collection')
@@ -106,7 +108,7 @@ export class ShopService {
     }
 
     const [products, total] = await qb
-      .skip((page - 1) * limit)
+      .skip(skip)
       .take(limit)
       .orderBy('p.createdAt', 'DESC')
       .getManyAndCount();
@@ -129,8 +131,8 @@ export class ShopService {
     return {
       data: products.map((product) => this.toPublicProduct(product)),
       total,
-      page: +page,
-      pageSize: +limit,
+      page,
+      pageSize: limit,
       filters: {
         collections: allCollections.map((c) => c.slug),
         tags: allTags.map((t) => t.tag).filter(Boolean),
@@ -200,6 +202,9 @@ export class ShopService {
       .where('p.id IN (:...ids)', {
         ids: productIds.length ? productIds : ['none'],
       })
+      // Featured rows may point at drafts (admin curates ahead of launch);
+      // the public endpoint must not leak unpublished products (report P2-E).
+      .andWhere('p.published = :published', { published: true })
       .getMany();
 
     // Sort in featured order
@@ -217,12 +222,13 @@ export class ShopService {
   // ── Admin: Products ──
 
   async findAllProductsAdmin(
-    page = 1,
-    limit = 20,
+    pageInput = 1,
+    limitInput = 20,
     collectionId?: string,
     q?: string,
     published?: boolean,
   ) {
+    const { page, limit } = clampPagination(pageInput, limitInput);
     const qb = this.productRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.collection', 'collection')

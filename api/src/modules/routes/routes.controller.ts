@@ -146,6 +146,7 @@ export class RoutesController {
     return this.routesService.unpublish(id);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/routes/:id')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)

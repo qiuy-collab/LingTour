@@ -114,6 +114,7 @@ export class EventsController {
     return this.service.updateStatus(id, status);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/events/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)

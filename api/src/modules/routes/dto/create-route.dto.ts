@@ -11,6 +11,7 @@ import {
   MaxLength,
   ArrayMinSize,
   IsNotEmpty,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
@@ -112,6 +113,7 @@ export class CreateRouteDto {
   @ApiProperty({ example: 'southern-sea-table' })
   @IsString()
   @MaxLength(100)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, digits and dashes' })
   slug: string;
 
   @ApiProperty({ example: 'A Southern Sea Table' })

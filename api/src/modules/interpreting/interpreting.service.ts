@@ -14,6 +14,23 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { OrdersService } from '../orders/orders.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
+/**
+ * Booking 状态机（report P1-6）：白名单内的合法「从 → 到」流转。
+ * 押金链 deposit_pending → deposit_paid 与常规链 new → … 并存；
+ * completed / cancelled 是终态。`pending` 是历史遗留值，只读兼容。
+ */
+export const BOOKING_STATUS_TRANSITIONS: Record<string, string[]> = {
+  new: ['read', 'contacted', 'confirmed', 'deposit_pending', 'cancelled'],
+  pending: ['read', 'contacted', 'confirmed', 'deposit_pending', 'cancelled'],
+  read: ['contacted', 'confirmed', 'deposit_pending', 'cancelled'],
+  contacted: ['confirmed', 'deposit_pending', 'cancelled'],
+  deposit_pending: ['deposit_paid', 'cancelled'],
+  deposit_paid: ['confirmed', 'completed', 'cancelled'],
+  confirmed: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: [],
+};
+
 @Injectable()
 export class InterpretingService {
   constructor(
@@ -372,7 +389,7 @@ export class InterpretingService {
       }
     }
 
-    const depositAmount = this.calculateDepositAmount(dto);
+    const depositAmount = await this.calculateDepositAmount(dto);
     let checkout: {
       booking: BookingSubmission;
       depositOrder: Awaited<
@@ -490,6 +507,12 @@ export class InterpretingService {
 
   async updateBookingStatus(id: string, status: string) {
     const booking = await this.findBookingByIdAdmin(id);
+    const allowed = BOOKING_STATUS_TRANSITIONS[booking.status] ?? [];
+    if (!allowed.includes(status)) {
+      throw new BadRequestException(
+        `Cannot transition booking from "${booking.status}" to "${status}"`,
+      );
+    }
     booking.status = status;
     return this.bookingRepo.save(booking);
   }
@@ -499,7 +522,15 @@ export class InterpretingService {
     const interpreter = await this.findProfileByIdAdmin(interpreterId);
     booking.assignedInterpreterId = interpreter.id;
     booking.assignedInterpreterName = interpreter.name;
-    if (booking.status === 'new' || booking.status === 'pending') {
+    // Assigning an interpreter means the engagement is settled, so move the
+    // booking onto the confirmed track from any pre-confirmed state,
+    // including the deposit flow (report P1-6: deposit_paid bookings used
+    // to stay stuck after assignment).
+    if (
+      booking.status === 'new' ||
+      booking.status === 'pending' ||
+      booking.status === 'deposit_paid'
+    ) {
       booking.status = 'confirmed';
     }
     return this.bookingRepo.save(booking);
@@ -518,6 +549,14 @@ export class InterpretingService {
       includes: data.includes ?? fallback?.includes ?? [],
       accent: data.accent ?? fallback?.accent ?? 'light',
       featured: data.featured ?? fallback?.featured ?? false,
+      // P2-8: an explicit null clears the deposit; omitting it keeps the
+      // existing value on update and defaults to null on create.
+      depositCents:
+        data.depositCents !== undefined
+          ? data.depositCents
+          : fallback
+            ? fallback.depositCents
+            : null,
     };
   }
 
@@ -616,9 +655,36 @@ export class InterpretingService {
     }
   }
 
-  private calculateDepositAmount(dto: CreateBookingDto): number {
+  /**
+   * P2-8: deposit pricing. Priority order:
+   * 1. fastTrack flat fee;
+   * 2. the CMS deposit configured on the referenced service mode
+   *    (depositCents, minor units) — the auditable, admin-controlled path;
+   * 3. the legacy keyword heuristic on supportMode free text, kept as a
+   *    fallback until every mode has a configured deposit.
+   * An unknown serviceModeId is rejected outright instead of silently
+   * degrading to the heuristic.
+   */
+  private async calculateDepositAmount(dto: CreateBookingDto): Promise<number> {
     if (dto.fastTrack) {
       return 90;
+    }
+
+    if (dto.serviceModeId) {
+      const mode = await this.modeRepo.findOne({
+        where: { id: dto.serviceModeId },
+      });
+      if (!mode) {
+        throw new BadRequestException('Unknown serviceModeId');
+      }
+      if (mode.depositCents !== null && mode.depositCents !== undefined) {
+        if (mode.depositCents < 0) {
+          throw new BadRequestException(
+            'Service mode deposit is misconfigured',
+          );
+        }
+        return mode.depositCents / 100;
+      }
     }
 
     const normalized = dto.supportMode.toLowerCase();

@@ -10,6 +10,7 @@ import {
   MaxLength,
   IsNotEmpty,
   ValidateIf,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MediaAssetDto } from '../../../common/dto/media-asset.dto';
@@ -83,6 +84,7 @@ export class CreateCityDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, digits and dashes' })
   slug: string;
 
   @ApiProperty({ example: 'Guangzhou' })

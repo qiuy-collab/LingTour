@@ -7,6 +7,7 @@ import {
   Min,
   MaxLength,
   IsNotEmpty,
+  Matches,
 } from 'class-validator';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 
@@ -14,6 +15,7 @@ export class CreateCollectionDto {
   @ApiProperty({ example: 'coastal-life-kit' })
   @IsString()
   @MaxLength(100)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, digits and dashes' })
   slug: string;
 
   @ApiProperty({ example: 'Coastal Life Kit' })

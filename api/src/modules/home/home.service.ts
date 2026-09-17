@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { HomeConfig } from './entities/home-config.entity';
@@ -7,22 +7,26 @@ import { DEFAULT_ROUTE_REGIONS } from '../../common/constants/route-regions';
 
 @Injectable()
 export class HomeService {
+  private readonly logger = new Logger(HomeService.name);
+
   constructor(
     @InjectRepository(HomeConfig)
     private readonly homeConfigRepo: Repository<HomeConfig>,
   ) {}
 
   async getPublicHome() {
-    const config = await this.getOrCreateConfig();
-    return config;
+    // P3-14: the public GET must never write. Read-only lookup with an
+    // in-memory default; a missing row is created by the admin write path.
+    return this.readConfig();
   }
 
   async getAdminHomeConfig() {
-    return this.getOrCreateConfig();
+    // Admin read also stays read-only; the row is created on first save.
+    return this.readConfig();
   }
 
   async updateAdminHomeConfig(dto: UpdateHomeConfigDto) {
-    const config = await this.getOrCreateConfig();
+    const config = await this.getOrCreateConfigForWrite();
     Object.assign(config, {
       ...dto,
       routeRegions:
@@ -33,56 +37,52 @@ export class HomeService {
     return this.homeConfigRepo.save(config as HomeConfig);
   }
 
-  private async getOrCreateConfig() {
+  private buildDefaultConfig(): HomeConfig {
+    return {
+      hero: {},
+      trustMetrics: [],
+      entryCards: [],
+      cultureHighlights: [],
+      testimonials: [],
+      featuredRouteSlugs: [],
+      routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<
+        Record<string, unknown>
+      >,
+    } as unknown as HomeConfig;
+  }
+
+  /**
+   * Read-only config lookup (P3-14): no INSERT, no normalization writes.
+   * Falls back to an in-memory default when no row exists yet.
+   */
+  private async readConfig(): Promise<HomeConfig> {
     try {
       const [existingConfig] = await this.homeConfigRepo.find({
         order: { createdAt: 'ASC' },
         take: 1,
       });
-
-      let config: HomeConfig | undefined = existingConfig;
-      if (!config) {
-        const partial: DeepPartial<HomeConfig> = {
-          hero: {},
-          trustMetrics: [],
-          entryCards: [],
-          cultureHighlights: [],
-          testimonials: [],
-          featuredRouteSlugs: [],
-          routeRegions: DEFAULT_ROUTE_REGIONS as unknown as Array<
-            Record<string, unknown>
-          >,
-        };
-        config = await this.homeConfigRepo.save(
-          this.homeConfigRepo.create(partial),
-        );
-      }
-      const normalizedRouteRegions = this.normalizeRouteRegions(
-        config.routeRegions,
-      );
-      if (
-        !Array.isArray(config.routeRegions) ||
-        config.routeRegions.length === 0 ||
-        JSON.stringify(normalizedRouteRegions) !==
-          JSON.stringify(config.routeRegions)
-      ) {
-        config.routeRegions = normalizedRouteRegions;
-        config = await this.homeConfigRepo.save(config);
-      }
+      const config = existingConfig ?? this.buildDefaultConfig();
+      config.routeRegions = this.normalizeRouteRegions(config.routeRegions);
       return config;
     } catch (error) {
-      console.error('Error in getOrCreateConfig:', error);
-      // Return a default object if DB fails or table doesn't exist yet
-      return {
-        hero: {},
-        trustMetrics: [],
-        entryCards: [],
-        cultureHighlights: [],
-        testimonials: [],
-        featuredRouteSlugs: [],
-        routeRegions: DEFAULT_ROUTE_REGIONS,
-      };
+      this.logger.error(
+        'Failed to read home config; serving in-memory defaults',
+        error instanceof Error ? error.stack : String(error),
+      );
+      return this.buildDefaultConfig();
     }
+  }
+
+  /** Write-path lookup: creates the row when the admin saves for the first time. */
+  private async getOrCreateConfigForWrite(): Promise<HomeConfig> {
+    const [existingConfig] = await this.homeConfigRepo.find({
+      order: { createdAt: 'ASC' },
+      take: 1,
+    });
+    if (existingConfig) return existingConfig;
+    return this.homeConfigRepo.save(
+      this.homeConfigRepo.create(this.buildDefaultConfig() as DeepPartial<HomeConfig>),
+    );
   }
 
   private normalizeRouteRegions(value: unknown) {

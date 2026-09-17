@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { clampPagination } from '../../common/pagination';
 import {
   CommunityPost,
   CommunityPostStatus,
@@ -36,8 +37,7 @@ export class CommunityService {
     page?: number;
     limit?: number;
   }) {
-    const page = query.page && query.page > 0 ? query.page : 1;
-    const limit = query.limit && query.limit > 0 ? query.limit : 20;
+    const { page, limit, skip } = clampPagination(query.page, query.limit);
     const qb = this.postRepo
       .createQueryBuilder('p')
       .where('p.status = :status', {
@@ -65,7 +65,7 @@ export class CommunityService {
 
     const [items, total] = await qb
       .orderBy('p.createdAt', 'DESC')
-      .skip((page - 1) * limit)
+      .skip(skip)
       .take(limit)
       .getManyAndCount();
 

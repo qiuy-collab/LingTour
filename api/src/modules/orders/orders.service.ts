@@ -16,6 +16,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
 import { StoreProduct } from '../shop/entities/store-product.entity';
+import { SettingsService } from '../settings/settings.service';
 
 type PayPalOrderResponse = {
   id: string;
@@ -44,6 +45,7 @@ export class OrdersService {
     private readonly productRepo: Repository<StoreProduct>,
     private readonly configService: ConfigService,
     private readonly notificationsService: NotificationsService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   private get paypalBaseUrl(): string {
@@ -98,6 +100,16 @@ export class OrdersService {
       );
     }
 
+    // P2-7: the handling floor is admin-configurable (minor units); the 6%
+    // variable component stays a code-level rule. Invalid values fall back
+    // to the historical default of 800.
+    const settings = await this.settingsService.getAdminSettings();
+    const configuredFloor = Number(settings.payload?.handlingFeeCents);
+    const handlingFloorCents =
+      Number.isFinite(configuredFloor) && configuredFloor >= 0
+        ? Math.round(configuredFloor)
+        : 800;
+
     const checkout = await this.orderRepo.manager.transaction(
       async (manager) => {
         const products = await manager.find(StoreProduct, {
@@ -138,7 +150,10 @@ export class OrdersService {
           (sum, item) => sum + Math.round(item.unitPrice * 100) * item.quantity,
           0,
         );
-        const handlingCents = Math.max(800, Math.round(subtotalCents * 0.06));
+        const handlingCents = Math.max(
+          handlingFloorCents,
+          Math.round(subtotalCents * 0.06),
+        );
         const totalCents = subtotalCents + handlingCents;
         const publicStatusToken = this.createPublicStatusToken();
         const order = manager.create(Order, {
@@ -508,6 +523,14 @@ export class OrdersService {
             return order; // Idempotent
           }
 
+          // Late payment: the expiry sweep cancelled this order, but the
+          // customer did complete PayPal after all. Re-activate fulfilment
+          // and try to re-reserve the stock that the sweep released.
+          if (order.status === 'cancelled' && order.paymentStatus === 'failed') {
+            order.status = 'confirmed';
+            await this.reReserveStockAfterLatePayment(manager, order);
+          }
+
           order.paymentStatus = 'paid';
           order.paymentId = paymentId;
           order.paidAt = new Date();
@@ -654,30 +677,104 @@ export class OrdersService {
   }
 
   async refundOrder(id: string, reason?: string) {
+    const order = await this.orderRepo.findOne({ where: { id } });
+    if (!order) throw new NotFoundException(`Order ${id} not found`);
+
+    if (order.paymentStatus !== 'paid') {
+      throw new BadRequestException('Only paid orders can be refunded');
+    }
+    if (order.paymentMethod !== 'paypal' || !order.paymentId) {
+      throw new BadRequestException(
+        'Order has no PayPal capture that can be refunded',
+      );
+    }
+
+    // The gateway call deliberately happens OUTSIDE the transaction: the
+    // money is actually returned at PayPal first, then the local state
+    // flips inside a short locked transaction. A refund that only changed
+    // the local row would leave the customer without their money while the
+    // back office shows "refunded" (report P1-3).
+    await this.refundPayPalCapture(
+      order.paymentId,
+      order.totalAmount,
+      order.currency,
+      order.orderNo,
+    );
+
     return this.orderRepo.manager.transaction(async (manager) => {
-      const order = await manager.findOne(Order, {
+      const locked = await manager.findOne(Order, {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!order) throw new NotFoundException(`Order ${id} not found`);
-
-      if (order.paymentStatus !== 'paid') {
+      if (!locked) throw new NotFoundException(`Order ${id} not found`);
+      if (locked.paymentStatus === 'refunded') {
+        return locked; // concurrent refund won the race
+      }
+      if (locked.paymentStatus !== 'paid') {
         throw new BadRequestException('Only paid orders can be refunded');
       }
 
-      order.paymentStatus = 'refunded';
-      order.refundReason = reason ?? null;
+      locked.paymentStatus = 'refunded';
+      locked.refundReason = reason ?? null;
       // 履约状态保留（用于历史追溯）；如果还没发货，把履约也置为 cancelled
-      if (order.status === 'confirmed') {
-        order.status = 'cancelled';
+      if (locked.status === 'confirmed') {
+        locked.status = 'cancelled';
       }
-      return manager.save(Order, order);
+      return manager.save(Order, locked);
     });
+  }
+
+  /**
+   * Full refund of a captured PayPal payment. Tolerates replays: if PayPal
+   * reports the capture was already refunded we treat the refund as done
+   * so the local state can converge.
+   */
+  private async refundPayPalCapture(
+    captureId: string,
+    totalAmount: number,
+    currency: string,
+    orderNo: string,
+  ): Promise<{ refundId?: string }> {
+    const accessToken = await this.getPayPalAccessToken();
+    const response = await fetch(
+      `${this.paypalBaseUrl}/v2/payments/captures/${encodeURIComponent(captureId)}/refund`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: {
+            currency_code: currency,
+            value: Number(totalAmount).toFixed(2),
+          },
+          invoice_id: `${orderNo}-refund`,
+        }),
+      },
+    );
+
+    if (response.ok) {
+      const data = (await response.json()) as { id?: string };
+      return { refundId: data.id };
+    }
+
+    const error = (await response.json().catch(() => null)) as {
+      details?: Array<{ issue?: string }>;
+    } | null;
+    const issue = error?.details?.[0]?.issue ?? '';
+    if (issue === 'CAPTURE_ALREADY_REFUNDED') {
+      return {};
+    }
+    throw new BadRequestException(
+      'PayPal refund could not be completed. Check the capture status in PayPal and retry.',
+    );
   }
 
   private generateOrderNo(): string {
     const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    // crypto random instead of Math.random (report P3): 4 bytes of entropy
+    const random = randomBytes(4).toString('hex').toUpperCase();
     return `LT${timestamp}${random}`;
   }
 
@@ -696,6 +793,32 @@ export class OrdersService {
       );
     }
     order.stockReserved = false;
+  }
+
+  /**
+   * A late payment re-activates an order the expiry sweep already cancelled.
+   * The sweep released the reserved stock, so try to reserve it again; if
+   * the stock is gone (or the product was removed) leave the flag off and
+   * let fulfilment handle the shortfall manually.
+   */
+  private async reReserveStockAfterLatePayment(
+    manager: EntityManager,
+    order: Order,
+  ): Promise<void> {
+    let allReserved = true;
+    for (const item of order.items ?? []) {
+      const product = await manager.findOne(StoreProduct, {
+        where: { id: item.productId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!product || product.stock < item.quantity) {
+        allReserved = false;
+        continue;
+      }
+      product.stock -= item.quantity;
+      await manager.save(StoreProduct, product);
+    }
+    order.stockReserved = allReserved;
   }
 
   private deriveGuestEmail(contact: string): string {

@@ -5,6 +5,7 @@ import {
   IsDateString,
   MaxLength,
   IsBoolean,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateBookingDto {
@@ -31,6 +32,19 @@ export class CreateBookingDto {
   @IsString()
   @MaxLength(200)
   supportMode: string;
+
+  /**
+   * P2-8: when provided, the deposit is priced from this CMS service mode's
+   * configured depositCents (falling back to the keyword heuristic when the
+   * mode has no deposit configured). Unknown ids are rejected.
+   */
+  @ApiPropertyOptional({
+    example: 'b1c2d3e4-1111-4222-8333-444455556666',
+    description: 'CMS service mode the booking refers to',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  serviceModeId?: string;
 
   @ApiPropertyOptional({ example: '1-2' })
   @IsOptional()

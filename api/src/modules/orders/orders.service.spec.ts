@@ -61,6 +61,7 @@ describe('OrdersService shop checkout', () => {
       productRepo as any,
       paypalConfig as any,
       notifications as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
     jest
       .spyOn(service as any, 'createPayPalOrder')
@@ -134,6 +135,7 @@ describe('OrdersService shop checkout', () => {
       { find: jest.fn().mockResolvedValue([]) } as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await expect(
@@ -164,6 +166,7 @@ describe('OrdersService shop checkout', () => {
       { find: jest.fn().mockResolvedValue([product]) } as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       { notifyStaff: jest.fn() } as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await expect(
@@ -208,6 +211,7 @@ describe('OrdersService stock reservations', () => {
       {} as any,
       { get: jest.fn() } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await service.markPaymentFailed(order.orderNo, 'declined');
@@ -248,6 +252,7 @@ describe('OrdersService public status', () => {
       {} as any,
       { get: jest.fn() } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     const result = await service.findPublicStatus(order.orderNo, token);
@@ -279,6 +284,7 @@ describe('OrdersService public status', () => {
       {} as any,
       { get: jest.fn() } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await expect(
@@ -294,6 +300,7 @@ describe('OrdersService interpreting deposits', () => {
       {} as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await expect(
@@ -322,6 +329,7 @@ describe('OrdersService interpreting deposits', () => {
       {} as any,
       paypalConfig as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
     jest
       .spyOn(service as any, 'createPayPalOrder')
@@ -400,6 +408,7 @@ describe('OrdersService PayPal capture', () => {
       {} as any,
       paypalConfig as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
     jest
       .spyOn(global, 'fetch')
@@ -447,6 +456,7 @@ describe('OrdersService PayPal capture', () => {
       {} as any,
       paypalConfig as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
     jest
       .spyOn(global, 'fetch')
@@ -490,6 +500,7 @@ describe('OrdersService payment completion', () => {
       {} as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     const result = await service.markPaymentFailed('LT123', 'late failure');
@@ -519,6 +530,7 @@ describe('OrdersService payment completion', () => {
       {} as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     const result = await service.markPaid('LT123', 'cap_123');
@@ -557,6 +569,7 @@ describe('OrdersService payment completion', () => {
       {} as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     const result = await service.markPaid('LT123', 'cap_123');
@@ -581,6 +594,7 @@ describe('OrdersService payment completion', () => {
       {} as any,
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
+      { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
     );
 
     await expect(service.markPaid('LT123', 'cap_123')).rejects.toBeInstanceOf(

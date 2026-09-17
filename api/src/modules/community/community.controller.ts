@@ -108,11 +108,21 @@ export class CommunityController {
       userId: this.requireUserId(req),
       userEmail: req.user?.email ?? dto.userEmail ?? '',
       status: 'pending_review',
+      // Public submissions cannot self-assign engagement counters or the
+      // featured slot: counts only grow from real reactions, featuring is
+      // an editorial decision (report P3-3).
+      likes: 0,
+      saves: 0,
+      comments: 0,
+      featured: false,
     });
   }
 
   @Post('public/community/upload')
   @ApiBearerAuth()
+  // Authenticated users can push 5MB per call; without a dedicated throttle
+  // the global 60/min is enough to fill the uploads volume (report P2-C).
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Upload image for community post (public)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
@@ -270,6 +280,7 @@ export class CommunityController {
     return this.communityService.toggleFeatured(id, featured);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/community/posts/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)
@@ -330,6 +341,7 @@ export class CommunityController {
     return this.communityService.updateBrief(id, dto);
   }
 
+  @Roles('admin', 'editor')
   @Delete('admin/community/briefs/:id')
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)

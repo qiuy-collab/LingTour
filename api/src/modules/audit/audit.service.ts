@@ -1,8 +1,14 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { AuditQueryDto } from './dto/audit-query.dto';
+import { clampPagination } from '../../common/pagination';
 
 export interface CreateAuditLogDto {
   userId?: string;
@@ -59,9 +65,12 @@ export class AuditService {
    * Paginated list with optional filters.
    */
   async findAll(query: AuditQueryDto) {
-    const page = query.page || 1;
-    const pageSize = query.pageSize || 20;
-    const skip = (page - 1) * pageSize;
+    // Admin inputs are query strings: clamp instead of feeding NaN/negatives
+    // into skip/take (report P2-F/P3-5).
+    const { page, limit: pageSize, skip } = clampPagination(
+      query.page,
+      query.pageSize,
+    );
 
     const qb = this.auditRepo.createQueryBuilder('al');
 
@@ -76,14 +85,18 @@ export class AuditService {
       qb.andWhere('al.user_id = :userId', { userId: query.userId });
     }
     if (query.startDate) {
-      qb.andWhere('al.created_at >= :startDate', {
-        startDate: new Date(query.startDate),
-      });
+      const startDate = new Date(query.startDate);
+      if (Number.isNaN(startDate.getTime())) {
+        throw new BadRequestException('startDate is not a valid date');
+      }
+      qb.andWhere('al.created_at >= :startDate', { startDate });
     }
     if (query.endDate) {
-      qb.andWhere('al.created_at <= :endDate', {
-        endDate: new Date(query.endDate),
-      });
+      const endDate = new Date(query.endDate);
+      if (Number.isNaN(endDate.getTime())) {
+        throw new BadRequestException('endDate is not a valid date');
+      }
+      qb.andWhere('al.created_at <= :endDate', { endDate });
     }
     if (query.keyword) {
       qb.andWhere(

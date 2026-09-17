@@ -17,6 +17,7 @@ import { City } from './entities/city.entity';
 import { CityCultureSection } from './entities/city-section.entity';
 import { CreateCityDto } from './dto/create-city.dto';
 import { UpdateCityDto } from './dto/update-city.dto';
+import { clampPagination } from '../../common/pagination';
 
 @Injectable()
 export class CitiesService {
@@ -29,12 +30,13 @@ export class CitiesService {
   // ── Public read ──
 
   async findAllPublished(
-    page = 1,
-    limit = 20,
+    pageInput?: number,
+    limitInput?: number,
   ): Promise<{ data: any[]; total: number; page: number; pageSize: number }> {
+    const { page, limit, skip } = clampPagination(pageInput, limitInput);
     const [data, total] = await this.cityRepository.findAndCount({
       where: { published: true },
-      skip: (page - 1) * limit,
+      skip,
       take: limit,
       order: { createdAt: 'DESC' },
     });

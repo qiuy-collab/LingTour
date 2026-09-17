@@ -1,4 +1,4 @@
-﻿import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsDateString,
@@ -6,12 +6,15 @@ import {
   IsIn,
   IsString,
   MaxLength,
+  Matches,
 } from 'class-validator';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
 import { EVENT_STATUSES } from '../entities/event.entity';
 
 export class CreateEventDto {
-  @ApiProperty() @IsString() @MaxLength(120) slug: string;
+  @ApiProperty() @IsString() @MaxLength(120)
+  @Matches(/^[a-z0-9-]+$/, { message: 'slug may only contain lowercase letters, digits and dashes' })
+  slug: string;
   @ApiProperty() @IsString() title: string;
   @ApiPropertyOptional() @IsOptional() @IsString() summary?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
