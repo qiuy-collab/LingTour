@@ -41,8 +41,7 @@ type CheckoutResponse = {
   orderNo: string;
   totalAmount: number;
   status: string;
-  paymentMethod: "stripe" | "paypal";
-  stripeClientSecret: string | null;
+  paymentMethod: "paypal";
   paypalOrderId?: string | null;
   paypalApprovalUrl?: string | null;
   publicStatusToken: string;
@@ -59,7 +58,7 @@ const INITIAL_FORM: CheckoutForm = {
   phone: "",
   note: "",
   // PayPal-only checkout: the storefront exposes PayPal as the sole payment
-  // method. Stripe remains available on the API but has no storefront entry.
+  // method end to end (API included).
   paymentMethod: "paypal",
 };
 

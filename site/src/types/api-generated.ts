@@ -1135,23 +1135,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/webhooks/stripe": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Stripe webhook endpoint */
-        post: operations["OrdersController_stripeWebhook"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/orders": {
         parameters: {
             query?: never;
@@ -2443,10 +2426,10 @@ export interface components {
             items: components["schemas"]["OrderItemDto"][];
             shippingAddress: components["schemas"]["ShippingAddressDto"];
             /**
-             * @default stripe
+             * @default paypal
              * @enum {string}
              */
-            paymentMethod: "stripe" | "paypal";
+            paymentMethod: "paypal";
         };
         CapturePayPalOrderDto: {
             /** @example 5O190127TN364715T */
@@ -4479,25 +4462,6 @@ export interface operations {
                 "application/json": components["schemas"]["CapturePayPalOrderDto"];
             };
         };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    OrdersController_stripeWebhook: {
-        parameters: {
-            query?: never;
-            header: {
-                "stripe-signature": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             201: {
                 headers: {

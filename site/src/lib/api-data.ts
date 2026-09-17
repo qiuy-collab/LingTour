@@ -501,7 +501,8 @@ export type InterpretingDepositCheckout = {
     currency: string;
     status: string;
     paymentLabel: string;
-    stripeClientSecret: string;
+    paypalOrderId: string;
+    paypalApprovalUrl: string | null;
     publicStatusToken: string;
   };
 };

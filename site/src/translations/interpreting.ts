@@ -172,6 +172,8 @@ const copy = {
   "interpreting.flow.payDeposit": "Pay deposit now",
   "interpreting.flow.openingDeposit": "Opening deposit...",
   "interpreting.flow.reserveDeposit": "Send request & reserve deposit",
+  "interpreting.flow.paypalBody": "Continue to PayPal to approve and complete the deposit payment.",
+  "interpreting.flow.paypalContinue": "Continue to PayPal",
   "interpreting.flow.continue": "Continue",
   "interpreting.flow.sendAndContinue": "Send request & continue to deposit",
 };

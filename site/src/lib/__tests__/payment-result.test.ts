@@ -6,7 +6,7 @@ const unpaidOrder = {
   orderNo: "LT123",
   status: "pending",
   paymentStatus: "unpaid" as const,
-  paymentMethod: "stripe",
+  paymentMethod: "paypal",
   totalAmount: 54,
   currency: "SGD",
   orderType: "shop" as const,

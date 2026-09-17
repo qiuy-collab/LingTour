@@ -7,7 +7,6 @@ import {
   fetchCities,
   type InterpretingDepositCheckout,
 } from "@/lib/api-data";
-import { StripePaymentForm } from "@/components/checkout/StripePaymentForm";
 import { getCalendarDateKey, getLocalDateKey } from "@/lib/calendar-date";
 import { formatCurrency } from "@/lib/region-currency";
 import { useLocale } from "@/lib/locale-context";
@@ -480,12 +479,25 @@ function MultiStepFormInner({
                 </div>
 
                 <div className="mt-5">
-                  <StripePaymentForm
-                    clientSecret={depositSession.deposit.stripeClientSecret}
-                    orderNo={depositSession.deposit.orderNo}
-                    publicStatusToken={depositSession.deposit.publicStatusToken}
-                    onError={setErrorMessage}
-                  />
+                  <p className="text-sm leading-7 text-[var(--muted)]">
+                    {t("interpreting.flow.paypalBody")}
+                  </p>
+                  {depositSession.deposit.paypalApprovalUrl ? (
+                    <a
+                      href={depositSession.deposit.paypalApprovalUrl}
+                      className="mt-4 flex min-h-11 w-full items-center justify-center rounded-full bg-[var(--cinnabar)] px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-[var(--cinnabar-deep)] sm:w-auto"
+                    >
+                      {t("interpreting.flow.paypalContinue")}
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="mt-4 w-full cursor-not-allowed rounded-full bg-[var(--line)] px-6 py-3 text-[14px] font-semibold text-[var(--muted)] sm:w-auto"
+                    >
+                      {t("interpreting.flow.paypalContinue")}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
