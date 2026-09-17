@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `ed014cb` (2026-09-17, media-library index rebuild, upload content validation and the admin inline-image editor; deploy run `35203274093`, see §38). Previous deployed commit `a522c77` (§36).
+- Production deployed application commit: `c7fe7ce` (2026-09-17, register uploads at the path multer actually wrote; deploy run `35205670356`, see §38). Previous deployed commits the same day: `ed014cb` (media-library index rebuild, upload content validation, admin inline-image editor) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `ed014cb` (2026-09-17 media-library / upload-validation / admin-editor batch, §38) — this is the deployed production commit.
+- Local HEAD: `c7fe7ce` (2026-09-17 upload path registration fix, §38) — this is the deployed production commit.
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -136,7 +136,7 @@ Recovery incidents:
 ## 6. Deployment queue
 
 1. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
-2. Done 2026-09-17 (§38): the production upload round-trip returned 201 with a `media_files` row, spoofed content returned 400 with no orphan file, and the test artifacts were removed. New follow-up from that run: harden the multer destination / registration path contract, since a `file`-first multipart request stores bytes at the uploads root while recording `<module>/<uuid>.jpg` (§38).
+2. Done 2026-09-17 (§38): the production upload round-trip returned 201 with a `media_files` row, spoofed content returned 400 with no orphan file, and the test artifacts were removed. The multipart field-order defect that run exposed was fixed, deployed as `c7fe7ce` and re-verified on production with the same file-first request (201 → registered at the real path → delete 200 → baseline restored).
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 
@@ -595,7 +595,7 @@ Production smoke after deployment (read-only): API health 200; home, `/routes/so
 
 Production upload verification (owner-authorized, 2026-09-17): a 15-minute admin token was signed server-side with the production secret and used only in server-side shell variables — never printed, never stored. Against the real endpoint, a genuine JPEG returned 201 with a `mediaFileId` row (`module=cities`, `entity_type=city`), and spoofed content (`.jpg` name, script body) returned 400 `File content does not match its declared type` while the upload directory stayed at 42 files. Both test artifacts were then removed and `media_files` returned to its 88-row baseline, so the round-trip left no production change. The authenticated upload path is therefore confirmed working on production, not just locally.
 
-That round-trip also exposed a robustness defect that is **not** a regression of this batch and does **not** affect the admin UI: multer's `diskStorage` destination reads `req.body.module`, which multipart parsing only populates when the `module` field arrives before the `file` part. The admin client appends `module`/`entityType`/`entityId` before the file (`admin-frontend/src/api/media.ts`), so normal admin uploads land in the correct subdirectory — all 84 production rows carrying a directory prefix have their file present on disk. A request that sends `file` first stores the bytes at the uploads root while `storeUploadedFile` still records `<module>/<uuid>.jpg`, so the library URL 404s and the delete endpoint answers 404. Worth hardening separately (derive the stored path from multer's actual destination instead of re-deriving it from the module); not changed in this batch.
+That round-trip also exposed a robustness defect that is **not** a regression of this batch and does **not** affect the admin UI: multer's `diskStorage` destination reads `req.body.module`, which multipart parsing only populates when the `module` field arrives before the `file` part. The admin client appends `module`/`entityType`/`entityId` before the file (`admin-frontend/src/api/media.ts`), so normal admin uploads land in the correct subdirectory — all 84 production rows carrying a directory prefix have their file present on disk. A request that sends `file` first stores the bytes at the uploads root while `storeUploadedFile` still records `<module>/<uuid>.jpg`, so the library URL 404s and the delete endpoint answers 404. Fixed the same day in `c7fe7ce`: `resolveStoredRelativePath()` derives the stored path from the location multer really wrote to (rejecting missing, outside-root and too-deep locations) and `storeUploadedFile` prefers it, falling back to the module-derived path only when multer exposes none. Local verification: a file-first upload now registers `<uuid>.jpg` with the file present at that exact path, and the delete endpoint answers 200 where it answered 404 before; the admin field order still stores `cities/<uuid>.jpg` unchanged; API type check, 22 suites / 107 tests and the production build passed. Production verification after deploy run `35205670356` (backup `/root/backups/lingtour-db-pre-upload-path-20260917-173211.dump`): the same file-first request returned 201 with `b96980bd-….jpg` present on disk, delete returned 200, and `media_files` returned to its 88-row baseline with no leftover file at the uploads root.
 
 Still not verified on production: the new editor's post-login interaction was proven through the shipped bundle fingerprints and the local browser session, not through a production browser session.
 
