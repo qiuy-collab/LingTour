@@ -77,9 +77,9 @@ export class CreateOrderDto {
   @Type(() => ShippingAddressDto)
   shippingAddress: ShippingAddressDto;
 
-  @ApiPropertyOptional({ default: 'stripe', enum: ['stripe', 'paypal'] })
+  @ApiPropertyOptional({ default: 'paypal', enum: ['paypal'] })
   @IsOptional()
   @IsString()
-  @IsIn(['stripe', 'paypal'])
+  @IsIn(['paypal'])
   paymentMethod?: string;
 }

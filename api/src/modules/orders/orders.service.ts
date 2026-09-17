@@ -6,7 +6,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import Stripe from 'stripe';
 import {
   Order,
   type OrderStatus,
@@ -14,7 +13,6 @@ import {
 } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
-import { v4 as uuidv4 } from 'uuid';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
 import { StoreProduct } from '../shop/entities/store-product.entity';
@@ -39,8 +37,6 @@ const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 @Injectable()
 export class OrdersService {
-  private stripe: Stripe | null = null;
-
   constructor(
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
@@ -48,16 +44,7 @@ export class OrdersService {
     private readonly productRepo: Repository<StoreProduct>,
     private readonly configService: ConfigService,
     private readonly notificationsService: NotificationsService,
-  ) {
-    const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    if (stripeKey) {
-      this.stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' });
-    }
-  }
-
-  private get isStripeEnabled(): boolean {
-    return this.stripe !== null;
-  }
+  ) {}
 
   private get paypalBaseUrl(): string {
     return (
@@ -166,69 +153,37 @@ export class OrdersService {
           totalAmount: totalCents / 100,
           currency,
           orderType: 'shop',
-          paymentMethod: dto.paymentMethod === 'paypal' ? 'paypal' : 'stripe',
+          paymentMethod: 'paypal',
           publicStatusTokenHash: publicStatusToken.hash,
           stockReserved: true,
           shippingAddr: dto.shippingAddress as unknown as Record<string, any>,
         });
         const saved = await manager.save(Order, order);
 
-        let stripeClientSecret: string | null = null;
         let paypalOrderId: string | null = null;
         let paypalApprovalUrl: string | null = null;
-        const paymentMethod =
-          dto.paymentMethod === 'paypal' ? 'paypal' : 'stripe';
 
-        if (paymentMethod === 'paypal') {
-          const paypalOrder = await this.createPayPalOrder(
-            saved,
-            totalCents,
-            publicStatusToken.token,
-          );
-          paypalOrderId = paypalOrder.id;
-          paypalApprovalUrl =
-            paypalOrder.links?.find((link) => link.rel === 'approve')?.href ??
-            null;
-          if (!paypalOrderId || !paypalApprovalUrl) {
-            throw new BadRequestException(
-              'PayPal checkout could not be created',
-            );
-          }
-          saved.paymentMethod = 'paypal';
-          saved.paymentId = paypalOrderId;
-          await manager.save(Order, saved);
-        } else if (this.isStripeEnabled) {
-          const paymentIntent = await this.stripe!.paymentIntents.create(
-            {
-              amount: totalCents,
-              currency: currency.toLowerCase(),
-              metadata: {
-                orderNo: saved.orderNo,
-                orderId: saved.id,
-                type: 'shop',
-              },
-              automatic_payment_methods: { enabled: true },
-            },
-            { idempotencyKey: `shop-order:${saved.id}` },
-          );
-          if (!paymentIntent.client_secret) {
-            throw new BadRequestException(
-              'Stripe checkout could not be created',
-            );
-          }
-          saved.stripePaymentIntentId = paymentIntent.id;
-          await manager.save(Order, saved);
-          stripeClientSecret = paymentIntent.client_secret;
-        } else {
-          stripeClientSecret = `pi_sandbox_${saved.orderNo}_secret_${uuidv4().slice(0, 8)}`;
+        const paypalOrder = await this.createPayPalOrder(
+          saved,
+          totalCents,
+          publicStatusToken.token,
+        );
+        paypalOrderId = paypalOrder.id;
+        paypalApprovalUrl =
+          paypalOrder.links?.find((link) => link.rel === 'approve')?.href ??
+          null;
+        if (!paypalOrderId || !paypalApprovalUrl) {
+          throw new BadRequestException('PayPal checkout could not be created');
         }
+        saved.paymentMethod = 'paypal';
+        saved.paymentId = paypalOrderId;
+        await manager.save(Order, saved);
 
         return {
           saved,
-          stripeClientSecret,
           paypalOrderId,
           paypalApprovalUrl,
-          paymentMethod,
+          paymentMethod: 'paypal' as const,
           currency,
           publicStatusToken: publicStatusToken.token,
         };
@@ -254,7 +209,6 @@ export class OrdersService {
       status: checkout.saved.status,
       paymentStatus: checkout.saved.paymentStatus,
       paymentMethod: checkout.paymentMethod,
-      stripeClientSecret: checkout.stripeClientSecret,
       paypalOrderId: checkout.paypalOrderId,
       paypalApprovalUrl: checkout.paypalApprovalUrl,
       publicStatusToken: checkout.publicStatusToken,
@@ -293,10 +247,7 @@ export class OrdersService {
     },
     manager: EntityManager,
   ) {
-    const webhookSecret = this.configService.get<string>(
-      'STRIPE_WEBHOOK_SECRET',
-    );
-    if (!this.isStripeEnabled || !webhookSecret) {
+    if (!this.isPayPalEnabled) {
       throw new BadRequestException(
         'Deposit payment is temporarily unavailable',
       );
@@ -311,7 +262,7 @@ export class OrdersService {
       status: 'pending',
       paymentStatus: 'unpaid',
       totalAmount: input.depositAmount,
-      paymentMethod: 'stripe',
+      paymentMethod: 'paypal',
       bookingSubmissionId: input.bookingSubmissionId,
       orderType: 'interpreting_deposit',
       currency,
@@ -334,26 +285,18 @@ export class OrdersService {
     });
 
     const saved = await manager.save(Order, order);
-    const pi = await this.stripe!.paymentIntents.create(
-      {
-        amount: Math.round(input.depositAmount * 100),
-        currency: currency.toLowerCase(),
-        metadata: {
-          orderNo: saved.orderNo,
-          orderId: saved.id,
-          bookingSubmissionId: input.bookingSubmissionId,
-          type: 'interpreting-deposit',
-        },
-        automatic_payment_methods: { enabled: true },
-      },
-      { idempotencyKey: `interpreting-deposit:${saved.id}` },
+    const paypalOrder = await this.createPayPalOrder(
+      saved,
+      Math.round(input.depositAmount * 100),
+      publicStatusToken.token,
     );
-
-    if (!pi.client_secret) {
-      throw new BadRequestException('Stripe checkout could not be created');
+    const paypalApprovalUrl =
+      paypalOrder.links?.find((link) => link.rel === 'approve')?.href ?? null;
+    if (!paypalOrder.id || !paypalApprovalUrl) {
+      throw new BadRequestException('PayPal checkout could not be created');
     }
 
-    saved.stripePaymentIntentId = pi.id;
+    saved.paymentId = paypalOrder.id;
     await manager.save(Order, saved);
 
     return {
@@ -363,7 +306,8 @@ export class OrdersService {
       currency,
       status: saved.status,
       paymentStatus: saved.paymentStatus,
-      stripeClientSecret: pi.client_secret,
+      paypalOrderId: paypalOrder.id,
+      paypalApprovalUrl,
       publicStatusToken: publicStatusToken.token,
     };
   }
@@ -516,154 +460,33 @@ export class OrdersService {
   }
 
   /**
-   * Stripe webhook callback. Payment state changes require both configured
-   * Stripe credentials and a valid signature over the original raw body.
+   * 押金单支付完成后，把绑定的讲解预订从 deposit_pending 推进到 deposit_paid。
+   * 幂等：仅在 booking 仍处于 deposit_pending 时推进。
    */
-  async handleStripeWebhook(signature: string, rawBody?: Buffer) {
-    const webhookSecret = this.configService.get<string>(
-      'STRIPE_WEBHOOK_SECRET',
-    );
-    if (!this.isStripeEnabled || !webhookSecret || !signature || !rawBody) {
-      throw new BadRequestException('Stripe webhook is not configured');
-    }
-
-    let event: Stripe.Event;
-    try {
-      event = this.stripe!.webhooks.constructEvent(
-        rawBody,
-        signature,
-        webhookSecret,
-      );
-    } catch (err) {
-      throw new BadRequestException(
-        `Webhook signature verification failed: ${err}`,
-      );
-    }
-
-    if (
-      event.type !== 'payment_intent.succeeded' &&
-      event.type !== 'payment_intent.payment_failed'
-    ) {
-      return { received: true, event: event.type, status: 'acknowledged' };
-    }
-
-    const paymentIntent = event.data.object;
-    const order = await this.orderRepo.findOne({
-      where: { stripePaymentIntentId: paymentIntent.id },
-    });
-    if (!order) {
-      throw new NotFoundException('PaymentIntent is not linked to an order');
-    }
-
-    this.verifyPaymentIntent(order, paymentIntent);
-
-    if (event.type === 'payment_intent.succeeded') {
-      await this.markVerifiedPaymentPaid(paymentIntent);
-    } else {
-      await this.markPaymentFailed(
-        order.orderNo,
-        paymentIntent.last_payment_error?.message ?? 'Payment failed',
-      );
-    }
-
-    return {
-      received: true,
-      event: event.type,
-      status: 'processed',
-      orderNo: order.orderNo,
-    };
-  }
-
-  private verifyPaymentIntent(
+  private async promoteDepositBooking(
+    manager: EntityManager,
     order: Order,
-    paymentIntent: Stripe.PaymentIntent,
-  ): void {
-    const expectedAmount = Math.round(Number(order.totalAmount) * 100);
-    const receivedAmount =
-      paymentIntent.amount_received || paymentIntent.amount;
-    const expectedCurrency = order.currency.toLowerCase();
-
-    if (
-      paymentIntent.metadata.orderId !== order.id ||
-      paymentIntent.metadata.orderNo !== order.orderNo
-    ) {
-      throw new BadRequestException(
-        'PaymentIntent metadata does not match order',
-      );
+  ): Promise<void> {
+    if (order.orderType !== 'interpreting_deposit') return;
+    if (!order.bookingSubmissionId) {
+      throw new BadRequestException('Deposit order is not linked to a booking');
     }
-    if (
-      order.orderType === 'interpreting_deposit' &&
-      (!order.bookingSubmissionId ||
-        paymentIntent.metadata.type !== 'interpreting-deposit' ||
-        paymentIntent.metadata.bookingSubmissionId !==
-          order.bookingSubmissionId)
-    ) {
-      throw new BadRequestException(
-        'PaymentIntent metadata does not match interpreting booking',
-      );
-    }
-    if (receivedAmount !== expectedAmount) {
-      throw new BadRequestException(
-        'PaymentIntent amount does not match order',
-      );
-    }
-    if (paymentIntent.currency.toLowerCase() !== expectedCurrency) {
-      throw new BadRequestException(
-        'PaymentIntent currency does not match order',
-      );
-    }
-  }
-
-  private async markVerifiedPaymentPaid(
-    paymentIntent: Stripe.PaymentIntent,
-  ): Promise<Order> {
-    return this.orderRepo.manager.transaction(async (manager) => {
-      const order = await manager.findOne(Order, {
-        where: { stripePaymentIntentId: paymentIntent.id },
-        lock: { mode: 'pessimistic_write' },
-      });
-      if (!order) {
-        throw new NotFoundException('PaymentIntent is not linked to an order');
-      }
-
-      this.verifyPaymentIntent(order, paymentIntent);
-      if (order.paymentStatus !== 'paid') {
-        order.paymentStatus = 'paid';
-        order.paymentId = paymentIntent.id;
-        order.paidAt = new Date();
-        order.paymentFailureReason = null;
-        order.stockReserved = false;
-        if (order.status === 'pending') order.status = 'confirmed';
-        await manager.save(Order, order);
-      }
-
-      if (order.orderType === 'interpreting_deposit') {
-        if (!order.bookingSubmissionId) {
-          throw new BadRequestException(
-            'Deposit order is not linked to a booking',
-          );
-        }
-        const booking = await manager.findOne(BookingSubmission, {
-          where: { id: order.bookingSubmissionId },
-          lock: { mode: 'pessimistic_write' },
-        });
-        if (!booking) {
-          throw new NotFoundException(
-            'Deposit booking is not linked to an order',
-          );
-        }
-        if (booking.status === 'deposit_pending') {
-          booking.status = 'deposit_paid';
-          await manager.save(BookingSubmission, booking);
-        }
-      }
-
-      return order;
+    const booking = await manager.findOne(BookingSubmission, {
+      where: { id: order.bookingSubmissionId },
+      lock: { mode: 'pessimistic_write' },
     });
+    if (!booking) {
+      throw new NotFoundException('Deposit booking is not linked to an order');
+    }
+    if (booking.status === 'deposit_pending') {
+      booking.status = 'deposit_paid';
+      await manager.save(BookingSubmission, booking);
+    }
   }
 
   /**
    * 支付成功：把订单标记为已支付，并把履约状态从 pending 推进到 confirmed。
+   * 押金单同时推进绑定的讲解预订状态。
    * idempotent：重复调用同一个 orderNo 不会重复推进。
    */
   async markPaid(orderNo: string, paymentId: string): Promise<Order> {
@@ -681,6 +504,7 @@ export class OrdersService {
           }
 
           if (order.paymentStatus === 'paid') {
+            await this.promoteDepositBooking(manager, order);
             return order; // Idempotent
           }
 
@@ -694,7 +518,9 @@ export class OrdersService {
             order.status = 'confirmed';
           }
 
-          return await manager.save(Order, order);
+          const saved = await manager.save(Order, order);
+          await this.promoteDepositBooking(manager, order);
+          return saved;
         });
       } catch (error) {
         if (error instanceof NotFoundException) throw error;

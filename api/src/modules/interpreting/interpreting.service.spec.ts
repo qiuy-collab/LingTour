@@ -44,7 +44,8 @@ describe('InterpretingService public profiles', () => {
         totalAmount: 120,
         currency: 'SGD',
         status: 'pending',
-        stripeClientSecret: 'pi_123_secret_test',
+        paypalOrderId: 'pp_123',
+        paypalApprovalUrl: 'https://www.sandbox.paypal.com/checkoutnow?token=pp_123',
       }),
     };
     const notificationsService = { notifyStaff: jest.fn() };
@@ -87,7 +88,7 @@ describe('InterpretingService public profiles', () => {
       {} as any,
       notificationsService as any,
       {
-        transaction: jest.fn().mockRejectedValue(new Error('stripe failed')),
+        transaction: jest.fn().mockRejectedValue(new Error('paypal failed')),
       } as any,
     );
 
@@ -99,7 +100,7 @@ describe('InterpretingService public profiles', () => {
         serviceDate: '2026-08-01',
         supportMode: 'City companion support',
       }),
-    ).rejects.toThrow('stripe failed');
+    ).rejects.toThrow('paypal failed');
     expect(notificationsService.notifyStaff).not.toHaveBeenCalled();
   });
 

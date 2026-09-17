@@ -647,7 +647,7 @@ async function testOrders(token, results) {
         country: 'Singapore',
         phone: '+65 9000 0000',
       },
-      paymentMethod: 'stripe',
+      paymentMethod: 'paypal',
     }),
   });
   record(results, 'orders', 'create', true, order.orderId);

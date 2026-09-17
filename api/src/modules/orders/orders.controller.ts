@@ -6,8 +6,6 @@ import {
   Param,
   Body,
   Query,
-  Headers,
-  Req,
   ParseUUIDPipe,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,7 +16,6 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import type { Request } from 'express';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -74,19 +71,6 @@ export class OrdersController {
   })
   async capturePayPal(@Body() dto: CapturePayPalOrderDto) {
     return this.ordersService.capturePayPalOrder(dto.paypalOrderId);
-  }
-
-  // ── Stripe Webhook (public, but signature-verified) ──
-
-  @Public()
-  @Post('webhooks/stripe')
-  @ApiOperation({ summary: 'Stripe webhook endpoint' })
-  async stripeWebhook(
-    @Headers('stripe-signature') signature: string,
-    @Req() req: Request,
-  ) {
-    const rawBody = (req as any).rawBody as Buffer | undefined;
-    return this.ordersService.handleStripeWebhook(signature, rawBody);
   }
 
   // ── Admin ──

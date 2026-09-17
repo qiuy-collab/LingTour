@@ -125,16 +125,6 @@ export class Order {
 
   @Index({ unique: true })
   @Column({
-    type: 'varchar',
-    length: 100,
-    name: 'stripe_payment_intent_id',
-    nullable: true,
-    unique: true,
-  })
-  stripePaymentIntentId: string | null;
-
-  @Index({ unique: true })
-  @Column({
     type: 'uuid',
     name: 'booking_submission_id',
     nullable: true,

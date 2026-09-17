@@ -76,7 +76,7 @@ describe('Culvoy E2E Flow (Service Layer)', () => {
           country: 'Singapore',
           phone: '+65 91234567',
         },
-        paymentMethod: 'stripe',
+        paymentMethod: 'paypal',
       };
 
       const totalAmount = orderPayload.items.reduce(
@@ -94,7 +94,7 @@ describe('Culvoy E2E Flow (Service Layer)', () => {
     it('Step 4: Order transitions through statuses correctly', () => {
       const statusFlow = ['pending', 'paid', 'shipped', 'completed'];
 
-      // pending → paid (Stripe webhook)
+      // pending → paid (PayPal capture)
       expect(statusFlow.indexOf('paid')).toBeGreaterThan(
         statusFlow.indexOf('pending'),
       );

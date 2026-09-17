@@ -432,7 +432,8 @@ export class InterpretingService {
         currency: checkout.depositOrder.currency,
         status: checkout.depositOrder.status,
         paymentLabel: this.describeDeposit(dto),
-        stripeClientSecret: checkout.depositOrder.stripeClientSecret,
+        paypalOrderId: checkout.depositOrder.paypalOrderId,
+        paypalApprovalUrl: checkout.depositOrder.paypalApprovalUrl,
         publicStatusToken: checkout.depositOrder.publicStatusToken,
       },
     };

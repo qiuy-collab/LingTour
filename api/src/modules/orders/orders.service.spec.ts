@@ -1,5 +1,3 @@
-jest.mock('uuid', () => ({ v4: () => 'test-uuid' }));
-
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { OrdersService } from './orders.service';
@@ -17,24 +15,25 @@ const makeOrder = (overrides: Partial<Order> = {}): Order =>
     paymentId: null,
     paymentFailureReason: null,
     paidAt: null,
-    stripePaymentIntentId: 'pi_123',
     bookingSubmissionId: 'booking-id',
     orderType: 'interpreting_deposit',
     ...overrides,
   }) as Order;
 
-const makePaymentIntent = (overrides: Record<string, any> = {}) => ({
-  id: 'pi_123',
-  amount_received: 12000,
-  currency: 'sgd',
-  metadata: {
-    orderId: 'order-id',
-    orderNo: 'LT123',
-    bookingSubmissionId: 'booking-id',
-    type: 'interpreting-deposit',
-  },
-  ...overrides,
-});
+const paypalConfig = {
+  get: jest.fn((key: string) =>
+    key === 'PAYPAL_CLIENT_ID'
+      ? 'test-client-id'
+      : key === 'PAYPAL_CLIENT_SECRET'
+        ? 'test-client-secret'
+        : undefined,
+  ),
+};
+
+const approveLink = {
+  rel: 'approve',
+  href: 'https://www.sandbox.paypal.com/checkoutnow?token=pp_123',
+};
 
 describe('OrdersService shop checkout', () => {
   it('prices from published products and persists immutable item snapshots', async () => {
@@ -60,9 +59,12 @@ describe('OrdersService shop checkout', () => {
     const service = new OrdersService(
       orderRepo as any,
       productRepo as any,
-      { get: jest.fn().mockReturnValue(undefined) } as any,
+      paypalConfig as any,
       notifications as any,
     );
+    jest
+      .spyOn(service as any, 'createPayPalOrder')
+      .mockResolvedValue({ id: 'pp_123', links: [approveLink] });
 
     const result = await service.createOrder({
       guestEmail: 'guest@example.com',
@@ -110,6 +112,13 @@ describe('OrdersService shop checkout', () => {
           .update(result.publicStatusToken)
           .digest('hex'),
       }),
+    );
+    expect(result.paymentMethod).toBe('paypal');
+    expect(result.paypalOrderId).toBe('pp_123');
+    expect(result.paypalApprovalUrl).toBe(approveLink.href);
+    expect(manager.save).toHaveBeenLastCalledWith(
+      Order,
+      expect.objectContaining({ paymentMethod: 'paypal', paymentId: 'pp_123' }),
     );
   });
 
@@ -160,7 +169,6 @@ describe('OrdersService shop checkout', () => {
     await expect(
       service.createOrder({
         guestEmail: 'guest@example.com',
-        paymentMethod: 'paypal',
         items: [{ productId: 'product-id', quantity: 1 }],
         shippingAddress: {
           recipientName: 'Guest',
@@ -221,7 +229,7 @@ describe('OrdersService public status', () => {
   it('returns only limited status fields for the correct capability token', async () => {
     const order = makeOrder({
       publicStatusTokenHash: hash,
-      paymentMethod: 'stripe',
+      paymentMethod: 'paypal',
       orderType: 'shop',
       items: [
         {
@@ -248,7 +256,7 @@ describe('OrdersService public status', () => {
       orderNo: 'LT123',
       status: 'pending',
       paymentStatus: 'unpaid',
-      paymentMethod: 'stripe',
+      paymentMethod: 'paypal',
       totalAmount: 120,
       currency: 'SGD',
       orderType: 'shop',
@@ -280,7 +288,7 @@ describe('OrdersService public status', () => {
 });
 
 describe('OrdersService interpreting deposits', () => {
-  it('refuses deposit checkout when verified Stripe webhooks are unavailable', async () => {
+  it('refuses deposit checkout when PayPal is not configured', async () => {
     const service = new OrdersService(
       {} as any,
       {} as any,
@@ -304,11 +312,7 @@ describe('OrdersService interpreting deposits', () => {
     ).rejects.toThrow('Deposit payment is temporarily unavailable');
   });
 
-  it('persists the binding and Stripe id with immutable booking metadata', async () => {
-    const paymentIntentsCreate = jest.fn().mockResolvedValue({
-      id: 'pi_123',
-      client_secret: 'pi_123_secret_test',
-    });
+  it('creates the PayPal checkout and persists the payment binding', async () => {
     const manager = {
       create: jest.fn((_entity, value) => value),
       save: jest.fn(async (_entity, value) => value),
@@ -316,16 +320,12 @@ describe('OrdersService interpreting deposits', () => {
     const service = new OrdersService(
       {} as any,
       {} as any,
-      {
-        get: jest.fn((key: string) =>
-          key === 'STRIPE_SECRET_KEY' ? 'sk_test' : 'whsec_test',
-        ),
-      } as any,
+      paypalConfig as any,
       {} as any,
     );
-    (service as any).stripe = {
-      paymentIntents: { create: paymentIntentsCreate },
-    };
+    jest
+      .spyOn(service as any, 'createPayPalOrder')
+      .mockResolvedValue({ id: 'pp_123', links: [approveLink] });
     jest.spyOn(Date, 'now').mockReturnValue(1);
     jest.spyOn(Math, 'random').mockReturnValue(0.1);
 
@@ -348,6 +348,7 @@ describe('OrdersService interpreting deposits', () => {
         bookingSubmissionId: 'booking-id',
         orderType: 'interpreting_deposit',
         currency: 'SGD',
+        paymentMethod: 'paypal',
         publicStatusTokenHash: expect.any(String),
       }),
     );
@@ -361,65 +362,123 @@ describe('OrdersService interpreting deposits', () => {
           .digest('hex'),
       }),
     );
-    expect(paymentIntentsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        amount: 12000,
-        currency: 'sgd',
-        metadata: expect.objectContaining({
-          bookingSubmissionId: 'booking-id',
-          type: 'interpreting-deposit',
-        }),
-      }),
-      expect.objectContaining({
-        idempotencyKey: expect.stringContaining('interpreting-deposit:'),
-      }),
-    );
+    expect(result.paypalOrderId).toBe('pp_123');
+    expect(result.paypalApprovalUrl).toBe(approveLink.href);
     expect(manager.save).toHaveBeenLastCalledWith(
       Order,
-      expect.objectContaining({ stripePaymentIntentId: 'pi_123' }),
+      expect.objectContaining({ paymentId: 'pp_123' }),
     );
   });
+});
 
-  it('rejects unsigned webhook payloads instead of parsing them as sandbox events', async () => {
-    const service = new OrdersService(
-      {} as any,
-      {} as any,
-      { get: jest.fn().mockReturnValue(undefined) } as any,
-      {} as any,
-    );
+describe('OrdersService PayPal capture', () => {
+  const fetchMock = (captureBody: Record<string, any>) =>
+    jest.fn().mockImplementation((url: string) => {
+      if (url.includes('/v1/oauth2/token')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ access_token: 'paypal-token' }),
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => captureBody });
+    });
 
-    await expect(
-      service.handleStripeWebhook('', Buffer.from('{}')),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('rejects a signed payment whose amount does not match the bound order', async () => {
-    const order = makeOrder();
-    const repository = { findOne: jest.fn().mockResolvedValue(order) };
+  it('rejects a captured payment whose amount does not match the bound order', async () => {
+    const order = makeOrder({
+      orderType: 'shop',
+      paymentId: 'pp_123',
+      paymentMethod: 'paypal',
+    });
+    const repository = {
+      findOne: jest
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(order),
+    };
     const service = new OrdersService(
       repository as any,
       {} as any,
-      {
-        get: jest.fn((key: string) =>
-          key === 'STRIPE_SECRET_KEY' ? 'sk_test' : 'whsec_test',
-        ),
-      } as any,
+      paypalConfig as any,
       {} as any,
     );
-    (service as any).stripe = {
-      webhooks: {
-        constructEvent: jest.fn().mockReturnValue({
-          type: 'payment_intent.succeeded',
-          data: { object: makePaymentIntent({ amount_received: 100 }) },
-        }),
-      },
-    };
+    jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(
+        fetchMock({
+          id: 'pp_123',
+          status: 'COMPLETED',
+          purchase_units: [
+            {
+              reference_id: 'LT123',
+              custom_id: 'order-id',
+              payments: {
+                captures: [
+                  {
+                    id: 'cap_1',
+                    status: 'COMPLETED',
+                    amount: { currency_code: 'SGD', value: '100.00' },
+                  },
+                ],
+              },
+            },
+          ],
+        }) as any,
+      );
 
-    await expect(
-      service.handleStripeWebhook('signature', Buffer.from('{}')),
-    ).rejects.toThrow('PaymentIntent amount does not match order');
+    await expect(service.capturePayPalOrder('pp_123')).rejects.toThrow(
+      'PayPal payment amount does not match order',
+    );
   });
 
+  it('rejects a capture linked to a different order or payment id', async () => {
+    const order = makeOrder({
+      orderType: 'shop',
+      paymentId: 'pp_other',
+      paymentMethod: 'paypal',
+    });
+    const repository = {
+      findOne: jest
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(order),
+    };
+    const service = new OrdersService(
+      repository as any,
+      {} as any,
+      paypalConfig as any,
+      {} as any,
+    );
+    jest
+      .spyOn(global, 'fetch')
+      .mockImplementation(
+        fetchMock({
+          id: 'pp_123',
+          status: 'COMPLETED',
+          purchase_units: [
+            {
+              reference_id: 'LT999',
+              custom_id: 'order-id',
+              payments: {
+                captures: [
+                  {
+                    id: 'cap_1',
+                    status: 'COMPLETED',
+                    amount: { currency_code: 'SGD', value: '120.00' },
+                  },
+                ],
+              },
+            },
+          ],
+        }) as any,
+      );
+
+    await expect(service.capturePayPalOrder('pp_123')).rejects.toThrow(
+      'PayPal payment is not linked to this order',
+    );
+  });
+});
+
+describe('OrdersService payment completion', () => {
   it('does not downgrade a paid order when a late failure event arrives', async () => {
     const order = makeOrder({ paymentStatus: 'paid', status: 'confirmed' });
     const manager = {
@@ -439,7 +498,7 @@ describe('OrdersService interpreting deposits', () => {
     expect(manager.save).not.toHaveBeenCalled();
   });
 
-  it('atomically marks the bound order and booking paid after verified success', async () => {
+  it('atomically marks the bound order and booking paid', async () => {
     const order = makeOrder();
     const booking = {
       id: 'booking-id',
@@ -453,34 +512,84 @@ describe('OrdersService interpreting deposits', () => {
       save: jest.fn(async (_entity, value) => value),
     };
     const repository = {
-      findOne: jest.fn().mockResolvedValue(order),
       manager: { transaction: jest.fn((work) => work(manager)) },
     };
     const service = new OrdersService(
       repository as any,
       {} as any,
-      {
-        get: jest.fn((key: string) =>
-          key === 'STRIPE_SECRET_KEY' ? 'sk_test' : 'whsec_test',
-        ),
-      } as any,
+      { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
     );
-    (service as any).stripe = {
-      webhooks: {
-        constructEvent: jest.fn().mockReturnValue({
-          type: 'payment_intent.succeeded',
-          data: { object: makePaymentIntent() },
-        }),
-      },
-    };
 
-    await service.handleStripeWebhook('signature', Buffer.from('{}'));
+    const result = await service.markPaid('LT123', 'cap_123');
 
+    expect(result).toBe(order);
     expect(order.paymentStatus).toBe('paid');
     expect(order.status).toBe('confirmed');
+    expect(order.paymentId).toBe('cap_123');
     expect(booking.status).toBe('deposit_paid');
     expect(manager.save).toHaveBeenCalledWith(Order, order);
     expect(manager.save).toHaveBeenCalledWith(BookingSubmission, booking);
+  });
+
+  it('stays idempotent for an already paid deposit order without re-promoting the booking', async () => {
+    const order = makeOrder({
+      paymentStatus: 'paid',
+      status: 'confirmed',
+      paymentId: 'cap_123',
+    });
+    const booking = {
+      id: 'booking-id',
+      status: 'deposit_pending',
+    } as BookingSubmission;
+    const manager = {
+      findOne: jest
+        .fn()
+        .mockResolvedValueOnce(order)
+        .mockResolvedValueOnce(booking),
+      save: jest.fn(async (_entity, value) => value),
+    };
+    const repository = {
+      manager: { transaction: jest.fn((work) => work(manager)) },
+    };
+    const service = new OrdersService(
+      repository as any,
+      {} as any,
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+    );
+
+    const result = await service.markPaid('LT123', 'cap_123');
+
+    expect(result).toBe(order);
+    expect(booking.status).toBe('deposit_paid');
+    expect(manager.save).not.toHaveBeenCalledWith(Order, order);
+    expect(manager.save).toHaveBeenCalledWith(BookingSubmission, booking);
+  });
+
+  it('refuses to complete a deposit order that is not linked to a booking', async () => {
+    const order = makeOrder({ bookingSubmissionId: null });
+    const manager = {
+      findOne: jest.fn().mockResolvedValue(order),
+      save: jest.fn(),
+    };
+    const repository = {
+      manager: { transaction: jest.fn((work) => work(manager)) },
+    };
+    const service = new OrdersService(
+      repository as any,
+      {} as any,
+      { get: jest.fn().mockReturnValue(undefined) } as any,
+      {} as any,
+    );
+
+    await expect(service.markPaid('LT123', 'cap_123')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    // The in-transaction order save is rolled back when the booking guard throws.
+    expect(manager.save).not.toHaveBeenCalledWith(
+      BookingSubmission,
+      expect.anything(),
+    );
   });
 });
