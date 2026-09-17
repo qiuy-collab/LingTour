@@ -15,6 +15,7 @@ import {
   getOrphanFiles,
   deleteMediaFile,
   uploadMediaFile,
+  reindexMediaIndex,
 } from "@/api/media";
 import type { MediaFile } from "@/api/media";
 import { resolveMediaUrl } from "@/utils/media";
@@ -60,6 +61,7 @@ const searchQuery = ref("");
 const uploading = ref(false);
 const uploadProgress = ref(0);
 const uploadStatusText = ref("");
+const reindexing = ref(false);
 const selectedFilenames = ref<string[]>([]);
 const showOrphans = ref(false);
 const orphanCount = ref(0);
@@ -80,6 +82,9 @@ const modules = [
   "avatars",
   "interpreting",
   "seed",
+  "entry",
+  "interpreters",
+  "preview",
 ];
 const moduleLabels: Record<string, string> = {
   cities: "城市",
@@ -91,6 +96,9 @@ const moduleLabels: Record<string, string> = {
   avatars: "头像",
   interpreting: "口译服务",
   seed: "初始化素材",
+  entry: "首页入口",
+  interpreters: "讲解员",
+  preview: "预览素材",
 };
 const uploadModules = modules.filter(
   (moduleName) => moduleName && moduleName !== "seed",
@@ -319,6 +327,28 @@ function formatTimestamp(value?: string) {
 function handleMediaTypeFilterChange() {
   page.value = 1;
   void fetchFiles();
+}
+
+async function handleReindex() {
+  if (reindexing.value) return;
+  reindexing.value = true;
+  try {
+    const res = await reindexMediaIndex();
+    const result = res.data?.data?.reindexed ?? res.data?.reindexed;
+    const registered = typeof result?.registered === "number" ? result.registered : 0;
+    const updated = typeof result?.updated === "number" ? result.updated : 0;
+    ElMessage.success(
+      `索引重建完成：新增 ${registered} 个，更新 ${updated} 个`,
+    );
+    page.value = 1;
+    showOrphans.value = false;
+    await fetchFiles();
+    await checkOrphanCount();
+  } catch {
+    ElMessage.error("索引重建失败，请稍后重试");
+  } finally {
+    reindexing.value = false;
+  }
 }
 
 function toggleOrphanView() {
@@ -632,6 +662,15 @@ onBeforeUnmount(() => {
           @click="handleBatchDelete"
         >
           清理所选（{{ selectedFilenames.length }}）
+        </el-button>
+
+        <el-button
+          v-if="!isPickerMode"
+          size="small"
+          :loading="reindexing"
+          @click="handleReindex"
+        >
+          重建索引
         </el-button>
 
         <span v-if="isPickerMode" class="selection-chip">{{

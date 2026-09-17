@@ -52,6 +52,11 @@ export function getOrphanFiles() {
   return api.get('/upload/media/orphans')
 }
 
+/** 按磁盘内容重建 media_files 索引（幂等，不删除记录） */
+export function reindexMediaIndex() {
+  return api.post('/upload/media/reindex')
+}
+
 /** 删除媒体文件 */
 export function deleteMediaFile(filename: string) {
   return api.delete(`/upload/files/${encodeURIComponent(filename)}`)
