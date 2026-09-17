@@ -1,11 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { clampPagination } from '../../common/pagination';
+import { randomBytes } from 'crypto';
 import { User } from './entities/user.entity';
 import { UserFavorite } from './entities/user-favorite.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -30,6 +33,8 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(UserFavorite)
     private readonly favoriteRepository: Repository<UserFavorite>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -49,11 +54,12 @@ export class UsersService {
   }
 
   async findAllAdmin(
-    page = 1,
-    pageSize = 20,
+    pageInput = 1,
+    pageSizeInput = 20,
     keyword?: string,
     status?: string,
   ) {
+    const { page, limit: pageSize } = clampPagination(pageInput, pageSizeInput, 20, 100);
     const qb = this.userRepository
       .createQueryBuilder('u')
       .where('u.role = :travelerRole', { travelerRole: 'traveler' });
@@ -185,9 +191,22 @@ export class UsersService {
     return this.toManagedUser(await this.findByIdOrFail(id));
   }
 
-  async updateProfile(id: string, payload: UpdateProfileDto) {
+  async updateProfile(
+    id: string,
+    payload: UpdateProfileDto,
+    options: { allowEmailChange?: boolean } = {},
+  ) {
     const user = await this.findByIdOrFail(id);
     if (payload.email !== undefined) {
+      // Traveler self-service must not change email freely: an unverified
+      // change enables the account-takeover chain described in report
+      // P2-3 (attacker plants their email, victim later signs in with
+      // Google into the attacker's account). Use the code-confirmed flow.
+      if (options.allowEmailChange === false) {
+        throw new BadRequestException(
+          'Email changes must be confirmed with a verification code (POST /auth/me/email/change-request)',
+        );
+      }
       const email = payload.email.trim().toLowerCase();
       const duplicate = await this.findByEmail(email);
       if (duplicate && duplicate.id !== id) {
@@ -198,6 +217,29 @@ export class UsersService {
     Object.assign(user, this.normalizeProfilePayload(payload, user));
     const saved = await this.userRepository.save(user);
     return this.toManagedUser(saved);
+  }
+
+  /**
+   * Set a new (verified) email for a traveler account. Called only from the
+   * code-confirmed email change flow.
+   */
+  async updateEmail(id: string, newEmail: string) {
+    const email = newEmail.trim().toLowerCase();
+    const duplicate = await this.findByEmail(email);
+    if (duplicate && duplicate.id !== id) {
+      throw new ConflictException('This email is already in use');
+    }
+    const user = await this.findByIdOrFail(id);
+    user.email = email;
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
+      // Concurrent signup could claim the address between the check and save.
+      if ((error as { code?: string }).code === '23505') {
+        throw new ConflictException('This email is already in use');
+      }
+      throw error;
+    }
   }
 
   async getProfileById(id: string) {
@@ -216,9 +258,46 @@ export class UsersService {
 
   async updateStatus(id: string, status: 'active' | 'banned') {
     const user = await this.findByIdOrFail(id);
+    // Keep at least one active administrator: banning the last admin through
+    // this path would lock every future staff login out of the back office.
+    await this.assertAdminContinuity(user, user.role, status);
     user.status = status;
     const saved = await this.userRepository.save(user);
     return this.toManagedUser(saved);
+  }
+
+  /**
+   * Self-service account deletion for travelers (report P3-12, GDPR/CCPA
+   * face). Anonymization-style: every PII field is wiped and the status moves
+   * to 'deleted' (all login paths reject anything but 'active'), while the
+   * row itself stays so order/financial records keep their user join.
+   * Staff accounts cannot self-delete; admins manage them via deleteStaff.
+   */
+  async deleteTravelerAccount(id: string) {
+    const user = await this.findByIdOrFail(id);
+    if (user.role !== 'traveler') {
+      throw new ForbiddenException(
+        'Staff accounts cannot be self-deleted; contact an administrator',
+      );
+    }
+    if (user.status === 'deleted') {
+      throw new ConflictException('Account is already deleted');
+    }
+    user.status = 'deleted';
+    // Release the unique email for future signups; .invalid is a reserved
+    // TLD (RFC 2606) so the synthetic address can never receive mail.
+    user.email = `deleted-${user.id}@deleted.invalid`;
+    user.passwordHash = randomBytes(32).toString('hex');
+    user.name = null;
+    user.avatarUrl = '';
+    user.country = '';
+    user.homeBase = '';
+    user.travelStyle = '';
+    user.provider = '';
+    user.bio = '';
+    user.profileVisibility = 'private';
+    await this.userRepository.save(user);
+    return { deleted: true };
   }
 
   async create(
@@ -235,7 +314,17 @@ export class UsersService {
       name: name ?? undefined,
       ...overrides,
     } as Partial<User>);
-    return this.userRepository.save(user);
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
+      // Two concurrent signups with the same address can both pass the
+      // duplicate check; surface the unique-constraint violation as 409
+      // instead of a raw 500 (report P3).
+      if ((error as { code?: string }).code === '23505') {
+        throw new ConflictException('This email is already in use');
+      }
+      throw error;
+    }
   }
 
   private async findStaffByIdOrFail(id: string) {
@@ -547,6 +636,23 @@ export class UsersService {
       targetImage: string;
     },
   ) {
+    // targetId may be a uuid or a slug depending on the caller; verify the
+    // target actually exists so the vault cannot be filled with junk
+    // references (report P3-13).
+    const tableByType = {
+      route: 'story_routes',
+      city: 'cities',
+      product: 'store_products',
+    } as const;
+    const table = tableByType[data.targetType];
+    const target = (await this.dataSource.query(
+      `SELECT 1 FROM ${table} WHERE id::text = $1 OR slug = $1 LIMIT 1`,
+      [data.targetId],
+    )) as unknown[];
+    if (!target.length) {
+      throw new NotFoundException('Favorite target does not exist');
+    }
+
     // Upsert: if already exists, just return it
     const existing = await this.favoriteRepository.findOne({
       where: { userId, targetType: data.targetType, targetId: data.targetId },

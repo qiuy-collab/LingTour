@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { EmailVerificationService } from './email-verification.service';
+import { EmailCodeCleanupService } from './email-code-cleanup.service';
 import { EmailVerificationCode } from './entities/email-verification-code.entity';
 import { UsersModule } from '../users/users.module';
 import { UploadModule } from '../upload/upload.module';
@@ -33,7 +34,12 @@ import {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, EmailVerificationService, JwtStrategy],
-  exports: [AuthService, JwtModule],
+  providers: [
+    AuthService,
+    EmailVerificationService,
+    EmailCodeCleanupService,
+    JwtStrategy,
+  ],
+  exports: [AuthService, JwtModule, JwtStrategy],
 })
 export class AuthModule {}

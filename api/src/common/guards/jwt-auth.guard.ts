@@ -10,6 +10,7 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtSecret } from '../auth/jwt-config';
+import { JwtStrategy } from '../../modules/auth/jwt.strategy';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -17,6 +18,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
     private readonly configService: ConfigService,
+    private readonly jwtStrategy: JwtStrategy,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -44,12 +46,13 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: resolveJwtSecret(this.configService),
       });
+      // Re-check the account on every request through JwtStrategy.validate:
+      // banned or demoted users are rejected immediately instead of living
+      // until token expiry, and the role comes from the DB rather than the
+      // token issued at sign-in time.
+      const user = await this.jwtStrategy.validate(payload);
       // Set request.user so that subsequent guards (like RolesGuard) can access it
-      (request as any).user = {
-        sub: payload.sub,
-        email: payload.email,
-        role: payload.role,
-      };
+      (request as any).user = user;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');

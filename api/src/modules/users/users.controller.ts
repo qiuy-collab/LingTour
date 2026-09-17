@@ -15,6 +15,7 @@ import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UpdateStaffAccountDto } from './dto/update-staff-account.dto';
+import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import type { Request } from 'express';
 
 @ApiTags('Users')
@@ -95,12 +96,13 @@ export class UsersController {
     return this.usersService.updateProfile(id, dto);
   }
 
+  @Roles('admin')
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update user status' })
   async updateStatus(
     @Param('id') id: string,
-    @Body('status') status: 'active' | 'banned',
+    @Body() dto: UpdateUserStatusDto,
   ) {
-    return this.usersService.updateStatus(id, status);
+    return this.usersService.updateStatus(id, dto.status);
   }
 }

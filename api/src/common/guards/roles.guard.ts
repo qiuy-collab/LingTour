@@ -83,9 +83,11 @@ export class RolesGuard implements CanActivate {
    * 判断请求路径是否属于 admin 区域。
    * 兼容前缀 /api/v1/admin/... 和 /admin/...，
    * 同时忽略 querystring。
+   * 大小写不敏感：Express 默认按大小写不敏感匹配路由，
+   * 这里若区分大小写，/ADMIN/... 会命中路由但绕过本兜底。
    */
   private isAdminPath(url: string): boolean {
     const path = url.split('?')[0] ?? '';
-    return /\/admin(\/|$)/.test(path);
+    return /\/admin(\/|$)/i.test(path);
   }
 }

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -69,6 +70,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
         limit: 60,
       },
     ]),
+
+    // Scheduled jobs: unpaid-order expiry sweep (stock release) and the
+    // nightly verification-code cleanup.
+    ScheduleModule.forRoot(),
 
     // Serve uploaded files
     ServeStaticModule.forRoot({

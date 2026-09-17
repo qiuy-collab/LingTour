@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type EmailVerificationPurpose = 'login' | 'signup';
+export type EmailVerificationPurpose = 'login' | 'signup' | 'change_email';
 
 @Entity('auth_verification_codes')
 @Index(['email', 'purpose', 'consumedAt'])

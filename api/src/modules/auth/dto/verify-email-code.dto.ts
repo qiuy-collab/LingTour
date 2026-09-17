@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsIn, IsOptional, IsString, Length, MaxLength } from 'class-validator';
-import type { EmailVerificationPurpose } from '../entities/email-verification-code.entity';
 
 export class VerifyEmailCodeDto {
   @ApiProperty({ example: 'traveler@example.com' })
@@ -14,7 +13,7 @@ export class VerifyEmailCodeDto {
 
   @ApiProperty({ enum: ['login', 'signup'] })
   @IsIn(['login', 'signup'])
-  purpose: EmailVerificationPurpose;
+  purpose: 'login' | 'signup';
 
   @ApiPropertyOptional({ example: 'Maya Chen' })
   @IsOptional()

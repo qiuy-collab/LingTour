@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -10,7 +11,7 @@ import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtExpiration } from '../../common/auth/jwt-config';
 import { OAuth2Client } from 'google-auth-library';
-import { randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import { EmailVerificationService } from './email-verification.service';
 
 @Injectable()
@@ -196,10 +197,11 @@ export class AuthService {
       return this.buildAuthResponse(existing);
     }
 
-    const generatedPassword = await bcrypt.hash(
-      `google:${email}:${Date.now()}`,
-      8,
-    );
+    // The account is not password-login oriented, but the hash still sits in
+    // the database: derive it from 32 random bytes (not the public email plus
+    // a guessable timestamp) at the same cost factor as regular signups so a
+    // DB dump cannot be brute-forced offline (report P2-1).
+    const generatedPassword = await bcrypt.hash(randomBytes(32).toString('hex'), 12);
     const user = await this.usersService.create(
       email,
       generatedPassword,
@@ -218,13 +220,56 @@ export class AuthService {
   }
 
   async updateMe(userId: string, dto: UpdateProfileDto) {
-    await this.usersService.updateProfile(userId, dto);
+    await this.usersService.updateProfile(userId, dto, {
+      allowEmailChange: false,
+    });
+    return this.usersService.getProfileById(userId);
+  }
+
+  /**
+   * Email change step 1 (report P2-3): send a verification code to the NEW
+   * address. The change only lands after step 2 confirms that code.
+   */
+  async requestEmailChange(userId: string, newEmail: string) {
+    const user = await this.usersService.findByIdOrFail(userId);
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('This account is disabled');
+    }
+    const normalized = newEmail.trim().toLowerCase();
+    if (normalized === user.email.toLowerCase()) {
+      throw new BadRequestException(
+        'New email must differ from the current email',
+      );
+    }
+
+    const result = await this.emailVerificationService.sendCode(
+      normalized,
+      'change_email',
+    );
+    return {
+      email: result.email,
+      expiresInSeconds: result.expiresInSeconds,
+      delivery: result.delivery,
+      ...(result.devCode ? { devCode: result.devCode } : {}),
+    };
+  }
+
+  /** Email change step 2: consume the code sent to the new address. */
+  async confirmEmailChange(userId: string, newEmail: string, code: string) {
+    const normalized = newEmail.trim().toLowerCase();
+    await this.emailVerificationService.consumeCode(
+      normalized,
+      'change_email',
+      code,
+    );
+    await this.usersService.updateEmail(userId, normalized);
     return this.usersService.getProfileById(userId);
   }
 
   /**
    * Refresh an expired (or soon-to-expire) JWT.
    * Allows tokens up to 1 hour past their expiration as a grace period.
+   * Consumed by the admin client's axios 401 interceptor for silent renewal.
    */
   async refreshToken(rawToken: string) {
     // 1. Decode / verify the token, ignoring expiration so we can do our own check

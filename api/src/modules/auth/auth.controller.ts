@@ -23,6 +23,10 @@ import { RegisterDto } from './dto/register.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { SendEmailCodeDto } from './dto/send-email-code.dto';
 import { VerifyEmailCodeDto } from './dto/verify-email-code.dto';
+import {
+  RequestEmailChangeDto,
+  ConfirmEmailChangeDto,
+} from './dto/email-change.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
@@ -133,6 +137,53 @@ export class AuthController {
   async updateMe(@Req() request: Request, @Body() dto: UpdateProfileDto) {
     const authUser = request['user'] as { sub?: string };
     return this.authService.updateMe(authUser.sub as string, dto);
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Self-service deletion of the signed-in traveler account (PII is wiped)',
+  })
+  async deleteMe(@Req() request: Request) {
+    const authUser = request['user'] as { sub?: string };
+    return this.usersService.deleteTravelerAccount(authUser.sub as string);
+  }
+
+  @Post('me/email/change-request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Send a verification code to a new email address (step 1 of an email change)',
+  })
+  @ApiBody({ type: RequestEmailChangeDto })
+  async requestEmailChange(
+    @Req() request: Request,
+    @Body() dto: RequestEmailChangeDto,
+  ) {
+    const authUser = request['user'] as { sub?: string };
+    return this.authService.requestEmailChange(
+      authUser.sub as string,
+      dto.newEmail,
+    );
+  }
+
+  @Post('me/email/confirm')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Confirm an email change with the code sent to the new address',
+  })
+  @ApiBody({ type: ConfirmEmailChangeDto })
+  async confirmEmailChange(
+    @Req() request: Request,
+    @Body() dto: ConfirmEmailChangeDto,
+  ) {
+    const authUser = request['user'] as { sub?: string };
+    return this.authService.confirmEmailChange(
+      authUser.sub as string,
+      dto.newEmail,
+      dto.code,
+    );
   }
 
   @Post('me/avatar')

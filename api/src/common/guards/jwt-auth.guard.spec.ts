@@ -13,11 +13,21 @@ describe('JwtAuthGuard cookie authentication', () => {
   const reflector = { getAllAndOverride: jest.fn(() => false) };
   const config = { get: jest.fn(() => 'http://localhost:3100') };
   const jwt = { verifyAsync: jest.fn(async () => ({ sub: 'user-1', email: 'user@example.com', role: 'traveler' })) };
-  const guard = new JwtAuthGuard(jwt as never, reflector as never, config as never);
+  const strategy = { validate: jest.fn(async (payload: { sub: string; email: string }) => ({ sub: payload.sub, email: payload.email, role: 'editor' })) };
+  const guard = new JwtAuthGuard(jwt as never, reflector as never, config as never, strategy as never);
 
   beforeEach(() => {
     jest.clearAllMocks();
     jwt.verifyAsync.mockResolvedValue({ sub: 'user-1', email: 'user@example.com', role: 'traveler' });
+    strategy.validate.mockResolvedValue({ sub: 'user-1', email: 'user@example.com', role: 'editor' });
+  });
+
+  it('re-checks the account through JwtStrategy on every request', async () => {
+    const request: Record<string, unknown> = { method: 'GET', headers: { authorization: 'Bearer bearer' } };
+    await expect(guard.canActivate(context(request))).resolves.toBe(true);
+    expect(strategy.validate).toHaveBeenCalledWith({ sub: 'user-1', email: 'user@example.com', role: 'traveler' });
+    // The role on request.user comes from the database, not the token payload.
+    expect(request.user).toMatchObject({ sub: 'user-1', role: 'editor' });
   });
 
   it('accepts a valid cookie for reads', async () => {

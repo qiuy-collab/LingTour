@@ -26,10 +26,10 @@ export class User {
 
   @Index()
   @Column({ type: 'varchar', length: 20, default: 'active' })
-  status: 'active' | 'banned';
+  status: 'active' | 'banned' | 'deleted';
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  name: string;
+  name: string | null;
 
   @Column({ type: 'varchar', length: 500, name: 'avatar_url', default: '' })
   avatarUrl: string;

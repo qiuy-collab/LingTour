@@ -2,12 +2,29 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+
+  // P2-O: baseline security headers (nosniff, HSTS, frameguard, referrer
+  // policy, ...). Tuned for an API that also serves /uploads/ media:
+  // - CSP off: Swagger is the only HTML surface and a restrictive default
+  //   would break it; browser-facing pages get headers at the nginx layer.
+  // - CORP cross-origin: site and admin embed /uploads/ media from this
+  //   origin; helmet's same-origin default would block those images.
+  // - Frameguard deny: API responses must never be framed.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      frameguard: { action: 'deny' },
+    }),
+  );
 
   const trustProxyHops = Number.parseInt(
     configService.get<string>('TRUST_PROXY_HOPS', '2'),
@@ -19,6 +36,11 @@ async function bootstrap() {
       ? trustProxyHops
       : 2,
   );
+
+  // Defense in depth: match routes case-sensitively so that a capitalized
+  // path (/ADMIN/...) can never reach a lowercase handler. Route matching
+  // and role fallbacks then agree on one canonical casing.
+  app.set('case sensitive routing', true);
 
   // Process-level safety net for unhandled errors
   process.on('unhandledRejection', (reason) => {
