@@ -4,6 +4,16 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。`1.0.0` 基线之后本项目采用 `workflow_dispatch` 滚动部署且不使用 git tag，因此已发布变更按**生产部署日期**分节（最新在上），每节以当时的根仓库 HEAD SHA 为锚点；admin-frontend 独立仓库的对应提交随各条目一并生效，双仓库对应关系见 `docs/CURRENT-STATE.md`。
 
+## 2026-09-18 — 首页旧版区块清理上线（root `791cff0`）
+
+### Removed
+
+- site: 首页删除三处旧版遗留——Hero 下的统计信号条（`heroStats`）、Interpreting 区块的引言卡（`testimonials`）、旧首页并入的 ENTRY CARDS 三卡片区（`HomeEntryFilmstrip`，2026-07-10 改版时由旧版网格包装成轮播带入）；Events 日历左右箭头从月份行移至「Events」标题右侧并补 `aria-label`。`HomeEventCarousel` 与 `FeaturedRoutesCarousel` 两个全站零引用的旧组件文件一并删除。`heroStats`/`testimonials`/`entryCards` 的 API 字段与 admin 字段管理保留，仅首页不再渲染。
+
+部署：前置生产数据库备份 `/root/backups/lingtour-db-pre-homeclean-20260918.dump`（132,037 bytes，`pg_restore` 可读）；只读核验 32 个迁移全部已应用、本次 0 迁移。`Deploy LingTour Docker Stack` run `35249588688` 一次成功（2m35s）；服务器 root HEAD `791cff0`；api/site/admin/nginx 容器 healthy。
+
+验证：site tsc + lint 0 errors + 103 测试 + build；`git diff --check` 干净。生产冒烟：首页 200 且 `home-signal-strip`/`home-entry-track`/testimonial 文案均无残留、Events 标题与箭头在位；culture/routes/shop/interpreting/community/login/admin 全 200；API health `database: up`；同源代理 `/api/v1/auth/me` 401 基线正常。
+
 ## 2026-09-17 — review/09-17-B 安全与一致性修复上线（root `bb5d18b`）
 
 ### Changed
