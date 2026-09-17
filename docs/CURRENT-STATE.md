@@ -136,7 +136,7 @@ Recovery incidents:
 ## 6. Deployment queue
 
 1. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
-2. Optionally verify the production upload round-trip once credentials are available (upload → `media_files` row → delete). The code path is covered by local tests and the repaired local stack, but it has not been exercised against production (§38).
+2. Done 2026-09-17 (§38): the production upload round-trip returned 201 with a `media_files` row, spoofed content returned 400 with no orphan file, and the test artifacts were removed. New follow-up from that run: harden the multer destination / registration path contract, since a `file`-first multipart request stores bytes at the uploads root while recording `<module>/<uuid>.jpg` (§38).
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 
@@ -593,6 +593,10 @@ Deployment evidence: pre-deploy database backup `/root/backups/lingtour-db-pre-m
 
 Production smoke after deployment (read-only): API health 200; home, `/routes/southern-sea-table`, `/culture/zhanjiang`, `/shop` and `/community` 200 (after the trailingSlash 308); `https://culvoy.com/uploads/seed/zhanjiang-hero-1200.jpg` 200 `image/jpeg`; 8/8 home-page `/uploads/...` images 200; `POST /api/v1/admin/upload` and the new `POST /api/v1/admin/upload/media/reindex` both return 401 without a token. The deployed admin bundle carries the new code: `CityEdit-CFnngmK1.js` contains `cm-live-image`, `更换图片` and `EditorView`, and `MediaLibraryBrowser-BlYacj7S.js` contains `media/reindex`, `重建索引` and `interpreters`.
 
-Not verified on production: the authenticated upload round-trip (upload → `media_files` row → delete) writes production data and needs separate authorization; the new editor's post-login interaction was proven through the shipped bundle fingerprints and the local browser session, not through a production browser session.
+Production upload verification (owner-authorized, 2026-09-17): a 15-minute admin token was signed server-side with the production secret and used only in server-side shell variables — never printed, never stored. Against the real endpoint, a genuine JPEG returned 201 with a `mediaFileId` row (`module=cities`, `entity_type=city`), and spoofed content (`.jpg` name, script body) returned 400 `File content does not match its declared type` while the upload directory stayed at 42 files. Both test artifacts were then removed and `media_files` returned to its 88-row baseline, so the round-trip left no production change. The authenticated upload path is therefore confirmed working on production, not just locally.
+
+That round-trip also exposed a robustness defect that is **not** a regression of this batch and does **not** affect the admin UI: multer's `diskStorage` destination reads `req.body.module`, which multipart parsing only populates when the `module` field arrives before the `file` part. The admin client appends `module`/`entityType`/`entityId` before the file (`admin-frontend/src/api/media.ts`), so normal admin uploads land in the correct subdirectory — all 84 production rows carrying a directory prefix have their file present on disk. A request that sends `file` first stores the bytes at the uploads root while `storeUploadedFile` still records `<module>/<uuid>.jpg`, so the library URL 404s and the delete endpoint answers 404. Worth hardening separately (derive the stored path from multer's actual destination instead of re-deriving it from the module); not changed in this batch.
+
+Still not verified on production: the new editor's post-login interaction was proven through the shipped bundle fingerprints and the local browser session, not through a production browser session.
 
 Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.
