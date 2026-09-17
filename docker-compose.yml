@@ -70,7 +70,6 @@ services:
         # would read production data.
         NEXT_PUBLIC_API_URL: /api/v1
         INTERNAL_API_ORIGIN: http://api:8000/api/v1
-        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
     environment:
       INTERNAL_API_ORIGIN: http://api:8000/api/v1
     restart: unless-stopped
