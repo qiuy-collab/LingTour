@@ -15,7 +15,6 @@ import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
 import { CultureGallery } from "@/components/home/CultureGallery";
 import { GuangdongMapSection } from "@/components/home/GuangdongMapSection";
 import { GuangdongEventCalendar } from "@/components/home/GuangdongEventCalendar";
-import { HomeEntryFilmstrip } from "@/components/home/HomeEntryFilmstrip";
 import { HomeVideoChapter } from "@/components/home/HomeVideoChapter";
 import { Reveal } from "@/components/ui/Reveal";
 import { placeholderFor } from "@/lib/placeholders";
@@ -114,8 +113,7 @@ export default function HomeClient({
       }
     : baseHomeData;
 
-  const { hero, heroStats, homeEntryCards, regionShowcase, cultureHighlights, testimonials } =
-    effectiveHomeData;
+  const { hero, regionShowcase, cultureHighlights } = effectiveHomeData;
 
   const storeProducts = products ?? initialProducts ?? [];
   const storyRoutes = allRoutes ?? initialRoutes ?? [];
@@ -301,18 +299,6 @@ export default function HomeClient({
             <CultureGallery highlights={cultureHighlights} />
           </div>
         </section>
-
-        {/* 7. ENTRY CARDS: QUICK ACCESS */}
-        {homeEntryCards.length > 0 && (
-          <>
-            <div className="site-container">
-              <div className="h-px bg-[var(--line)]" />
-            </div>
-            <section className="site-container py-20 lg:py-32">
-              <HomeEntryFilmstrip cards={homeEntryCards} />
-            </section>
-          </>
-        )}
 
         {/* FINAL CTA: THE DEPARTURE LOG */}
         <section className="relative overflow-hidden bg-[var(--night)] pb-20 pt-16 text-white sm:pb-24 sm:pt-20 lg:pb-28 lg:pt-24">
