@@ -21,6 +21,8 @@ import {
   isAllowedImageUpload,
   isAllowedVideoUpload,
   hasValidUploadSignature,
+  readUploadHead,
+  discardUploadedFile,
   MAX_IMAGE_FILE_SIZE,
   MAX_VIDEO_FILE_SIZE,
 } from './upload-policy';
@@ -220,7 +222,13 @@ export class UploadController {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    if (!hasValidUploadSignature(file)) {
+    // multer 使用 diskStorage：这里只能读到落盘后的路径，需要读文件头校验内容签名。
+    const head = await readUploadHead(file);
+    if (
+      !head ||
+      !hasValidUploadSignature({ mimetype: file.mimetype, buffer: head })
+    ) {
+      await discardUploadedFile(file);
       throw new BadRequestException(
         'File content does not match its declared type',
       );

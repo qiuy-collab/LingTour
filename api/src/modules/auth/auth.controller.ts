@@ -28,7 +28,11 @@ import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { UsersService } from '../users/users.service';
 import { UploadService } from '../upload/upload.service';
-import { hasValidUploadSignature } from '../upload/upload-policy';
+import {
+  discardUploadedFile,
+  hasValidUploadSignature,
+  readUploadHead,
+} from '../upload/upload-policy';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -156,7 +160,15 @@ export class AuthController {
       throw new BadRequestException('File is required');
     }
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowed.includes(file.mimetype) || !hasValidUploadSignature(file)) {
+    // multer 使用 diskStorage：这里只能读到落盘后的路径，需要读文件头校验内容签名。
+    const head = allowed.includes(file.mimetype)
+      ? await readUploadHead(file)
+      : null;
+    if (
+      !head ||
+      !hasValidUploadSignature({ mimetype: file.mimetype, buffer: head })
+    ) {
+      await discardUploadedFile(file);
       throw new BadRequestException(
         'Unsupported file type. Allowed: jpg, png, webp',
       );
