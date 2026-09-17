@@ -1,7 +1,6 @@
 import { cache, Suspense } from "react";
 import type { Metadata } from "next";
-import { fetchRoutes } from "@/lib/api-data";
-import { fetchRouteBySlugServer } from "@/lib/server-data";
+import { fetchRouteBySlugServer, fetchRoutesServer } from "@/lib/server-data";
 
 const SEEDED_ROUTE_SLUGS = ["southern-sea-table"];
 const getRoute = cache(fetchRouteBySlugServer);
@@ -12,7 +11,9 @@ export async function generateStaticParams() {
   const slugSet = new Set(SEEDED_ROUTE_SLUGS);
 
   try {
-    const routes = await fetchRoutes();
+    // Server fetcher so the build-time call does not depend on window
+    // (report P2-K).
+    const routes = await fetchRoutesServer();
     for (const route of routes) {
       slugSet.add(route.slug);
     }

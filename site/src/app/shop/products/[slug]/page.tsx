@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { fetchStoreProducts } from "@/lib/api-data";
 import {
   fetchStoreProductBySlugServer,
   fetchStoreProductsServer,
@@ -14,7 +13,9 @@ export async function generateStaticParams() {
   const slugSet = new Set(SEEDED_PRODUCT_SLUGS);
 
   try {
-    const products = await fetchStoreProducts();
+    // Server fetcher so the build-time call does not depend on window
+    // (report P2-K).
+    const products = await fetchStoreProductsServer();
     for (const product of products) {
       slugSet.add(product.slug);
     }

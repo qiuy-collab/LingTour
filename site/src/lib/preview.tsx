@@ -61,9 +61,22 @@ export function usePreviewBridge<T>(expectedType: PreviewType) {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const key = searchParams.get("previewKey") || "";
+    // P2-M: the preview bridge only ever talks to the admin app. The
+    // ?previewSource query value is untrusted input, so it is matched
+    // against this hard-coded allowlist instead of being used verbatim.
+    // event.origin itself is browser-guaranteed and cannot be spoofed;
+    // localhost:5173 exists for local admin development.
+    const PREVIEW_SOURCE_ALLOWLIST = [
+      "https://admin.culvoy.com",
+      "http://localhost:5173",
+    ];
+    const requestedSource = searchParams.get("previewSource") || "";
+    const source = PREVIEW_SOURCE_ALLOWLIST.includes(requestedSource)
+      ? requestedSource
+      : "";
     setPreviewContext({
       key,
-      source: searchParams.get("previewSource") || "",
+      source,
       enabled: searchParams.get("preview") === "1" && key.length > 0,
     });
   }, []);

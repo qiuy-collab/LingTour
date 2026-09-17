@@ -1,7 +1,6 @@
 import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { fetchCities } from "@/lib/api-data";
 import {
   fetchCityCultureBySlugServer,
   fetchCityCulturesServer,
@@ -17,7 +16,10 @@ export async function generateStaticParams() {
   const slugSet = new Set(SEEDED_CITY_SLUGS);
 
   try {
-    const cities = await fetchCities();
+    // Use the server fetcher: the client fetcher relies on window and used
+    // to throw (silently) during build, collapsing SSG coverage to the
+    // seeded slugs (report P2-K).
+    const cities = await fetchCityCulturesServer();
     for (const city of cities) {
       slugSet.add(city.slug);
     }

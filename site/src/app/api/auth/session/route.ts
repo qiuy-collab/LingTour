@@ -46,7 +46,35 @@ function cookieOptions(maxAge: number) {
   };
 }
 
+/**
+ * Cookie-exchange endpoints must reject cross-site deliveries: a login CSRF
+ * would otherwise sign a victim's browser into an attacker-controlled
+ * account via an auto-submitted cross-origin form (report P2-L).
+ * Browsers always attach Sec-Fetch-Site and an Origin on POST; requests
+ * with neither are non-browser tools that hold no session context.
+ */
+function isSameSiteDelivery(request: NextRequest): boolean {
+  const secFetchSite = request.headers.get("sec-fetch-site");
+  if (secFetchSite && secFetchSite !== "same-origin") {
+    return false;
+  }
+
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  const host =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  try {
+    return Boolean(host) && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
+  if (!isSameSiteDelivery(request)) {
+    return NextResponse.json({ message: "Cross-site session requests are not allowed" }, { status: 403 });
+  }
+
   let body: { action?: unknown; payload?: unknown };
   try {
     body = await request.json();
@@ -81,7 +109,10 @@ export async function POST(request: NextRequest) {
   return result;
 }
 
-export function DELETE() {
+export function DELETE(request: NextRequest) {
+  if (!isSameSiteDelivery(request)) {
+    return NextResponse.json({ message: "Cross-site session requests are not allowed" }, { status: 403 });
+  }
   const result = NextResponse.json({ ok: true });
   result.cookies.set(SESSION_COOKIE, "", { ...cookieOptions(0), maxAge: 0 });
   return result;

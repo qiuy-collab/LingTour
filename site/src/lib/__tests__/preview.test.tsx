@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { usePreviewBridge } from "../preview";
 
 const KEY = "admin-preview:route:test";
-const SOURCE = "https://admin.example.com";
+// P2-M: the bridge only accepts origins on the hard-coded allowlist, so
+// tests must use the production admin origin.
+const SOURCE = "https://admin.culvoy.com";
 
 function setPreviewUrl() {
   window.history.replaceState(
@@ -93,5 +95,44 @@ describe("usePreviewBridge popup handshake", () => {
     expect(window.sessionStorage.getItem(`culvoy-preview:${KEY}`)).toContain(
       "Unsaved popup draft",
     );
+  });
+
+  it("ignores a previewSource outside the allowlist (P2-M)", async () => {
+    const evil = "https://evil.example.com";
+    window.history.replaceState(
+      {},
+      "",
+      `/?preview=1&previewKey=${encodeURIComponent(KEY)}&previewSource=${encodeURIComponent(evil)}`,
+    );
+    const opener = { postMessage: vi.fn() };
+    Object.defineProperty(window, "opener", { configurable: true, value: opener });
+    const { result } = renderHook(() =>
+      usePreviewBridge<{ title: string }>("route"),
+    );
+
+    await waitFor(() => expect(result.current.previewEnabled).toBe(true));
+
+    // No readiness handshake towards the untrusted origin.
+    expect(opener.postMessage).not.toHaveBeenCalled();
+
+    // A draft posted from the untrusted origin must be dropped.
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          origin: evil,
+          source: opener as unknown as Window,
+          data: {
+            channel: "culvoy-preview",
+            key: KEY,
+            type: "route",
+            source: evil,
+            data: { title: "Phished draft" },
+            timestamp: 3,
+          },
+        }),
+      );
+    });
+    expect(result.current.previewData).toBeNull();
+    expect(window.sessionStorage.getItem(`culvoy-preview:${KEY}`)).toBeNull();
   });
 });
