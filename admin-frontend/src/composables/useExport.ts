@@ -34,6 +34,21 @@ function getCellValue(row: any, col: ExportColumn): any {
 }
 
 /**
+ * Guard against CSV formula injection (OWASP): spreadsheet apps interpret
+ * cells starting with = + - @ or tab/CR as formulas (e.g. =HYPERLINK(...)).
+ * Prefix such string values with `'` so they render literally. Numbers and
+ * booleans (e.g. negative amounts) pass through untouched.
+ */
+function sanitizeCsvCell(value: unknown): string {
+  const str = String(value ?? '')
+  if (typeof value === 'number' || typeof value === 'boolean') return str
+  if (/^[=+\-@\t\r]/.test(str)) {
+    return `'${str}`
+  }
+  return str
+}
+
+/**
  * Convert data to 2D array for export
  */
 function toSheetData(options: ExportOptions): any[][] {
@@ -53,7 +68,7 @@ export function exportCSV(options: ExportOptions): void {
       .map((row) =>
         row
           .map((cell: any) => {
-            const str = String(cell ?? '')
+            const str = sanitizeCsvCell(cell)
             // Escape quotes and wrap in quotes if contains comma, quote, or newline
             if (str.includes(',') || str.includes('"') || str.includes('\n')) {
               return `"${str.replace(/"/g, '""')}"`

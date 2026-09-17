@@ -78,6 +78,9 @@ export function uploadMediaFile(
   const endpoint = file.type.startsWith('video/') ? '/upload/video' : '/upload'
   return api.post(endpoint, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    // 大文件（视频上限 100MB）在常规上行带宽下远超全局 15s 超时，
+    // 上传请求单独放宽到 5 分钟，进度条仍负责用户反馈。
+    timeout: 300000,
     onUploadProgress: onProgress
       ? (e) => {
           if (e.total) onProgress(Math.round((e.loaded * 100) / e.total))

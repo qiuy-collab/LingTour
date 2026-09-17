@@ -8,6 +8,9 @@ const authStore = useAuthStore()
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) return
+  // Settings 是 admin-only 资源；editor 请求只会得到 403 噪音（P3-11）。
+  // editor 直接使用 CSS 默认字号回退。
+  if (authStore.currentUser?.role !== 'admin') return
   try {
     const res = await getSettings()
     const settings = res.data.data

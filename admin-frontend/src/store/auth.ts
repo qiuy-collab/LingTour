@@ -20,17 +20,32 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   /**
+   * Decode a JWT payload segment. JWT uses base64url (RFC 7515): normalize
+   * `-`/`_` back to standard base64 and restore missing `=` padding before
+   * atob, then decode the bytes as UTF-8.
+   */
+  function decodeJwtPayload(raw: string): Record<string, unknown> | null {
+    try {
+      const segment = raw.split('.')[1]
+      if (!segment) return null
+      const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+      const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
+      return JSON.parse(new TextDecoder().decode(bytes))
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Decode the JWT payload (without verifying the signature — that's the
    * server's job) and check whether the token has expired.
    */
   const isTokenValid = computed(() => {
     if (!token.value) return false
-    try {
-      const payload = JSON.parse(atob(token.value.split('.')[1]))
-      return typeof payload.exp === 'number' && payload.exp > Date.now() / 1000
-    } catch {
-      return false
-    }
+    const payload = decodeJwtPayload(token.value)
+    if (!payload) return false
+    return typeof payload.exp === 'number' && payload.exp > Date.now() / 1000
   })
 
   const isLoggedIn = computed(() => !!token.value && isTokenValid.value)
@@ -57,7 +72,21 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('user', JSON.stringify(loginUser))
   }
 
-  function logout() {
+  /**
+   * Clear local session. By default also ask the API to revoke the server
+   * side refresh grace (P2-I); failures are swallowed so local cleanup and
+   * redirect always happen. Pass `skipServer` when the token is already
+   * known-invalid (e.g. a 401 from an auth endpoint) to avoid a pointless
+   * doomed request.
+   */
+  async function logout(options?: { skipServer?: boolean }) {
+    if (!options?.skipServer) {
+      try {
+        await authApi.logout()
+      } catch {
+        // 吊销失败不阻塞本地登出（token 可能已失效）
+      }
+    }
     token.value = null
     user.value = null
     localStorage.removeItem('token')

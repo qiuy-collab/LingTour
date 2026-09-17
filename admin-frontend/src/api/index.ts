@@ -104,10 +104,16 @@ instance.interceptors.response.use(
 
     // Token expired — attempt refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // 登录接口的 401 是凭据错误，不是会话过期：透传给登录页展示
+      // 「邮箱或密码错误」，不要误报「登录已过期」也不要清会话（P3-15）。
+      if (originalRequest.url?.includes('/auth/login')) {
+        return Promise.reject(error)
+      }
+
       // Don't retry auth endpoints themselves
       if (originalRequest.url?.includes('/auth/')) {
         const authStore = useAuthStore()
-        authStore.logout()
+        authStore.logout({ skipServer: true })
         ElMessage.warning('登录已过期，请重新登录')
         return Promise.reject(error)
       }

@@ -42,8 +42,13 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
   // First load flag (for skeleton display)
   const isFirstLoad = ref(true)
 
+  // Stale-response guard: fast filter/page switches fire concurrent requests;
+  // only the latest one may commit its data (P3-10).
+  let requestSeq = 0
+
   // --- Core fetch ---
   async function fetchList() {
+    const seq = ++requestSeq
     loading.value = true
     try {
       const params: Record<string, any> = {
@@ -59,18 +64,22 @@ export function useListPage<T = any>(options: ListPageOptions<T>) {
       })
 
       const res = await fetchApi(params)
+      if (seq !== requestSeq) return // a newer request is in flight
       const data = res.data?.data || res.data
       const items = data?.data || data || []
       list.value = transform ? transform(items) : items
       total.value = data?.total ?? items.length
     } catch (err: any) {
+      if (seq !== requestSeq) return
       const msg = err?.response?.data?.message || '获取数据失败'
       ElMessage.error(msg)
       list.value = []
       total.value = 0
     } finally {
-      loading.value = false
-      isFirstLoad.value = false
+      if (seq === requestSeq) {
+        loading.value = false
+        isFirstLoad.value = false
+      }
     }
   }
 

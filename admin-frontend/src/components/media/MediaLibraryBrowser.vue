@@ -375,7 +375,14 @@ async function handleDelete(file: MediaFile) {
         cancelButtonText: "取消",
       },
     );
-    await deleteMediaFile(file.filename);
+    try {
+      await deleteMediaFile(file.filename);
+    } catch {
+      ElMessage.error(
+        `删除“${file.original_name || file.filename}”失败，请重试`,
+      );
+      return;
+    }
     selectedFilenames.value = selectedFilenames.value.filter(
       (item) => item !== file.filename,
     );
@@ -402,10 +409,31 @@ async function handleBatchDelete() {
         cancelButtonText: "取消",
       },
     );
-    const promises = deletable.map((filename) => deleteMediaFile(filename));
-    await Promise.allSettled(promises);
-    selectedFilenames.value = [];
-    ElMessage.success("待清理文件已删除");
+    const results = await Promise.allSettled(
+      deletable.map((filename) => deleteMediaFile(filename)),
+    );
+    const succeeded: string[] = [];
+    const failed: string[] = [];
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") {
+        succeeded.push(deletable[index]);
+      } else {
+        failed.push(deletable[index]);
+      }
+    });
+    // 只从选中集合移除真正删除成功的文件
+    selectedFilenames.value = selectedFilenames.value.filter(
+      (item) => !succeeded.includes(item),
+    );
+    if (failed.length === 0) {
+      ElMessage.success(`已删除 ${succeeded.length} 个待清理文件`);
+    } else {
+      ElMessage.warning(
+        `已删除 ${succeeded.length} 个文件，${failed.length} 个删除失败：` +
+          failed.slice(0, 3).join("、") +
+          (failed.length > 3 ? " 等" : ""),
+      );
+    }
     await fetchFiles();
     await checkOrphanCount();
   } catch {
