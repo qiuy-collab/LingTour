@@ -97,6 +97,16 @@ export class UploadController {
   }
 
   @Roles('admin', 'editor')
+  @Post('media/reindex')
+  @ApiOperation({
+    summary: 'Rebuild the media_files index from the uploads directory',
+  })
+  async reindexMedia() {
+    const result = await this.uploadService.reindexFromDisk();
+    return { reindexed: result };
+  }
+
+  @Roles('admin', 'editor')
   @Delete('files/:filename')
   @ApiOperation({
     summary: 'Delete an uploaded file and its media_files record',

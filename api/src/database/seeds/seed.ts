@@ -2,10 +2,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import {
-  collectReferencedMediaFilenames,
-  syncMediaLibraryRecords,
-} from './media-library';
+import { reindexMediaFilesFromDisk } from '../../modules/upload/media-registry';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
@@ -863,8 +860,8 @@ async function seed() {
     process.cwd(),
     process.env.UPLOAD_DIR ?? './uploads',
   );
-  const referencedMedia = await collectReferencedMediaFilenames(dataSource);
-  await syncMediaLibraryRecords(dataSource, referencedMedia, uploadRoot);
+  const mediaIndex = await reindexMediaFilesFromDisk(dataSource, uploadRoot);
+  console.log('Seed media index:', mediaIndex);
 
   console.log(
     'Seed complete. Inserted: 2 cities, 2 routes (8 stops), 2 collections (2 products), 2 events, 2 community posts, 2 briefs, 2 interpreting modes, 2 profiles, 3 FAQs, home config, app settings.',

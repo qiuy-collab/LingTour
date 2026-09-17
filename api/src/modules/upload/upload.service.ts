@@ -1,10 +1,20 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { extname, join } from 'path';
 import { Dirent } from 'fs';
 import { mkdir, readdir, stat, unlink, writeFile } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  registerMediaFile,
+  reindexMediaFilesFromDisk,
+  MediaReindexResult,
+} from './media-registry';
 import {
   buildPublicUploadUrl,
   buildStoredUploadPath,
@@ -130,43 +140,42 @@ export class UploadService {
       throw new BadRequestException('Uploaded file buffer is missing');
     }
 
-    // Track the file in the media_files table
+    // Track the file in the media_files table. Registration is part of the
+    // upload contract: a file that is not in the index is invisible to the
+    // media library, so failures must not be swallowed silently.
     try {
-      const inserted = await this.dataSource.query(
-        `INSERT INTO media_files (filename, original_name, mime_type, size_bytes, module, uploaded_by, entity_type, entity_id, url)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-         ON CONFLICT (filename) DO UPDATE SET
-           original_name = EXCLUDED.original_name,
-           mime_type = EXCLUDED.mime_type,
-           size_bytes = EXCLUDED.size_bytes,
-           module = EXCLUDED.module,
-           uploaded_by = EXCLUDED.uploaded_by,
-           entity_type = EXCLUDED.entity_type,
-           entity_id = EXCLUDED.entity_id,
-           url = EXCLUDED.url
-         RETURNING id, created_at`,
-        [
-          result.filename,
-          file.originalname ?? null,
-          file.mimetype ?? null,
-          file.size ?? null,
-          safeModule ?? null,
-          options.uploadedBy ?? null,
-          options.entityType ?? null,
-          options.entityId ?? null,
-          result.url,
-        ],
-      );
-      if (inserted?.[0]?.id) {
-        result = { ...result, mediaFileId: inserted[0].id };
+      const registered = await registerMediaFile(this.dataSource, {
+        filename: result.filename,
+        originalName: file.originalname ?? null,
+        mimeType: file.mimetype ?? null,
+        sizeBytes: file.size ?? null,
+        module: safeModule ?? null,
+        uploadedBy: options.uploadedBy ?? null,
+        entityType: options.entityType ?? null,
+        entityId: options.entityId ?? null,
+        url: result.url,
+      });
+      if (registered?.id) {
+        result = { ...result, mediaFileId: registered.id };
       }
     } catch (err: unknown) {
-      // Log but don't fail the upload if media tracking fails
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Failed to track media file in database: ${message}`);
+      this.logger.error(
+        `Failed to register uploaded file ${result.filename} in media_files: ${message}`,
+      );
+      throw new InternalServerErrorException(
+        'File stored but media registration failed. Please check the media library index and retry.',
+      );
     }
 
     return result;
+  }
+
+  /**
+   * Rebuild the media_files index from the uploads directory.
+   */
+  async reindexFromDisk(): Promise<MediaReindexResult> {
+    return reindexMediaFilesFromDisk(this.dataSource, this.uploadDir);
   }
 
   /**

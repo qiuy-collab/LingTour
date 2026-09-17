@@ -3,6 +3,7 @@ import { existsSync } from 'fs';
 import { mkdir, readFile, stat, writeFile } from 'fs/promises';
 import { dirname, extname, join, resolve } from 'path';
 import { AppDataSource } from '../data-source';
+import { registerMediaFile } from '../../modules/upload/media-registry';
 import {
   buildPublicUploadUrl,
   buildStoredUploadPath,
@@ -103,28 +104,15 @@ async function ensureMediaTracked(
   mimeType: string | null,
   originalName: string,
 ) {
-  await AppDataSource.query(
-    `INSERT INTO media_files
-      (filename, original_name, mime_type, size_bytes, module, uploaded_by, entity_type, entity_id, url)
-     VALUES ($1, $2, $3, $4, $5, 'external-media-import', 'external_asset', NULL, $6)
-     ON CONFLICT (filename) DO UPDATE SET
-       original_name = EXCLUDED.original_name,
-       mime_type = EXCLUDED.mime_type,
-       size_bytes = EXCLUDED.size_bytes,
-       module = EXCLUDED.module,
-       uploaded_by = EXCLUDED.uploaded_by,
-       entity_type = EXCLUDED.entity_type,
-       entity_id = EXCLUDED.entity_id,
-       url = EXCLUDED.url`,
-    [
-      filename,
-      originalName,
-      mimeType,
-      sizeBytes,
-      module,
-      buildPublicUploadUrl(filename),
-    ],
-  );
+  await registerMediaFile(AppDataSource, {
+    filename,
+    originalName,
+    mimeType,
+    sizeBytes,
+    module,
+    uploadedBy: 'external-media-import',
+    entityType: 'external_asset',
+  });
 }
 
 async function trackExistingUpload(uploadUrl: string, module: string) {

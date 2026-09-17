@@ -1,10 +1,5 @@
 import { DataSource } from 'typeorm';
-import { stat } from 'fs/promises';
-import { join } from 'path';
-import {
-  buildPublicUploadUrl,
-  normalizeStoredRelativePath,
-} from '../../modules/upload/upload-path';
+import { normalizeStoredRelativePath } from '../../modules/upload/upload-path';
 
 const MEDIA_REFERENCE_QUERIES = [
   `SELECT hero_image, gallery_images, food_images FROM cities WHERE deleted_at IS NULL`,
@@ -66,48 +61,4 @@ export async function collectReferencedMediaFilenames(
   }
 
   return [...collector].sort();
-}
-
-export async function syncMediaLibraryRecords(
-  dataSource: DataSource,
-  filenames: string[],
-  uploadRoot: string,
-) {
-  const normalized = [
-    ...new Set(filenames.map((name) => normalizeStoredRelativePath(name))),
-  ];
-
-  await dataSource.query(`DELETE FROM media_files WHERE module = 'seed'`);
-
-  const inserted: string[] = [];
-
-  for (const filename of normalized) {
-    const diskPath = join(uploadRoot, filename.replace(/\//g, '\\'));
-    const fileStat = await stat(diskPath).catch(() => null);
-    if (!fileStat?.isFile()) {
-      continue;
-    }
-
-    const module = filename.includes('/') ? filename.split('/')[0] : null;
-    const originalName = filename.split('/').pop() ?? filename;
-    const url = buildPublicUploadUrl(filename);
-
-    await dataSource.query(
-      `INSERT INTO media_files
-        (filename, original_name, mime_type, size_bytes, module, uploaded_by, entity_type, entity_id, url)
-       VALUES ($1, $2, NULL, $3, $4, 'judge-demo-script', 'demo_asset', NULL, $5)
-       ON CONFLICT (filename) DO UPDATE SET
-         original_name = EXCLUDED.original_name,
-         size_bytes = EXCLUDED.size_bytes,
-         module = EXCLUDED.module,
-         uploaded_by = EXCLUDED.uploaded_by,
-         entity_type = EXCLUDED.entity_type,
-         url = EXCLUDED.url`,
-      [filename, originalName, fileStat.size, module, url],
-    );
-
-    inserted.push(filename);
-  }
-
-  return inserted;
 }

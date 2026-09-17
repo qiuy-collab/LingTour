@@ -2,10 +2,8 @@ import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as bcrypt from 'bcrypt';
-import {
-  collectReferencedMediaFilenames,
-  syncMediaLibraryRecords,
-} from './media-library';
+import { collectReferencedMediaFilenames } from './media-library';
+import { reindexMediaFilesFromDisk } from '../../modules/upload/media-registry';
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') });
 
@@ -516,12 +514,7 @@ async function prepareJudgeDemo(apply: boolean) {
   await trimSupportingTables(dataSource);
   await ensureDemoAccounts(dataSource);
 
-  const referencedMedia = await collectReferencedMediaFilenames(dataSource);
-  const syncedMedia = await syncMediaLibraryRecords(
-    dataSource,
-    referencedMedia,
-    uploadRoot,
-  );
+  const mediaIndex = await reindexMediaFilesFromDisk(dataSource, uploadRoot);
 
   const afterCounts = await Promise.all([
     countRows(dataSource, 'cities'),
@@ -538,7 +531,7 @@ async function prepareJudgeDemo(apply: boolean) {
     communityPosts: afterCounts[3],
     mediaFiles: afterCounts[4],
   });
-  console.log('[judge-demo] synced media files', syncedMedia);
+  console.log('[judge-demo] media index', mediaIndex);
   console.log('[judge-demo] demo admin login', {
     email: DEMO_ADMIN_EMAIL,
     password: DEMO_ADMIN_PASSWORD,
