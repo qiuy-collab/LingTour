@@ -43,6 +43,11 @@ services:
       ADMIN_FRONTEND_URL: https://admin.culvoy.com
       REDIS_URL: redis://redis:6379
       TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-2}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     depends_on:
       redis:
         condition: service_healthy
