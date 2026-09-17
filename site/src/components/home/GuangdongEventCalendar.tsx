@@ -138,52 +138,54 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
       <div className="grid items-start gap-10 lg:grid-cols-[1fr_420px] lg:gap-20">
         <div className="flex flex-col">
           <Reveal>
-            <div className="mb-12 sm:mb-16">
+            <div className="mb-12 flex flex-wrap items-center justify-between gap-6 sm:mb-16">
               <h2 className="font-[family:var(--font-display)] text-4xl leading-[0.94] tracking-[-0.03em] text-[var(--river-deep)] sm:text-5xl md:text-7xl">
                 {t("home.calendar.title")}
               </h2>
+              <div className="flex shrink-0 gap-4">
+                <button
+                  onClick={prevMonth}
+                  aria-label="Previous month"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M15 19l-7-7 7-7"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextMonth}
+                  aria-label="Next month"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M9 5l7 7-7 7"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </Reveal>
 
-          <div className="mb-8 flex flex-col items-start gap-6 border-b border-[var(--line)] pb-6 sm:mb-10 sm:flex-row sm:items-center sm:gap-12 sm:pb-8">
-            <div className="flex gap-4">
-              <button
-                onClick={prevMonth}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M15 19l-7-7 7-7"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={nextMonth}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] transition-all hover:bg-[var(--river-deep)] hover:text-white"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M9 5l7 7-7 7"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
+          <div className="mb-8 border-b border-[var(--line)] pb-6 sm:mb-10 sm:pb-8">
             <h3 className="font-[family:var(--font-display)] text-[2.2rem] italic leading-none text-[var(--river-deep)] sm:text-4xl">
               {monthNames[month]}{" "}
               <span className="ml-2 not-italic text-[var(--gold)]">{year}</span>

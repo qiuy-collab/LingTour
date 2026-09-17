@@ -160,19 +160,6 @@ export default function HomeClient({
         ]}
       />
 
-      {heroStats.length > 0 ? (
-        <section className="home-signal-strip border-b border-[var(--line)] bg-[var(--paper)]" aria-label="Culvoy at a glance">
-          <div className="site-container grid grid-cols-2 divide-x divide-y divide-[var(--line)] sm:grid-cols-4 sm:divide-y-0">
-            {heroStats.slice(0, 4).map((stat) => (
-              <div key={`${stat.title}-${stat.body}`} className="min-w-0 px-4 py-6 first:pl-0 sm:px-6 sm:py-7 sm:first:pl-0">
-                <p className="font-[family:var(--font-display)] text-2xl leading-none text-[var(--river-deep)]">{stat.title}</p>
-                <p className="mt-2 max-w-[12rem] font-mono text-[9px] font-bold uppercase leading-relaxed tracking-[0.16em] text-[var(--muted)]">{stat.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       <div className="relative z-10">
         <HomeVideoChapter video={hero.video} />
 
@@ -264,30 +251,6 @@ export default function HomeClient({
                 <h2 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.5rem,8vw,3.5rem)] leading-[0.92] text-[var(--river-deep)] sm:mb-10 lg:mb-12 lg:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
-                <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 lg:mx-0 lg:block lg:space-y-7 lg:overflow-visible lg:px-0 lg:pb-0">
-                  {testimonials.length > 0
-                    ? testimonials
-                        .slice(0, 2)
-                        .map((item: { name: string; quote: string }) => (
-                            <div key={item.name} className="w-[78vw] max-w-[23rem] shrink-0 snap-start rounded-[var(--radius-md)] border border-[var(--line)] bg-white/45 p-5 sm:p-6 min-[620px]:w-[18rem] lg:w-auto lg:max-w-none">
-                              <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
-                                {item.quote}
-                              </p>
-                              <p className="mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
-                                - {item.name}
-                              </p>
-                            </div>
-                          ),
-                        )
-                    : (
-                        <div className="w-full max-w-[23rem] shrink-0 snap-start border border-dashed border-[var(--line)] bg-white/45 p-5 sm:p-6 lg:w-auto lg:max-w-none">
-                          <p className="text-base leading-7 text-[var(--muted)] sm:text-lg">
-                            No traveller notes have come back yet. The first dispatches
-                            from the field will be posted here exactly as written.
-                          </p>
-                        </div>
-                      )}
-                </div>
                 <div className="mt-10 sm:mt-16">
                   <Link
                     href="/interpreting"
