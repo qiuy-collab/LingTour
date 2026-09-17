@@ -4,8 +4,18 @@ import { ElMessage } from 'element-plus'
 import { Minus, Picture, Upload } from '@element-plus/icons-vue'
 import { MdEditor, NormalToolbar, type ExposeParam, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import type { EditorView } from '@codemirror/view'
 import { uploadMediaFile } from '@/api/media'
 import MediaPickerDialog from '@/components/media/MediaPickerDialog.vue'
+import {
+  installMarkdownImagePreview,
+  matchImages,
+  registerMarkdownImageHost,
+  unregisterMarkdownImageHost,
+  type EditorImageTarget,
+  type MarkdownImageHost,
+} from '@/components/editor/markdown-image-live-preview'
+import { resolveMediaUrl } from '@/utils/media'
 import { extractErrorMessage } from '@/utils/errors'
 
 const model = defineModel<string>({ default: '' })
@@ -13,10 +23,12 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   entityId?: string
   module?: string
+  entityType?: string
   placeholder?: string
 }>(), {
   disabled: false,
   module: 'cities',
+  entityType: 'city',
   placeholder: '请填写英文正文，支持 Markdown 排版',
 })
 const emit = defineEmits<{
@@ -26,11 +38,23 @@ const emit = defineEmits<{
 const editorRef = ref<ExposeParam>()
 const fileInput = ref<HTMLInputElement>()
 const editorId = `markdown-${useId()}`
+const imageHost: MarkdownImageHost = {
+  resolveUrl: (src) => resolveMediaUrl(src),
+  onReplaceRequest: (target) => {
+    if (busy.value) return
+    replaceTarget.value = target
+    mediaPickerVisible.value = true
+  },
+}
+installMarkdownImagePreview()
+registerMarkdownImageHost(editorId, imageHost)
 const mode = ref<'edit' | 'split' | 'preview'>('split')
 const uploading = ref(false)
 const progress = ref(0)
 const mediaPickerVisible = ref(false)
 const uploadError = ref('')
+/** 非空表示媒体库本次选择用于「替换这张图片」，而不是插入新图。 */
+const replaceTarget = ref<EditorImageTarget | null>(null)
 const busy = computed(() => props.disabled || uploading.value)
 const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const maxImageSize = 10 * 1024 * 1024
@@ -46,6 +70,10 @@ watch(uploading, value => emit('uploading-change', value), { flush: 'sync' })
 watch(mode, async value => {
   await nextTick()
   if (value !== 'preview') editorRef.value?.getEditorView()?.requestMeasure()
+})
+// 取消媒体库选择时放弃替换意图，避免污染下一次插入。
+watch(mediaPickerVisible, value => {
+  if (!value) replaceTarget.value = null
 })
 
 function rememberSelection() {
@@ -104,6 +132,7 @@ function chooseUpload() {
 function chooseMedia() {
   if (busy.value) return
   rememberSelection()
+  replaceTarget.value = null
   mediaPickerVisible.value = true
 }
 
@@ -124,7 +153,7 @@ async function uploadImages(files: File[]) {
   try {
     for (const [index, file] of files.entries()) {
       try {
-        const res = await uploadMediaFile(file, props.module, 'city', props.entityId, percent => {
+        const res = await uploadMediaFile(file, props.module, props.entityType, props.entityId, percent => {
           progress.value = Math.round((index + percent / 100) / files.length * 100)
         })
         const payload = res.data?.data ?? res.data
@@ -143,7 +172,7 @@ async function uploadImages(files: File[]) {
   if (images.length) {
     try {
       insertImages(images)
-      ElMessage.success(`已插入 ${images.length} 张图片`)
+      ElMessage.success(`已上传 ${images.length} 张图片到媒体库并插入正文`)
     } catch (error) {
       failures.push(extractErrorMessage(error, '图片插入失败，正文已保留'))
     }
@@ -184,9 +213,58 @@ function handlePaste(event: ClipboardEvent) {
   void uploadImages(files)
 }
 
+/** 在正文里定位这张图片：优先用记录到的精确范围，文档已变动时按原地址回退检索。 */
+function locateImage(view: EditorView, target: EditorImageTarget) {
+  const doc = view.state.doc
+
+  if (target.from < target.to && target.to <= doc.length) {
+    const [current] = matchImages(doc.sliceString(target.from, target.to))
+    if (
+      current
+      && current.from === 0
+      && current.to === target.to - target.from
+      && current.src === target.src
+    ) {
+      return { from: target.from, to: target.to, alt: current.alt }
+    }
+  }
+
+  const found = matchImages(doc.toString()).find(item => item.src === target.src)
+  return found ? { from: found.from, to: found.to, alt: found.alt } : null
+}
+
+/** 用媒体库选中的地址替换正文里的这张图片，编辑器内容随之同步。 */
+function replaceImage(target: EditorImageTarget, url: string) {
+  const view = editorRef.value?.getEditorView()
+  if (!view) return
+
+  const range = locateImage(view, target)
+  if (!range) {
+    ElMessage.warning('未能在正文中定位这张图片，请手动修改图片地址')
+    return
+  }
+
+  const alt = (target.alt || range.alt || 'Image description').replace(/[\\\[\]\r\n]/g, ' ')
+  const markdown = `![${alt}](${imageUrl(url)})`
+
+  view.dispatch({
+    changes: { from: range.from, to: range.to, insert: markdown },
+    selection: { anchor: range.from + markdown.length },
+  })
+  view.focus()
+  ElMessage.success('图片已更换')
+}
+
 async function onMediaSelected(urls: string[]) {
   await nextTick()
+  const target = replaceTarget.value
+  replaceTarget.value = null
+
   try {
+    if (target) {
+      replaceImage(target, urls[0])
+      return
+    }
     insertImages(urls.map(url => ({ url, alt: 'Image description' })))
   } catch (error) {
     uploadError.value = extractErrorMessage(error, '图片插入失败，正文已保留')
@@ -201,7 +279,10 @@ function insertDivider() {
 // This component deliberately never renders library-generated HTML. Only the real
 // frontend slot previews authored content; the empty sanitizer is defense in depth.
 function discardBuiltInHtml() { return '' }
-onBeforeUnmount(() => { mounted = false })
+onBeforeUnmount(() => {
+  mounted = false
+  unregisterMarkdownImageHost(editorId)
+})
 onMounted(() => {
   editorRef.value?.on('preview', visible => { if (visible) editorRef.value?.togglePreview(false) })
   editorRef.value?.on('htmlPreview', visible => { if (visible) editorRef.value?.toggleHtmlPreview(false) })
@@ -262,7 +343,7 @@ onMounted(() => {
           </template>
         </MdEditor>
         <input ref="fileInput" type="file" :accept="imageTypes.join(',')" multiple hidden @change="onFileChange" />
-        <p class="image-hint">支持拖放或粘贴图片；JPG、PNG、WebP、GIF，每张不超过 10 MB。代码仅基础展示，不高亮、不提供复制按钮。</p>
+        <p class="image-hint">支持拖放或粘贴图片；上传的图片会进入媒体库，正文里直接显示图片本体，悬浮图片即可点击「更换图片」重新选择。JPG、PNG、WebP、GIF，每张不超过 10 MB。代码仅基础展示，不高亮、不提供复制按钮。</p>
       </div>
       <div v-if="mode !== 'edit'" class="preview-pane"><slot name="preview" /></div>
     </div>
@@ -292,6 +373,13 @@ onMounted(() => {
 .source-pane :deep(.md-editor-toolbar) { flex-wrap: wrap; }
 .source-pane :deep(.md-editor-toolbar-item) { min-width: 34px; min-height: 34px; }
 .source-pane :deep(.cm-content) { font-size: 15px; line-height: 1.8; padding-block: 16px; }
+/* 内联图片：编辑区直接渲染图片本体，光标进入语法后恢复原文 */
+.source-pane :deep(.cm-live-image) { position: relative; display: inline-block; max-width: 100%; vertical-align: bottom; }
+.source-pane :deep(.cm-live-image__body) { display: block; width: auto; max-width: 100%; max-height: 360px; border: 1px solid var(--lt-border-color); border-radius: var(--lt-radius-md); background: var(--lt-bg-hover); }
+.source-pane :deep(.cm-live-image__action) { position: absolute; right: 8px; bottom: 8px; display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--lt-radius-lg); background: color-mix(in srgb, var(--lt-text-primary) 78%, transparent); color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0; transition: opacity 0.2s ease; }
+.source-pane :deep(.cm-live-image:hover .cm-live-image__action), .source-pane :deep(.cm-live-image__action:focus-visible) { opacity: 1; }
+@media (hover: none) { .source-pane :deep(.cm-live-image__action) { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .source-pane :deep(.cm-live-image__action) { transition: none; } }
 .source-pane :deep(.cm-editor) { min-width: 0; }
 .preview-pane :deep(.frontend-preview) { display: block; position: static; min-height: 500px; }
 .upload-status, .markdown-workspace > .el-alert { margin-bottom: 12px; }
@@ -302,6 +390,7 @@ onMounted(() => {
 @media (max-width: 767px) {
   .source-pane :deep(.cm-content) { font-size: 16px; }
   .source-pane :deep(.md-editor-toolbar-item) { min-width: 44px; min-height: 44px; }
+  .source-pane :deep(.cm-live-image__action) { min-height: 44px; }
   .workspace-heading :deep(.el-radio-button__inner) { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 12px; }
 }
 </style>
