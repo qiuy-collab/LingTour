@@ -62,9 +62,14 @@ services:
       context: .
       dockerfile: site/Dockerfile
       args:
-        # Browser-side requests go straight to the api port mapping on the
-        # host; server-side (SSR) requests use the container network below.
-        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+        # Same-origin base, matching production: the browser calls /api and
+        # /uploads on the site origin (port 3000) and next.config rewrites
+        # proxy them to the api container. The INTERNAL_API_ORIGIN build arg
+        # keeps that rewrite target on the container network; without it the
+        # build would bake in the public fallback domain and the local stack
+        # would read production data.
+        NEXT_PUBLIC_API_URL: /api/v1
+        INTERNAL_API_ORIGIN: http://api:8000/api/v1
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
     environment:
       INTERNAL_API_ORIGIN: http://api:8000/api/v1

@@ -10,9 +10,16 @@ COPY site .
 ARG NEXT_PUBLIC_API_URL=/api/v1
 ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+# Build-time origin for the /api and /uploads rewrites baked into the
+# standalone output. The default keeps the historic behaviour (public API
+# domain); compose overrides it with the container-network address so the
+# local split-port stack never proxies towards production. Runtime
+# `environment:` in both compose files overrides this for the running app.
+ARG INTERNAL_API_ORIGIN=https://api.culvoy.com
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV INTERNAL_API_ORIGIN=$INTERNAL_API_ORIGIN
 ENV NEXT_OUTPUT=standalone
 
 RUN npm run build
