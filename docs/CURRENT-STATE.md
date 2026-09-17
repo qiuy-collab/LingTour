@@ -4,12 +4,12 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `a522c77` (2026-09-17, deployed via the deploy-docker step sequence with serial image builds after run `35120749831` timed out, see §36). Post-deploy commit `e859873` (deployment docs) contains no application code and needs no redeploy.
+- Production deployed application commit: `ed014cb` (2026-09-17, media-library index rebuild, upload content validation and the admin inline-image editor; deploy run `35203274093`, see §38). Previous deployed commit `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
-- `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment.
+- `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 29 applied migrations; all reported `[X]`, including `EnglishOnlyContent1762300000000`.
+- Production has 29 applied migrations; all reported `[X]`, including `EnglishOnlyContent1762300000000`. Re-checked read-only before the `ed014cb` deployment: every migration in the repository was present in `typeorm_migrations`, so `migration:run` reported "No migrations are pending" (§38).
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
@@ -27,7 +27,7 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `e859873` (docs recording the 2026-09-17 deployment, §36) on top of the deployed `a522c77`.
+- Local HEAD: `ed014cb` (2026-09-17 media-library / upload-validation / admin-editor batch, §38) — this is the deployed production commit.
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
@@ -47,7 +47,7 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD: `56afcf4` (2026-09-17, 16px coarse-pointer inputs / Chinese chrome / useTheme leak fixes)
+- Local HEAD: `311ccfb` (2026-09-17, media-library rebuild action on top of the inline markdown-image editor in `e06a25d`; §38)
 - Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
 
 Formerly unpushed commits (pushed since; kept as record):
@@ -136,6 +136,7 @@ Recovery incidents:
 ## 6. Deployment queue
 
 1. Recheck public English-only payloads and admin create/edit/save/refresh flows after any future content changes.
+2. Optionally verify the production upload round-trip once credentials are available (upload → `media_files` row → delete). The code path is covered by local tests and the repaired local stack, but it has not been exercised against production (§38).
 
 Do not deploy unpushed code or run the new migration manually on the old production SHA.
 
@@ -557,3 +558,41 @@ Owner instructed to drop the previous local startup script and run site/admin/ap
 - Stale container cleanup: a leftover `lingtour-postgres-1` from the 2026-09-09 selfhost design auto-started with Docker Desktop and bound host 5432, which would have hijacked the api container's `host.docker.internal:5432` away from the real local database; it was removed (the `lingtour_pgdata` volume was kept).
 - Verified: `docker compose up -d --build` brings up api/site/admin all healthy; API health `database:up` against the local PostgreSQL; site SSR renders (title "Culvoy Guangdong") and its JS chunks carry the browser-side `http://localhost:8000/api/v1` address; admin 200 with the `/api/admin` proxy chain proven (empty-body login POST returns the API's 400 DTO error). Public data endpoints were not probed further (guessed paths returned 404; local dataset shape unchanged from the npm era).
 - Caveat recorded in development.md: containers run built artifacts, not dev servers — code changes require rebuilding the per-service image; npm dev remains the hot-reload fallback (stop the corresponding container first to free the port).
+
+## 38. 2026-09-17 media library index, upload validation and admin editor images (root `ed014cb`)
+
+Owner instructed categorized commits and deployment. The batch came out of three admin media complaints: images uploaded and shown on the public site missing from the media library, incomplete image lists inside module pickers, and a few unreadable/broken entries in the library.
+
+Shared root cause: `media_files` is the only source the library and the picker read, and it had drifted from disk — 19 rows against 47 files on disk. Seed/import scripts wrote files straight to disk and registered only the files business tables happened to reference; a failed registration during upload was swallowed as a warning.
+
+Commits, admin repository first, then root:
+
+| Repo | SHA | Meaning |
+| --- | --- | --- |
+| admin | `e06a25d` | Markdown editor renders images inline and offers a 更换图片 replacement action through the media library |
+| admin | `311ccfb` | Media library 重建索引 action; `entry`/`interpreters`/`preview` module filters |
+| root | `da912e2` | API validates disk-stored upload content and deletes rejected files |
+| root | `f4463e9` | API `media-registry` module + `reindexMediaFilesFromDisk`, seeds share it, new `POST /api/v1/admin/upload/media/reindex` |
+| root | `35f09b7` | Admin mirror of `e06a25d` |
+| root | `eab9b1a` | Admin mirror of `311ccfb` |
+| root | `ed014cb` | Local compose/Dockerfile media proxy fix |
+
+Blob equality: the six paired admin files match byte-for-byte between the independent admin HEAD and the root mirrors (checked with `git rev-parse HEAD:<path>`); the admin repository was pushed first (`56afcf4..311ccfb`), then root (`3efbeea..ed014cb`).
+
+Pre-existing production defect found and fixed in `da912e2`: `hasValidUploadSignature` read only `file.buffer`, while multer is configured with `diskStorage`, so every image, video and avatar upload returned 400 `File content does not match its declared type` and left an orphan file in `uploads/`. Introduced by `fa8f5ce` and shipped inside the deployed `a522c77`; it also explains the earlier "uploaded images are not in the library" symptom, because the upload never succeeded.
+
+Local-only work in the same window (not part of the deployed application code):
+
+- The local database was 5 migrations behind the code; `AddUserFavorites`, `AddOrderPublicStatusToken`, `AddStockReservationsAndBookingIdempotency`, `AddEmailVerificationCodes` and `EnglishOnlyContent` were applied after a `pg_dump -Fc` backup to `.local-backups/lingtour-local-20260917-pre-migration.dump` (untracked, do not commit).
+- Local `media_files` repaired from 19 to 47 rows (2 phantom rows deleted, 4 `entry/` filename prefixes fixed, 30 disk files registered) after backup `.local-backups/media_files-20260917-before-repair.dump`.
+- Local site media returned 500 because `NEXT_PUBLIC_API_URL` was baked into the image as the absolute `http://localhost:8000` origin, so the site container proxied to itself instead of the api container; `ed014cb` makes the local stack use production's same-origin relative mode. Local stack only — `docker-compose.prod.yml` and production runtime behaviour are unchanged.
+
+Verification before pushing: API `tsc --noEmit`, 22 suites / 104 tests, `npm run build`; admin `npm run build`; `git diff --check` clean in both repositories; push-triggered CI run `35203018350` passed the Site, API and Docker Build jobs.
+
+Deployment evidence: pre-deploy database backup `/root/backups/lingtour-db-pre-media-index-20260917-170444.dump` (131,965 bytes, `pg_restore -l` readable, 191 TOC entries); read-only status showed all 12 repository migrations present among the 29 applied `typeorm_migrations` rows. Deploy run `35203274093` finished in 3m42s: fast-forward `a522c77..ed014cb`, the three images built, `No migrations are pending`, all containers recreated and healthy, health check `api-via-docker-nginx:200`. The server's "local working-tree changes" branch was triggered only by untracked bundles in `git status --short`; `server-working-tree.diff` was never written, so no tracked server change was discarded.
+
+Production smoke after deployment (read-only): API health 200; home, `/routes/southern-sea-table`, `/culture/zhanjiang`, `/shop` and `/community` 200 (after the trailingSlash 308); `https://culvoy.com/uploads/seed/zhanjiang-hero-1200.jpg` 200 `image/jpeg`; 8/8 home-page `/uploads/...` images 200; `POST /api/v1/admin/upload` and the new `POST /api/v1/admin/upload/media/reindex` both return 401 without a token. The deployed admin bundle carries the new code: `CityEdit-CFnngmK1.js` contains `cm-live-image`, `更换图片` and `EditorView`, and `MediaLibraryBrowser-BlYacj7S.js` contains `media/reindex`, `重建索引` and `interpreters`.
+
+Not verified on production: the authenticated upload round-trip (upload → `media_files` row → delete) writes production data and needs separate authorization; the new editor's post-login interaction was proven through the shipped bundle fingerprints and the local browser session, not through a production browser session.
+
+Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.
