@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { basename, posix, resolve, relative } from 'path';
+import { basename, isAbsolute, posix, relative, resolve } from 'path';
 
 const ALLOWED_MODULES = new Set([
   'avatars',
@@ -96,6 +96,51 @@ export function buildPublicUploadUrl(
     .map((segment) => encodeURIComponent(segment))
     .join('/');
   return `/uploads/${encodedPath}`;
+}
+
+/**
+ * Derive the stored relative path ("cities/<uuid>.jpg") from the absolute
+ * location a file was actually written to.
+ *
+ * Deriving it from the requested module is only correct when multipart parsing
+ * has already populated the body, which depends on the `module` part arriving
+ * before the `file` part. When it does not, the bytes land in the uploads root
+ * while the derived path still claims a module directory, so the stored file,
+ * its media_files row and its public URL disagree. Reading the real location
+ * keeps all three in agreement whatever the field order is.
+ *
+ * Returns null when the location is missing, outside the upload root, or
+ * deeper than the single module level the upload layout allows.
+ */
+export function resolveStoredRelativePath(
+  uploadRoot: string,
+  storedPath?: string,
+): string | null {
+  if (typeof storedPath !== 'string' || !storedPath) {
+    return null;
+  }
+
+  const normalizedRoot = resolve(uploadRoot);
+  const absolutePath = resolve(storedPath);
+  const relativePath = relative(normalizedRoot, absolutePath);
+
+  if (
+    !relativePath ||
+    isAbsolute(relativePath) ||
+    relativePath.startsWith('..')
+  ) {
+    return null;
+  }
+
+  const segments = relativePath
+    .split(/[\\/]/)
+    .filter((segment) => segment && segment !== '.');
+
+  if (segments.length === 0 || segments.length > 2) {
+    return null;
+  }
+
+  return segments.join('/');
 }
 
 export function resolveStoredUploadPath(

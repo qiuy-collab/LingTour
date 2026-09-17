@@ -19,6 +19,7 @@ import {
   buildPublicUploadUrl,
   buildStoredUploadPath,
   normalizeUploadOriginalName,
+  resolveStoredRelativePath,
   resolveStoredUploadPath,
   sanitizeUploadModule,
 } from './upload-path';
@@ -106,6 +107,34 @@ export class UploadService {
     };
   }
 
+  /**
+   * Describe where multer actually stored the file.
+   *
+   * multer's diskStorage destination reads `req.body.module`, which multipart
+   * parsing only populates when the `module` part arrives before the `file`
+   * part; a `file`-first request therefore writes to the uploads root while a
+   * module-derived path would claim a subdirectory. Prefer the real location
+   * and only fall back to the module-derived path when multer exposes none.
+   */
+  private describeStoredUpload(
+    file: Express.Multer.File,
+    safeModule?: string,
+  ): { url: string; filename: string } {
+    const storedRelativePath = resolveStoredRelativePath(
+      this.uploadDir,
+      file.path,
+    );
+
+    if (!storedRelativePath) {
+      return this.getStructuredPath(file.filename, safeModule);
+    }
+
+    return {
+      url: buildPublicUploadUrl(storedRelativePath),
+      filename: storedRelativePath,
+    };
+  }
+
   async storeUploadedFile(
     file: Express.Multer.File,
     moduleOrOptions?: string | StoreFileOptions,
@@ -122,7 +151,7 @@ export class UploadService {
     let result: { url: string; filename: string; mediaFileId?: string };
 
     if (file.filename) {
-      result = this.getStructuredPath(file.filename, safeModule);
+      result = this.describeStoredUpload(file, safeModule);
     } else if (file.buffer) {
       const destination = this.getUploadDestination(safeModule);
       await mkdir(destination, { recursive: true });

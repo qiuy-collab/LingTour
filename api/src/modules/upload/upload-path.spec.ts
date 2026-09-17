@@ -1,6 +1,8 @@
+import { join, resolve, sep } from 'path';
 import {
   buildStoredUploadPath,
   normalizeUploadOriginalName,
+  resolveStoredRelativePath,
   sanitizeUploadModule,
 } from './upload-path';
 
@@ -27,5 +29,36 @@ describe('upload path helpers', () => {
       'cities/cover.jpg',
     );
     expect(() => sanitizeUploadModule('../cities')).toThrow();
+  });
+});
+
+describe('stored path resolution', () => {
+  const uploadRoot = resolve(sep, 'app', 'uploads');
+
+  it('derives the module-relative path when the file really is in a module directory', () => {
+    expect(
+      resolveStoredRelativePath(uploadRoot, join(uploadRoot, 'cities', 'a.jpg')),
+    ).toBe('cities/a.jpg');
+  });
+
+  it('keeps a root-level upload at the root instead of claiming a module directory', () => {
+    // A `file`-first multipart request leaves the parsed body without `module`
+    // while the caller still asked for one, so multer writes to the root.
+    // Registering the module-derived path would point at a file that is not
+    // there; the real location must win.
+    expect(
+      resolveStoredRelativePath(uploadRoot, join(uploadRoot, 'a.jpg')),
+    ).toBe('a.jpg');
+  });
+
+  it('rejects locations that are missing, outside the root, or nested too deeply', () => {
+    expect(resolveStoredRelativePath(uploadRoot, undefined)).toBeNull();
+    expect(resolveStoredRelativePath(uploadRoot, '')).toBeNull();
+    expect(
+      resolveStoredRelativePath(uploadRoot, join(uploadRoot, '..', 'secret.jpg')),
+    ).toBeNull();
+    expect(
+      resolveStoredRelativePath(uploadRoot, join(uploadRoot, 'a', 'b', 'c.jpg')),
+    ).toBeNull();
   });
 });
