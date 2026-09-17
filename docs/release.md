@@ -70,7 +70,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 
 只在服务器/Secrets 中管理；文档与提交中只出现变量名，绝不写值。
 
-- site：`NEXT_PUBLIC_API_URL`（生产为 `https://api.culvoy.com/api/v1`）、`INTERNAL_API_ORIGIN`、`PORT`、`HOST`、`NEXT_OUTPUT`。
+- site：`NEXT_PUBLIC_API_URL`（生产为同源相对路径 `/api/v1`，浏览器请求经 nginx 同源代理携带登录 cookie；改成跨域绝对地址会让 traveler 端登录态调用整体 401）、`INTERNAL_API_ORIGIN`、`PORT`、`HOST`、`NEXT_OUTPUT`。
 - admin：`VITE_API_ORIGIN`、`VITE_SITE_ORIGIN` 或 `VITE_SITE_PREVIEW_ORIGIN`、`VITE_MEDIA_ORIGIN`、`PORT`、`HOST`。
 - api：数据库 `DB_*`、`JWT_SECRET`、PayPal 凭据、媒体/上传相关配置；完整清单见仓库根目录 `.env.production.example`。
 - Actions：仓库 Secrets `SERVER_HOST` / `SERVER_USER` / `SERVER_SSH_KEY` / `SERVER_PORT`。

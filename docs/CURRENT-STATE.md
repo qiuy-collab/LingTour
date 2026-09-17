@@ -600,3 +600,35 @@ That round-trip also exposed a robustness defect that is **not** a regression of
 Still not verified on production: the new editor's post-login interaction was proven through the shipped bundle fingerprints and the local browser session, not through a production browser session.
 
 Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.
+
+## 39. 2026-09-17 review/09-17-B fixes committed (not pushed, not deployed)
+
+Based on `review/09-17-B/report.md` (8 P1 / 15 P2 / ~15 P3, §7.7 batch order). Live state after this entry: root `main` at `63e7cfc` ahead 8 of `origin/main`, admin `main` at `a30a844` ahead 1, both tracked trees clean; production unchanged at `c7fe7ce`. Nothing was pushed, deployed, or migrated — all of that awaits authorization.
+
+Baseline drift handling: the report was written against `3efbeea`, but the working tree carried the uncommitted PayPal-only conversion (drifted to `0532156`). Per owner decision the WIP was committed first in four logical groups (`7bac612` api / `4d67199` site / `9b17bd7` infra / `b04365b` docs), then the review fixes were committed separately.
+
+Commits, in order (root unless noted):
+
+| SHA | Meaning |
+| --- | --- |
+| admin `a30a844` | Admin fixes: logout revokes refresh grace, media-delete feedback, base64url JWT decode, CSV formula-injection escape, list race cancellation, 401 copy fix, editor settings gating (P2-I/J, P3-8/9/10/15/11) |
+| `b96b49d` | api deps: `@nestjs/schedule` (order/code cleanup schedulers) + helmet (P2-O) |
+| `54c1dcb` | auth hardening: explicit @Roles on 10 admin DELETEs + refund, case-insensitive isAdminPath, P1-8 user-status admin-only + DTO, P1-1 devCode gate + 503 on send failure, P1-2 atomic attempts + cooldown, P2-2 no email enumeration, P2-3 dual-confirm email change, P2-4 unused refresh endpoint removed, P2-A per-request DB recheck via JwtStrategy, P2-N code cleanup, RegisterDto/23505/user-entity P3s |
+| `ed5483e` | payments/bookings/public surface: P1-3 PayPal refund gateway outside the stock transaction, P1-4 expired-order release + late-payment recovery + throttle, P1-6 status-transition whitelist, P2-7 handlingCents configurable, P2-8 deposit pricing by serviceModeId (migration `1762500100000`), P2-9/C throttles, P2-D settings projection allowlist, P2-E featured filters published, P2-F pagination clamp (shared `common/pagination.ts`), favorites FK migration `1762500000000`, slug constraints, admin clamps, audit date guard, home GET read-only, crypto order numbers |
+| `2ca2aef` | site: P2-K server-side SSG fetchers, P2-L session-route Origin allowlist, P2-M preview source restricted to `https://admin.culvoy.com` with positive+negative tests |
+| `f79ebc5` | root mirror of admin `a30a844` (7 files) |
+| `63e7cfc` | infra: nginx `client_max_body_size` 105M on all four servers (P2-H, matches the 100MB video ceiling), server-level security headers (P2-O) |
+
+Verification (all passed before commit): api `tsc --noEmit` clean, 22 suites / 114 tests, `npm run build`; site `tsc --noEmit` clean, lint 0 errors, 103 tests (preview tests updated for the P2-M allowlist and extended with an out-of-allowlist rejection case), `npm run build`; admin `npm run build`; `git diff --check` clean in both repositories. Admin mirror files match admin `a30a844` byte-for-byte (same working-tree paths, admin tree clean).
+
+Decisions recorded (report items intentionally not implemented):
+
+- Events soft-delete: not done. P1-7 already removes the unauthorized-delete root cause; soft delete touches public queries and a migration, kept as optional defense in depth.
+- Refund stays admin-only: the report suggested editor alignment, but refunds move money out with no approval flow or amount cap; consistency does not justify widening fund-moving permissions.
+- Report line 247 (users profile sections) verified not a defect: traveler profiles have no sections concept, and cities PATCH already returns the updated sections.
+- Idempotency consistency: not changed. The site only uses the checkout (deposit) endpoint, whose 409 repeat-submit behavior is correct; the non-deposit paths are admin-facing.
+- `seed-local-preview.ts` stays untracked (local gated preview seed, standing policy).
+
+Deployment preconditions for whenever this is approved: the two new migrations (`1762500000000-AddUserFavoritesUserFk`, `1762500100000-AddServiceModeDepositCents`) will run during `deploy-docker.sh`; a production `pg_dump -Fc` backup and a read-only `migration:show` are required first per AGENT.md §10. `b96b49d` adds two api dependencies, so the api image build is not cache-trivial.
+
+Root untracked items preserved by standing policy: `.local-backups/`, `admin-backoffice-visual-reference.png`, `api/src/database/seeds/seed-local-preview.ts`, `lingtour-frontend-documentation/`, `review/`.

@@ -117,7 +117,7 @@ Use `admin-frontend/.env.local`, not an unignored plain `.env`, for local admin 
 
 - Use the real API and production-shaped data; do not introduce fake, placeholder, screenshot-only, or local-only business data.
 - Local site/admin visual work normally reads from `https://api.culvoy.com`; explain impact and obtain authorization before writing production data.
-- Site variables: `NEXT_PUBLIC_API_URL=https://api.culvoy.com/api/v1` and `INTERNAL_API_ORIGIN=https://api.culvoy.com/api/v1`. `server-api.ts` uses `INTERNAL_API_ORIGIN` verbatim as the API base URL, so the value must include the `/api/v1` path (production compose sets `http://api:8000/api/v1`).
+- Site variables: `NEXT_PUBLIC_API_URL=/api/v1` (same-origin relative path — production compose sets this, and browser calls ride the nginx same-origin proxy so the `culvoy_session` cookie is carried automatically) and `INTERNAL_API_ORIGIN=https://api.culvoy.com/api/v1`. `server-api.ts` uses `INTERNAL_API_ORIGIN` verbatim as the API base URL, so the value must include the `/api/v1` path (production compose sets `http://api:8000/api/v1`). Do not change `NEXT_PUBLIC_API_URL` to an absolute cross-origin URL: browser-side traveler calls (`PATCH /auth/me`, avatar, favorites) send `credentials: "same-origin"` and would silently lose the session cookie and start failing with 401.
 - Admin variables: `VITE_API_ORIGIN`, `VITE_SITE_ORIGIN` or `VITE_SITE_PREVIEW_ORIGIN`, and `VITE_MEDIA_ORIGIN`.
 - The admin client calls `/api/admin`; Vite/Nginx rewrite it to `/api/v1/admin`. Preserve this proxy contract.
 - Start the local API only for API work; do not start or reset it merely to obtain data for UI work.
