@@ -114,6 +114,8 @@ export const common = {
     "community.channel.hiddenStop": "Hidden Stop",
     "community.channel.cultureDesk": "Culture Desk",
     "community.search.placeholder": "Search signals...",
+    "community.toolbar.channels": "Channel filters",
+    "community.toolbar.sort": "Sort posts",
     "community.loading": "Collecting notes from the road...",
     "community.error.feedOffline": "Feed offline.",
     "community.empty": "Nothing in this channel yet.",

@@ -443,7 +443,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </div>
       </header>
 
-      <div className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain">
+      <div className="sticky top-[4.6rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain">
         <nav
           className="site-container scrollbar-hide flex gap-2 overflow-x-auto py-3"
           aria-label={t("account.profile.tabLabel")}

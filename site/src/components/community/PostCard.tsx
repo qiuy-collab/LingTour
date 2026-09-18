@@ -111,10 +111,11 @@ export function PostCard({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-[var(--radius-md)] scrapbook-shadow transition-[transform,box-shadow] duration-500 hover:-translate-y-1.5 ${variantClasses}`}
+      className={`group relative overflow-hidden rounded-[var(--radius-md)] scrapbook-shadow transition-[transform,box-shadow] duration-500 hover:-translate-y-0.5 ${variantClasses}`}
     >
       <a
         href={`/community?post=${post.id}`}
+        data-community-post-link={post.id}
         onClick={(event) => {
           event.preventDefault();
           onOpen?.(post);
@@ -137,6 +138,7 @@ export function PostCard({
             {cover.type === "live" ? (
               <video
                 src={cover.url}
+                poster={cover.poster || undefined}
                 muted
                 loop
                 playsInline
@@ -167,7 +169,7 @@ export function PostCard({
               className={`absolute right-3 top-3 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.18em] ${
                 variant === "feature"
                   ? "rounded-full border border-[var(--line)] bg-[var(--paper)]/88 text-[var(--cinnabar)] backdrop-blur-md"
-                  : "handwritten rotate-[2deg] bg-white/80 text-[var(--river-deep)] shadow-sm backdrop-blur-sm"
+                  : "handwritten rotate-[2deg] bg-[var(--paper)]/85 text-[var(--river-deep)] shadow-sm backdrop-blur-sm"
               }`}
             >
               {post.channel}
@@ -245,10 +247,10 @@ export function PostCard({
 
           <div className="mt-4 flex flex-wrap gap-2">
             {post.route ? (
-              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">#{post.route}</span>
+              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] text-[var(--cinnabar)]">#{post.route}</span>
             ) : null}
             {post.location ? (
-              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">@{post.location}</span>
+              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] text-[var(--cinnabar)]">@{post.location}</span>
             ) : null}
           </div>
         </div>

@@ -36,7 +36,7 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
           <button
             type="button"
             onClick={onDispatch}
-            className="min-h-12 w-full bg-white py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--night)] transition-colors hover:bg-[var(--paper)]"
+            className="min-h-12 w-full bg-[var(--paper)] py-4 text-sm font-bold uppercase tracking-[0.14em] text-[var(--night)] transition-colors hover:bg-white"
           >
             Write a note
           </button>

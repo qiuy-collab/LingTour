@@ -595,9 +595,13 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section data-community-toolbar className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
+      <section data-community-toolbar className="sticky top-[4.6rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
         <div className="site-container grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          <div className="scroll-fade-x scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+          <div
+            role="group"
+            aria-label={t("community.toolbar.channels")}
+            className="scroll-fade-x scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0"
+          >
             {channels.map((channel) => (
               <button
                 key={channel}
@@ -627,7 +631,11 @@ export default function CommunityPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </label>
-            <div className="scrollbar-hide flex min-w-0 overflow-x-auto border border-[var(--line)] p-1">
+            <div
+              role="group"
+              aria-label={t("community.toolbar.sort")}
+              className="scrollbar-hide flex min-w-0 overflow-x-auto border border-[var(--line)] p-1"
+            >
               {(["Live", "Loved", "Saved"] as SortMode[]).map((mode) => (
                 <button
                   key={mode}

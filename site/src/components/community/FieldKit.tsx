@@ -346,12 +346,12 @@ export function FieldKit<TChannel extends string>({
                         key={channel}
                         onClick={() => setActiveChannel(channel)}
                         aria-pressed={activeChannel === channel}
-                        className={`min-h-11 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                        className={`min-h-11 rounded-full px-4 py-2 text-xs font-bold transition-colors ${
                           locked
-                            ? "cursor-not-allowed bg-white/30 text-[var(--muted)] opacity-50"
+                            ? "cursor-not-allowed bg-[var(--paper)]/40 text-[var(--muted)] opacity-50"
                             : activeChannel === channel
                             ? "scale-105 bg-[var(--river-deep)] text-white shadow-md"
-                            : "bg-white/50 text-[var(--muted)] hover:bg-white"
+                            : "bg-[var(--paper)]/70 text-[var(--muted)] hover:bg-[var(--paper)]"
                         }`}
                       >
                         {channel}
@@ -370,7 +370,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setTitle(event.target.value)}
                   placeholder={t("community.fieldKit.titlePlaceholder")}
-                  className={`w-full border-b-2 border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
+                  className={`w-full border-b border-[var(--line)] bg-transparent py-2 font-[family:var(--font-display)] outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-xl" : "text-2xl"}`}
                 />
@@ -386,7 +386,7 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder={t("community.fieldKit.notePlaceholder")}
-                  className={`w-full resize-none rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
+                  className={`w-full resize-none rounded-[var(--radius-sm)] border border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-base" : "text-lg"}`}
                 />
@@ -405,7 +405,7 @@ export function FieldKit<TChannel extends string>({
                   {media.map((item, index) => (
                     <div
                       key={`${item.url}-${index}`}
-                      className={`group relative overflow-hidden rounded-[var(--radius-sm)] border border-[var(--line)] bg-white ${
+                      className={`group relative overflow-hidden rounded-[var(--radius-sm)] border border-[var(--line)] bg-[var(--paper)] ${
                         compact ? "aspect-square" : "aspect-square"
                       }`}
                     >
@@ -444,7 +444,7 @@ export function FieldKit<TChannel extends string>({
                   {media.length < FIELD_KIT_MEDIA_LIMIT ? (
                     <>
                       <label
-                        className={`group flex flex-col items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-white/30 transition-colors ${
+                        className={`group flex flex-col items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border border-dashed border-[var(--line)] bg-[var(--paper)]/40 transition-colors ${
                           locked
                             ? "cursor-not-allowed opacity-50"
                             : "cursor-pointer hover:border-[var(--gold)]"
@@ -490,7 +490,7 @@ export function FieldKit<TChannel extends string>({
                   type="button"
                   onClick={handlePublish}
                   disabled={locked || !canPublish || submitting}
-                  className={`w-full bg-[var(--night)] font-bold tracking-widest text-white transition-all active:scale-[0.99] disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
+                  className={`w-full bg-[var(--night)] font-bold tracking-widest text-white transition-colors active:scale-[0.99] disabled:opacity-30 disabled:hover:bg-[var(--night)] ${
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >

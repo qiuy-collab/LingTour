@@ -82,7 +82,6 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
           const removeListeners = cards.map((card) => {
             const moveX = gsap.quickTo(card, "x", { duration: 0.42, ease: "power3.out" });
             const moveY = gsap.quickTo(card, "y", { duration: 0.42, ease: "power3.out" });
-            const rotate = gsap.quickTo(card, "rotation", { duration: 0.5, ease: "power3.out" });
 
             const handleMove = (event: PointerEvent) => {
               const bounds = card.getBoundingClientRect();
@@ -90,7 +89,6 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
               const localY = (event.clientY - bounds.top) / bounds.height - 0.5;
               moveX(localX * 5);
               moveY(localY * 4);
-              rotate(localX * 0.7);
             };
             // See ProductDetailHero: a delayed gsap.set is not cancellable, so
             // re-entering inside the delay left the layer hint removed.
@@ -103,7 +101,6 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
             const handleLeave = () => {
               moveX(0);
               moveY(0);
-              rotate(0);
               willChangeCall?.kill();
               willChangeCall = gsap.delayedCall(0.55, () => gsap.set(card, { willChange: "auto" }));
             };

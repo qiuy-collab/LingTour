@@ -29,7 +29,15 @@ type Props = {
  * a tap toggles muted playback. Playback is user-initiated, so reduced-motion
  * users simply never press play.
  */
-function LiveMediaFrame({ url, title }: { url: string; title: string }) {
+function LiveMediaFrame({
+  url,
+  poster,
+  title,
+}: {
+  url: string;
+  poster?: string;
+  title: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -53,6 +61,7 @@ function LiveMediaFrame({ url, title }: { url: string; title: string }) {
       <video
         ref={videoRef}
         src={url}
+        poster={poster || undefined}
         muted
         loop
         playsInline
@@ -78,6 +87,13 @@ export function PostDetailDialog({
   const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // Read through a ref inside the lifecycle effect so a fresh `onClose`
+  // identity from the parent does not re-subscribe the trap and re-run its
+  // focus restore while the dialog is still open.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -117,12 +133,13 @@ export function PostDetailDialog({
   // re-run the trap and yank focus back to the close button mid-browse.
   useEffect(() => {
     if (!post) return;
+    const postId = post.id;
     const previous = document.body.style.overflow;
     const previouslyFocused =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab" || !containerRef.current) return;
@@ -156,9 +173,27 @@ export function PostDetailDialog({
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", handleKeyDown);
       window.cancelAnimationFrame(focusFrame);
-      previouslyFocused?.focus();
+      // The feed re-renders while the dialog is open — that is exactly what
+      // replaces the opener node — so the restore has to wait for the DOM to
+      // settle. Focusing a card React is about to swap out blurs straight to
+      // <body>, which is the bug this replaces.
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const card = document.querySelector<HTMLElement>(
+            `[data-community-post-link="${postId}"]`,
+          );
+          if (card) {
+            card.focus();
+          } else if (previouslyFocused && document.contains(previouslyFocused)) {
+            previouslyFocused.focus();
+          }
+        });
+      });
     };
-  }, [onClose, post]);
+    // Focus ownership follows the open post alone: a new `onClose` identity or
+    // a media switch must not re-run the restore and yank focus away.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post?.id]);
 
   // Left/right arrow media navigation. It never moves focus, so keyboard
   // browsing stays wherever the reader left it.
@@ -272,7 +307,7 @@ export function PostDetailDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="community-post-title"
-        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-panel sm:max-h-[88vh]"
+        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-panel sm:max-h-[88vh]"
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4 sm:px-8">
           <div>
@@ -288,7 +323,7 @@ export function PostDetailDialog({
             className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] text-xl text-[var(--muted)] transition hover:text-[var(--cinnabar)]"
             aria-label="Close post detail"
           >
-            x
+            ×
           </button>
         </div>
 
@@ -306,13 +341,20 @@ export function PostDetailDialog({
                   {media.map((item, index) => (
                     <div
                       key={`${item.url}-${index}`}
+                      id={`community-media-panel-${index}`}
+                      role="tabpanel"
+                      aria-label={`Media ${index + 1} of ${media.length}`}
                       className={`w-full shrink-0 snap-center pr-1 ${
                         hasText ? "max-h-[28rem]" : "max-h-[34rem]"
                       }`}
                     >
                       <div className="flex h-full items-center justify-center overflow-hidden rounded-[var(--radius-lg)] border-[10px] border-white bg-white scrapbook-shadow">
                         {item.type === "live" ? (
-                          <LiveMediaFrame url={item.url} title={post.title} />
+                          <LiveMediaFrame
+                            url={item.url}
+                            poster={item.poster}
+                            title={post.title}
+                          />
                         ) : (
                           <img
                             src={item.url}
@@ -344,7 +386,9 @@ export function PostDetailDialog({
                           key={`dot-${item.url}-${index}`}
                           type="button"
                           role="tab"
+                          id={`community-media-tab-${index}`}
                           aria-selected={index === activeIndex}
+                          aria-controls={`community-media-panel-${index}`}
                           aria-label={`Go to media ${index + 1}`}
                           onClick={() => scrollToMedia(index)}
                           className={`h-2.5 w-2.5 rounded-full border border-[var(--river-deep)]/45 transition-colors ${
@@ -444,10 +488,10 @@ export function PostDetailDialog({
                   type="button"
                   onClick={handleLike}
                   aria-pressed={liked}
-                  className={`min-h-11 rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors ${
+                  className={`min-h-11 rounded-[var(--radius-lg)] border px-4 py-3 text-left transition-colors ${
                     liked
                       ? "border-[var(--cinnabar)]/45 bg-[var(--cinnabar)]/10"
-                      : "border-[var(--line)] bg-white/70 hover:border-[var(--cinnabar)]/40"
+                      : "border-[var(--line)] bg-[var(--paper)]/70 hover:border-[var(--cinnabar)]/40"
                   } ${isLoggedIn ? "" : "opacity-70"}`}
                 >
                   <span className="flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--muted)]">
@@ -464,10 +508,10 @@ export function PostDetailDialog({
                   type="button"
                   onClick={handleSave}
                   aria-pressed={saved}
-                  className={`min-h-11 rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors ${
+                  className={`min-h-11 rounded-[var(--radius-lg)] border px-4 py-3 text-left transition-colors ${
                     saved
                       ? "border-[var(--gold)]/45 bg-[var(--gold)]/10"
-                      : "border-[var(--line)] bg-white/70 hover:border-[var(--gold)]/40"
+                      : "border-[var(--line)] bg-[var(--paper)]/70 hover:border-[var(--gold)]/40"
                   } ${isLoggedIn ? "" : "opacity-70"}`}
                 >
                   <span className="flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--muted)]">
