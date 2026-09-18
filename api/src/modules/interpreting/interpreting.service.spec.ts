@@ -20,6 +20,7 @@ describe('InterpretingService public profiles', () => {
       {} as any,
       {} as any,
       {} as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.getPublicPageData();
@@ -57,6 +58,7 @@ describe('InterpretingService public profiles', () => {
       ordersService as any,
       notificationsService as any,
       dataSource as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.submitBookingWithDeposit({
@@ -90,6 +92,7 @@ describe('InterpretingService public profiles', () => {
       {
         transaction: jest.fn().mockRejectedValue(new Error('paypal failed')),
       } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -118,6 +121,7 @@ describe('InterpretingService public profiles', () => {
       {} as any,
       {} as any,
       {} as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -150,6 +154,7 @@ describe('InterpretingService booking workflow', () => {
       {} as any,
       {} as any,
       {} as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
     return { service, bookingRepo };
   };
@@ -191,6 +196,7 @@ describe('InterpretingService booking workflow', () => {
       {} as any,
       {} as any,
       {} as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const saved = await service.assignInterpreter('b1', 'i1');

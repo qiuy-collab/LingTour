@@ -21,6 +21,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ShipOrderDto } from './dto/ship-order.dto';
 import { RefundOrderDto } from './dto/refund-order.dto';
+import { ResendOrderEmailDto } from './dto/resend-order-email.dto';
 import { CapturePayPalOrderDto } from './dto/capture-paypal-order.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -150,5 +151,18 @@ export class OrdersController {
     @Body() dto: RefundOrderDto,
   ) {
     return this.ordersService.refundOrder(id, dto.reason);
+  }
+
+  @Roles('admin', 'editor')
+  @Post('admin/orders/:id/resend-email')
+  @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'order')
+  @ApiOperation({ summary: 'Re-send one order notification email (admin)' })
+  async resendOrderEmail(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ResendOrderEmailDto,
+  ) {
+    return this.ordersService.resendOrderEmail(id, dto.eventKey);
   }
 }

@@ -353,6 +353,18 @@ export class CommunityController {
   }
 
   @Roles('admin', 'editor')
+  @Post('admin/community/posts/:id/resend-email')
+  @ApiBearerAuth()
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction('update', 'community_post')
+  @ApiOperation({
+    summary: 'Re-send the review-outcome email for a post (admin)',
+  })
+  async resendReviewEmail(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.communityService.resendReviewEmail(id);
+  }
+
+  @Roles('admin', 'editor')
   @Patch('admin/community/posts/:id/featured')
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -17,6 +18,10 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { BookingSubmission } from '../interpreting/entities/booking-submission.entity';
 import { StoreProduct } from '../shop/entities/store-product.entity';
 import { SettingsService } from '../settings/settings.service';
+import {
+  MailerService,
+  type EmailSendContext,
+} from '../email/mailer.service';
 
 type PayPalOrderResponse = {
   id: string;
@@ -36,8 +41,22 @@ const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   cancelled: [],
 };
 
+/**
+ * The order notification emails that can be sent for an existing order, with
+ * the heading each one opens with. Doubles as the allow-list for the admin
+ * "re-send" action, so an arbitrary event key can never be fired at an order.
+ */
+const ORDER_EMAIL_TITLES: Record<string, string> = {
+  order_created: 'Order received',
+  order_paid: 'Payment received',
+  order_shipped: 'Your order has shipped',
+  order_refunded: 'Refund completed',
+};
+
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     @InjectRepository(Order)
     private readonly orderRepo: Repository<Order>,
@@ -46,6 +65,7 @@ export class OrdersService {
     private readonly configService: ConfigService,
     private readonly notificationsService: NotificationsService,
     private readonly settingsService: SettingsService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private get paypalBaseUrl(): string {
@@ -213,6 +233,10 @@ export class OrdersService {
       resourceId: checkout.saved.id,
       link: `/admin/orders/${checkout.saved.id}`,
     });
+
+    // Traveller-facing acknowledgement. A placeholder address derived from a
+    // phone number is filtered out inside sendOrderEmail rather than bounced.
+    await this.sendOrderEmail(checkout.saved, 'order_created');
 
     return {
       orderId: checkout.saved.id,
@@ -508,43 +532,56 @@ export class OrdersService {
     // Retry mechanism for potential race conditions or lock acquisition failures
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        return await this.orderRepo.manager.transaction(async (manager) => {
-          const order = await manager.findOne(Order, {
-            where: { orderNo },
-            lock: { mode: 'pessimistic_write' },
-          });
+        const result = await this.orderRepo.manager.transaction(
+          async (manager) => {
+            const order = await manager.findOne(Order, {
+              where: { orderNo },
+              lock: { mode: 'pessimistic_write' },
+            });
 
-          if (!order) {
-            throw new NotFoundException(`Order "${orderNo}" not found`);
-          }
+            if (!order) {
+              throw new NotFoundException(`Order "${orderNo}" not found`);
+            }
 
-          if (order.paymentStatus === 'paid') {
+            if (order.paymentStatus === 'paid') {
+              await this.promoteDepositBooking(manager, order);
+              return { order, justPaid: false }; // Idempotent
+            }
+
+            // Late payment: the expiry sweep cancelled this order, but the
+            // customer did complete PayPal after all. Re-activate fulfilment
+            // and try to re-reserve the stock that the sweep released.
+            if (
+              order.status === 'cancelled' &&
+              order.paymentStatus === 'failed'
+            ) {
+              order.status = 'confirmed';
+              await this.reReserveStockAfterLatePayment(manager, order);
+            }
+
+            order.paymentStatus = 'paid';
+            order.paymentId = paymentId;
+            order.paidAt = new Date();
+            order.paymentFailureReason = null;
+            order.stockReserved = false;
+
+            if (order.status === 'pending') {
+              order.status = 'confirmed';
+            }
+
+            const saved = await manager.save(Order, order);
             await this.promoteDepositBooking(manager, order);
-            return order; // Idempotent
-          }
+            return { order: saved, justPaid: true };
+          },
+        );
 
-          // Late payment: the expiry sweep cancelled this order, but the
-          // customer did complete PayPal after all. Re-activate fulfilment
-          // and try to re-reserve the stock that the sweep released.
-          if (order.status === 'cancelled' && order.paymentStatus === 'failed') {
-            order.status = 'confirmed';
-            await this.reReserveStockAfterLatePayment(manager, order);
-          }
-
-          order.paymentStatus = 'paid';
-          order.paymentId = paymentId;
-          order.paidAt = new Date();
-          order.paymentFailureReason = null;
-          order.stockReserved = false;
-
-          if (order.status === 'pending') {
-            order.status = 'confirmed';
-          }
-
-          const saved = await manager.save(Order, order);
-          await this.promoteDepositBooking(manager, order);
-          return saved;
-        });
+        // The receipt is sent after the transaction commits, and only on the
+        // transition *into* "paid" — a replayed capture (or the idempotent
+        // short-circuit above) must never send a second receipt.
+        if (result.justPaid) {
+          await this.sendOrderEmail(result.order, 'order_paid');
+        }
+        return result.order;
       } catch (error) {
         if (error instanceof NotFoundException) throw error;
         if (attempt === 3) throw error;
@@ -653,7 +690,7 @@ export class OrdersService {
   }
 
   async shipOrder(id: string, trackingNo?: string) {
-    return this.orderRepo.manager.transaction(async (manager) => {
+    const shipped = await this.orderRepo.manager.transaction(async (manager) => {
       const order = await manager.findOne(Order, {
         where: { id },
         lock: { mode: 'pessimistic_write' },
@@ -674,6 +711,9 @@ export class OrdersService {
       order.trackingNo = trackingNo ?? null;
       return manager.save(Order, order);
     });
+
+    await this.sendOrderEmail(shipped, 'order_shipped');
+    return shipped;
   }
 
   async refundOrder(id: string, reason?: string) {
@@ -701,14 +741,14 @@ export class OrdersService {
       order.orderNo,
     );
 
-    return this.orderRepo.manager.transaction(async (manager) => {
+    const result = await this.orderRepo.manager.transaction(async (manager) => {
       const locked = await manager.findOne(Order, {
         where: { id },
         lock: { mode: 'pessimistic_write' },
       });
       if (!locked) throw new NotFoundException(`Order ${id} not found`);
       if (locked.paymentStatus === 'refunded') {
-        return locked; // concurrent refund won the race
+        return { order: locked, justRefunded: false }; // concurrent refund won the race
       }
       if (locked.paymentStatus !== 'paid') {
         throw new BadRequestException('Only paid orders can be refunded');
@@ -720,8 +760,13 @@ export class OrdersService {
       if (locked.status === 'confirmed') {
         locked.status = 'cancelled';
       }
-      return manager.save(Order, locked);
+      return { order: await manager.save(Order, locked), justRefunded: true };
     });
+
+    if (result.justRefunded) {
+      await this.sendOrderEmail(result.order, 'order_refunded');
+    }
+    return result.order;
   }
 
   /**
@@ -823,11 +868,93 @@ export class OrdersService {
 
   private deriveGuestEmail(contact: string): string {
     const trimmed = contact.trim();
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    if (this.isDeliverableEmail(trimmed)) {
       return trimmed;
     }
 
     const safe = trimmed.replace(/[^a-zA-Z0-9]/g, '').slice(0, 18) || 'guest';
     return `${safe.toLowerCase()}@culvoy.local`;
+  }
+
+  // ─── Notification email ───────────────────────────────────────────
+
+  /**
+   * `…@culvoy.local` is a placeholder synthesised from a phone number, not a
+   * mailbox — delivering to it would only produce a bounce, so notification
+   * sends skip it.
+   */
+  private isDeliverableEmail(value: string | null | undefined): boolean {
+    if (!value) return false;
+    const trimmed = value.trim().toLowerCase();
+    return (
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) &&
+      !trimmed.endsWith('@culvoy.local')
+    );
+  }
+
+  /**
+   * Variables for one order notification. `trackingNo` is always supplied so
+   * the shipping template never renders an empty placeholder; the other
+   * templates simply ignore it.
+   */
+  private orderEmailVars(order: Order, eventKey: string) {
+    return {
+      title: ORDER_EMAIL_TITLES[eventKey] ?? 'Your Culvoy order',
+      orderNumber: order.orderNo,
+      amount: `${order.currency} ${Number(order.totalAmount).toFixed(2)}`,
+      currency: order.currency,
+      trackingNo: order.trackingNo ?? '',
+      siteName: 'Culvoy',
+    };
+  }
+
+  /**
+   * Sends one order notification and never throws: a mail failure must not
+   * roll back or fail an order operation. Every attempt (including "no
+   * deliverable address") is visible in the admin「发送日志」.
+   */
+  private async sendOrderEmail(
+    order: Order,
+    eventKey: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    const to = order.guestEmail ?? '';
+    if (!this.isDeliverableEmail(to)) {
+      return { ok: false, message: '该订单没有可投递的邮箱地址。' };
+    }
+
+    const context: EmailSendContext = {
+      resourceType: 'order',
+      resourceId: order.id,
+    };
+    try {
+      const sent = await this.mailerService.sendTemplated(
+        eventKey,
+        to,
+        this.orderEmailVars(order, eventKey),
+        'en',
+        context,
+      );
+      return sent
+        ? { ok: true, message: `已发送至 ${to}。` }
+        : { ok: false, message: '发送未成功，请在「发送日志」中查看原因。' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Order email "${eventKey}" for ${order.orderNo} failed: ${message}`,
+      );
+      return { ok: false, message: `发送失败：${message}` };
+    }
+  }
+
+  /** Admin: re-send one notification for an existing order. */
+  async resendOrderEmail(
+    id: string,
+    eventKey: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    const order = await this.findByIdAdmin(id);
+    if (!ORDER_EMAIL_TITLES[eventKey]) {
+      throw new BadRequestException(`Cannot re-send "${eventKey}" for an order`);
+    }
+    return this.sendOrderEmail(order, eventKey);
   }
 }

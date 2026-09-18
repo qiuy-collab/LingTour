@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +14,7 @@ import { BookingSubmission } from './entities/booking-submission.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { OrdersService } from '../orders/orders.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MailerService } from '../email/mailer.service';
 
 /**
  * Booking 状态机（report P1-6）：白名单内的合法「从 → 到」流转。
@@ -33,6 +35,8 @@ export const BOOKING_STATUS_TRANSITIONS: Record<string, string[]> = {
 
 @Injectable()
 export class InterpretingService {
+  private readonly logger = new Logger(InterpretingService.name);
+
   constructor(
     @InjectRepository(ServiceMode)
     private readonly modeRepo: Repository<ServiceMode>,
@@ -45,6 +49,7 @@ export class InterpretingService {
     private readonly ordersService: OrdersService,
     private readonly notificationsService: NotificationsService,
     private readonly dataSource: DataSource,
+    private readonly mailerService: MailerService,
   ) {}
 
   // ── Public: Full page data ──
@@ -520,6 +525,7 @@ export class InterpretingService {
   async assignInterpreter(id: string, interpreterId: string) {
     const booking = await this.findBookingByIdAdmin(id);
     const interpreter = await this.findProfileByIdAdmin(interpreterId);
+    const previousStatus = booking.status;
     booking.assignedInterpreterId = interpreter.id;
     booking.assignedInterpreterName = interpreter.name;
     // Assigning an interpreter means the engagement is settled, so move the
@@ -533,7 +539,15 @@ export class InterpretingService {
     ) {
       booking.status = 'confirmed';
     }
-    return this.bookingRepo.save(booking);
+    const saved = await this.bookingRepo.save(booking);
+
+    // The traveller is told only once the assignment is persisted, and only on
+    // the transition *into* "confirmed" — re-assigning an interpreter to an
+    // already-confirmed booking must not send a second confirmation.
+    if (saved.status === 'confirmed' && previousStatus !== 'confirmed') {
+      await this.sendBookingEmail(saved);
+    }
+    return saved;
   }
 
   private normalizeMode(
@@ -721,5 +735,70 @@ export class InterpretingService {
       resourceId: id,
       link: '/admin/interpreting/bookings',
     });
+  }
+
+  // ─── Notification email ───────────────────────────────────────────
+
+  /**
+   * A booking carries only a free-form `contact`, which is often a phone
+   * number — the confirmation email is therefore sent only when that value is
+   * actually a mailbox, rather than bounced against a phone number.
+   */
+  private static isDeliverableEmail(value: string | null | undefined): boolean {
+    if (!value) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim().toLowerCase());
+  }
+
+  /** Short, human-readable booking reference derived from the row id. */
+  private static bookingReference(booking: BookingSubmission): string {
+    return `BK-${booking.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+  }
+
+  /**
+   * Sends the booking confirmation. Never throws — a mail failure must not
+   * fail an admin assignment — and every attempt lands in the delivery log.
+   */
+  private async sendBookingEmail(
+    booking: BookingSubmission,
+  ): Promise<{ ok: boolean; message: string }> {
+    const to = booking.contact?.trim() ?? '';
+    if (!InterpretingService.isDeliverableEmail(to)) {
+      return { ok: false, message: '该预约的联系方式不是邮箱地址，无法发送邮件。' };
+    }
+
+    const vars = {
+      title: 'Booking confirmed',
+      bookingReference: InterpretingService.bookingReference(booking),
+      serviceName: booking.routeOrNeed?.trim() || booking.supportMode,
+      scheduledAt: booking.serviceDate,
+      siteName: 'Culvoy',
+    };
+
+    try {
+      const sent = await this.mailerService.sendTemplated(
+        'booking_confirmed',
+        to,
+        vars,
+        'en',
+        { resourceType: 'booking', resourceId: booking.id },
+      );
+      return sent
+        ? { ok: true, message: `已发送至 ${to}。` }
+        : { ok: false, message: '发送未成功，请在「发送日志」中查看原因。' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Booking confirmation for ${booking.id} failed: ${message}`,
+      );
+      return { ok: false, message: `发送失败：${message}` };
+    }
+  }
+
+  /** Admin: re-send the confirmation email for an existing booking. */
+  async resendBookingEmail(
+    id: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    const booking = await this.findBookingByIdAdmin(id);
+    return this.sendBookingEmail(booking);
   }
 }

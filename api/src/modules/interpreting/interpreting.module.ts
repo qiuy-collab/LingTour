@@ -10,11 +10,13 @@ import { OrdersModule } from '../orders/orders.module';
 import { TravelerBookingsController } from './traveler-bookings.controller';
 import { TravelerBookingsService } from './traveler-bookings.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     OrdersModule,
     NotificationsModule,
+    EmailModule,
     TypeOrmModule.forFeature([
       ServiceMode,
       InterpreterProfile,

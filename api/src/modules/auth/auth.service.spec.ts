@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { EmailVerificationService } from './email-verification.service';
+import { MailerService } from '../email/mailer.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -19,6 +20,7 @@ describe('AuthService', () => {
     sendCode: jest.Mock;
     consumeCode: jest.Mock;
   };
+  let mailerService: { sendTemplated: jest.Mock };
 
   const mockUser = {
     id: 'uuid-test',
@@ -48,6 +50,8 @@ describe('AuthService', () => {
       consumeCode: jest.fn(),
     };
 
+    mailerService = { sendTemplated: jest.fn().mockResolvedValue(true) };
+
     const configService = {
       get: jest.fn((key: string) => {
         if (key === 'jwt.expiration') return '24h';
@@ -63,6 +67,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
         { provide: EmailVerificationService, useValue: emailVerificationService },
+        { provide: MailerService, useValue: mailerService },
       ],
     }).compile();
 

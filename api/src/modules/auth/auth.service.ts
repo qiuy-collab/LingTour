@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -13,19 +14,46 @@ import { resolveJwtExpiration } from '../../common/auth/jwt-config';
 import { OAuth2Client } from 'google-auth-library';
 import { randomBytes, randomUUID } from 'crypto';
 import { EmailVerificationService } from './email-verification.service';
+import { MailerService } from '../email/mailer.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly emailVerificationService: EmailVerificationService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private formatAccountId(userId: string): string {
     const compact = userId.replace(/-/g, '').slice(0, 8).toUpperCase();
     return `LT-${compact}`;
+  }
+
+  /**
+   * Greets a brand-new account. Only the two account-creation paths call it —
+   * signing in with a verification code or with Google does not create an
+   * account, so those never reach here. Delivery problems are logged, never
+   * surfaced: a mail outage must not fail a registration.
+   */
+  private async sendWelcomeEmail(
+    email: string,
+    displayName: string,
+  ): Promise<void> {
+    try {
+      await this.mailerService.sendTemplated('welcome', email, {
+        title: 'Welcome to Culvoy',
+        name: displayName,
+        siteName: 'Culvoy',
+      });
+    } catch (error) {
+      this.logger.error(
+        `Welcome email for ${email} failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   private buildAuthResponse(user: {
@@ -106,6 +134,7 @@ export class AuthService {
         memberSince: new Date().toISOString().slice(0, 10),
       },
     );
+    await this.sendWelcomeEmail(user.email, user.name?.trim() || name);
     return this.buildAuthResponse(user);
   }
 
@@ -142,16 +171,18 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(`email-code:${verified.email}:${randomUUID()}`, 12);
+    const displayName = name?.trim() || verified.email.split('@')[0];
     const user = await this.usersService.create(
       verified.email,
       passwordHash,
       'traveler',
-      name?.trim() || verified.email.split('@')[0],
+      displayName,
       {
         provider: 'email_code',
         memberSince: new Date().toISOString().slice(0, 10),
       },
     );
+    await this.sendWelcomeEmail(user.email, user.name?.trim() || displayName);
     return this.buildAuthResponse(user);
   }
 

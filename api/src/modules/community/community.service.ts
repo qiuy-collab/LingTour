@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { clampPagination } from '../../common/pagination';
@@ -12,9 +12,12 @@ import { CommunityPostSave } from './entities/community-post-save.entity';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
 import { UpsertCommunityBriefDto } from './dto/upsert-community-brief.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MailerService } from '../email/mailer.service';
 
 @Injectable()
 export class CommunityService {
+  private readonly logger = new Logger(CommunityService.name);
+
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(CommunityPost)
@@ -26,6 +29,7 @@ export class CommunityService {
     @InjectRepository(CommunityPostSave)
     private readonly saveRepo: Repository<CommunityPostSave>,
     private readonly notificationsService: NotificationsService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async getPublicPosts(query: {
@@ -177,6 +181,7 @@ export class CommunityService {
     reviewer?: { userId?: string; reason?: string },
   ) {
     const post = await this.getAdminById(id);
+    const previousStatus = post.status;
     post.status = status;
     post.reviewedAt = new Date();
     if (reviewer?.userId) {
@@ -185,7 +190,73 @@ export class CommunityService {
     if (reviewer?.reason !== undefined) {
       post.rejectionReason = reviewer.reason || null;
     }
-    return this.postRepo.save(post);
+    const saved = await this.postRepo.save(post);
+
+    // The author is told once, when the decision itself changes — saving the
+    // same status again (or editing an unrelated field) must not email them a
+    // second time.
+    if (
+      saved.status !== previousStatus &&
+      (saved.status === 'published' || saved.status === 'hidden')
+    ) {
+      await this.sendReviewEmail(saved);
+    }
+    return saved;
+  }
+
+  // ─── Notification email ───────────────────────────────────────────
+
+  /**
+   * Tells the author whether their note went live. A submission may carry no
+   * mailbox at all, so a missing address is reported instead of bounced.
+   * Never throws: a mail problem must not fail an admin review action.
+   */
+  private async sendReviewEmail(
+    post: CommunityPost,
+  ): Promise<{ ok: boolean; message: string }> {
+    const to = (post.userEmail ?? '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.toLowerCase())) {
+      return { ok: false, message: '该帖子没有可投递的邮箱地址。' };
+    }
+
+    const approved = post.status === 'published';
+    try {
+      const sent = await this.mailerService.sendTemplated(
+        'community_post_reviewed',
+        to,
+        {
+          title: approved
+            ? 'Your community post is live'
+            : 'Your community post needs another look',
+          postTitle: post.title,
+          result: approved ? 'Approved' : 'Not approved',
+          reason: approved
+            ? 'No further action is needed — your note is now visible on the community page.'
+            : post.rejectionReason?.trim() ||
+              'The review team sent it back. Please revise the post and submit it again.',
+          siteName: 'Culvoy',
+        },
+        'en',
+        { resourceType: 'community_post', resourceId: post.id },
+      );
+      return sent
+        ? { ok: true, message: `已通知 ${to}。` }
+        : { ok: false, message: '发送未成功，请在「发送日志」中查看原因。' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Community review email for post ${post.id} failed: ${message}`,
+      );
+      return { ok: false, message: `发送失败：${message}` };
+    }
+  }
+
+  /** Admin: re-send the review-outcome email for a post. */
+  async resendReviewEmail(
+    id: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    const post = await this.getAdminById(id);
+    return this.sendReviewEmail(post);
   }
 
   async toggleFeatured(id: string, featured: boolean) {

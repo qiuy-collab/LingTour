@@ -344,4 +344,14 @@ export class InterpretingController {
   ) {
     return this.interpretingService.assignInterpreter(id, interpreterId);
   }
+
+  @Roles('admin', 'editor')
+  @Post('admin/bookings/:id/resend-email')
+  @ApiBearerAuth()
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'booking')
+  @ApiOperation({ summary: 'Re-send the booking confirmation email (admin)' })
+  async resendBookingEmail(@Param('id', ParseUUIDPipe) id: string) {
+    return this.interpretingService.resendBookingEmail(id);
+  }
 }

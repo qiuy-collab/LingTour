@@ -62,6 +62,7 @@ describe('OrdersService shop checkout', () => {
       paypalConfig as any,
       notifications as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
     jest
       .spyOn(service as any, 'createPayPalOrder')
@@ -136,6 +137,7 @@ describe('OrdersService shop checkout', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -167,6 +169,7 @@ describe('OrdersService shop checkout', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       { notifyStaff: jest.fn() } as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -212,6 +215,7 @@ describe('OrdersService stock reservations', () => {
       { get: jest.fn() } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await service.markPaymentFailed(order.orderNo, 'declined');
@@ -253,6 +257,7 @@ describe('OrdersService public status', () => {
       { get: jest.fn() } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.findPublicStatus(order.orderNo, token);
@@ -285,6 +290,7 @@ describe('OrdersService public status', () => {
       { get: jest.fn() } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -301,6 +307,7 @@ describe('OrdersService interpreting deposits', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(
@@ -330,6 +337,7 @@ describe('OrdersService interpreting deposits', () => {
       paypalConfig as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
     jest
       .spyOn(service as any, 'createPayPalOrder')
@@ -409,6 +417,7 @@ describe('OrdersService PayPal capture', () => {
       paypalConfig as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
     jest
       .spyOn(global, 'fetch')
@@ -457,6 +466,7 @@ describe('OrdersService PayPal capture', () => {
       paypalConfig as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
     jest
       .spyOn(global, 'fetch')
@@ -501,6 +511,7 @@ describe('OrdersService payment completion', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.markPaymentFailed('LT123', 'late failure');
@@ -531,6 +542,7 @@ describe('OrdersService payment completion', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.markPaid('LT123', 'cap_123');
@@ -570,6 +582,7 @@ describe('OrdersService payment completion', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     const result = await service.markPaid('LT123', 'cap_123');
@@ -595,6 +608,7 @@ describe('OrdersService payment completion', () => {
       { get: jest.fn().mockReturnValue(undefined) } as any,
       {} as any,
       { getAdminSettings: jest.fn().mockResolvedValue({ payload: {} }) } as any,
+      { sendTemplated: jest.fn().mockResolvedValue(true) } as any,
     );
 
     await expect(service.markPaid('LT123', 'cap_123')).rejects.toBeInstanceOf(
@@ -605,5 +619,81 @@ describe('OrdersService payment completion', () => {
       BookingSubmission,
       expect.anything(),
     );
+  });
+});
+
+describe('OrdersService order notifications', () => {
+  const buildService = (patch: Record<string, unknown> = {}) => {
+    const order = {
+      id: 'order-id',
+      orderNo: 'LTABC123',
+      guestEmail: 'traveller@example.com',
+      currency: 'SGD',
+      totalAmount: 100,
+      status: 'pending',
+      paymentStatus: 'unpaid',
+      trackingNo: null,
+      orderType: 'shop',
+      ...patch,
+    };
+    const manager = {
+      findOne: jest.fn().mockResolvedValue(order),
+      save: jest.fn(async (_entity: unknown, value: unknown) => value),
+    };
+    const orderRepo = {
+      manager: { transaction: jest.fn((work) => work(manager)) },
+      findOne: jest.fn().mockResolvedValue(order),
+    };
+    const mailer = { sendTemplated: jest.fn().mockResolvedValue(true) };
+    const service = new OrdersService(
+      orderRepo as any,
+      {} as any,
+      {} as any,
+      { notifyStaff: jest.fn() } as any,
+      { getAdminSettings: jest.fn() } as any,
+      mailer as any,
+    );
+    return { service, mailer, order };
+  };
+
+  it('sends the receipt once, on the transition into paid', async () => {
+    const { service, mailer } = buildService();
+
+    await service.markPaid('LTABC123', 'capture-1');
+
+    expect(mailer.sendTemplated).toHaveBeenCalledTimes(1);
+    expect(mailer.sendTemplated).toHaveBeenCalledWith(
+      'order_paid',
+      'traveller@example.com',
+      expect.objectContaining({ orderNumber: 'LTABC123' }),
+      'en',
+      { resourceType: 'order', resourceId: 'order-id' },
+    );
+  });
+
+  it('does not re-send the receipt when the capture is replayed', async () => {
+    const { service, mailer } = buildService({ paymentStatus: 'paid' });
+
+    await service.markPaid('LTABC123', 'capture-1');
+
+    expect(mailer.sendTemplated).not.toHaveBeenCalled();
+  });
+
+  it('skips a phone-derived placeholder address instead of bouncing to it', async () => {
+    const { service, mailer } = buildService({
+      guestEmail: '13800138000@culvoy.local',
+    });
+
+    await service.markPaid('LTABC123', 'capture-1');
+
+    expect(mailer.sendTemplated).not.toHaveBeenCalled();
+  });
+
+  it('refuses to re-send an event the order flow never emits', async () => {
+    const { service } = buildService();
+
+    await expect(
+      service.resendOrderEmail('order-id', 'welcome'),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

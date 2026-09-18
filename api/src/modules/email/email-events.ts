@@ -9,10 +9,10 @@
  *
  * Status:
  * - 'active'  — a real send site already renders this event.
- * - 'planned' — the business scenario exists (orders, bookings, refunds) but
- *               no send site calls it yet. Templates stay editable so the
- *               copy is ready before the send site lands; the admin UI marks
- *               these honestly as 未接入 instead of pretending they fire.
+ * - 'planned' — the business scenario exists but no send site calls it yet.
+ *               Templates stay editable so the copy is ready before the send
+ *               site lands; the admin UI marks these honestly as 未接入
+ *               instead of pretending they fire.
  */
 
 export interface EmailEventVariable {
@@ -119,6 +119,25 @@ const BOOKING_VARIABLES: EmailEventVariable[] = [
   { key: 'siteName', label: '站点名称', example: 'Culvoy' },
 ];
 
+const ORDER_SHIPPED_VARIABLES: EmailEventVariable[] = [
+  ...ORDER_VARIABLES,
+  { key: 'trackingNo', label: '物流单号', example: 'SF1234567890' },
+];
+
+const WELCOME_VARIABLES: EmailEventVariable[] = [
+  { key: 'title', label: '标题', example: 'Welcome to Culvoy' },
+  { key: 'name', label: '称呼', example: 'Ravi' },
+  { key: 'siteName', label: '站点名称', example: 'Culvoy' },
+];
+
+const COMMUNITY_REVIEW_VARIABLES: EmailEventVariable[] = [
+  { key: 'title', label: '标题', example: 'Your community post is live' },
+  { key: 'postTitle', label: '帖子标题', example: 'Morning light at Shamian Island' },
+  { key: 'result', label: '审核结果（Approved / Not approved）', example: 'Approved' },
+  { key: 'reason', label: '审核说明', example: 'No further action is needed.' },
+  { key: 'siteName', label: '站点名称', example: 'Culvoy' },
+];
+
 export const EMAIL_EVENTS: EmailEventDefinition[] = [
   {
     key: 'signup_verification',
@@ -176,8 +195,8 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
   {
     key: 'order_created',
     label: '订单创建通知',
-    description: '旅行者提交商城订单后发送的确认邮件。发送链路尚未接入，模板先行可编辑。',
-    status: 'planned',
+    description: '旅行者提交商城订单后发送的确认邮件。',
+    status: 'active',
     variables: ORDER_VARIABLES,
     defaultSubject: 'Your Culvoy order {{orderNumber}}',
     defaultBodyHtml: shell(
@@ -191,8 +210,8 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
   {
     key: 'order_paid',
     label: '支付成功通知',
-    description: '订单支付成功后发送的收据邮件。发送链路尚未接入，模板先行可编辑。',
-    status: 'planned',
+    description: '订单支付成功后发送的收据邮件。',
+    status: 'active',
     variables: ORDER_VARIABLES,
     defaultSubject: 'Payment received — order {{orderNumber}}',
     defaultBodyHtml: shell(
@@ -206,8 +225,8 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
   {
     key: 'order_refunded',
     label: '退款完成通知',
-    description: '售后退款完成后发送的通知邮件。发送链路尚未接入，模板先行可编辑。',
-    status: 'planned',
+    description: '售后退款完成后发送的通知邮件。',
+    status: 'active',
     variables: ORDER_VARIABLES,
     defaultSubject: 'Refund completed — order {{orderNumber}}',
     defaultBodyHtml: shell(
@@ -219,10 +238,24 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
     ),
   },
   {
+    key: 'order_shipped',
+    label: '订单发货通知',
+    description: '商城订单发货后发送的物流通知邮件。',
+    status: 'active',
+    variables: ORDER_SHIPPED_VARIABLES,
+    defaultSubject: 'Your Culvoy order {{orderNumber}} has shipped',
+    defaultBodyHtml: shell(
+      noticeBody('Your order is on its way. Keep the tracking number below to follow the parcel.', [
+        ['Order', '{{orderNumber}}'],
+        ['Tracking number', '{{trackingNo}}'],
+      ]),
+    ),
+  },
+  {
     key: 'booking_confirmed',
     label: '预约确认通知',
-    description: '口译服务预约确认后发送的通知邮件。发送链路尚未接入，模板先行可编辑。',
-    status: 'planned',
+    description: '口译服务预约确认后发送的通知邮件。',
+    status: 'active',
     variables: BOOKING_VARIABLES,
     defaultSubject: 'Booking confirmed — {{serviceName}}',
     defaultBodyHtml: shell(
@@ -230,6 +263,33 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
         ['Booking', '{{bookingReference}}'],
         ['Service', '{{serviceName}}'],
         ['When', '{{scheduledAt}}'],
+      ]),
+    ),
+  },
+  {
+    key: 'welcome',
+    label: '欢迎邮件',
+    description: '旅行者首次注册成功时发送的欢迎邮件。',
+    status: 'active',
+    variables: WELCOME_VARIABLES,
+    defaultSubject: 'Welcome to {{siteName}}, {{name}}',
+    defaultBodyHtml: shell(
+      `  <h1 style="font-size: 20px; margin: 0 0 16px;">{{title}}</h1>\n` +
+        `  <p style="margin: 0 0 16px; line-height: 1.6;">Hi {{name}}, your {{siteName}} account is ready. From here you can follow story routes, book interpreting, and share field notes with other travellers.</p>\n` +
+        `  <p style="margin: 0 0 8px; line-height: 1.6; color: ${BRAND_STYLES.muted};">If you have any questions, just reply to this email.</p>`,
+    ),
+  },
+  {
+    key: 'community_post_reviewed',
+    label: '社区帖子审核结果',
+    description: '管理员审核社区帖子后，向发帖人发送的通过 / 驳回通知。',
+    status: 'active',
+    variables: COMMUNITY_REVIEW_VARIABLES,
+    defaultSubject: '{{title}}',
+    defaultBodyHtml: shell(
+      noticeBody('{{reason}}', [
+        ['Post', '{{postTitle}}'],
+        ['Result', '{{result}}'],
       ]),
     ),
   },

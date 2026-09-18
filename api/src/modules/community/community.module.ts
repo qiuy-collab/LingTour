@@ -8,6 +8,7 @@ import { CommunityPostLike } from './entities/community-post-like.entity';
 import { CommunityPostSave } from './entities/community-post-save.entity';
 import { UploadModule } from '../upload/upload.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ]),
     UploadModule,
     NotificationsModule,
+    EmailModule,
   ],
   controllers: [CommunityController],
   providers: [CommunityService],
