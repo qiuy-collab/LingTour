@@ -4,12 +4,12 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `003071e` (2026-09-18, community module overhaul; deployed directly via `tools/deploy-docker.sh` on the server, see §42). Previous deployed commits: `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
+- Production deployed application commit: `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44). Previous deployed commits: `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 33 applied migrations; all reported `[X]`, including `AddCommunityPostMedia1762600000000` (added by the 2026-09-18 community deployment, §42).
+- Production has 34 applied migrations; all reported `[X]`, including `AddEmailSettingsAndTemplates1762700000000` (added by the 2026-09-18 email deployment, §44) and `AddCommunityPostMedia1762600000000` (added by the 2026-09-18 community deployment, §42).
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
@@ -61,7 +61,7 @@ The paired root/admin files have matching blobs. Before cleanup the complete tra
 
 ## 3. Protected uncommitted work
 
-The email-settings WIP (§41) is the only uncommitted source change in either repository (root: `api/src/modules/email/`, `app.module.ts`, `auth.module.ts`, `email-verification.service.ts`, migration `1762700000000`; both trees: `AdminLayout.vue`, `router/index.ts`, `email*` admin files) and must not be mixed into unrelated commits. The remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
+No uncommitted source changes remain in either repository (the email-settings work was committed and deployed 2026-09-18, see §41/§44). The remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
 
 ### 2026-09-16 English-only content rollout
 
@@ -647,7 +647,7 @@ Kept by decision: the `heroStats`/`testimonials`/`entryCards` API fields and adm
 
 Verification: site `tsc` clean, lint 0 errors, 103 tests, build OK, `git diff --check` clean. Pre-deploy database backup `/root/backups/lingtour-db-pre-homeclean-20260918.dump` (132,037 bytes, `pg_restore` readable); read-only `migration:show` confirmed all 32 migrations applied — this deploy ran 0 migrations. Production smoke: home 200 with `home-signal-strip`/`home-entry-track`/testimonial copy absent and Events heading+arrows present; culture/routes/shop/interpreting/community/login/admin 200; API health `database: up`; same-origin `/api/v1/auth/me` 401 baseline intact. (`culvoy.com/admin/` and `culvoy.com/api/health` are not site routes — the admin lives at `admin.culvoy.com`, API health at `api.culvoy.com/health`.)
 
-## 41. 2026-09-18 admin email-settings module (uncommitted WIP, verified)
+## 41. 2026-09-18 admin email-settings module (committed and deployed, see §44)
 
 New feature built on top of the working tree (still uncommitted WIP; the community overhaul below has since been committed and deployed on 2026-09-18): an admin "邮箱设置" module with SMTP settings and email templates.
 
@@ -683,3 +683,12 @@ The owner reported that a locally created post's image did not show in the admin
 - Docs updated to codify the decision: `AGENT.md` §8 (local development via `docker compose up -d` only, rebuild-after-change note, `--build` bakes uncommitted working-tree files) and `development.md` §1 启动 (the "fall back to npm dev" escape hatch removed; host dev servers documented as port-collision hazard; admin origin sources come from compose, `.env.local` affects only manual Vite runs).
 - The email WIP files (§41) were untouched and remain uncommitted; the running api container was started from the pre-existing image, so no WIP code entered the runtime.
 - Collision precedent (same day, ~15:25 local): ~15 minutes after the stack was brought up, another executor (timing signature points to the still-active email-work session, which previously stopped containers to free ports) stopped all three containers (site SIGTERM, api/admin SIGKILL) and programmatically relaunched host services within 17 seconds in dependency order (`node dist/main` API, Vite admin, Next site). The owner was asked and ruled **"restore Docker immediately"**, explicitly accepting that this interrupts that session. The node processes were killed and the stack was brought back up — all three containers `healthy` (this time including site, whose healthcheck false alarm did not reproduce), all tiers 200. Any later session must honor the Docker-only rule from AGENT.md §8 and must not stop the compose stack or start host dev servers on ports 3000/5173/8000.
+
+## 44. 2026-09-18 email-settings module committed and deployed (root `b9db5ea`, admin `c90838b`)
+
+Owner authorized "分类提交上线". Pre-verification all green: api `tsc` 0 errors, 139 tests (25 email), `npm run build`; admin `npm run build`; `git diff --check` clean in both repositories; admin/root mirror files byte-identical (6 email files, blob-compared).
+
+- Commits: admin `c90838b` `feat(admin): email settings with SMTP config and event templates` (6 files, +1266); root `b9db5ea` `feat(api): email settings module and template-driven verification mail` (21 files, +2945/-28: `api/src/modules/email/` controller/service/dto/entities/events/mailer + specs, migration `1762700000000`, `app.module`/`auth.module`/`email-verification.service` wiring, and the admin mirror). Both pushed (`ca4de88..c90838b`, `d25b934..b9db5ea`); long-standing policy untracked files (`.local-backups/`, `seed-local-preview.ts`, `review/`, `lingtour-frontend-documentation/`, reference png) left alone.
+- Pre-deploy database backup: `/root/backups/lingtour-db-pre-email-20260918.dump` (132,341 bytes, `pg_restore -l` verified; host-level `pg_dump -Fc`, DB `lingtour` reached via 127.0.0.1). Read-only migration check: 33 applied, latest `AddCommunityPostMedia1762600000000`, `1762700000000` pending — the deploy was expected to run exactly that one migration.
+- Deploy run `35321449463` succeeded. Server root HEAD `b9db5ea`; all five containers healthy; `typeorm_migrations` now **34** with `AddEmailSettingsAndTemplates1762700000000` applied; tables `email_smtp_settings`/`email_templates` exist and hold 0 rows.
+- Production smoke (no production writes): api `/health` ok / database up; unauthenticated `GET /api/v1/admin/email-settings/smtp` 401; `POST /api/v1/auth/email-code/send` with an invalid email 400 (new route + DTO chain live, nothing sent); `admin.culvoy.com` 200, `culvoy.com` 200. Real verification-code sending on production rides the existing SMTP env vars (MailerService env fallback, no DB rows yet); a live send with a real mailbox was not exercised and is left to operations.
