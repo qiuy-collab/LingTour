@@ -20,7 +20,7 @@ export function BriefCard({ brief, onSelect, index }: BriefCardProps) {
     >
       <div className="flex items-start justify-between border-b border-[var(--line)]/50 pb-4 mb-4">
         <div>
-          <p className="font-mono text-[12px] uppercase tracking-widest text-[var(--gold)]">
+          <p className="font-mono text-[12px] uppercase tracking-widest text-[var(--cinnabar)]">
             Active Brief
           </p>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] mt-2">

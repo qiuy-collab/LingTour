@@ -143,6 +143,9 @@ export default function CommunityPage() {
   const [selectedPost, setSelectedPost] = useState<CommunityFeedPost | null>(
     null,
   );
+  // A deep link (/community?post=<id>) arrives before the feed does, so the id
+  // is remembered here and resolved once the post is available.
+  const [pendingPostId, setPendingPostId] = useState<string | null>(null);
 
   const {
     data: remotePosts,
@@ -202,6 +205,11 @@ export default function CommunityPage() {
     const title = searchParams.get("title");
     const channel = searchParams.get("channel") as PostChannel | null;
     const compose = searchParams.get("compose");
+    const postId = searchParams.get("post");
+
+    if (postId) {
+      setPendingPostId(postId);
+    }
 
     if (!route && !location && !note && !title && !channel && compose !== "1")
       return;
@@ -241,6 +249,17 @@ export default function CommunityPage() {
       ...engagementOverrides[post.id],
     }));
   }, [basePosts, engagementOverrides]);
+
+  // Resolve a deep-linked post once the feed (or the local optimistic posts)
+// actually carries it.
+  useEffect(() => {
+    if (!pendingPostId) return;
+    const target = allPosts.find((post) => post.id === pendingPostId);
+    if (target) {
+      setSelectedPost(target);
+      setPendingPostId(null);
+    }
+  }, [pendingPostId, allPosts]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -434,13 +453,14 @@ export default function CommunityPage() {
       media: kitDraft.media,
     }));
 
+    // The kit is a modal with its own inline error region, so throwing is
+    // enough: also setting a page toast would announce the same failure twice,
+    // the second time behind the modal.
     if (!isLoggedIn) {
-      setToast(AUTH_PROMPTS.connectGoogleToPublish);
       throw new Error(AUTH_PROMPTS.connectGoogleToPublish);
     }
 
     if (!title && !note && !kitDraft.media?.length) {
-      setToast(t("community.error.addContent"));
       throw new Error(t("community.error.addContent"));
     }
 
@@ -485,7 +505,6 @@ export default function CommunityPage() {
         publishError instanceof Error
           ? publishError.message
           : t("community.error.submitFailed");
-      setToast(message);
       throw publishError instanceof Error ? publishError : new Error(message);
     }
   };
@@ -555,7 +574,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section data-community-toolbar className="sticky top-[4.5rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
+      <section data-community-toolbar className="sticky top-[4.5rem] z-30 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
         <div className="site-container grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div className="scroll-fade-x scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             {channels.map((channel) => (
@@ -751,7 +770,14 @@ export default function CommunityPage() {
 
       <PostDetailDialog
         post={selectedPost}
-        onClose={() => setSelectedPost(null)}
+        onClose={() => {
+          setSelectedPost(null);
+          // Drop the ?post= deep-link parameter when the reader closes the
+          // note, so back/refresh lands on the feed rather than reopening it.
+          if (typeof window !== "undefined") {
+            window.history.replaceState({}, "", "/community");
+          }
+        }}
         isLoggedIn={isLoggedIn}
         onRequireLogin={() => setToast(AUTH_PROMPTS.connectGoogleToInteract)}
         onEngagementChange={updatePostEngagement}
@@ -770,7 +796,11 @@ export default function CommunityPage() {
           the shrink-to-fit rule caps its width at 50vw regardless of the
           message, so a one-line prompt wrapped to four lines at 320px. */}
       {toast ? (
-        <div className="fixed bottom-5 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-panel sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:justify-start sm:rounded-full">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-4 right-4 z-[70] flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-panel sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:justify-start sm:rounded-full"
+        >
           <span>{toast}</span>
           <button
             type="button"

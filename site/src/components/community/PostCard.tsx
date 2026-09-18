@@ -117,7 +117,19 @@ export function PostCard({
         animationDelay: `${index * 60}ms`,
       }}
     >
-      <button type="button" onClick={() => onOpen?.(post)} className="block w-full text-left">
+      <a
+        href={`/community?post=${post.id}`}
+        onClick={(event) => {
+          event.preventDefault();
+          onOpen?.(post);
+          // Keep the URL shareable without a navigation round-trip; a cold
+          // load of this URL resolves the id into the open dialog.
+          if (typeof window !== "undefined") {
+            window.history.replaceState({}, "", `/community?post=${post.id}`);
+          }
+        }}
+        className="block w-full text-left"
+      >
         {hasImage && cover ? (
           <div
             className={`relative overflow-hidden ${
@@ -240,11 +252,11 @@ export function PostCard({
               <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">#{post.route}</span>
             ) : null}
             {post.location ? (
-              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">@{post.location}</span>
+              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">@{post.location}</span>
             ) : null}
           </div>
         </div>
-      </button>
+      </a>
 
       <div className="flex items-center justify-between border-t border-black/5 px-5 py-2 text-[var(--river-deep)]">
         <button

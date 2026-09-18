@@ -236,7 +236,7 @@ export function FieldKit<TChannel extends string>({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-center overflow-y-auto overscroll-contain p-3 sm:p-6">
+    <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto overscroll-contain p-3 sm:p-6">
       <button
         type="button"
         aria-label="Close field note kit"

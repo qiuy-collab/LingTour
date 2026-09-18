@@ -112,6 +112,9 @@ export function PostDetailDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post]);
 
+  // Dialog lifecycle: scroll lock, Escape, the focus trap and the initial
+  // focus. Deliberately independent of activeIndex — switching media must not
+  // re-run the trap and yank focus back to the close button mid-browse.
   useEffect(() => {
     if (!post) return;
     const previous = document.body.style.overflow;
@@ -120,19 +123,6 @@ export function PostDetailDialog({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
-        return;
-      }
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        if (mediaCount > 1) {
-          event.preventDefault();
-          const delta = event.key === "ArrowRight" ? 1 : -1;
-          const next = Math.min(
-            Math.max(activeIndex + delta, 0),
-            mediaCount - 1,
-          );
-          setActiveIndex(next);
-          scrollTrackTo(next);
-        }
         return;
       }
       if (event.key !== "Tab" || !containerRef.current) return;
@@ -168,7 +158,27 @@ export function PostDetailDialog({
       window.cancelAnimationFrame(focusFrame);
       previouslyFocused?.focus();
     };
-  }, [onClose, post, activeIndex, mediaCount]);
+  }, [onClose, post]);
+
+  // Left/right arrow media navigation. It never moves focus, so keyboard
+  // browsing stays wherever the reader left it.
+  useEffect(() => {
+    if (!post || mediaCount <= 1) return;
+    const handleArrowKeys = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const delta = event.key === "ArrowRight" ? 1 : -1;
+      setActiveIndex((current) => {
+        const next = Math.min(Math.max(current + delta, 0), mediaCount - 1);
+        scrollTrackTo(next);
+        return next;
+      });
+    };
+    window.addEventListener("keydown", handleArrowKeys);
+    return () => window.removeEventListener("keydown", handleArrowKeys);
+    // scrollTrackTo is stable for the lifetime of the component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post, mediaCount]);
 
   const metaLine = useMemo(() => {
     if (!post) return "";
@@ -250,7 +260,7 @@ export function PostDetailDialog({
   const hasText = Boolean(post.excerpt.trim());
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6">
+    <div ref={containerRef} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
       <button
         type="button"
         aria-label="Close post detail"
@@ -360,7 +370,7 @@ export function PostDetailDialog({
             ) : null}
 
             <div className={hasMedia ? "mt-6" : ""}>
-              <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--gold)]">
+              <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                 {hasMedia && hasText
                   ? t("community.post.illustratedNote")
                   : hasMedia
@@ -421,7 +431,7 @@ export function PostDetailDialog({
               </div>
 
               <div className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--paper)] p-4">
-                <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-[var(--gold)]">
+                <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                   Prompt trail
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]/82">
