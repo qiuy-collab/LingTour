@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { EmailLog } from './entities/email-log.entity';
 import { EmailSmtpSettings } from './entities/email-smtp-settings.entity';
 import { EmailTemplate } from './entities/email-template.entity';
 import { EmailAdminService } from './email-admin.service';
@@ -54,6 +55,14 @@ describe('EmailAdminService', () => {
           useValue: smtpRepo,
         },
         { provide: getRepositoryToken(EmailTemplate), useValue: templateRepo },
+        {
+          provide: getRepositoryToken(EmailLog),
+          useValue: {
+            findOne: jest.fn(),
+            findAndCount: jest.fn(),
+            createQueryBuilder: jest.fn(),
+          },
+        },
         { provide: MailerService, useValue: mailer },
       ],
     }).compile();
@@ -285,17 +294,27 @@ describe('EmailAdminService', () => {
       );
     });
 
-    it('marks planned events honestly in the event list', async () => {
+    it('reports each event with the status the code owns', async () => {
       const { events } = await service.listTemplateEvents();
       const active = events.filter((e) => e.status === 'active');
       const planned = events.filter((e) => e.status === 'planned');
+      // Every registered event now has a real send site — orders, bookings,
+      // welcome and community review included. 'planned' stays in the contract
+      // for the next event that lands before its send site does.
       expect(active.map((e) => e.key)).toEqual([
         'signup_verification',
         'login_verification',
         'email_change_verification',
         'password_reset',
+        'order_created',
+        'order_paid',
+        'order_refunded',
+        'order_shipped',
+        'booking_confirmed',
+        'welcome',
+        'community_post_reviewed',
       ]);
-      expect(planned.length).toBeGreaterThan(0);
+      expect(planned).toEqual([]);
     });
   });
 });

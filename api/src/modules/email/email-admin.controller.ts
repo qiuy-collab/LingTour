@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Put, Post, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Post,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import {
@@ -95,5 +104,49 @@ export class EmailAdminController {
     @Body() dto: SendEventTestEmailDto,
   ) {
     return this.emailAdminService.sendEventTestEmail(eventKey, dto);
+  }
+
+  @Get('logs')
+  @ApiOperation({
+    summary: 'List outbound email deliveries (what travellers actually received)',
+  })
+  async listLogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('eventKey') eventKey?: string,
+    @Query('recipient') recipient?: string,
+  ) {
+    return this.emailAdminService.listLogs({
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      status:
+        status === 'sent' || status === 'failed' || status === 'skipped'
+          ? status
+          : undefined,
+      eventKey: eventKey || undefined,
+      recipient: recipient || undefined,
+    });
+  }
+
+  // Declared before 'logs/:id' so the literal segment wins the route match.
+  @Get('logs/stats')
+  @ApiOperation({ summary: 'Delivery totals grouped by outcome' })
+  async getLogStats() {
+    return this.emailAdminService.getLogStats();
+  }
+
+  @Get('logs/:id')
+  @ApiOperation({ summary: 'Read one delivery record including the rendered body' })
+  async getLog(@Param('id') id: string) {
+    return this.emailAdminService.getLog(id);
+  }
+
+  @Post('logs/:id/resend')
+  @UseInterceptors(AuditInterceptor)
+  @AuditAction('update', 'email-log-resend')
+  @ApiOperation({ summary: 'Re-send a failed or skipped delivery from its stored payload' })
+  async resendLog(@Param('id') id: string) {
+    return this.emailAdminService.resendLog(id);
   }
 }

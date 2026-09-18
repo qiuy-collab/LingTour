@@ -4,7 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import { EmailLog } from './entities/email-log.entity';
 import { EmailSmtpSettings } from './entities/email-smtp-settings.entity';
 import { EmailTemplate } from './entities/email-template.entity';
 import {
@@ -68,6 +69,22 @@ export interface TemplatePreviewView {
   storedDisabled: boolean;
 }
 
+/** One delivery-log row as shown in the admin「发送日志」list. */
+export interface EmailLogView {
+  id: string;
+  eventKey: string;
+  eventLabel: string;
+  recipient: string;
+  subject: string;
+  status: 'sent' | 'failed' | 'skipped';
+  error: string | null;
+  attempts: number;
+  resourceType: string | null;
+  resourceId: string | null;
+  lastAttemptAt: string;
+  createdAt: string;
+}
+
 @Injectable()
 export class EmailAdminService {
   constructor(
@@ -75,6 +92,8 @@ export class EmailAdminService {
     private readonly smtpRepository: Repository<EmailSmtpSettings>,
     @InjectRepository(EmailTemplate)
     private readonly templateRepository: Repository<EmailTemplate>,
+    @InjectRepository(EmailLog)
+    private readonly logRepository: Repository<EmailLog>,
     private readonly mailerService: MailerService,
   ) {}
 
@@ -284,6 +303,109 @@ export class EmailAdminService {
       bodyHtml: renderEmailTemplate(bodyHtml, vars),
       source,
       storedDisabled: !!stored && !stored.isActive,
+    };
+  }
+
+  // ─── Delivery log ─────────────────────────────────────────────────
+
+  /**
+   * One row per delivery attempt, newest first. The list omits the rendered
+   * body (it can be large) — `getLog` returns it for the detail drawer.
+   */
+  async listLogs(options: {
+    page?: number;
+    limit?: number;
+    status?: 'sent' | 'failed' | 'skipped';
+    eventKey?: string;
+    recipient?: string;
+  }): Promise<{
+    data: EmailLogView[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    const page = Math.max(1, Math.trunc(options.page ?? 1));
+    const limit = Math.min(100, Math.max(1, Math.trunc(options.limit ?? 20)));
+
+    const where: Record<string, unknown> = {};
+    if (options.status) where.status = options.status;
+    if (options.eventKey) where.eventKey = options.eventKey;
+    if (options.recipient) {
+      where.recipient = ILike(`%${options.recipient}%`);
+    }
+
+    const [rows, total] = await this.logRepository.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      data: rows.map((row) => this.toLogView(row)),
+      total,
+      page,
+      pageSize: limit,
+    };
+  }
+
+  /**
+   * Delivery totals across every log row. Kept as its own endpoint because the
+   * admin client's response interceptor reshapes any `data`-array payload into
+   * `{data,total,page,pageSize}` — anything riding along on that response (a
+   * `stats` key) is dropped before the page can read it.
+   */
+  async getLogStats(): Promise<{
+    sent: number;
+    failed: number;
+    skipped: number;
+  }> {
+    const raw = await this.logRepository
+      .createQueryBuilder('log')
+      .select('log.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('log.status')
+      .getRawMany<{ status: EmailLog['status']; count: string }>();
+    const stats: { sent: number; failed: number; skipped: number } = {
+      sent: 0,
+      failed: 0,
+      skipped: 0,
+    };
+    for (const row of raw) {
+      if (row.status in stats) {
+        stats[row.status] = Number(row.count);
+      }
+    }
+    return stats;
+  }
+
+  async getLog(id: string): Promise<EmailLogView & { bodyHtml: string }> {
+    const log = await this.logRepository.findOne({ where: { id } });
+    if (!log) {
+      throw new NotFoundException('发送日志不存在');
+    }
+    return { ...this.toLogView(log), bodyHtml: log.bodyHtml };
+  }
+
+  /** Re-sends one logged message from its stored payload. */
+  async resendLog(id: string): Promise<{ ok: boolean; message: string }> {
+    return this.mailerService.resendLog(id);
+  }
+
+  private toLogView(row: EmailLog): EmailLogView {
+    return {
+      id: row.id,
+      eventKey: row.eventKey,
+      eventLabel: getEmailEvent(row.eventKey)?.label ?? row.eventKey,
+      recipient: row.recipient,
+      subject: row.subject,
+      status: row.status,
+      error: row.error,
+      attempts: row.attempts,
+      resourceType: row.resourceType,
+      resourceId: row.resourceId,
+      lastAttemptAt: row.lastAttemptAt.toISOString(),
+      createdAt: row.createdAt.toISOString(),
     };
   }
 }

@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import { Repository } from 'typeorm';
+import { EmailLog } from './entities/email-log.entity';
 import { EmailSmtpSettings } from './entities/email-smtp-settings.entity';
 import { EmailTemplate } from './entities/email-template.entity';
 import {
@@ -39,6 +40,15 @@ export interface ConnectionTestResult {
   message: string;
 }
 
+/**
+ * Optional business record a notification belongs to, stored on the delivery
+ * log so the admin list can link back to the order or booking it came from.
+ */
+export interface EmailSendContext {
+  resourceType?: string;
+  resourceId?: string;
+}
+
 const DEFAULT_FROM_EMAIL = 'Culvoy <no-reply@culvoy.com>';
 
 @Injectable()
@@ -50,6 +60,8 @@ export class MailerService {
     private readonly smtpRepository: Repository<EmailSmtpSettings>,
     @InjectRepository(EmailTemplate)
     private readonly templateRepository: Repository<EmailTemplate>,
+    @InjectRepository(EmailLog)
+    private readonly logRepository: Repository<EmailLog>,
     private readonly configService: ConfigService,
   ) {}
 
@@ -199,6 +211,17 @@ export class MailerService {
       siteName: 'Culvoy',
       ...vars,
     };
+    const missing = definition.variables
+      .map((variable) => variable.key)
+      .filter(
+        (key) => mergedVars[key] === undefined || mergedVars[key] === null,
+      );
+    if (missing.length) {
+      this.logger.warn(
+        `Email event "${eventKey}" was rendered without [${missing.join(', ')}]; those placeholders became empty.`,
+      );
+    }
+
     const html = renderEmailTemplate(bodyHtml, mergedVars);
     return {
       subject: renderEmailTemplate(subject, mergedVars),
@@ -210,12 +233,17 @@ export class MailerService {
   /**
    * Renders the event template and sends it. Returns false on any failure so
    * callers keep their existing delivery-fallback semantics.
+   *
+   * Every attempt is written to `email_logs` with the rendered payload, so a
+   * notification that never reached the traveller can be traced and re-sent
+   * from the admin「发送日志」page.
    */
   async sendTemplated(
     eventKey: string,
     to: string,
     vars: Record<string, string | number | undefined | null>,
     locale = 'en',
+    context?: EmailSendContext,
   ): Promise<boolean> {
     const rendered = await this.renderEventEmail(eventKey, vars, locale);
     if (!rendered) {
@@ -225,6 +253,18 @@ export class MailerService {
 
     const config = await this.resolveSmtpConfig();
     if (!config) {
+      this.logger.warn(
+        `SMTP is not configured; "${eventKey}" for ${to} was not delivered.`,
+      );
+      await this.recordLog({
+        eventKey,
+        recipient: to,
+        rendered,
+        vars,
+        status: 'skipped',
+        error: 'SMTP 配置不完整，未投递',
+        context,
+      });
       return false;
     }
 
@@ -237,12 +277,112 @@ export class MailerService {
         text: rendered.text,
         html: rendered.html,
       });
+      await this.recordLog({
+        eventKey,
+        recipient: to,
+        rendered,
+        vars,
+        status: 'sent',
+        context,
+      });
       return true;
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to send "${eventKey}" email to ${to}: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to send "${eventKey}" email to ${to}: ${message}`,
       );
+      await this.recordLog({
+        eventKey,
+        recipient: to,
+        rendered,
+        vars,
+        status: 'failed',
+        error: message,
+        context,
+      });
       return false;
+    }
+  }
+
+  /** Persists one delivery attempt. Never throws: logging must not break sending. */
+  private async recordLog(input: {
+    eventKey: string;
+    recipient: string;
+    rendered: { subject: string; text: string; html: string };
+    vars: Record<string, string | number | undefined | null>;
+    status: 'sent' | 'failed' | 'skipped';
+    error?: string | null;
+    context?: EmailSendContext;
+  }): Promise<void> {
+    try {
+      await this.logRepository.save(
+        this.logRepository.create({
+          eventKey: input.eventKey,
+          recipient: input.recipient,
+          subject: input.rendered.subject,
+          bodyHtml: input.rendered.html,
+          bodyText: input.rendered.text,
+          vars: (input.vars ?? {}) as Record<string, unknown>,
+          status: input.status,
+          error: input.error ?? null,
+          attempts: 1,
+          resourceType: input.context?.resourceType ?? null,
+          resourceId: input.context?.resourceId ?? null,
+          lastAttemptAt: new Date(),
+        }),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Could not record the "${input.eventKey}" delivery log: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Re-sends a logged message from its stored payload. The bytes are exactly
+   * what the original attempt handed to SMTP, so a resend never depends on a
+   * template that may have been edited since.
+   */
+  async resendLog(id: string): Promise<ConnectionTestResult> {
+    const log = await this.logRepository.findOne({ where: { id } });
+    if (!log) {
+      return { ok: false, message: '发送日志不存在。' };
+    }
+    if (log.status === 'sent') {
+      return { ok: false, message: '该邮件已成功送达，无需重发。' };
+    }
+
+    const config = await this.resolveSmtpConfig();
+    if (!config) {
+      return {
+        ok: false,
+        message:
+          'SMTP 配置不完整：主机、用户名和密码均不能为空（数据库与环境变量中都没有有效值）。',
+      };
+    }
+
+    try {
+      await this.createTransport(config).sendMail({
+        from: this.formatFrom(config),
+        to: log.recipient,
+        subject: log.subject,
+        text: log.bodyText,
+        html: log.bodyHtml,
+      });
+      log.status = 'sent';
+      log.error = null;
+      log.attempts += 1;
+      log.lastAttemptAt = new Date();
+      await this.logRepository.save(log);
+      return { ok: true, message: `已重新发送至 ${log.recipient}。` };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      log.status = 'failed';
+      log.error = message;
+      log.attempts += 1;
+      log.lastAttemptAt = new Date();
+      await this.logRepository.save(log);
+      return { ok: false, message: `重发失败：${message}` };
     }
   }
 

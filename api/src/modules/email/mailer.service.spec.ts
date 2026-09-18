@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EmailLog } from './entities/email-log.entity';
 import { EmailSmtpSettings } from './entities/email-smtp-settings.entity';
 import { EmailTemplate } from './entities/email-template.entity';
 import { MailerService } from './mailer.service';
@@ -22,6 +23,7 @@ describe('MailerService SMTP resolution', () => {
 
   let smtpRepo: { findOne: jest.Mock };
   let templateRepo: { findOne: jest.Mock };
+  let logRepo: { save: jest.Mock; create: jest.Mock; findOne: jest.Mock };
   let configGet: jest.Mock;
 
   const envConfig: Record<string, string> = {
@@ -35,6 +37,11 @@ describe('MailerService SMTP resolution', () => {
   beforeEach(async () => {
     smtpRepo = { findOne: jest.fn() };
     templateRepo = { findOne: jest.fn() };
+    logRepo = {
+      save: jest.fn(async (value) => value),
+      create: jest.fn((value) => value),
+      findOne: jest.fn(),
+    };
     configGet = jest.fn((key: string) => envConfig[key]);
 
     const module: TestingModule = await Test.createTestingModule({
@@ -43,6 +50,7 @@ describe('MailerService SMTP resolution', () => {
         { provide: ConfigService, useValue: { get: configGet } },
         { provide: getRepositoryToken(EmailSmtpSettings), useValue: smtpRepo },
         { provide: getRepositoryToken(EmailTemplate), useValue: templateRepo },
+        { provide: getRepositoryToken(EmailLog), useValue: logRepo },
       ],
     }).compile();
     service = module.get<MailerService>(MailerService);
@@ -266,5 +274,76 @@ describe('MailerService SMTP resolution', () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toContain('未知邮件事件');
+  });
+
+  it('records a delivery log with the rendered payload', async () => {
+    smtpRepo.findOne!.mockResolvedValue(null);
+
+    const ok = await service.sendTemplated(
+      'login_verification',
+      'to@example.com',
+      { code: '482913', minutes: 10, action: 'log in to Culvoy' },
+    );
+
+    expect(ok).toBe(true);
+    expect(logRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventKey: 'login_verification',
+        recipient: 'to@example.com',
+        status: 'sent',
+        error: null,
+      }),
+    );
+    const logged = logRepo.save.mock.calls[0][0] as {
+      bodyHtml: string;
+      subject: string;
+    };
+    expect(logged.bodyHtml).toContain('482913');
+    expect(logged.bodyHtml).not.toContain('{{code}}');
+  });
+
+  it('logs a failure instead of throwing when the relay rejects the message', async () => {
+    smtpRepo.findOne!.mockResolvedValue(null);
+    nodemailerMock.default.createTransport.mockReturnValueOnce({
+      sendMail: jest.fn().mockRejectedValue(new Error('connection refused')),
+      verify: jest.fn(),
+    });
+
+    const ok = await service.sendTemplated(
+      'login_verification',
+      'to@example.com',
+      { code: '482913', minutes: 10, action: 'log in to Culvoy' },
+    );
+
+    expect(ok).toBe(false);
+    expect(logRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'failed',
+        error: 'connection refused',
+      }),
+    );
+  });
+
+  it('re-sends a failed entry from its stored payload', async () => {
+    smtpRepo.findOne!.mockResolvedValue(null);
+    logRepo.findOne!.mockResolvedValue({
+      id: 'log-1',
+      eventKey: 'login_verification',
+      recipient: 'to@example.com',
+      subject: 'Your Culvoy verification code',
+      bodyText: 'code 482913',
+      bodyHtml: '<p>code 482913</p>',
+      status: 'failed',
+      error: 'connection refused',
+      attempts: 1,
+      lastAttemptAt: new Date(),
+    });
+
+    const result = await service.resendLog('log-1');
+
+    expect(result.ok).toBe(true);
+    expect(logRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'sent', attempts: 2, error: null }),
+    );
   });
 });
