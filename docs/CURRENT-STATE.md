@@ -1,15 +1,15 @@
 # Culvoy Current State
 
-> **Live status source — 2026-09-18.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
+> **Live status source — 2026-09-19.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
 
 ## 1. Production baseline
 
-- Production deployed application commit: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, deploy run `35336870377`, §45). Previous deployed commits: `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44), `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
+- Production deployed application commit: `6804818` (2026-09-19, motion-web plan committed, local-only paths ignored, plus the email-log / password-reset / community batches, deploy run `35381348838`, §47). Previous deployed commits: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, deploy run `35336870377`, §45), `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44), `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
 - Public Site, Admin, and API health returned HTTP 200; API reported database `up`.
-- Production has 34 applied migrations; all reported `[X]`, including `AddEmailSettingsAndTemplates1762700000000` (added by the 2026-09-18 email deployment, §44) and `AddCommunityPostMedia1762600000000` (added by the 2026-09-18 community deployment, §42).
+- Production has 35 applied migrations; all reported `[X]`, including `AddEmailLogs1762800000000` (added by the 2026-09-19 deployment, §47), `AddEmailSettingsAndTemplates1762700000000` (added by the 2026-09-18 email deployment, §44) and `AddCommunityPostMedia1762600000000` (added by the 2026-09-18 community deployment, §42). The applied-migration table is `typeorm_migrations`; the separate empty `migrations` table is stale and unused (§47).
 - The deployed release was built and migrated through `tools/deploy-docker.sh`; PM2 was not used.
 
 Production has untracked artifacts that were not altered:
@@ -27,8 +27,8 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, §45); pushed to `origin/main` and deployed to production.
-- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-18 motion-web push
+- Local HEAD: `6804818` (2026-09-19, motion-web plan committed and local-only paths ignored, §47); pushed to `origin/main` and deployed to production.
+- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-19 push
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
 Formerly unpushed commits (all pushed since; kept as record):
@@ -752,3 +752,36 @@ All ten `admin-frontend/...` mirror files were blob-compared byte-identical betw
 **Cleanup**: the temporary admin account `verify-agent-20260919@example.invalid` (created 2026-09-18T18:03Z) was deleted after confirming zero order/post references; the `ui-verify-*` editor account dates from 2026-09-06 and was left alone. `email_logs` keeps its two rows as feature evidence. This session's one-off probe reports, screenshots and `probe-focus.mjs` were removed; the four database dumps and the two reusable verify scripts remain in `.local-backups/` (untracked, not for commit).
 
 **Still open**: browser verification was not run across the nine widths for the admin views; production has no `email_logs` rows until the new migration is deployed; `docs/motion-web-optimization-plan.md` is still untracked from the earlier motion-web session, as are `admin-backoffice-visual-reference.png` and `api/src/database/seeds/seed-local-preview.ts` (both predate this task).
+
+## 47. 2026-09-19 motion-web plan committed, both repositories pushed, everything deployed (root `6804818`, admin `b78eb16`)
+
+Owner authorized "按之前确定的计划继续执行剩余任务，直至全部完成；然后完成上线发布" with "上线前检查所有地方都没错误". This pass closed §46's "still open" list and shipped the ~19 root and 3 admin commits that had accumulated locally since `783d098`.
+
+**Two new root commits** on top of §46's five:
+
+| SHA | Subject | Files |
+| --- | --- | --- |
+| `c02c169` | `docs: add the motion-web optimisation plan` | 1 (+365) |
+| `6804818` | `chore: ignore local-only assets and helpers` | 1 (+5) |
+
+`docs/motion-web-optimization-plan.md` is now tracked (§45 and §46 both left it untracked). `.gitignore` now covers `/.local-backups/`, `/admin-backoffice-visual-reference.png` and `/api/src/database/seeds/seed-local-preview.ts`. The seeder stays **deliberately untracked**: it seeds the retired `{ en, zh }` JSONB shape, so committing it would reintroduce bilingual content against the single-English contract — it is the exact source of the §45 local 500s.
+
+**Plan deliverables re-verified against the live tree**, not against earlier self-reports: batch A (error/global-error boundaries present, skip link real in `layout.tsx`, canonical, map `role="group"`, `--field` reference gone), batch B (zero `.lt-*`/`.lux-card` references, `shadow-rest/lift/panel` and `py-beat/py-tight/py-land` in use), batch C (`lib/motion.ts` duration/ease/scrub/media exports), batch D (metadata incl. `twitter-image`, `icon-192/512` wired into the manifest), batch E (framer-motion removed from `package.json`). No gap found.
+
+**Verification (all actually run, 2026-09-19)**: api `tsc --noEmit` 0 errors, **155 tests / 25 suites**, `nest build` ok; site `tsc --noEmit` 0 errors, `eslint` **0 errors** (1083 warnings), vitest **105/105 / 19 files**, `next build` ok; admin `vite build` ok; `git diff --check` clean in both repositories. The 142 tracked `admin-frontend/...` files are blob-identical between the two repositories; the only difference is still `admin-frontend/.vscode/extensions.json`, as AGENT.md §4 records.
+
+**Migration review (the deploy gate).** Exactly one new migration since `615d372`: `1762800000000-AddEmailLogs` (`CREATE TABLE IF NOT EXISTS` plus four `CREATE INDEX IF NOT EXISTS`) — idempotent. `1762600000000-AddCommunityPostMedia` was modified, but the diff is **three comment lines with zero DDL**; TypeORM dedupes by name, so it cannot re-run. Logged as an AGENT.md §6 grey area for the next session: an already-executed migration's comments should be left alone too.
+
+**Production migration state — resolution of a misleading reading.** The applied-migration table is **`typeorm_migrations`** (`migrationsTableName` in `api/src/database/data-source.ts`). A bare `migrations` table also exists but holds **zero rows and has no writer**; it is a stale leftover, unrelated to migration runs, and is a cleanup candidate. Before deploy `typeorm_migrations` held 34 rows (latest `AddEmailSettingsAndTemplates1762700000000`) against 35 migration files — exactly one pending, the new one.
+
+**Deploy**: pre-deploy backup `/root/db-backups/culvoy-20260919-023720-pre-20260919.dump` (136,092 bytes, host `pg_dump -Fc`) taken after the read-only migration check. Run `35381348838` succeeded in 3m27s. Server HEAD `6804818`; five containers healthy; `typeorm_migrations` **34 → 35**; `email_logs` created.
+
+**Production smoke** (real browser, Playwright, 2026-09-19):
+
+- All public routes 200 after trailing-slash normalisation; `/profile/` correctly redirects to `/login/?next=%2Fprofile%2F`. Detail routes verified with real slugs: `/culture/shaoguan/`, `/routes/southern-sea-table/`, `/shop/products/canton-porcelain-cup/`. `/forgot-password/` is live.
+- **Nine widths × 2 pages (18 viewports): zero horizontal overflow**; one `<main>` on every page; map `role="group"` present; `.scroll-fade-x` present; `lang=en`; **zero console errors** across all nine pages; skip link reachable with one Tab (`A` → `#main`).
+- Metadata live: `rel=canonical`, `og:image`, **`twitter:card=summary_large_image` with `twitter:image`** (the §45 gap is now closed in production), theme-color, Organization JSON-LD, manifest, robots, sitemap.
+- CSS tokens live in the production bundle: `--muted:#5b6874`, `--gold-light:#d9b36a`, `color-scheme:light`, `scrollbar-gutter:stable`, `--radius-xl:.75rem`, **22 `@media (hover: hover)` blocks**, `.shadow-rest/lift/panel`, `py-beat`/`py-land`, `animate-rise`; no framer-motion residue.
+- `admin.culvoy.com` returns 200 with the Vue app mounted, the Chinese login form intact and **zero console errors**. The signed-in admin flows (delivery log, event re-send, community moderation) were **not** re-run: this session holds no admin credentials, so §46's human pass remains the evidence for those screens.
+
+**Still open**: the local-database English-only defect from §45 (local `cities` still holds one `{ en, zh }` row, so local pages 500 outside `/` and `/community`); the stale empty `migrations` table; admin views not exercised across the nine widths; `email_logs` now exists in production but holds no rows until real mail flows run.
