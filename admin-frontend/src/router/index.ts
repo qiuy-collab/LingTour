@@ -254,6 +254,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/settings/Settings.vue'),
         meta: { title: '系统设置', roles: ['admin'] },
       },
+      // 邮箱设置（SMTP 配置）
+      {
+        path: 'email-settings',
+        name: 'EmailSettings',
+        component: () => import('@/views/system/EmailSettings.vue'),
+        meta: { title: '邮箱设置', roles: ['admin'] },
+      },
       // 操作日志
       {
         path: 'system/staff',

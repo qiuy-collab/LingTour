@@ -10,13 +10,14 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
-import nodemailer from 'nodemailer';
 import { IsNull, LessThan, MoreThan, Repository } from 'typeorm';
 import {
   EmailVerificationCode,
   type EmailVerificationPurpose,
 } from './entities/email-verification-code.entity';
 import { UsersService } from '../users/users.service';
+import { MailerService } from '../email/mailer.service';
+import { purposeToEventKey } from '../email/email-events';
 
 type SendCodeResult = {
   email: string;
@@ -37,6 +38,7 @@ export class EmailVerificationService {
     private readonly codeRepository: Repository<EmailVerificationCode>,
     private readonly usersService: UsersService,
     private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async sendCode(
@@ -208,33 +210,16 @@ export class EmailVerificationService {
     code: string,
     purpose: EmailVerificationPurpose,
   ): Promise<boolean> {
-    const host = this.configService.get<string>('SMTP_HOST');
-    const port = Number(this.configService.get<string>('SMTP_PORT') || 587);
-    const user = this.configService.get<string>('SMTP_USER');
-    const pass = this.configService.get<string>('SMTP_PASS');
-    const from =
-      this.configService.get<string>('SMTP_FROM') ||
-      'Culvoy <no-reply@culvoy.com>';
-
-    if (!host || !user || !pass) {
-      return false;
-    }
-
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
+    const actions: Record<EmailVerificationPurpose, string> = {
+      signup: 'create your Culvoy account',
+      login: 'log in to Culvoy',
+      change_email: 'confirm your new email address',
+    };
+    return this.mailerService.sendTemplated(purposeToEventKey(purpose), email, {
+      code,
+      minutes: 10,
+      action: actions[purpose],
+      email,
     });
-
-    const action = purpose === 'signup' ? 'create your Culvoy account' : 'log in to Culvoy';
-    await transporter.sendMail({
-      from,
-      to: email,
-      subject: 'Your Culvoy verification code',
-      text: `Use ${code} to ${action}. This code expires in 10 minutes.`,
-      html: `<p>Use <strong>${code}</strong> to ${action}.</p><p>This code expires in 10 minutes.</p>`,
-    });
-    return true;
   }
 }

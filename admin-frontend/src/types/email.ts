@@ -1,0 +1,66 @@
+// 邮箱设置模块类型定义
+
+export interface SmtpSettingsView {
+  host: string
+  port: number
+  username: string
+  fromEmail: string
+  fromName: string
+  useTls: boolean
+  /** 后端永不回传密码明文，只有「是否已配置」与其存储来源 */
+  hasPassword: boolean
+  passwordSource: 'database' | 'environment' | 'none'
+  source: 'database' | 'environment'
+}
+
+/** 保存表单；password 留空（空字符串）表示保留已存密码 */
+export interface SmtpSettingsPayload {
+  host: string
+  port: number
+  username: string
+  password: string
+  fromEmail: string
+  fromName: string
+  useTls: boolean
+}
+
+export interface SmtpTestResult {
+  ok: boolean
+  message: string
+}
+
+export interface EmailEventVariable {
+  key: string
+  label: string
+  example: string
+}
+
+export interface StoredTemplate {
+  subject: string
+  bodyHtml: string
+  isActive: boolean
+  updatedAt: string
+}
+
+export interface EmailEventView {
+  key: string
+  label: string
+  description: string
+  status: 'active' | 'planned'
+  variables: EmailEventVariable[]
+  defaultSubject: string
+  defaultBodyHtml: string
+  templates: Record<string, StoredTemplate>
+}
+
+export interface EmailTemplatePayload {
+  locale: string
+  subject: string
+  bodyHtml: string
+  isActive?: boolean
+}
+
+export interface EmailTemplatePreview {
+  subject: string
+  bodyHtml: string
+}

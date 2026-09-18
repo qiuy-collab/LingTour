@@ -1,0 +1,58 @@
+// 邮箱设置 API（SMTP 配置 + 邮件模板）
+import api from './index'
+import type {
+  EmailEventView,
+  EmailTemplatePayload,
+  EmailTemplatePreview,
+  SmtpSettingsPayload,
+  SmtpSettingsView,
+  SmtpTestResult,
+} from '@/types/email'
+
+type Envelope<T> = { data: { code: number; data: T; message: string } }
+
+function unwrap<T>(res: unknown): T {
+  const body = (res as { data?: { data?: T } }).data
+  return (body?.data ?? (body as unknown as T)) as T
+}
+
+/** 获取当前生效的 SMTP 配置（密码脱敏，只返回 hasPassword） */
+export async function getSmtpSettings(): Promise<SmtpSettingsView> {
+  const res = await api.get('/email-settings/smtp')
+  return unwrap<SmtpSettingsView>(res)
+}
+
+/** 保存 SMTP 配置；password 为空字符串时保留已存密码 */
+export function saveSmtpSettings(payload: SmtpSettingsPayload): Promise<Envelope<SmtpSettingsView>> {
+  return api.put('/email-settings/smtp', payload)
+}
+
+/** 测试连接：用表单当前值（密码可留空，沿用已存密码） */
+export function testSmtpConnection(payload: Partial<SmtpSettingsPayload>): Promise<Envelope<SmtpTestResult>> {
+  return api.post('/email-settings/smtp/test', payload)
+}
+
+/** 发送测试邮件 */
+export function sendTestEmail(payload: Partial<SmtpSettingsPayload> & { to: string }): Promise<Envelope<SmtpTestResult>> {
+  return api.post('/email-settings/smtp/test-send', payload)
+}
+
+/** 事件 × 已存模板全量列表 */
+export async function listEmailTemplateEvents(): Promise<EmailEventView[]> {
+  const res = await api.get('/email-settings/templates')
+  const body = unwrap<{ events: EmailEventView[] }>(res)
+  return body.events
+}
+
+/** 保存某事件的模板（当前仅 locale = 'en'） */
+export function saveEmailTemplate(eventKey: string, payload: EmailTemplatePayload): Promise<Envelope<EmailEventView>> {
+  return api.put(`/email-settings/templates/${eventKey}`, payload)
+}
+
+/** 用示例变量渲染模板预览（草稿内容优先） */
+export function previewEmailTemplate(
+  eventKey: string,
+  payload: { locale?: string; subject?: string; bodyHtml?: string },
+): Promise<Envelope<EmailTemplatePreview>> {
+  return api.post(`/email-settings/templates/${eventKey}/preview`, payload)
+}

@@ -10,6 +10,7 @@ import { EmailCodeCleanupService } from './email-code-cleanup.service';
 import { EmailVerificationCode } from './entities/email-verification-code.entity';
 import { UsersModule } from '../users/users.module';
 import { UploadModule } from '../upload/upload.module';
+import { EmailModule } from '../email/email.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   resolveJwtExpiration,
@@ -20,6 +21,7 @@ import {
   imports: [
     UsersModule,
     UploadModule,
+    EmailModule,
     TypeOrmModule.forFeature([EmailVerificationCode]),
     PassportModule,
     JwtModule.registerAsync({

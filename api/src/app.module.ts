@@ -35,6 +35,7 @@ import { EventsModule } from './modules/events/events.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     HealthModule,
     AuditModule,
     NotificationsModule,
+    EmailModule,
   ],
   providers: [
     {

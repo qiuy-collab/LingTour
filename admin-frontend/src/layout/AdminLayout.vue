@@ -37,6 +37,7 @@ import {
   List,
   User,
   QuestionFilled,
+  Message,
 } from '@element-plus/icons-vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
@@ -202,6 +203,12 @@ const menuGroups: MenuGroup[] = [
         roles: ['admin'],
       },
       { path: '/admin/system/notifications', title: '通知中心', icon: Bell },
+      {
+        path: '/admin/email-settings',
+        title: '邮箱设置',
+        icon: Message,
+        roles: ['admin'],
+      },
       {
         path: '/admin/settings',
         title: '系统设置',
