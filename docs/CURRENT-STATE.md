@@ -1,6 +1,6 @@
 # Culvoy Current State
 
-> **Live status source — 2026-09-17.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
+> **Live status source — 2026-09-18.** Update this file whenever Git, production, protected WIP, verification, deployment, recovery, or task status changes. [`LINGTOUR-HANDOFF-2026-07-26.md`](archive/LINGTOUR-HANDOFF-2026-07-26.md) and [`PROGRESS-2026-07-26-mobile-and-data-layer.md`](archive/PROGRESS-2026-07-26-mobile-and-data-layer.md) are historical snapshots now stored under [`archive/`](archive/). Stable operating rules live in [`../AGENT.md`](../AGENT.md); team guides in [`development.md`](development.md) and [`release.md`](release.md).
 
 ## 1. Production baseline
 
@@ -27,8 +27,8 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `c7fe7ce` (2026-09-17 upload path registration fix, §38) — this is the deployed production commit.
-- Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
+- Local HEAD: `757f974` (2026-09-18, docs: record the 2026-09-18 community overhaul deployment, §42) on top of the deployed application commit `003071e`.
+- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-18 community push
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
 Formerly unpushed commits (all pushed since; kept as record):
@@ -47,8 +47,8 @@ Formerly unpushed commits (all pushed since; kept as record):
 
 - Path: `E:/workspace/LingTour/admin-frontend`
 - Branch: `main`
-- Local HEAD: `311ccfb` (2026-09-17, media-library rebuild action on top of the inline markdown-image editor in `e06a25d`; §38)
-- Upstream: in sync with `origin/main` (ahead 0, behind 0); the formerly unpushed commits below have been pushed
+- Local HEAD: `ca4de88` (2026-09-18, community media arrays, live badges, and review trail, §42; mirrored by root `003071e`)
+- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-18 community push
 
 Formerly unpushed commits (pushed since; kept as record):
 
@@ -61,7 +61,7 @@ The paired root/admin files have matching blobs. Before cleanup the complete tra
 
 ## 3. Protected uncommitted work
 
-No protected uncommitted source changes remain in either repository. The remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
+The email-settings WIP (§41) is the only uncommitted source change in either repository (root: `api/src/modules/email/`, `app.module.ts`, `auth.module.ts`, `email-verification.service.ts`, migration `1762700000000`; both trees: `AdminLayout.vue`, `router/index.ts`, `email*` admin files) and must not be mixed into unrelated commits. The remaining root untracked items are reference/review artifacts and local preview source preserved by policy.
 
 ### 2026-09-16 English-only content rollout
 
