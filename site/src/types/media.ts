@@ -1,4 +1,9 @@
-export type MediaType = "image" | "video";
+/**
+ * Every media kind the site renders. `live` is a live photo: it arrives through
+ * the same upload endpoint as an image and is displayed from its first frame,
+ * so it is its own kind — not a video.
+ */
+export type MediaType = "image" | "video" | "live";
 
 export type MediaAsset = {
   type: MediaType;
@@ -11,7 +16,9 @@ export function isMediaAsset(value: unknown): value is MediaAsset {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<MediaAsset>;
   return (
-    (candidate.type === "image" || candidate.type === "video") &&
+    (candidate.type === "image" ||
+      candidate.type === "video" ||
+      candidate.type === "live") &&
     typeof candidate.url === "string" &&
     Boolean(candidate.url.trim())
   );
@@ -42,9 +49,17 @@ export function resolveMediaGallery(
   );
 }
 
+/**
+ * Static frame for a media asset. A still image is its own poster; anything
+ * that renders through a `<video>` element (video, live photo) needs an
+ * explicit poster and falls back to the caller's placeholder when the record
+ * carries none.
+ */
 export function mediaPoster(asset?: MediaAsset | null, fallback = ""): string {
   if (!asset) return fallback;
-  return asset.type === "video" ? asset.poster?.trim() || fallback : asset.url;
+  return asset.type === "image"
+    ? asset.url
+    : asset.poster?.trim() || fallback;
 }
 
 export function mediaAlt(

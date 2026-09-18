@@ -25,7 +25,7 @@ import type {
 import type { CityCulture } from "@/data/culture";
 import type { StoryRoute } from "@/data/routes";
 import type { StoreCollection, StoreProduct } from "@/data/store";
-import type { MediaAsset } from "@/types/media";
+import type { MediaAsset, MediaType } from "@/types/media";
 import {
   mediaPoster,
   resolveMediaGallery,
@@ -912,10 +912,12 @@ export { useApiQuery, type AsyncState } from "./use-api-query";
  * 帖子媒体项。社区媒体只有这两种，不存在"视频"。
  * image 为普通图片；live 为 live 实况图——与图片走同一个上传端点，url 指向
  * 收下的文件，展示层以首帧作为静态画面、点击播放。
+ *
+ * 形状复用全局 MediaAsset 契约（poster / alt 一致），但类型上锁死为非 video，
+ * 因为社区的媒体契约里没有视频这一档。
  */
-export type CommunityPostMedia = {
-  type: "image" | "live";
-  url: string;
+export type CommunityPostMedia = Omit<MediaAsset, "type"> & {
+  type: Extract<MediaType, "image" | "live">;
 };
 
 export type CommunityFeedPost = {
@@ -955,7 +957,7 @@ interface ApiCommunityPost {
   excerpt: string;
   tags?: string[];
   image: string | null;
-  media?: { type: string; url: string }[] | null;
+  media?: { type: string; url: string; poster?: string; alt?: string }[] | null;
   location: string;
   route: string;
   mood: string;
@@ -974,11 +976,19 @@ interface ApiCommunityPost {
 function mapCommunityMedia(
   api: Pick<ApiCommunityPost, "media" | "image">,
 ): CommunityPostMedia[] {
-  const items = (api.media ?? []).filter(
-    (item): item is CommunityPostMedia =>
-      Boolean(item?.url) &&
-      (item.type === "image" || item.type === "live"),
-  );
+  const items: CommunityPostMedia[] = [];
+  for (const item of api.media ?? []) {
+    if (!item?.url) continue;
+    // The community contract has no video kind: anything else is dropped here
+    // rather than rendered as a type the feed cannot present.
+    if (item.type !== "image" && item.type !== "live") continue;
+    items.push({
+      type: item.type,
+      url: item.url,
+      ...(item.poster ? { poster: item.poster } : {}),
+      ...(item.alt ? { alt: item.alt } : {}),
+    });
+  }
   if (items.length > 0) return items;
   if (api.image) return [{ type: "image", url: api.image }];
   return [];
