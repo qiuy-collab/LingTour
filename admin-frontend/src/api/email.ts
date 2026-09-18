@@ -2,6 +2,9 @@
 import api from './index'
 import type {
   EmailEventView,
+  EmailLogDetail,
+  EmailLogListResult,
+  EmailLogStats,
   EmailTemplatePayload,
   EmailTemplatePreview,
   SmtpSettingsPayload,
@@ -71,4 +74,39 @@ export function sendEventTemplateTestEmail(
   },
 ): Promise<Envelope<SmtpTestResult>> {
   return api.post(`/email-settings/templates/${eventKey}/test-send`, payload)
+}
+
+/** 发送日志：每次真实投递（含失败与未投递）都会留一条记录 */
+export async function listEmailLogs(
+  params: {
+    page?: number
+    limit?: number
+    status?: 'sent' | 'failed' | 'skipped'
+    eventKey?: string
+    recipient?: string
+  } = {},
+): Promise<EmailLogListResult> {
+  const res = await api.get('/email-settings/logs', { params })
+  return unwrap<EmailLogListResult>(res)
+}
+
+/**
+ * 投递总量（按结果分组）。独立端点而非挂在列表响应上：响应拦截器会把
+ * 带 data 数组的返回统一改写成 { data, total, page, pageSize }，任何与它并列
+ * 的字段都到不了页面。
+ */
+export async function getEmailLogStats(): Promise<EmailLogStats> {
+  const res = await api.get('/email-settings/logs/stats')
+  return unwrap<EmailLogStats>(res)
+}
+
+/** 单条发送日志详情，含当时渲染后的 HTML 正文 */
+export async function getEmailLog(id: string): Promise<EmailLogDetail> {
+  const res = await api.get(`/email-settings/logs/${id}`)
+  return unwrap<EmailLogDetail>(res)
+}
+
+/** 重发一条失败/未投递的记录：直接用存下的渲染结果投递，与首次发送逐字一致 */
+export function resendEmailLog(id: string): Promise<Envelope<SmtpTestResult>> {
+  return api.post(`/email-settings/logs/${id}/resend`)
 }

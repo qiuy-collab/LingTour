@@ -84,4 +84,12 @@ export const ordersApi = {
   markRefunded(id: string, reason?: string) {
     return api.patch<ApiResponse<Order>>(`/orders/${id}/refund`, { reason })
   },
+
+  /** 重发某一封订单通知邮件：走真实事件模板渲染，不是固定探针文案 */
+  resendEmail(id: string, eventKey: string) {
+    return api.post<ApiResponse<{ ok: boolean; message: string }>>(
+      `/orders/${id}/resend-email`,
+      { eventKey },
+    )
+  },
 }

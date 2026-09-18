@@ -68,3 +68,41 @@ export interface EmailTemplatePreview {
   /** 已存模板存在但处于停用状态——真实发送会忽略它并使用系统默认模板 */
   storedDisabled: boolean
 }
+
+/**
+ * 一次通知邮件的投递记录。保存的是当时真正交给 SMTP 的渲染结果，
+ * 因此「详情」看到的就是用户收到的那封信，重发也与之逐字一致。
+ */
+export interface EmailLogView {
+  id: string
+  eventKey: string
+  eventLabel: string
+  recipient: string
+  subject: string
+  status: 'sent' | 'failed' | 'skipped'
+  error: string | null
+  attempts: number
+  resourceType: string | null
+  resourceId: string | null
+  lastAttemptAt: string
+  createdAt: string
+}
+
+export interface EmailLogDetail extends EmailLogView {
+  /** 渲染后的 HTML 正文（非模板源码） */
+  bodyHtml: string
+}
+
+export interface EmailLogListResult {
+  data: EmailLogView[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+/** Delivery totals across every log row (not affected by the list filters) */
+export interface EmailLogStats {
+  sent: number
+  failed: number
+  skipped: number
+}

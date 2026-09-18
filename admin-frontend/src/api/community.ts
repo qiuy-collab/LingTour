@@ -72,6 +72,13 @@ export const communityApi = {
     return api.patch<ApiResponse<CommunityPost>>(`/community/posts/${id}/featured`, { featured })
   },
 
+  /** 重发帖子审核结果邮件（通过 / 驳回都会如实告知作者） */
+  resendReviewEmail(id: string) {
+    return api.post<ApiResponse<{ ok: boolean; message: string }>>(
+      `/community/posts/${id}/resend-email`,
+    )
+  },
+
   /** 软删除帖子 */
   deletePost(id: string) {
     return api.delete<ApiResponse<null>>(`/community/posts/${id}`)

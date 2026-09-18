@@ -123,6 +123,21 @@ async function handleCancelBooking() {
   }
 }
 
+/** 重发预约确认邮件；联系方式不是邮箱时后端会如实说明原因 */
+async function handleResendEmail(booking: Booking) {
+  try {
+    const res = await bookingsApi.resendEmail(booking.id)
+    const payload = res.data?.data
+    if (payload?.ok === false) {
+      ElMessage.warning(payload.message)
+    } else {
+      ElMessage.success(payload?.message ?? '已重发')
+    }
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '重发失败')
+  }
+}
+
 function getBookingStatusColor(status: string): string {
   return BookingStatusColorMap[status as BookingStatus] || 'info'
 }
@@ -200,9 +215,18 @@ function getBookingStatusLabel(status: string): string {
             <span v-else style="color: #c0c4cc">未分配</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="270" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openDrawer(row)">详情</el-button>
+            <el-button
+              v-if="row.status === 'confirmed' || row.status === 'deposit_paid'"
+              type="primary"
+              link
+              size="small"
+              @click="handleResendEmail(row)"
+            >
+              重发邮件
+            </el-button>
             <el-button
               v-if="row.status === 'new' || row.status === 'read' || row.status === 'contacted'"
               type="success"

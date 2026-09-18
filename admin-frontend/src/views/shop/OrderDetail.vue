@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { ordersApi } from '@/api/orders'
 import { OrderStatusMap, OrderStatusColorMap, PaymentStatusMap, PaymentStatusColorMap } from '@/types/order'
 import type { Order, OrderStatus } from '@/types/order'
@@ -74,6 +75,34 @@ async function handleCancel() {
     order.value.status = 'cancelled'
     ElMessage.success('订单已取消')
   } catch { /* 取消 */ }
+}
+
+/** 可按订单重发的通知邮件，与后端 ORDER_EMAIL_TITLES 白名单一致 */
+const ORDER_EMAIL_EVENTS: { key: string; label: string }[] = [
+  { key: 'order_created', label: '订单创建通知' },
+  { key: 'order_paid', label: '支付成功收据' },
+  { key: 'order_shipped', label: '发货通知' },
+  { key: 'order_refunded', label: '退款完成通知' },
+]
+
+const resendingKey = ref('')
+
+async function handleResendEmail(eventKey: string) {
+  if (!order.value) return
+  resendingKey.value = eventKey
+  try {
+    const res = await ordersApi.resendEmail(order.value.id, eventKey)
+    const payload = res.data?.data
+    if (payload?.ok === false) {
+      ElMessage.warning(payload.message)
+    } else {
+      ElMessage.success(payload?.message ?? '已重发')
+    }
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '重发失败')
+  } finally {
+    resendingKey.value = ''
+  }
 }
 
 function formatDate(d: string) {
@@ -219,6 +248,25 @@ onMounted(() => {
         <template v-if="order.paymentStatus === 'paid' && order.status !== 'cancelled'">
           <el-button type="warning" @click="handleRefund">退款</el-button>
         </template>
+
+        <el-dropdown trigger="click" @command="handleResendEmail">
+          <el-button :loading="!!resendingKey">
+            重发通知邮件
+            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="event in ORDER_EMAIL_EVENTS"
+                :key="event.key"
+                :command="event.key"
+                :disabled="resendingKey === event.key"
+              >
+                {{ event.label }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </template>
   </div>

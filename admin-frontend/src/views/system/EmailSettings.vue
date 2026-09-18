@@ -13,6 +13,7 @@ import type { SmtpSettingsView } from '@/types/email'
 import { prefersReducedMotion } from '@/utils/motion'
 import PageSkeleton from '@/components/PageSkeleton.vue'
 import EmailTemplatePanel from './EmailTemplatePanel.vue'
+import EmailLogPanel from './EmailLogPanel.vue'
 
 const pageRoot = ref<HTMLElement | null>(null)
 const activeTab = ref('smtp')
@@ -311,6 +312,13 @@ onBeforeUnmount(() => motionContext?.revert())
           <span class="tab-label">邮件模板</span>
         </template>
         <EmailTemplatePanel />
+      </el-tab-pane>
+
+      <el-tab-pane lazy name="logs">
+        <template #label>
+          <span class="tab-label">发送日志</span>
+        </template>
+        <EmailLogPanel />
       </el-tab-pane>
     </el-tabs>
 

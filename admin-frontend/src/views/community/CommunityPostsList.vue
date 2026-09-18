@@ -43,6 +43,21 @@ async function handleReview(post: CommunityPost, status: PostStatus, rejectionRe
   }
 }
 
+/** 重发审核结果邮件：正文取自帖子当前状态，与审核时的通知一致 */
+async function handleResendReviewEmail(post: CommunityPost) {
+  try {
+    const res = await communityApi.resendReviewEmail(post.id)
+    const payload = res.data?.data
+    if (payload?.ok === false) {
+      ElMessage.warning(payload.message)
+    } else {
+      ElMessage.success(payload?.message ?? '已重发')
+    }
+  } catch (err: any) {
+    ElMessage.error(err?.response?.data?.message || '重发失败')
+  }
+}
+
 async function handleToggleFeatured(post: CommunityPost) {
   try {
     await communityApi.toggleFeatured(post.id, !post.featured)
@@ -199,7 +214,7 @@ function getCoverType(post: CommunityPost): 'image' | 'live' | null {
             <el-tag v-if="row.featured" type="warning" size="small">★</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="310" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">详情</el-button>
             <template v-if="row.status === 'pending_review'">
@@ -227,6 +242,15 @@ function getCoverType(post: CommunityPost): 'image' | 'live' | null {
               @click="handleToggleFeatured(row)"
             >
               {{ row.featured ? '取消精选' : '精选' }}
+            </el-button>
+            <el-button
+              v-if="row.status !== 'pending_review'"
+              type="primary"
+              link
+              size="small"
+              @click="handleResendReviewEmail(row)"
+            >
+              重发邮件
             </el-button>
             <el-button type="danger" link size="small" @click="handleDelete(row)">删除</el-button>
           </template>

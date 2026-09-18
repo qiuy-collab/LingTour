@@ -70,4 +70,11 @@ export const bookingsApi = {
   cancelBooking(id: string) {
     return api.put<ApiResponse<Booking>>(`/bookings/${id}/status`, statusPayload('cancelled'))
   },
+
+  /** 重发预约确认邮件；联系方式不是邮箱时会如实返回失败原因 */
+  resendEmail(id: string) {
+    return api.post<ApiResponse<{ ok: boolean; message: string }>>(
+      `/bookings/${id}/resend-email`,
+    )
+  },
 }
