@@ -724,3 +724,31 @@ Owner authorized "按照这个计划优化当前项目，改完分类提交，�
 - the `.lt-*` class family and `--route-*` palette were **not** removed. `.lt-display/.lt-title/.lt-copy/.lt-section/.lt-surface/.lt-kicker/.lux-card` are all zero-reference, but `DESIGN.md` still documents several of them (including a `.lt-surface` glass panel that no longer renders). Deleting them means first deciding what the design system is.
 - `@media (hover: hover)` wrapping, the 5 horizontal-scroll fade+peek affordances, map city resting dot markers, the submit-component state matrix, `twitter-image.png`, and 192/512 manifest icons were not started.
 - matchMedia was not consolidated into one shared per-page instance; `data-revealed` suppresses the replay instead. rung-1.5 downgrade (CSS scroll-driven animation) was not attempted.
+
+## 46. 2026-09-19 review-9-18 remediation, second batch: delivery log, event send points, community polish (root `07067be`, admin `b78eb16`)
+
+Owner authorized "全部继续完成" against [`review/09-18/report.md`](review/09-18/report.md). This batch closes the report's remaining api/admin items on top of the four earlier groups (email template gaps, live-photo semantics, email event entry points, community UI). Nothing was pushed or deployed.
+
+**Five new commits** (root, on top of the previous eleven; admin repository advanced to 3):
+
+| SHA | Subject | Files |
+| --- | --- | --- |
+| `626857b` | `feat(api): email delivery log, missing-variable warnings, and re-send endpoints` | 8 (+555/−6) |
+| `097b193` | `feat(api): wire the planned email events into orders, bookings, community, and auth` | 16 (+651/−56) |
+| `65fa16f` | `feat(admin): delivery log panel and event-level email re-send` (mirror of admin `b78eb16`) | 10 |
+| `50a36c9` | `refactor(site): unify the community media contract with the global MediaAsset` | 2 (+38/−13) |
+| `07067be` | `refactor(site): community UI polish, toolbar semantics, and sticky alignment` | 10 (+88/−34) |
+
+All ten `admin-frontend/...` mirror files were blob-compared byte-identical between the two repositories.
+
+- **Delivery-log infrastructure**: new `EmailLog` entity plus migration `1762800000000-AddEmailLogs`; `MailerService` records the outcome and SMTP error per send and warns on a missing template variable instead of silently rendering an empty value; new admin endpoints expose the log list, outcome stats, and a per-event re-send.
+- **Event send points**: `order_created` / `order_paid` / `order_refunded` fire on the matching order transitions, a new `order_shipped` event carries `trackingNo`, `booking_confirmed` fires on interpreting confirmation, `welcome` after signup, and the community moderation outcome on review. `POST /admin/orders/:id/resend-email` adds the operational re-send.
+- **Local database**: the pending `AddEmailLogs` was applied only after a host-level backup (`.local-backups/pre-email-logs.dump`, 105,466 bytes, PGDMP header verified). Migration count went **34 → 35**; `email_logs` has 14 columns. Production still sits at 34 and holds no `email_logs` rows until the next deploy.
+
+**Verified (all actually run, 2026-09-19)**: api `tsc --noEmit` 0 errors, **155 tests passed** (25 suites), `nest build` ok; site `tsc --noEmit` 0 errors, **105 tests passed** (19 files), `eslint` **0 errors** (1083 warnings, baseline-consistent), `next build` ok; admin `vite build` ok (the rebuilt container serves it); `git diff --check` clean in both repositories.
+
+**Correction: the first batch's ad-hoc Playwright probe produced four false failures.** A real browser pass shows `/admin/email-settings` renders correctly — all three tabs (`SMTP 服务` / `邮件模板` / `发送日志`), the SMTP form back-filled from the live config, the delivery log listing the two real sends (`password_reset` → `ui-verify-*@example.invalid`, `signup_verification` → a real mailbox, both `发送失败` from the known容器 SMTP TLS block) with 0/2/0 outcome totals, and the template panel exposing 11 events plus the new event-level "发送测试邮件". The order re-send dropdown does list all four order events. The probe's conclusions must not be carried forward.
+
+**Cleanup**: the temporary admin account `verify-agent-20260919@example.invalid` (created 2026-09-18T18:03Z) was deleted after confirming zero order/post references; the `ui-verify-*` editor account dates from 2026-09-06 and was left alone. `email_logs` keeps its two rows as feature evidence. This session's one-off probe reports, screenshots and `probe-focus.mjs` were removed; the four database dumps and the two reusable verify scripts remain in `.local-backups/` (untracked, not for commit).
+
+**Still open**: browser verification was not run across the nine widths for the admin views; production has no `email_logs` rows until the new migration is deployed; `docs/motion-web-optimization-plan.md` is still untracked from the earlier motion-web session, as are `admin-backoffice-visual-reference.png` and `api/src/database/seeds/seed-local-preview.ts` (both predate this task).
