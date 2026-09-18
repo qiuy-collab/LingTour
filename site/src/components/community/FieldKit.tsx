@@ -10,7 +10,14 @@ import type { CommunityPostMedia } from "@/lib/api-data";
 /** 单帖媒体上限，与 API 的 COMMUNITY_POST_MEDIA_LIMIT 对齐。 */
 const FIELD_KIT_MEDIA_LIMIT = 9;
 
-const LIVE_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/x-m4v";
+/**
+ * One picker for both community media kinds. A live photo (实况图) is just a
+ * file the traveller picked, so this input accepts photos and live clips at
+ * once; the media type is derived from the file itself, never from which
+ * control was used.
+ */
+const COMMUNITY_MEDIA_ACCEPT =
+  "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,video/x-m4v";
 
 type FieldKitProps<TChannel extends string> = {
   isOpen: boolean;
@@ -130,23 +137,24 @@ export function FieldKit<TChannel extends string>({
 
   if (!isOpen) return null;
 
-  const uploadOne = async (file: File, kind: "image" | "live") => {
+  const uploadOne = async (file: File): Promise<CommunityPostMedia> => {
     const formData = new FormData();
     formData.append("file", file);
-    const endpoint =
-      kind === "image"
-        ? "/public/community/upload"
-        : "/public/community/upload/video";
-    const data = await apiClient<{ url: string }>(endpoint, {
+    const data = await apiClient<{ url: string }>("/public/community/upload", {
       method: "POST",
       body: formData,
     });
-    return data.url;
+    return {
+      // A live photo is a media image variant; browsers hand it over as a
+      // `video/*` container, which is the only thing that distinguishes it
+      // from a photo here.
+      type: file.type.startsWith("video/") ? "live" : "image",
+      url: data.url,
+    };
   };
 
   const handleMediaUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    kind: "image" | "live",
   ) => {
     if (locked) {
       const message = AUTH_PROMPTS.connectGoogleToUpload;
@@ -177,8 +185,7 @@ export function FieldKit<TChannel extends string>({
       // Serial on purpose: the community upload endpoints are throttled to
       // 10 requests per minute per user, and parallel bursts would trip it.
       for (const file of accepted) {
-        const url = await uploadOne(file, kind);
-        uploaded.push({ type: kind === "image" ? "image" : "live", url });
+        uploaded.push(await uploadOne(file));
       }
       setMedia((current) => [...current, ...uploaded].slice(0, FIELD_KIT_MEDIA_LIMIT));
     } catch (uploadError) {
@@ -418,11 +425,6 @@ export function FieldKit<TChannel extends string>({
                           className="absolute inset-0 h-full w-full object-cover"
                         />
                       )}
-                      {item.type === "live" ? (
-                        <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--night)]/78 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white">
-                          Live
-                        </span>
-                      ) : null}
                       <button
                         type="button"
                         onClick={() =>
@@ -457,40 +459,17 @@ export function FieldKit<TChannel extends string>({
                         <input
                           type="file"
                           className="hidden"
-                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          accept={COMMUNITY_MEDIA_ACCEPT}
                           multiple
                           disabled={locked || mediaUploading}
-                          onChange={(event) => handleMediaUpload(event, "image")}
-                        />
-                      </label>
-                      <label
-                        className={`group flex flex-col items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-white/30 transition-colors ${
-                          locked
-                            ? "cursor-not-allowed opacity-50"
-                            : "cursor-pointer hover:border-[var(--gold)]"
-                        } aspect-square`}
-                      >
-                        <span className="rounded-full bg-[var(--night)]/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--river-deep)] group-hover:text-[var(--gold)]">
-                          Live
-                        </span>
-                        <span className="mt-1 px-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
-                          Add live
-                        </span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept={LIVE_VIDEO_ACCEPT}
-                          disabled={locked || mediaUploading}
-                          onChange={(event) => handleMediaUpload(event, "live")}
+                          onChange={handleMediaUpload}
                         />
                       </label>
                     </>
                   ) : null}
                 </div>
                 <p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">
-                  {mediaUploading
-                    ? "Uploading…"
-                    : "Photos up to 10MB each; a live moment is a short video clip (MP4/WebM/MOV, up to 100MB) that plays on tap."}
+                  {mediaUploading ? "Uploading…" : "Photos up to 10MB each."}
                 </p>
               </div>
 

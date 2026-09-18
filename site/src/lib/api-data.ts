@@ -909,8 +909,9 @@ export { useApiQuery, type AsyncState } from "./use-api-query";
 // ───────────────── Community posts (route detail page) ─────────────────
 
 /**
- * 帖子媒体项：image 为普通图片；live 为 Live 图（url 指向配套短视频，
- * 展示层以视频首帧作为静态画面、点击播放）。
+ * 帖子媒体项。社区媒体只有这两种，不存在"视频"。
+ * image 为普通图片；live 为 live 实况图——与图片走同一个上传端点，url 指向
+ * 收下的文件，展示层以首帧作为静态画面、点击播放。
  */
 export type CommunityPostMedia = {
   type: "image" | "live";

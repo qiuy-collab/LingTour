@@ -25,8 +25,8 @@ type Props = {
 };
 
 /**
- * A single live-photo item: the video's first frame is the resting view and a
- * tap toggles muted playback. Playback is user-initiated, so reduced-motion
+ * A single live photo (实况图): the clip's first frame is the resting view and
+ * a tap toggles muted playback. Playback is user-initiated, so reduced-motion
  * users simply never press play.
  */
 function LiveMediaFrame({ url, title }: { url: string; title: string }) {
@@ -64,15 +64,7 @@ function LiveMediaFrame({ url, title }: { url: string; title: string }) {
           playing ? "" : "grayscale-[0.04]"
         }`}
       />
-      {!playing ? (
-        <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--night)]/62 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
-          <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 fill-current" aria-hidden="true">
-            <path d="M3 1.5v9l7-4.5-7-4.5z" />
-          </svg>
-          Live
-        </span>
-      ) : null}
-    </button>
+      </button>
   );
 }
 

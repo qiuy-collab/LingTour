@@ -164,14 +164,6 @@ export function PostCard({
             >
               {post.channel}
             </span>
-            {cover.type === "live" ? (
-              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[var(--night)]/62 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-                <svg viewBox="0 0 12 12" className="h-2 w-2 fill-current" aria-hidden="true">
-                  <path d="M3 1.5v9l7-4.5-7-4.5z" />
-                </svg>
-                Live
-              </span>
-            ) : null}
             {variant === "feature" ? (
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <p className="font-[family:var(--font-display)] text-3xl leading-[0.95] text-white [text-shadow:0_2px_16px_rgba(17,25,35,0.45)]">
