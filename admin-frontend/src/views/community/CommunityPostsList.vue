@@ -82,7 +82,17 @@ function getStatusType(status: string): string {
 }
 
 function formatInteractions(post: CommunityPost): string {
-  return `👍${post.likes} 💬${post.comments} ⭐${post.saves}`
+  return `👍${post.likes} ⭐${post.saves}`
+}
+
+/** 列表缩略图：优先多图/Live 媒体首项，回退旧单图字段。 */
+function getCoverUrl(post: CommunityPost): string {
+  return post.media[0]?.url || post.image || ''
+}
+
+function getCoverType(post: CommunityPost): 'image' | 'live' | null {
+  if (post.media[0]) return post.media[0].type
+  return post.image ? 'image' : null
 }
 </script>
 
@@ -106,10 +116,10 @@ function formatInteractions(post: CommunityPost): string {
         @change="handleSearch"
       >
         <el-option label="全部频道" value="" />
-        <el-option label="田野笔记" value="FieldNotes" />
-        <el-option label="美食地图" value="FoodMap" />
-        <el-option label="秘境停靠" value="HiddenStop" />
-        <el-option label="文化台" value="CultureDesk" />
+        <el-option label="田野笔记" value="Field Notes" />
+        <el-option label="美食地图" value="Food Map" />
+        <el-option label="秘境停靠" value="Hidden Stop" />
+        <el-option label="文化台" value="Culture Desk" />
       </el-select>
       <el-select
         v-model="filters.status"
@@ -130,12 +140,21 @@ function formatInteractions(post: CommunityPost): string {
         <el-table-column label="图片" width="90">
           <template #default="{ row }">
             <el-image
-              v-if="row.image"
-              :src="resolveMediaUrl(row.image)"
+              v-if="getCoverType(row) === 'image'"
+              :src="resolveMediaUrl(getCoverUrl(row))"
               class="admin-list-thumb"
               fit="cover"
               preview-teleported
-            />
+            >
+              <template #error>
+                <span class="admin-list-empty">无图</span>
+              </template>
+            </el-image>
+            <span
+              v-else-if="getCoverType(row) === 'live'"
+              class="admin-list-note"
+              title="Live 图（短视频）"
+            >Live</span>
             <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>

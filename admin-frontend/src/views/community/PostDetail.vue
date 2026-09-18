@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { communityApi } from '@/api/community'
 import type { CommunityPost, PostStatus, PostChannel } from '@/types/community'
 import { PostChannelMap, PostChannelColorMap, PostStatusMap, PostStatusColorMap } from '@/types/community'
+import { resolveMediaUrl } from '@/utils/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +27,19 @@ async function fetchPost() {
   }
 }
 
+/** 详情媒体列表：优先多图/Live 数组，回退旧单图字段。 */
+const mediaItems = computed(() => {
+  if (!post.value) return []
+  if (post.value.media.length) return post.value.media
+  return post.value.image ? [{ type: 'image' as const, url: post.value.image }] : []
+})
+
+function formatDateTime(value: string | null): string {
+  if (!value) return ''
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN')
+}
+
 function getChannelLabel(channel: string): string {
   return PostChannelMap[channel as PostChannel] || channel
 }
@@ -42,10 +56,30 @@ function getStatusType(status: string): string {
 async function handleReview(status: PostStatus) {
   if (!post.value) return
   try {
-    await communityApi.reviewPost(post.value.id, status)
+    let reason: string | undefined
+    if (status === 'hidden') {
+      const { value } = await ElMessageBox.prompt(
+        '隐藏后该帖子将不再对用户展示，可填写原因（仅运营内部留痕）。',
+        '隐藏帖子',
+        { type: 'warning', inputPlaceholder: '隐藏原因（可选）' },
+      )
+      reason = value?.trim() || undefined
+    } else {
+      await ElMessageBox.confirm(
+        `确定审核通过「${post.value.title || '该帖子'}」?通过后将对外展示。`,
+        '审核通过确认',
+        { type: 'success' },
+      )
+    }
+    await communityApi.reviewPost(post.value.id, status, reason)
     ElMessage.success(status === 'published' ? '审核通过' : '已隐藏')
     await fetchPost()
-  } catch {
+  } catch (err: any) {
+    if (err === 'cancel' || err === 'close') return
+    if (err?.response) {
+      ElMessage.error(err.response.data?.message || '操作失败')
+      return
+    }
     ElMessage.error('操作失败')
   }
 }
@@ -78,14 +112,43 @@ onMounted(() => { fetchPost() })
     <template v-if="post">
       <!-- 帖子主体 -->
       <el-card shadow="never" class="post-card">
-        <!-- 图片 -->
-        <div v-if="post.image" class="post-image-wrap">
-          <el-image
-            :src="post.image"
-            fit="cover"
-            style="width: 100%; max-height: 400px; border-radius: 8px"
-            preview-teleported
-          />
+        <!-- 媒体（多图 / Live 图，回退旧单图） -->
+        <div v-if="mediaItems.length" class="post-image-wrap">
+          <div
+            v-for="(item, index) in mediaItems"
+            :key="item.url + index"
+            class="post-media-item"
+          >
+            <video
+              v-if="item.type === 'live'"
+              :src="resolveMediaUrl(item.url)"
+              controls
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              class="post-media-video"
+            ></video>
+            <el-image
+              v-else
+              :src="resolveMediaUrl(item.url)"
+              :preview-src-list="[resolveMediaUrl(item.url)]"
+              :initial-index="index"
+              fit="cover"
+              class="post-media-image"
+              preview-teleported
+            >
+              <template #error>
+                <div class="post-media-error">图片加载失败</div>
+              </template>
+            </el-image>
+            <el-tag
+              v-if="item.type === 'live'"
+              type="info"
+              size="small"
+              class="post-media-badge"
+            >Live</el-tag>
+          </div>
         </div>
 
         <!-- 标题 -->
@@ -137,7 +200,6 @@ onMounted(() => { fetchPost() })
         <el-divider />
         <div class="post-interactions">
           <div class="interaction-item">👍 点赞 {{ post.likes }}</div>
-          <div class="interaction-item">💬 评论 {{ post.comments }}</div>
           <div class="interaction-item">⭐ 收藏 {{ post.saves }}</div>
         </div>
       </el-card>
@@ -170,6 +232,10 @@ onMounted(() => { fetchPost() })
             </template>
           </el-popconfirm>
         </div>
+        <div v-if="post.reviewedAt" class="review-trail">
+          <span>最近审核：{{ formatDateTime(post.reviewedAt) }}</span>
+          <span v-if="post.rejectionReason">原因：{{ post.rejectionReason }}</span>
+        </div>
       </el-card>
     </template>
   </div>
@@ -190,7 +256,17 @@ onMounted(() => { fetchPost() })
 .page-header h2 { margin: 0; font-size: 20px; color: #303133; }
 
 .post-card { margin-bottom: 20px; }
-.post-image-wrap { margin-bottom: 20px; }
+.post-image-wrap { margin-bottom: 20px; display: grid; gap: 12px; }
+.post-media-item { position: relative; }
+.post-media-image { width: 100%; max-height: 400px; border-radius: 8px; }
+.post-media-image :deep(img) { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; }
+.post-media-video { width: 100%; max-height: 400px; border-radius: 8px; background: #000; }
+.post-media-badge { position: absolute; left: 8px; top: 8px; }
+.post-media-error {
+  display: flex; align-items: center; justify-content: center;
+  height: 200px; color: #909399; font-size: 13px;
+  background: #f5f7fa; border-radius: 8px;
+}
 .post-title { font-size: 22px; margin: 0 0 16px; color: #303133; line-height: 1.4; }
 
 .post-meta {
@@ -234,4 +310,8 @@ onMounted(() => { fetchPost() })
 .action-card { margin-bottom: 20px; }
 .card-title { font-weight: 600; font-size: 15px; }
 .action-buttons { display: flex; gap: 10px; }
+.review-trail {
+  margin-top: 14px; display: flex; flex-wrap: wrap; gap: 16px;
+  font-size: 12px; color: #909399;
+}
 </style>

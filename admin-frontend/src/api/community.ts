@@ -1,16 +1,21 @@
 import api from './index'
 import type { ApiResponse, PaginatedResponse, PageParams } from '@/types/common'
 import { readContentValue } from '@/types/common'
-import type { CommunityPost, PostStatus } from '@/types/community'
+import type { CommunityPost, CommunityPostMedia, PostStatus } from '@/types/community'
 
 function normalizePost(raw: any): CommunityPost {
   const user = raw.user || {}
+  const media = (Array.isArray(raw.media) ? raw.media : []).filter(
+    (item: any): item is CommunityPostMedia =>
+      Boolean(item?.url) && (item.type === 'image' || item.type === 'live'),
+  )
   return {
     id: raw.id,
     userName: user.name || raw.userName || 'Culvoy User',
     userHandle: user.handle || raw.userHandle || 'guest',
     userAvatar: user.avatar || raw.userAvatar || '',
     image: raw.image || '',
+    media,
     title: readContentValue(raw.title),
     excerpt: readContentValue(raw.excerpt),
     content: readContentValue(raw.content ?? raw.excerpt),
@@ -21,7 +26,6 @@ function normalizePost(raw: any): CommunityPost {
     mood: raw.mood || '',
     tags: Array.isArray(raw.tags) ? raw.tags : [],
     likes: raw.likes ?? 0,
-    comments: raw.comments ?? 0,
     saves: raw.saves ?? 0,
     status: raw.status,
     featured: raw.featured ?? false,
