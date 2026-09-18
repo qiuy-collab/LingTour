@@ -116,7 +116,7 @@ function SelectField({
               : Math.max(0, currentIndex - 1);
             optionButtons[nextIndex]?.focus();
           }}
-          className="absolute z-50 mt-2 max-h-64 w-full overflow-y-auto overscroll-contain border border-[var(--line)] bg-[var(--paper)] shadow-[0_20px_60px_rgba(17,25,35,0.16)]"
+          className="absolute z-50 mt-2 max-h-64 w-full overflow-y-auto overscroll-contain border border-[var(--line)] bg-[var(--paper)] shadow-panel"
         >
           {options.map((option) => {
             const selected = option.value === value;
@@ -229,7 +229,7 @@ export function LoginPanel() {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <main className="grid min-h-[100dvh] bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)] lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
+    <div className="grid min-h-[100dvh] bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)] lg:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
       <section className="relative isolate hidden min-h-[100dvh] overflow-hidden border-r border-[var(--line)] bg-[var(--night)] text-white lg:block">
         <img
           src="/editorial/guangzhou-arcade-street.jpg"
@@ -404,6 +404,6 @@ export function LoginPanel() {
           </form>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

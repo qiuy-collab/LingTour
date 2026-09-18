@@ -8,7 +8,11 @@ import type { MetadataRoute } from "next";
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://culvoy.com";
-  const lastModified = new Date();
+
+  // A build-time constant, not `new Date()`. Recomputing it on every build told
+  // crawlers "every page changed today", every deploy — which trains them to
+  // ignore the signal entirely. Bump this when the core routes actually change.
+  const lastModified = new Date("2026-09-18T00:00:00.000Z");
 
   return [
     { url: base, lastModified, changeFrequency: "weekly", priority: 1 },

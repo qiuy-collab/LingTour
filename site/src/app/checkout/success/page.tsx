@@ -125,14 +125,14 @@ function SuccessContent() {
   })();
 
   return (
-    <main className="min-h-screen bg-[var(--paper-deep)] bg-grain px-4 py-12 text-[var(--river-deep)] sm:px-6 sm:py-16 lg:px-16 lg:py-24">
+    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-4 py-12 text-[var(--river-deep)] sm:px-6 sm:py-16 lg:px-16 lg:py-24">
       <div
         aria-busy={isBusy}
         aria-live="polite"
-        className="mx-auto max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-[0_28px_90px_rgba(17,25,35,0.12)]"
+        className="mx-auto max-w-3xl overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] shadow-panel"
       >
         <div className="bg-[var(--night)] px-6 py-8 text-white sm:px-10 sm:py-10">
-          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--gold)]">
+          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--gold-light)]">
             {copy.eyebrow}
           </p>
           <h1 className="mt-5 font-[family:var(--font-display)] text-5xl leading-[0.92] tracking-[-0.05em] sm:text-6xl">
@@ -191,7 +191,7 @@ function SuccessContent() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 

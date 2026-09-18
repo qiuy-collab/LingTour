@@ -3,7 +3,7 @@ export const common = {
     "common.site.title": "Culvoy Guangdong",
     "common.site.subtitle": "Guangdong",
     "common.site.tagline": "Designed journeys through Guangdong's coast, craft, food, and living memory.",
-    "common.site.footer.rights": "(c) 2026 Culvoy. All rights reserved.",
+    "common.site.footer.rights": "© {year} Culvoy. All rights reserved.",
     "common.site.footer.built": "Built with care for Guangdong culture.",
 
     "common.nav.routes": "Routes",
@@ -76,6 +76,15 @@ export const common = {
 
     "common.aria.closeMenu": "Close menu",
     "common.aria.openMenu": "Open menu",
+    "common.aria.skipToContent": "Skip to content",
+
+    "common.error.badge": "Field note lost",
+    "common.error.title": "This page",
+    "common.error.titleAccent": "went missing",
+    "common.error.description":
+      "Something on our side failed while assembling this page. The rest of the atlas is still standing — try again, or head back to the index.",
+    "common.error.retry": "Try again",
+    "common.error.home": "Back to the index",
 
     "common.footer.locations": "Guangzhou / Shantou / Meizhou",
 

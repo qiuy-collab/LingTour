@@ -15,7 +15,7 @@ export default function NotFound() {
   const t = (key: string) => translate(key);
 
   return (
-    <main className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
+    <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
       <section className="site-container flex min-h-[80vh] flex-col items-center justify-center py-32 text-center">
         <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
           {t("notFound.badge")}
@@ -49,6 +49,6 @@ export default function NotFound() {
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

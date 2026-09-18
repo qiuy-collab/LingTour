@@ -504,7 +504,7 @@ export default function CommunityPage() {
         />
         <div
           data-community-ink="right"
-          className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-[61%_39%_42%_58%] bg-[var(--field)]/[0.13] blur-2xl sm:h-[30rem] sm:w-[30rem]"
+          className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-[61%_39%_42%_58%] bg-[var(--jade)]/[0.13] blur-2xl sm:h-[30rem] sm:w-[30rem]"
         />
         <div className="site-container relative text-center">
           <div>
@@ -737,7 +737,7 @@ export default function CommunityPage() {
           the shrink-to-fit rule caps its width at 50vw regardless of the
           message, so a one-line prompt wrapped to four lines at 320px. */}
       {toast ? (
-        <div className="fixed bottom-5 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-[0_18px_50px_rgba(17,25,35,0.24)] sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:justify-start sm:rounded-full">
+        <div className="fixed bottom-5 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--night)] px-5 py-3 text-sm text-white shadow-panel sm:left-1/2 sm:right-auto sm:w-auto sm:-translate-x-1/2 sm:justify-start sm:rounded-full">
           <span>{toast}</span>
           <button
             type="button"
