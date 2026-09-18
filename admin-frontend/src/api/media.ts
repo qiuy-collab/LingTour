@@ -34,7 +34,7 @@ export interface MediaQueryParams {
   search?: string
   dateFrom?: string
   dateTo?: string
-  type?: 'image' | 'video'
+  type?: 'image' | 'video' | 'live'
 }
 
 /** 获取媒体文件列表 (disk scan, backward compatible) */

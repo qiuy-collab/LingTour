@@ -112,7 +112,7 @@ onMounted(() => { fetchPost() })
     <template v-if="post">
       <!-- 帖子主体 -->
       <el-card shadow="never" class="post-card">
-        <!-- 媒体（多图 / Live 图，回退旧单图） -->
+        <!-- 媒体（多图 / live 实况图，回退旧单图） -->
         <div v-if="mediaItems.length" class="post-image-wrap">
           <div
             v-for="(item, index) in mediaItems"
@@ -122,7 +122,6 @@ onMounted(() => { fetchPost() })
             <video
               v-if="item.type === 'live'"
               :src="resolveMediaUrl(item.url)"
-              controls
               muted
               loop
               playsinline
@@ -142,13 +141,7 @@ onMounted(() => { fetchPost() })
                 <div class="post-media-error">图片加载失败</div>
               </template>
             </el-image>
-            <el-tag
-              v-if="item.type === 'live'"
-              type="info"
-              size="small"
-              class="post-media-badge"
-            >Live</el-tag>
-          </div>
+            </div>
         </div>
 
         <!-- 标题 -->

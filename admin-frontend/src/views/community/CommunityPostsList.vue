@@ -85,7 +85,7 @@ function formatInteractions(post: CommunityPost): string {
   return `👍${post.likes} ⭐${post.saves}`
 }
 
-/** 列表缩略图：优先多图/Live 媒体首项，回退旧单图字段。 */
+/** 列表缩略图：优先多图 / live 实况图媒体首项，回退旧单图字段。 */
 function getCoverUrl(post: CommunityPost): string {
   return post.media[0]?.url || post.image || ''
 }
@@ -150,11 +150,15 @@ function getCoverType(post: CommunityPost): 'image' | 'live' | null {
                 <span class="admin-list-empty">无图</span>
               </template>
             </el-image>
-            <span
+            <video
               v-else-if="getCoverType(row) === 'live'"
-              class="admin-list-note"
-              title="Live 图（短视频）"
-            >Live</span>
+              :src="resolveMediaUrl(getCoverUrl(row))"
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              class="admin-list-thumb admin-list-thumb-live"
+            ></video>
             <span v-else class="admin-list-empty">无图</span>
           </template>
         </el-table-column>
@@ -246,4 +250,11 @@ function getCoverType(post: CommunityPost): 'image' | 'live' | null {
 </template>
 
 <style scoped>
+/* live 实况图和图片一样，以片段首帧作为缩略图，沿用同一 50×50 尺寸。 */
+.admin-list-thumb-live {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 </style>

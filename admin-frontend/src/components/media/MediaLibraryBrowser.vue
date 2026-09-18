@@ -26,7 +26,7 @@ const props = withDefaults(
     multiple?: boolean;
     limit?: number;
     accept?: string;
-    mediaType?: "" | "image" | "video";
+    mediaType?: "" | "image" | "video" | "live";
     defaultModule?: string;
     entityType?: string;
     entityId?: string;
@@ -122,7 +122,9 @@ const mediaNoun = computed(() =>
     ? "视频"
     : mediaTypeFilter.value === "image"
       ? "图片"
-      : "媒体文件",
+      : mediaTypeFilter.value === "live"
+        ? "live 实况图"
+        : "媒体文件",
 );
 const canSelectMore = computed(() =>
   props.multiple ? selectedFilenames.value.length < props.limit : true,
@@ -312,9 +314,23 @@ function getFullUrl(file: MediaFile): string {
   return resolveMediaUrl(file.url);
 }
 
-function isVideoFile(file: MediaFile): boolean {
+/** video/* 容器文件 —— live 实况图与真实视频共用同一批容器。 */
+function isVideoContainer(file: MediaFile): boolean {
   if (file.mime_type?.startsWith("video/")) return true;
   return /\.(mp4|webm|mov|m4v)(?:$|[?#])/i.test(file.url);
+}
+
+/**
+ * live 实况图：社区帖子的媒体只有 image 与 live，因此落在 community 模块下的
+ * video 容器文件是 live 实况图，而不是真正的视频。后端 /upload/media 的
+ * type=live 用同一规则过滤。
+ */
+function isLivePhotoFile(file: MediaFile): boolean {
+  return file.module === "community" && isVideoContainer(file);
+}
+
+function isVideoFile(file: MediaFile): boolean {
+  return !isLivePhotoFile(file) && isVideoContainer(file);
 }
 
 function formatTimestamp(value?: string) {
@@ -657,6 +673,7 @@ onBeforeUnmount(() => {
         >
           <el-option label="全部类型" value="" />
           <el-option label="图片" value="image" />
+          <el-option label="live 实况图" value="live" />
           <el-option label="视频" value="video" />
         </el-select>
 
@@ -802,7 +819,7 @@ onBeforeUnmount(() => {
       >
         <div class="media-thumb">
           <video
-            v-if="isVideoFile(file)"
+            v-if="isVideoFile(file) || isLivePhotoFile(file)"
             :src="getFullUrl(file)"
             muted
             playsinline
@@ -815,7 +832,11 @@ onBeforeUnmount(() => {
             loading="lazy"
           />
           <span class="media-kind-badge">{{
-            isVideoFile(file) ? "视频" : "图片"
+            isLivePhotoFile(file)
+              ? "live 实况图"
+              : isVideoFile(file)
+                ? "视频"
+                : "图片"
           }}</span>
           <div class="media-overlay">
             <el-button size="small" circle @click.stop="copyUrl(file)">
