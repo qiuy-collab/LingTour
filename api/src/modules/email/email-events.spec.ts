@@ -24,6 +24,11 @@ describe('email-events registry', () => {
     expect(purposeToEventKey('change_email')).toBe(
       'email_change_verification',
     );
+    expect(purposeToEventKey('password_reset')).toBe('password_reset');
+  });
+
+  it('marks password_reset as active now that it has a send site', () => {
+    expect(getEmailEvent('password_reset')?.status).toBe('active');
   });
 
   it('returns definitions for every registered key', () => {

@@ -53,6 +53,20 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Sets a new password after a `password_reset` code has already been
+   * verified for this exact address. Callers must consume the code first —
+   * this method performs no verification of its own.
+   */
+  async resetPassword(email: string, password: string): Promise<void> {
+    const user = await this.findByEmail(email.trim().toLowerCase());
+    if (!user) {
+      throw new NotFoundException('Account no longer exists');
+    }
+    user.passwordHash = await bcrypt.hash(password, 12);
+    await this.userRepository.save(user);
+  }
+
   async findAllAdmin(
     pageInput = 1,
     pageSizeInput = 20,

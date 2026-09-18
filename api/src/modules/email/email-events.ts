@@ -164,8 +164,8 @@ export const EMAIL_EVENTS: EmailEventDefinition[] = [
   {
     key: 'password_reset',
     label: '修改密码验证码',
-    description: '找回或修改密码时的身份验证码。发送链路尚未接入，模板先行可编辑。',
-    status: 'planned',
+    description: '找回或修改密码时的身份验证码。',
+    status: 'active',
     variables: [
       ...CODE_VARIABLES,
       { key: 'action', label: '动作说明', example: 'reset your Culvoy password' },
@@ -243,13 +243,15 @@ export function getEmailEvent(key: string): EmailEventDefinition | undefined {
 
 /** Maps the auth verification purposes to their template events. */
 export function purposeToEventKey(
-  purpose: 'login' | 'signup' | 'change_email',
+  purpose: 'login' | 'signup' | 'change_email' | 'password_reset',
 ): string {
   switch (purpose) {
     case 'signup':
       return 'signup_verification';
     case 'change_email':
       return 'email_change_verification';
+    case 'password_reset':
+      return 'password_reset';
     case 'login':
     default:
       return 'login_verification';

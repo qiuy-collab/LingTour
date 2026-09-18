@@ -27,6 +27,7 @@ import {
   RequestEmailChangeDto,
   ConfirmEmailChangeDto,
 } from './dto/email-change.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import type { Request } from 'express';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
@@ -184,6 +185,29 @@ export class AuthController {
       dto.newEmail,
       dto.code,
     );
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Post('password/forgot')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Mail a password reset code. Answers identically whether or not the address exists',
+  })
+  @ApiBody({ type: ForgotPasswordDto })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Post('password/reset')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Redeem the mailed reset code and set a new password' })
+  @ApiBody({ type: ResetPasswordDto })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 
   @Post('me/avatar')

@@ -50,7 +50,14 @@ export class EmailVerificationService {
     // Anti-enumeration (report P2-2): for login, an unknown email gets the
     // exact same 200 response as a known one — no code is stored, no mail
     // is sent, and the shape of the response does not differ.
-    if (purpose === 'login') {
+    // Anti-enumeration (report P2-2): for login, an unknown email gets the
+    // exact same 200 response as a known one — no code is stored, no mail
+    // is sent, and the shape of the response does not differ.
+    //
+    // Password reset needs the same treatment for a second reason: answering
+    // "no such account" here would turn the forgot-password form into an
+    // account oracle.
+    if (purpose === 'login' || purpose === 'password_reset') {
       const existing = await this.usersService.findByEmail(email);
       if (!existing || existing.status !== 'active') {
         return {
@@ -214,6 +221,7 @@ export class EmailVerificationService {
       signup: 'create your Culvoy account',
       login: 'log in to Culvoy',
       change_email: 'confirm your new email address',
+      password_reset: 'reset your Culvoy password',
     };
     return this.mailerService.sendTemplated(purposeToEventKey(purpose), email, {
       code,

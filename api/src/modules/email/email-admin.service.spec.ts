@@ -293,6 +293,7 @@ describe('EmailAdminService', () => {
         'signup_verification',
         'login_verification',
         'email_change_verification',
+        'password_reset',
       ]);
       expect(planned.length).toBeGreaterThan(0);
     });

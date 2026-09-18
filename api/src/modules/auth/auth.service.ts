@@ -227,6 +227,30 @@ export class AuthService {
   }
 
   /**
+   * Forgot-password step 1: mail a reset code. Resolves with the same shape
+   * whether or not the address exists, so the form cannot be used to probe for
+   * accounts (see EmailVerificationService.sendCode).
+   */
+  async forgotPassword(email: string) {
+    return this.emailVerificationService.sendCode(email, 'password_reset');
+  }
+
+  /**
+   * Forgot-password step 2: consume the code and set the new password. The
+   * code is bound to the address it was issued for, so a leaked code cannot be
+   * replayed against a different account.
+   */
+  async resetPassword(email: string, code: string, newPassword: string) {
+    const verified = await this.emailVerificationService.consumeCode(
+      email,
+      'password_reset',
+      code,
+    );
+    await this.usersService.resetPassword(verified.email, newPassword);
+    return { ok: true };
+  }
+
+  /**
    * Email change step 1 (report P2-3): send a verification code to the NEW
    * address. The change only lands after step 2 confirms that code.
    */

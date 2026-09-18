@@ -7,7 +7,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export type EmailVerificationPurpose = 'login' | 'signup' | 'change_email';
+export type EmailVerificationPurpose =
+  | 'login'
+  | 'signup'
+  | 'change_email'
+  // Resetting a forgotten password; delivered through the password_reset event.
+  | 'password_reset';
 
 @Entity('auth_verification_codes')
 @Index(['email', 'purpose', 'consumedAt'])
