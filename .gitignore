@@ -66,3 +66,8 @@ next-env.d.ts
 # Local reference material — not part of the product
 /lingtour-frontend-documentation/
 /review/
+
+# Local-only assets and helpers — not part of the product
+/.local-backups/
+/admin-backoffice-visual-reference.png
+/api/src/database/seeds/seed-local-preview.ts
