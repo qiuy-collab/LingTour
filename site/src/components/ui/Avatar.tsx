@@ -36,14 +36,10 @@ function getInitials(name?: string | null): string {
 
 /** Deterministic colour palette so the same user always renders the same chip. */
 const PALETTE = [
-  { bg: "#1f3a4d", fg: "#f5efe1" }, // river deep
-  { bg: "#b6452f", fg: "#fdf4e7" }, // cinnabar
-  { bg: "#9a7438", fg: "#fbf3df" }, // gold
-  { bg: "#3a5a40", fg: "#f1efe5" }, // forest
-  { bg: "#5b3a85", fg: "#f4eef9" }, // ink violet
-  { bg: "#266b6e", fg: "#eaf5f5" }, // sea
-  { bg: "#7a3848", fg: "#fbe9ed" }, // wine
-  { bg: "#1f5a8a", fg: "#eef3f9" }, // sky
+  { bg: "#14343d", fg: "#f5efe1" }, // river-deep
+  { bg: "#b64235", fg: "#fdf4e7" }, // cinnabar
+  { bg: "#9a6d2e", fg: "#17202a" }, // gold
+  { bg: "#7c9b86", fg: "#17202a" }, // jade
 ];
 
 function pickColour(seed: string): { bg: string; fg: string } {

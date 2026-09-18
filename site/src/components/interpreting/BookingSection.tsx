@@ -132,7 +132,7 @@ export function BookingSection({ prefillNeeds }: Props) {
                   {"Request summary"}
                 </p>
                 <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
+                  <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
                   {bookingFastTrack ? "Fast track" : `${String(bookingStep + 1).padStart(2, "0")} / 04`}
                 </span>
               </div>

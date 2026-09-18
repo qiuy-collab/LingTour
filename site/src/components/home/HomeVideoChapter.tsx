@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { HomeVideo } from "@/types/content";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionDuration, motionEase, motionMedia, motionScrub, useGSAP } from "@/lib/motion";
 
 type HomeVideoChapterProps = {
   video?: HomeVideo;
@@ -85,7 +85,7 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
       media.add(
         {
           animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 768px)",
+          desktop: motionMedia.tablet,
         },
         (context) => {
           if (!context.conditions?.animate || !scope.current) return;
@@ -93,12 +93,12 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
           if (!film) return;
 
           gsap.fromTo(
-            scope.current,
+            film,
             { autoAlpha: 0, clipPath: "inset(12% 0 12% 0)" },
             {
               autoAlpha: 1,
               clipPath: "inset(0% 0 0% 0)",
-              duration: 1.1,
+              duration: motionDuration.cinematic,
               ease: motionEase.enter,
               clearProps: "clipPath",
               scrollTrigger: {
@@ -112,16 +112,16 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
           if (context.conditions?.desktop) {
             gsap.fromTo(
               film,
-              { scale: 1.08, yPercent: -2 },
+              { scale: 1.02, yPercent: -3 },
               {
-                scale: 1.14,
-                yPercent: 2,
+                scale: 1.06,
+                yPercent: 0,
                 ease: "none",
                 scrollTrigger: {
                   trigger: scope.current,
-                  start: "top bottom",
+                  start: "top top",
                   end: "bottom top",
-                  scrub: 0.7,
+                  scrub: motionScrub,
                 },
               },
             );
@@ -142,7 +142,7 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
       aria-label={video?.title || "Guangzhou skyline film"}
       className="pb-6 pt-12 sm:pb-8 sm:pt-16 lg:pb-10 lg:pt-24"
     >
-      <div className="relative w-full border-[0.4rem] border-[var(--paper-deep)] bg-[var(--paper-deep)] shadow-[0_20px_60px_rgba(17,25,35,0.12)] sm:border-[0.7rem]">
+      <div className="relative w-full border-[0.4rem] border-[var(--paper-deep)] bg-[var(--paper-deep)] shadow-panel sm:border-[0.7rem]">
         <div className="relative aspect-[4/3] overflow-hidden bg-[var(--night)] sm:aspect-video">
           <video
             ref={videoRef}
@@ -164,7 +164,7 @@ export function HomeVideoChapter({ video }: HomeVideoChapterProps) {
             onClick={togglePlayback}
             aria-label={paused ? "Play Guangzhou skyline film" : "Pause Guangzhou skyline film"}
             aria-pressed={!paused}
-            className="absolute bottom-4 right-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-[var(--night)]/58 text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] backdrop-blur-md transition duration-300 hover:scale-105 hover:bg-[var(--night)]/78 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:bottom-6 sm:right-6 sm:h-12 sm:w-12"
+            className="absolute bottom-4 right-4 z-10 grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-[var(--night)]/58 text-white shadow-lift backdrop-blur-md transition duration-300 hover:scale-105 hover:bg-[var(--night)]/78 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:bottom-6 sm:right-6 sm:h-12 sm:w-12"
           >
             <span aria-hidden className="text-sm font-bold leading-none">
               {paused ? "▶" : "Ⅱ"}

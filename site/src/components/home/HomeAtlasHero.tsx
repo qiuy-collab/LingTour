@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionEase, motionMedia, motionScrub, useGSAP } from "@/lib/motion";
 
 type HomeAtlasHeroProps = {
   image: string;
@@ -35,7 +35,7 @@ export function HomeAtlasHero({
       media.add(
         {
           animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 1024px)",
+          desktop: motionMedia.desktop,
         },
         (context) => {
           if (!context.conditions?.animate) return;
@@ -54,16 +54,16 @@ export function HomeAtlasHero({
           if (context.conditions?.desktop && heroMedia) {
             gsap.fromTo(
               heroMedia,
-              { scale: 1.04, xPercent: 0 },
+              { scale: 1.02, yPercent: -3 },
               {
-                scale: 1.1,
-                xPercent: 2,
+                scale: 1.06,
+                yPercent: 0,
                 ease: "none",
                 scrollTrigger: {
                   trigger: scope.current,
                   start: "top top",
                   end: "bottom top",
-                  scrub: 0.6,
+                  scrub: motionScrub,
                 },
               },
             );
@@ -97,7 +97,7 @@ export function HomeAtlasHero({
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {eyebrow}
           </p>
-          <h1 className="home-hero-title mt-7 max-w-[8.5ch] font-[family:var(--font-sans)] text-[clamp(4rem,8.6vw,8.4rem)] font-medium leading-[0.86] max-lg:mt-5 max-lg:text-[clamp(3.1rem,14.2vw,4.25rem)] max-lg:leading-[0.9]">
+          <h1 className="home-hero-title mt-7 max-w-[8.5ch] font-[family:var(--font-sans)] text-[clamp(3.1rem,8.6vw,8.4rem)] font-medium leading-[0.86] max-lg:mt-5">
             {titleLine1}
             <span className="mt-1 block italic text-[var(--gold)]">{accent}</span>
             <span className="block">{titleLine3}</span>

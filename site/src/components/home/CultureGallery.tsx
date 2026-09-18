@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useLocale } from "@/lib/locale-context";
 import type { CultureFeature } from "@/types/content";
 import { placeholderFor } from "@/lib/placeholders";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 
 interface Props {
   highlights?: CultureFeature[];
@@ -29,7 +29,7 @@ export function CultureGallery({ highlights = [] }: Props) {
       media.add(
         {
           animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 768px)",
+          desktop: motionMedia.tablet,
         },
         (context) => {
           const tiles = gsap.utils.toArray<HTMLElement>("[data-culture-tile]", scope.current);

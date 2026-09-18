@@ -137,7 +137,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
       {isOpen ? (
         <div
           aria-busy={!routesReady}
-          className="fixed left-0 top-[4.55rem] z-40 max-h-[calc(100dvh-4.55rem)] w-screen overflow-y-auto overscroll-contain border-y border-black/5 bg-[var(--paper-deep)] bg-grain shadow-[0_40px_100px_rgba(0,0,0,0.15)] backdrop-blur-xl"
+          className="fixed left-0 top-[4.55rem] z-40 max-h-[calc(100dvh-4.55rem)] w-screen overflow-y-auto overscroll-contain border-y border-black/5 bg-[var(--paper-deep)] bg-grain shadow-panel backdrop-blur-xl"
         >
           <div className="mx-auto max-w-[82rem] px-6 py-8 lg:px-10 lg:py-12">
             <div className="mb-8 flex items-center justify-between gap-8 border-b border-black/5 pb-7 lg:mb-12 lg:pb-10">

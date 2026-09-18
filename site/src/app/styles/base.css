@@ -1,12 +1,20 @@
 @import "tailwindcss";
 
 :root {
+  /* Single light ground: declare it so native controls (scrollbars, checkbox,
+     date picker, caret) don't get painted from a guessed dark scheme. */
+  color-scheme: light;
+  accent-color: var(--cinnabar);
+
   --background: #ece9e2; /* More neutral stone-paper — reduced yellow */
   --foreground: #17202a;
   --paper: #f4f2ee;       /* Neutral light paper */
   --paper-deep: #ece9e2;
   --ink: #17202a;
-  --muted: #66717d;
+  /* Body copy sits on --paper-deep: #66717d measured 4.10:1 there, under the
+     4.5:1 AA floor. #5b6874 clears it at ~4.66:1. Keep it darker than this
+     only if the surface gets lighter. */
+  --muted: #5b6874;
   --line: rgba(23, 32, 42, 0.13);
   --river: #24535e;
   --river-deep: #14343d;
@@ -19,7 +27,7 @@
      this derivative clears 6.7:1 and 8.9:1. Never use it on light surfaces. */
   --gold-light: #d9b36a;
   --night: #111923;
-  --shadow-soft: 0 22px 70px rgba(17, 25, 35, 0.12);
+  --shadow-soft: var(--shadow-panel);
   --site-max-width: 82rem;
   --surface: rgba(255, 255, 255, 0.72);
   --surface-strong: #f9f8f5;
@@ -54,6 +62,14 @@
   --color-foreground: var(--foreground);
   --font-sans: "Trebuchet MS", "Segoe UI", sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
+
+  /* Elevation scale — the card dialect is creative (owner decision D1):
+     one radius family, three shadow steps, nothing in between. A fourth
+     arbitrary shadow value is a bug; map it into one of these instead.
+     Brand-coloured and focus-ring shadows are separate, deliberate exceptions. */
+  --shadow-rest: 0 2px 10px rgba(17, 25, 35, 0.05);
+  --shadow-lift: 0 10px 32px rgba(17, 25, 35, 0.09);
+  --shadow-panel: 0 24px 80px rgba(17, 25, 35, 0.12);
 }
 
 * {
@@ -64,6 +80,9 @@ html {
   scroll-behavior: smooth;
   overflow-x: clip;
   background-color: var(--background);
+  /* Reserving the scrollbar track keeps the page from jumping sideways every
+     time a drawer or modal locks body scrolling. */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -321,5 +340,14 @@ main > #profile-panel {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* …but don't erase state feedback. Hover fill, focus ring and pressed states
+     are not vestibular triggers; collapsing them to zero removes the only cue
+     that a control responded at all. */
+  :where(a, button, input, select, textarea, summary, [role="button"]),
+  :where(a, button, input, select, textarea, summary, [role="button"])::before,
+  :where(a, button, input, select, textarea, summary, [role="button"])::after {
+    transition-duration: 120ms !important;
   }
 }

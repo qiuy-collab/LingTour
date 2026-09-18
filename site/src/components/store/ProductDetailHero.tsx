@@ -6,7 +6,7 @@ import type { StoreProduct } from "@/data/store";
 import { ProductActions } from "@/components/store/ProductActions";
 import { Price } from "@/components/ui/Price";
 import { MediaFrame } from "@/components/ui/MediaFrame";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 import {
   dedupeMedia,
   mediaPoster,
@@ -64,8 +64,8 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
       const mediaQuery = gsap.matchMedia();
       mediaQuery.add(
         {
-          animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 1024px) and (pointer: fine)",
+          animate: motionMedia.allowMotion,
+          desktop: `${motionMedia.desktop} and ${motionMedia.finePointer}`,
         },
         (context) => {
           const { animate, desktop } = context.conditions ?? {};
@@ -121,12 +121,21 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
             moveY(localY * 6);
             rotate(localX * 0.9);
           };
-          const handleEnter = () => gsap.set(plate, { willChange: "transform" });
+          // A zero-duration gsap.set with a delay cannot be cancelled by the
+          // next pointerenter, so returning to the card within 0.62s stripped
+          // the layer hint mid-animation and never restored it.
+          let willChangeCall: gsap.core.Tween | null = null;
+          const handleEnter = () => {
+            willChangeCall?.kill();
+            willChangeCall = null;
+            gsap.set(plate, { willChange: "transform" });
+          };
           const handleLeave = () => {
             moveX(0);
             moveY(0);
             rotate(0);
-            gsap.set(plate, { willChange: "auto", delay: 0.62 });
+            willChangeCall?.kill();
+            willChangeCall = gsap.delayedCall(0.62, () => gsap.set(plate, { willChange: "auto" }));
           };
 
           plate.addEventListener("pointerenter", handleEnter);
@@ -137,6 +146,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
             plate.removeEventListener("pointerenter", handleEnter);
             plate.removeEventListener("pointermove", handleMove);
             plate.removeEventListener("pointerleave", handleLeave);
+            willChangeCall?.kill();
           };
         },
       );
@@ -217,7 +227,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               </div>
 
               <header data-product-heading className="space-y-3 sm:space-y-4">
-                <h1 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.05] tracking-tight text-[var(--river-deep)] sm:text-4xl lg:text-5xl">
+                <h1 className="text-balance font-[family:var(--font-display)] text-[clamp(1.875rem,6vw,5.5rem)] leading-[1.05] tracking-tight text-[var(--river-deep)]">
                   {product.name}
                 </h1>
                 <p className="handwritten text-xl text-[var(--gold)] sm:text-2xl">{product.tag}</p>

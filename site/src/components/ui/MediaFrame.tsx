@@ -118,7 +118,7 @@ export function MediaFrame({
           }`}
         >
           <div className="grid justify-items-center gap-3">
-            <span className="h-px w-14 animate-pulse bg-[var(--gold)]/55" />
+            <span aria-hidden="true" className="h-px w-14 animate-pulse bg-[var(--gold)]/55" />
             {eager ? (
               <span className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]/70">
                 Opening field media

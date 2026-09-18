@@ -323,7 +323,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => void uploadAvatar(event.target.files?.[0])} />
             <div className="min-w-0">
               <h1 className="mt-3 min-w-0 break-words font-[family:var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] tracking-[-0.04em]">
-                <span data-pastoral-title className="block">{user.name}</span>
+                <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{user.name}</span></span>
               </h1>
               <p data-pastoral-subtitle className="mt-4 max-w-xl text-base leading-7 text-[var(--muted)] sm:text-lg">
                 {user.bio || t("account.profile.bioFallback")}
@@ -400,7 +400,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </nav>
       </div>
 
-      <main className="site-container min-w-0 py-8 sm:py-12 lg:py-16">
+      <div className="site-container min-w-0 py-8 sm:py-12 lg:py-16">
         <div
           id="profile-panel"
           role="tabpanel"
@@ -590,10 +590,10 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
           </section>
         ) : null}
         </div>
-      </main>
+      </div>
 
       {activeTab !== "settings" ? (
-        <button type="button" onClick={() => selectTab("settings")} className="fixed bottom-4 left-4 right-4 z-40 min-h-12 bg-[var(--river-deep)] px-6 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-[0_8px_22px_rgba(17,25,35,0.18)] sm:hidden">
+        <button type="button" onClick={() => selectTab("settings")} className="fixed bottom-4 left-4 right-4 z-40 min-h-12 bg-[var(--river-deep)] px-6 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-lift sm:hidden">
           {t("account.profile.edit")}
         </button>
       ) : null}

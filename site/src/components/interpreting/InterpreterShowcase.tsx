@@ -105,7 +105,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                         {profile.languages}
                       </p>
                       <div className="flex items-center gap-2">
-                        <div className="w-1 h-1 rounded-full bg-[var(--cinnabar)] animate-pulse" />
+                        <div aria-hidden="true" className="w-1 h-1 rounded-full bg-[var(--cinnabar)] animate-pulse" />
                         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
                           Ready to match
                         </p>

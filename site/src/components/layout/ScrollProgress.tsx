@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/motion";
+import { gsap, motionScrub, useGSAP } from "@/lib/motion";
 
 export function ScrollProgress() {
   const scope = useRef<HTMLDivElement | null>(null);
@@ -23,14 +23,31 @@ export function ScrollProgress() {
               trigger: document.documentElement,
               start: 0,
               end: "max",
-              scrub: 0.2,
+              scrub: motionScrub,
             },
           },
         );
       });
 
+      // Reduced motion used to hide the whole indicator, which threw away the
+      // "how far through am I" signal along with the smoothing. A 3px line
+      // tracking scroll is not a vestibular trigger — keep it, just drop the
+      // scrub lag so it moves exactly with the scroll position.
       media.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(scope.current, { autoAlpha: 0 });
+        gsap.fromTo(
+          bar.current,
+          { scaleX: 0 },
+          {
+            scaleX: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: document.documentElement,
+              start: 0,
+              end: "max",
+              scrub: true,
+            },
+          },
+        );
       });
 
       return () => media.revert();

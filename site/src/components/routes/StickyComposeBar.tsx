@@ -214,7 +214,7 @@ export function StickyComposeBar({
       />
 
       <div
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-[var(--background)] pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_40px_rgba(17,25,35,0.10)]"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-[var(--background)] pb-[env(safe-area-inset-bottom)] shadow-panel"
         role="region"
         aria-label="Leave a field note on this route"
       >
@@ -230,7 +230,7 @@ export function StickyComposeBar({
           className="site-container flex w-full items-center justify-between gap-4 py-3.5 text-left transition hover:bg-[var(--paper-deep)]/40"
         >
           <div className="flex min-w-0 items-center gap-3">
-            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--cinnabar)]" />
+            <span aria-hidden="true" className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--cinnabar)]" />
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)]">
               Field Drop
             </span>

@@ -120,7 +120,7 @@ export function SiteHeader() {
           ? "fixed inset-x-0 top-0"
           : "sticky top-0 border-[var(--line)] bg-[var(--paper-deep)]/85 bg-grain backdrop-blur-xl",
         isHome && homeScrolled
-          ? "border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain shadow-[0_10px_32px_rgba(20,52,61,0.08)] backdrop-blur-xl"
+          ? "border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain shadow-lift backdrop-blur-xl"
           : isHome
             ? "border-white/25 bg-[var(--paper-deep)]/48 backdrop-blur-sm"
             : "",

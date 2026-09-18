@@ -14,7 +14,7 @@ import type { EventData } from "@/lib/api-data";
 import type { Region } from "@/types/content";
 import { Reveal } from "@/components/ui/Reveal";
 import { useLocale } from "@/lib/locale-context";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionDuration, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 
 const initialFeatures = getMapFeatures();
 
@@ -261,14 +261,14 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
       if (!mobilePanelRef.current) return;
 
       const media = gsap.matchMedia();
-      media.add("(prefers-reduced-motion: no-preference)", () => {
+      media.add(motionMedia.allowMotion, () => {
         gsap.fromTo(
           mobilePanelRef.current,
           { autoAlpha: 0, y: 18 },
           {
             autoAlpha: 1,
             y: 0,
-            duration: 0.5,
+            duration: motionDuration.medium,
             ease: motionEase.enter,
             clearProps: "opacity,transform,visibility",
           },
@@ -277,9 +277,13 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
 
       return () => media.revert();
     },
+    // Deliberately NOT keyed on the active city: this used to re-run on every
+    // hover-driven city change, replaying a 0.5s entrance each time the pointer
+    // crossed a different city on the map. The panel enters once on mount;
+    // switching cities just swaps its content.
     {
       scope: mobilePanelRef,
-      dependencies: [resolvedActiveCode],
+      dependencies: [],
       revertOnUpdate: true,
     },
   );
@@ -377,7 +381,8 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                   viewBox={`0 0 ${mapData.width} ${mapData.height}`}
                   preserveAspectRatio={isCompact ? "xMidYMin meet" : "xMidYMid meet"}
                   className="h-full w-full"
-                  role="img"
+                  role="group"
+                  aria-label="Map of Guangdong: cities with published stories are listed below this graphic"
                 >
                   <rect
                     width={mapData.width}
@@ -412,7 +417,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         strokeWidth={isActive ? (hasEvent ? 2 : 1.5) : 1}
                         vectorEffect="non-scaling-stroke"
                         opacity={1}
-                        className="transition-all duration-500"
+                        className="transition-[fill] duration-500"
                         style={{
                           fill: isActive
                             ? hasEvent
@@ -522,7 +527,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
 
           <div
             ref={mobilePanelRef}
-            className="relative z-30 mx-3 -mt-12 grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] gap-3 border-[0.35rem] border-white bg-[rgba(248,246,239,0.96)] p-2.5 shadow-[0_16px_35px_rgba(20,52,61,0.14)] backdrop-blur-sm lg:hidden"
+            className="relative z-30 mx-3 -mt-12 grid min-w-0 grid-cols-[5.75rem_minmax(0,1fr)] gap-3 border-[0.35rem] border-white bg-[rgba(248,246,239,0.96)] p-2.5 shadow-lift backdrop-blur-sm lg:hidden"
           >
             <Link
               href={`/culture/${activeCity.slug}`}

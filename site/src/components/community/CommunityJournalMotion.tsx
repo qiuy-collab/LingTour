@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useRef } from "react";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 
 type CommunityJournalMotionProps = {
   children: ReactNode;
@@ -107,7 +107,7 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
       media.add(
         {
           animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 768px) and (pointer: fine)",
+          desktop: `${motionMedia.tablet} and ${motionMedia.finePointer}`,
         },
         (context) => {
           const { animate, desktop } = context.conditions ?? {};
@@ -127,12 +127,20 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
               moveY(localY * 4);
               rotate(localX * 0.7);
             };
-            const handleEnter = () => gsap.set(card, { willChange: "transform" });
+            // See ProductDetailHero: a delayed gsap.set is not cancellable, so
+            // re-entering inside the delay left the layer hint removed.
+            let willChangeCall: gsap.core.Tween | null = null;
+            const handleEnter = () => {
+              willChangeCall?.kill();
+              willChangeCall = null;
+              gsap.set(card, { willChange: "transform" });
+            };
             const handleLeave = () => {
               moveX(0);
               moveY(0);
               rotate(0);
-              gsap.set(card, { willChange: "auto", delay: 0.55 });
+              willChangeCall?.kill();
+              willChangeCall = gsap.delayedCall(0.55, () => gsap.set(card, { willChange: "auto" }));
             };
 
             card.addEventListener("pointerenter", handleEnter);
@@ -143,6 +151,7 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
               card.removeEventListener("pointerenter", handleEnter);
               card.removeEventListener("pointermove", handleMove);
               card.removeEventListener("pointerleave", handleLeave);
+              willChangeCall?.kill();
             };
           });
 

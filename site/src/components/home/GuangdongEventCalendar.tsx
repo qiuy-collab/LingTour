@@ -237,6 +237,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                   ) : null}
                   {hasEvent ? (
                     <div
+                      aria-hidden="true"
                       className={`mt-1 h-1 w-1 rounded-full ${isSelected ? "animate-pulse bg-[var(--cinnabar)]" : "bg-[var(--gold)]"}`}
                     />
                   ) : null}

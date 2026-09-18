@@ -1,55 +1,71 @@
 "use client";
 
 import { type ReactNode, useRef } from "react";
-import { gsap, motionEase, useGSAP } from "@/lib/motion";
+import { gsap, motionDuration, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 
 type RevealProps = {
   children: ReactNode;
+  /** Seconds. */
   delay?: number;
   className?: string;
   threshold?: number;
+  /** Seconds. */
   duration?: number;
 };
 
-export function Reveal({ children, delay = 0, className = "", threshold = 0.12, duration = 750 }: RevealProps) {
+/**
+ * The site's only entrance primitive (~45-60 static instances, more once data
+ * lists multiply it).
+ *
+ * It animates `y` only — never opacity — so a failed script, a reduced-motion
+ * preference, or a teardown can never leave content stuck invisible.
+ *
+ * It is deliberately NOT gated on a desktop breakpoint: previously everything
+ * under 768px was skipped entirely, which meant phones had no entrance motion
+ * anywhere on the site while the far more expensive scrub parallax stayed.
+ */
+export function Reveal({
+  children,
+  delay = 0,
+  className = "",
+  threshold = 0.12,
+  duration = motionDuration.slow,
+}: RevealProps) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useGSAP(
     () => {
-      if (!ref.current) return;
+      const element = ref.current;
+      if (!element) return;
+      // A breakpoint change tears down and rebuilds every matchMedia context.
+      // Without this marker, `once: true` ScrollTriggers are recreated and any
+      // element already past its trigger line replays its entrance.
+      if (element.dataset.revealed === "true") return;
+
       const media = gsap.matchMedia();
 
-      media.add(
-        {
-          animate: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 768px)",
-        },
-        (context) => {
-          const { animate, desktop } = context.conditions ?? {};
-          if (!animate || !desktop) {
-            gsap.set(ref.current, { clearProps: "all" });
-            return;
-          }
-
-          const triggerPoint = Math.max(78, Math.min(94, 95 - threshold * 50));
-          gsap.fromTo(
-            ref.current,
-            { y: 18 },
-            {
-              y: 0,
-              duration: duration / 1000,
-              delay: delay / 1000,
-              ease: motionEase.enter,
-              clearProps: "transform",
-              scrollTrigger: {
-                trigger: ref.current,
-                start: `top ${triggerPoint}%`,
-                once: true,
-              },
+      media.add(motionMedia.allowMotion, () => {
+        const triggerPoint = Math.max(78, Math.min(94, 95 - threshold * 50));
+        gsap.fromTo(
+          element,
+          { y: 12 },
+          {
+            y: 0,
+            duration,
+            delay,
+            ease: motionEase.enter,
+            clearProps: "transform",
+            onComplete: () => {
+              element.dataset.revealed = "true";
             },
-          );
-        },
-      );
+            scrollTrigger: {
+              trigger: element,
+              start: `top ${triggerPoint}%`,
+              once: true,
+            },
+          },
+        );
+      });
 
       return () => media.revert();
     },

@@ -331,7 +331,7 @@ function MultiStepFormInner({
                 </button>
 
                 {showCalendar && (
-                  <div id="interpreting-service-calendar" role="dialog" aria-label={t("interpreting.flow.calendarLabel")} className="absolute left-0 right-0 top-full z-30 mt-2 rounded-lg border border-[var(--line)] bg-white p-4 shadow-[0_8px_8px_rgba(17,25,35,0.12)] sm:left-auto sm:right-0 sm:w-80 sm:max-w-[calc(100vw-3rem)]">
+                  <div id="interpreting-service-calendar" role="dialog" aria-label={t("interpreting.flow.calendarLabel")} className="absolute left-0 right-0 top-full z-30 mt-2 rounded-[var(--radius-md)] border border-[var(--line)] bg-white p-4 shadow-rest sm:left-auto sm:right-0 sm:w-80 sm:max-w-[calc(100vw-3rem)]">
                     <div className="mb-3 flex items-center justify-between">
                       <button
                         type="button"
@@ -446,7 +446,7 @@ function MultiStepFormInner({
         {((fastTrack && step === 1) || (!fastTrack && step === 3)) && (
           <div className="grid gap-5">
             {depositSession ? (
-              <div className="rounded-sm border border-[var(--gold)]/28 bg-white/95 p-5 shadow-[0_8px_8px_rgba(17,25,35,0.06)]">
+              <div className="rounded-sm border border-[var(--gold)]/28 bg-white/95 p-5 shadow-rest">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-label text-[var(--gold)]">{t("interpreting.flow.depositReady")}</p>

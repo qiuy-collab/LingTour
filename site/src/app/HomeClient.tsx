@@ -198,7 +198,7 @@ export default function HomeClient({
               className="group flex min-h-11 items-center gap-3 text-xs font-bold uppercase tracking-widest text-[var(--river-deep)]"
             >
               <span>{t("home.shop.exploreCollection")}</span>
-              <div className="w-10 h-px bg-[var(--river-deep)]/30 transition-all group-hover:w-16 group-hover:bg-[var(--cinnabar)]" />
+              <div className="h-px w-16 origin-left scale-x-[0.625] bg-[var(--river-deep)]/30 transition-[transform,background-color] duration-300 group-hover:scale-x-100 group-hover:bg-[var(--cinnabar)]" />
             </Link>
           </div>
 
@@ -216,7 +216,7 @@ export default function HomeClient({
               ))}
             </div>
           ) : (
-            <div className="max-w-2xl rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-8 shadow-[0_16px_52px_rgba(17,25,35,0.07)] sm:p-10">
+            <div className="max-w-2xl rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-8 shadow-lift sm:p-10">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
                 {t("shop.page.title")}
               </p>
@@ -273,7 +273,7 @@ export default function HomeClient({
 
             <div className="relative mx-auto w-full max-w-[32rem] self-start min-[620px]:mt-10 lg:col-span-7 lg:mt-0 lg:max-w-none lg:self-center">
               <Reveal delay={300}>
-                <div className="group relative aspect-[6/5] overflow-hidden border border-white/70 bg-[var(--night)] shadow-[0_28px_90px_rgba(17,25,35,0.18)] min-[620px]:aspect-[3/4] lg:aspect-[16/10]">
+                <div className="group relative aspect-[6/5] overflow-hidden border border-white/70 bg-[var(--night)] shadow-panel min-[620px]:aspect-[3/4] lg:aspect-[16/10]">
                   <img
                     src={interpretingImage}
                     alt="Professional interpreting service in Guangdong"
@@ -316,14 +316,14 @@ export default function HomeClient({
             <div className="max-w-4xl">
               <Reveal>
                 <div className="mb-10 flex items-center gap-4 opacity-70">
-                  <span className="h-px w-10 bg-[var(--gold)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold)]">
+                  <span className="h-px w-10 bg-[var(--gold-light)]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold-light)]">
                     {t("home.cta.eyebrow")}
                   </p>
                 </div>
                 <h2 className="mb-10 font-[family:var(--font-display)] text-4xl leading-[0.98] tracking-[-0.04em] sm:text-5xl md:mb-12 md:text-7xl lg:text-8xl">
                   {t("home.cta.title.primary")}{" "}
-                  <span className="italic text-[var(--gold)]">
+                  <span className="italic text-[var(--gold-light)]">
                     {t("home.cta.title.italic")}
                   </span>
                 </h2>

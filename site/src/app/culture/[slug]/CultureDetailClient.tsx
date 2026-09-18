@@ -73,7 +73,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
     : "relative z-10 min-w-0 max-w-3xl lg:max-w-none";
 
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[var(--background)] bg-grain text-[var(--river-deep)]">
+    <div className="min-h-[100dvh] overflow-hidden bg-[var(--background)] bg-grain text-[var(--river-deep)]">
       <header id="section-masthead" className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
         <div className="site-container py-7 sm:py-10 lg:py-14">
           <div className="grid min-w-0 items-center gap-6 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
@@ -92,7 +92,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
               </p>
               <h1
                 data-culture-brief-title
-                className="mt-3 max-w-[13ch] text-balance font-[family:var(--font-display)] text-4xl leading-[1] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-6xl xl:text-7xl"
+                className="mt-3 max-w-[13ch] text-balance font-[family:var(--font-display)] text-4xl leading-[1] tracking-[-0.04em] text-[var(--river-deep)] sm:text-5xl md:text-6xl xl:text-8xl"
               >
                 {activeCity.name}
               </h1>
@@ -146,6 +146,6 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
           ) : null}
         </nav>
       ) : null}
-    </main>
+    </div>
   );
 }

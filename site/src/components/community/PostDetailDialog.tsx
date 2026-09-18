@@ -270,7 +270,7 @@ export function PostDetailDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="community-post-title"
-        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-[0_36px_100px_rgba(17,25,35,0.22)] sm:max-h-[88vh]"
+        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--paper-deep)] bg-grain shadow-panel sm:max-h-[88vh]"
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4 sm:px-8">
           <div>

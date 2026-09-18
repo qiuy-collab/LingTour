@@ -54,7 +54,7 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
     .slice(0, 3);
 
   return (
-    <main className="relative min-h-screen bg-[var(--paper-deep)] bg-grain">
+    <div className="relative min-h-screen bg-[var(--paper-deep)] bg-grain">
       <ProductDetailHero product={activeProduct} />
       <ProductNarrative product={activeProduct} />
 
@@ -95,7 +95,7 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(185,138,70,0.14),transparent_70%)]" />
               <div className="relative z-10 mx-auto max-w-2xl">
                 <p className="handwritten text-xl text-[var(--gold-light)] sm:text-2xl">Continue exploring</p>
-                <h2 className="mt-6 font-[family:var(--font-display)] text-4xl leading-tight sm:mt-8 md:text-6xl">
+                <h2 className="mt-6 font-[family:var(--font-display)] text-4xl leading-tight sm:text-5xl sm:mt-8 md:text-7xl">
                   Let the next object lead you <span className="italic">back</span> into the journey.
                 </h2>
                 <div className="mt-9 sm:mt-12">
@@ -111,6 +111,6 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
           </Reveal>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

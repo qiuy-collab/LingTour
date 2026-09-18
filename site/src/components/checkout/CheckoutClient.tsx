@@ -334,7 +334,7 @@ export function CheckoutClient() {
   if (orderResult && orderResult.paymentMethod === "paypal" && orderResult.paypalApprovalUrl) {
     return (
       <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-        <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
+        <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-panel sm:p-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {t("checkout.page.paymentEyebrow")}
           </p>
@@ -366,7 +366,7 @@ export function CheckoutClient() {
   if (orderResult) {
     return (
       <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
-        <div className="mx-auto max-w-3xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-[0_24px_80px_rgba(17,25,35,0.1)] sm:p-10">
+        <div className="mx-auto max-w-3xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-panel sm:p-10">
           <h1 className="mt-4 font-[family:var(--font-display)] text-5xl leading-[0.94] tracking-[-0.04em]">
             {t("checkout.success.registryConfirmed")}
           </h1>

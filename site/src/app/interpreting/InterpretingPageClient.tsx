@@ -302,7 +302,7 @@ export default function InterpretingPageClient({
           <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:items-center sm:gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-4xl lg:col-span-7">
               <Reveal>
-                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8 lg:text-[clamp(2.75rem,7vw,6rem)]">
+                <h1 className="mb-6 font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,6rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] sm:mb-8">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("interpreting.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("interpreting.atlas.titleItalic")}</span></span>
                 </h1>

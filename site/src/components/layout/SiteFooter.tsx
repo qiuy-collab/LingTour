@@ -37,13 +37,13 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col gap-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{t("common.nav.routes")}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">{t("common.nav.routes")}</p>
           <div className="grid grid-cols-2 gap-x-8 text-sm font-medium text-white/70">
             {siteNavigation.slice(1).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex min-h-11 items-center transition hover:text-[var(--gold)]"
+                className="flex min-h-11 items-center transition hover:text-[var(--gold-light)]"
               >
                 {t(FOOTER_NAV_LABEL_KEY[item.href] ?? "common.nav.routes")}
               </Link>
@@ -53,11 +53,16 @@ export function SiteFooter() {
 
         <div className="space-y-8">
           <div className="space-y-4 text-sm text-white/50">
-            <p className="text-lg text-white">hello@culvoy.com</p>
+            <a
+              href="mailto:hello@culvoy.com"
+              className="inline-flex min-h-11 items-center text-lg text-white transition-colors hover:text-[var(--gold-light)]"
+            >
+              hello@culvoy.com
+            </a>
             <p className="handwritten text-white/70">{t("common.footer.locations")}</p>
           </div>
-          <div className="pt-8 border-t border-white/10 text-[10px] uppercase tracking-widest text-white/30">
-            {t("common.site.footer.rights")}
+          <div className="pt-8 border-t border-white/10 text-[10px] uppercase tracking-widest text-white/60">
+            {t("common.site.footer.rights").replace("{year}", String(new Date().getFullYear()))}
           </div>
         </div>
       </Container>

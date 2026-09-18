@@ -85,7 +85,7 @@ export default function RoutesPageClient({
                 <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
                   {t("routes.atlas.eyebrow")}
                 </p>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
                   <span className="block overflow-hidden pb-1">
                     <span data-pastoral-title className="block">{t("routes.atlas.titlePrimary")}</span>
                   </span>

@@ -81,7 +81,7 @@ export default function CulturePageClient({
                 <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
                   {t("culture.atlas.eyebrow")}
                 </p>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,3.5rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] lg:text-[clamp(2.75rem,7vw,6rem)]">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,6rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("culture.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("culture.atlas.titleItalic")}</span></span>
                 </h1>

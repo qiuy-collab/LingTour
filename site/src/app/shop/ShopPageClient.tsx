@@ -88,7 +88,7 @@ export default function ShopPageClient({
           <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-center gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:gap-8 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 max-w-3xl lg:col-span-8">
               <Reveal>
-                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,8.5vw,3.5rem)] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)] lg:text-9xl">
+                <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,7vw,8rem)] leading-[0.92] tracking-[-0.03em] text-[var(--river-deep)]">
                   <span className="block overflow-hidden pb-1"><span data-pastoral-title className="block">{t("shop.atlas.titlePrimary")}</span></span>
                   <span className="block overflow-hidden pb-3"><span data-pastoral-title className="block italic text-[var(--gold)]">{t("shop.atlas.titleItalic")}</span></span>
                 </h1>
