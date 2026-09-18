@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44). Previous deployed commits: `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
+- Production deployed application commit: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, deploy run `35336870377`, §45). Previous deployed commits: `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44), `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
@@ -27,8 +27,8 @@ Do not delete production `site/public/assets/` without checking runtime referenc
 
 - Path: `E:/workspace/LingTour`
 - Branch: `main`
-- Local HEAD: `757f974` (2026-09-18, docs: record the 2026-09-18 community overhaul deployment, §42) on top of the deployed application commit `003071e`.
-- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-18 community push
+- Local HEAD: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, §45); pushed to `origin/main` and deployed to production.
+- Upstream: in sync with `origin/main` (ahead 0, behind 0) after the 2026-09-18 motion-web push
 - Historical note: at the 2026-07-27 snapshot the HEAD was `deb12b1` ahead 7 of `origin/main@9b5dbfc`
 
 Formerly unpushed commits (all pushed since; kept as record):
@@ -692,3 +692,35 @@ Owner authorized "分类提交上线". Pre-verification all green: api `tsc` 0 e
 - Pre-deploy database backup: `/root/backups/lingtour-db-pre-email-20260918.dump` (132,341 bytes, `pg_restore -l` verified; host-level `pg_dump -Fc`, DB `lingtour` reached via 127.0.0.1). Read-only migration check: 33 applied, latest `AddCommunityPostMedia1762600000000`, `1762700000000` pending — the deploy was expected to run exactly that one migration.
 - Deploy run `35321449463` succeeded. Server root HEAD `b9db5ea`; all five containers healthy; `typeorm_migrations` now **34** with `AddEmailSettingsAndTemplates1762700000000` applied; tables `email_smtp_settings`/`email_templates` exist and hold 0 rows.
 - Production smoke (no production writes): api `/health` ok / database up; unauthenticated `GET /api/v1/admin/email-settings/smtp` 401; `POST /api/v1/auth/email-code/send` with an invalid email 400 (new route + DTO chain live, nothing sent); `admin.culvoy.com` 200, `culvoy.com` 200. Real verification-code sending on production rides the existing SMTP env vars (MailerService env fallback, no DB rows yet); a live send with a real mailbox was not exercised and is left to operations.
+
+## 45. 2026-09-18 public-site motion-web optimisation deployed (root `615d372`)
+
+Owner authorized "按照这个计划优化当前项目，改完分类提交，最后部署上线" against [`motion-web-optimization-plan.md`](motion-web-optimization-plan.md). Site-only change: no api/admin files, no new migrations.
+
+**Three commits** (root only; admin repository untouched and verified clean):
+
+| SHA | Subject |
+| --- | --- |
+| `44a6caf` | `fix(site): P0 correctness — error boundaries, skip link, canonical, contrast, type cliff` (9 files) |
+| `bf223de` | `refactor(site): unify design tokens, elevation and the motion system` (33 files) |
+| `615d372` | `chore(site): remove five dead components and two dead stylesheets` (10 files) |
+
+**Blocking discovery — the local database does not match the English-only contract.** Every page except `/` and `/community` returned HTTP 500 locally with `Objects are not valid as a React child (found: object with keys {en, zh})`. Read-only inspection: migration `EnglishOnlyContent1762300000000` **is** recorded as applied, but `cities.name` is still `{"en":"Zhanjiang","zh":"湛江"}` and `cities` holds exactly 1 row. Production serves 200 on the same routes, so this is a local-data problem, not a code one. No migration, seed or reset was run. Browser verification was instead performed with the site container's `INTERNAL_API_ORIGIN` pointed at `https://api.culvoy.com/api/v1` (read-only, per AGENT.md §6), via a compose override that lived outside the workspace and was deleted afterwards. **This local defect is unresolved and will block local visual work for the next task too.**
+
+**Verified** (tsc, eslint 0 errors, vitest 105/105, next build, plus a real browser pass at 1023/1024/1025 and 390px on both localhost and production):
+
+- 1024px type cliff gone: hero 88.0/88.1/88.2 and list pages 71.6/71.7/71.8 at 1023/1024/1025.
+- `--muted` now measures 4.71:1 on `--paper-deep` (was 4.10:1); `--gold-light` 6.68:1 on river-deep and 8.93:1 on night. Footer label and the night CTA now use it.
+- One `<main>` landmark, skip link present and functional, map SVG `role="group"` exposing its 5 city buttons, `color-scheme: light`, `scrollbar-gutter: stable`.
+- `rel=canonical`, 59-char title, theme-color, Organization JSON-LD, build-constant sitemap `lastModified`, footer `© 2026` + `mailto:`.
+- Production CSS carries `.shadow-rest`/`.shadow-lift`/`.shadow-panel`; because the theme block is `@theme inline`, those tokens are inlined into the utilities rather than emitted as `:root` variables — intentional, and the utilities resolve correctly.
+
+**Deploy**: pre-deploy backup `/root/backups/culvoy-pre-615d372-20260918-185234.dump` (133K, host `pg_dump -Fc`). Run `35336870377` succeeded in 2m2s. Server HEAD `615d372`; all five containers healthy; all seven public routes 200; api `/health` database up.
+
+**Deliberately NOT done, with reasons** (see the plan's own §7 for the measurement gaps behind them):
+
+- the 268 sub-12px text instances were not bulk-raised. The plan's own mapping is internally inconsistent ("floor ≥12px" vs "9/8px → 11px"), and the change touches seals, badges and buttons across every page, needing a full nine-width visual regression that was not available in this pass.
+- section spacing was not converted to semantic tokens. The existing `py-16 sm:py-20 lg:py-28` triple cannot be replaced by one clamp without changing 1024px rhythm by ~27%; the tokens were drafted, tested against that number, and reverted rather than shipped half-applied.
+- the `.lt-*` class family and `--route-*` palette were **not** removed. `.lt-display/.lt-title/.lt-copy/.lt-section/.lt-surface/.lt-kicker/.lux-card` are all zero-reference, but `DESIGN.md` still documents several of them (including a `.lt-surface` glass panel that no longer renders). Deleting them means first deciding what the design system is.
+- `@media (hover: hover)` wrapping, the 5 horizontal-scroll fade+peek affordances, map city resting dot markers, the submit-component state matrix, `twitter-image.png`, and 192/512 manifest icons were not started.
+- matchMedia was not consolidated into one shared per-page instance; `data-revealed` suppresses the replay instead. rung-1.5 downgrade (CSS scroll-driven animation) was not attempted.
