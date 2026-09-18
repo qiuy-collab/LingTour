@@ -2,6 +2,11 @@ import { open, unlink } from 'fs/promises';
 import { extname } from 'path';
 
 export const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024;
+/**
+ * A live photo (实况图) carries a short motion clip, so it needs the larger
+ * ceiling that video uses even though it is uploaded as an image.
+ */
+export const MAX_LIVE_FILE_SIZE = 100 * 1024 * 1024;
 export const MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024;
 
 export const IMAGE_MIME_TYPES = [
@@ -11,15 +16,26 @@ export const IMAGE_MIME_TYPES = [
   'image/gif',
 ] as const;
 
-export const VIDEO_MIME_TYPES = [
+/**
+ * A live photo (实况图) is a media *image* variant: the traveller posts a still
+ * that carries a short motion clip, uploaded through the very same endpoint as
+ * a photo. Browsers type the file as `video/*`, so live photos and real video
+ * share one container list — what differs is the pipeline that consumes them.
+ * Community post media is only ever `image` or `live`; real video belongs to
+ * the admin media library.
+ */
+export const LIVE_MIME_TYPES = [
   'video/mp4',
   'video/webm',
   'video/quicktime',
   'video/x-m4v',
 ] as const;
 
+export const VIDEO_MIME_TYPES = LIVE_MIME_TYPES;
+
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
-const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mov', '.m4v']);
+const LIVE_EXTENSIONS = new Set(['.mp4', '.webm', '.mov', '.m4v']);
+const VIDEO_EXTENSIONS = LIVE_EXTENSIONS;
 
 type UploadCandidate = Pick<Express.Multer.File, 'mimetype' | 'originalname'>;
 
@@ -112,5 +128,19 @@ export function isAllowedVideoUpload(file: UploadCandidate): boolean {
     VIDEO_MIME_TYPES.includes(
       file.mimetype as (typeof VIDEO_MIME_TYPES)[number],
     ) && VIDEO_EXTENSIONS.has(extname(file.originalname).toLowerCase())
+  );
+}
+
+/**
+ * Live photos (实况图) are accepted by the community image endpoint, so this is
+ * the image-side counterpart of `isAllowedVideoUpload`. It currently accepts
+ * the same containers, and exists as a separate predicate so the two media
+ * semantics stay independently evolvable.
+ */
+export function isAllowedLiveUpload(file: UploadCandidate): boolean {
+  return (
+    LIVE_MIME_TYPES.includes(
+      file.mimetype as (typeof LIVE_MIME_TYPES)[number],
+    ) && LIVE_EXTENSIONS.has(extname(file.originalname).toLowerCase())
   );
 }

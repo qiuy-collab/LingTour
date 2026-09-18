@@ -28,7 +28,7 @@ export class CommunityPostMediaItemDto implements CommunityPostMediaItem {
   @IsIn(COMMUNITY_POST_MEDIA_TYPES)
   type: CommunityPostMediaItem['type'];
 
-  @ApiProperty({ description: '图片或 Live 图视频的 /uploads/... 相对路径' })
+  @ApiProperty({ description: '图片或 live 实况图的 /uploads/... 相对路径' })
   @IsString()
   @MaxLength(500)
   @IsMediaLibraryPath()
@@ -89,7 +89,7 @@ export class UpsertCommunityPostDto {
     type: [CommunityPostMediaItemDto],
     maxItems: COMMUNITY_POST_MEDIA_LIMIT,
     description:
-      '多图 / Live 图媒体数组；type=live 时 url 为配套短视频路径，上限 9 项',
+      '多图 / live 实况图媒体数组；type=live 时 url 为实况图文件路径（与图片共用上传端点），上限 9 项',
   })
   @IsOptional()
   @IsArray()

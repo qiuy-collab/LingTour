@@ -5,9 +5,9 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  *
  * The legacy single `image` varchar stays untouched and remains the fallback
  * for posts authored before this column existed; `media` starts empty for
- * those rows. Live photos store the video path (mp4/webm/mov/m4v) as the
- * item url, rendered through a muted video element whose first frame acts as
- * the static view.
+ * those rows. A live photo stores the path of the file it was uploaded from —
+ * accepted by the same endpoint as an image — as the item url, and renders as a
+ * live photo rather than as video.
  */
 export class AddCommunityPostMedia1762600000000
   implements MigrationInterface

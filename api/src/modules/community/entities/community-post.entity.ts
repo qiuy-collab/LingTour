@@ -23,10 +23,11 @@ export const COMMUNITY_POST_STATUSES = [
 export type CommunityPostStatus = (typeof COMMUNITY_POST_STATUSES)[number];
 
 /**
- * 帖子媒体项。
+ * 帖子媒体项。社区媒体只有这两种，不存在"视频"。
  * - image: 普通图片，url 为 /uploads/... 相对路径
- * - live: Live 图，url 为配套短视频（mp4/webm/mov/m4v）的 /uploads/... 相对路径，
- *   展示时以 video 首帧作为静态画面，点击播放（muted loop，对齐 Live Photo 体验）
+ * - live: live 实况图，url 指向经**与图片同一个上传端点**收下的 /uploads/...
+ *   相对路径；文件本身是一段极短的动态片段，按实况图呈现，既不作为视频处理，
+ *   也不需要额外的格式提示
  */
 export const COMMUNITY_POST_MEDIA_TYPES = ['image', 'live'] as const;
 

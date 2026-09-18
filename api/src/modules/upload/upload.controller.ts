@@ -84,7 +84,10 @@ export class UploadController {
       search,
       dateFrom,
       dateTo,
-      type: type === 'image' || type === 'video' ? type : undefined,
+      type:
+        type === 'image' || type === 'video' || type === 'live'
+          ? type
+          : undefined,
     });
   }
 

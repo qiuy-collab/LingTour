@@ -31,11 +31,11 @@ import { CommunityService } from './community.service';
 import { UploadService } from '../upload/upload.service';
 import {
   MAX_IMAGE_FILE_SIZE,
-  MAX_VIDEO_FILE_SIZE,
+  MAX_LIVE_FILE_SIZE,
   discardUploadedFile,
   hasValidUploadSignature,
   isAllowedImageUpload,
-  isAllowedVideoUpload,
+  isAllowedLiveUpload,
   readUploadHead,
 } from '../upload/upload-policy';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
@@ -74,19 +74,29 @@ export class CommunityController {
    * community 上传与 admin 上传共用同一套媒体安全策略：MIME + 扩展名白名单
    * 加磁盘文件头签名校验；校验失败时清理 diskStorage 已落盘的文件，不留孤儿。
    * （Multer 的 fileFilter 在装饰器求值期无法引用实例方法，故放在方法体内。）
+   *
+   * 社区帖子媒体只有 image 与 live 两种。live 实况图与图片走同一个上传端点，
+   * 由文件本身决定归类，前端不分支调用；图片沿用 10MB 上限，live 实况图附带
+   * 一段短运动片段，沿用视频侧的 100MB 上限。
    */
   private async verifyCommunityUpload(
     file: Express.Multer.File,
-    kind: 'image' | 'video',
   ): Promise<void> {
-    const allowed =
-      kind === 'image' ? isAllowedImageUpload(file) : isAllowedVideoUpload(file);
-    if (!allowed) {
+    const isImage = isAllowedImageUpload(file);
+    const isLive = isAllowedLiveUpload(file);
+    if (!isImage && !isLive) {
       await discardUploadedFile(file);
       throw new BadRequestException(
-        kind === 'image'
-          ? 'Only JPEG, PNG, WebP or GIF images are allowed'
-          : 'Only MP4, WebM, MOV or M4V videos are allowed',
+        'Only JPEG, PNG, WebP or GIF images are allowed, plus live photo clips (MP4, WebM, MOV or M4V)',
+      );
+    }
+    const ceiling = isImage ? MAX_IMAGE_FILE_SIZE : MAX_LIVE_FILE_SIZE;
+    if (typeof file.size === 'number' && file.size > ceiling) {
+      await discardUploadedFile(file);
+      throw new BadRequestException(
+        isImage
+          ? 'Images must be 10MB or smaller'
+          : 'Live photo clips must be 100MB or smaller',
       );
     }
     const head = await readUploadHead(file);
@@ -156,22 +166,27 @@ export class CommunityController {
 
   @Post('public/community/upload')
   @ApiBearerAuth()
-  // Authenticated users can push 10MB per call (same image ceiling as the
-  // admin upload); without a dedicated throttle the global 60/min is enough
-  // to fill the uploads volume (report P2-C).
+  // One endpoint for both community media kinds: a photo and a live photo
+  // (实况图) differ only by the file the traveller picked, so the client never
+  // branches. The multer ceiling is the live one and the image ceiling is
+  // enforced per type inside verifyCommunityUpload. Without a dedicated
+  // throttle the global 60/min would be enough to fill the uploads volume
+  // (report P2-C).
   @Throttle({ default: { ttl: 60000, limit: 10 } })
-  @ApiOperation({ summary: 'Upload image for community post (public)' })
+  @ApiOperation({
+    summary: 'Upload a photo or live photo for a community post (public)',
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: MAX_IMAGE_FILE_SIZE },
+      limits: { fileSize: MAX_LIVE_FILE_SIZE },
     }),
   )
-  async uploadCommunityImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadCommunityMedia(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    await this.verifyCommunityUpload(file, 'image');
+    await this.verifyCommunityUpload(file);
     const result = await this.uploadService.storeUploadedFile(
       file,
       'community',
@@ -179,23 +194,30 @@ export class CommunityController {
     return { url: result.url };
   }
 
+  /**
+   * @deprecated Compatibility alias only. Live photos upload through
+   * `/public/community/upload` exactly like images; this path survives so a
+   * client built against the previous contract does not 404. Remove it once no
+   * shipped client calls it.
+   */
   @Post('public/community/upload/video')
   @ApiBearerAuth()
-  // Live-photo clips share the admin video ceiling (100MB) and the same
-  // per-minute budget as the image endpoint.
   @Throttle({ default: { ttl: 60000, limit: 10 } })
-  @ApiOperation({ summary: 'Upload live-photo video for community post (public)' })
+  @ApiOperation({
+    summary:
+      'Deprecated alias for a live photo upload (use /public/community/upload)',
+  })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: MAX_VIDEO_FILE_SIZE },
+      limits: { fileSize: MAX_LIVE_FILE_SIZE },
     }),
   )
-  async uploadCommunityVideo(@UploadedFile() file: Express.Multer.File) {
+  async uploadCommunityMediaAlias(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
-    await this.verifyCommunityUpload(file, 'video');
+    await this.verifyCommunityUpload(file);
     const result = await this.uploadService.storeUploadedFile(
       file,
       'community',

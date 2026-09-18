@@ -344,7 +344,8 @@ export class UploadService {
     search?: string;
     dateFrom?: string;
     dateTo?: string;
-    type?: 'image' | 'video';
+    /** `live` is the community media kind — see the filter below. */
+    type?: 'image' | 'video' | 'live';
   }): Promise<{
     data: MediaFileRecord[];
     total: number;
@@ -386,7 +387,14 @@ export class UploadService {
       conditions.push(`created_at <= $${paramIndex++}`);
       values.push(params.dateTo);
     }
-    if (params.type) {
+    if (params.type === 'live') {
+      // Community post media is only ever `image` or `live`, and a live photo
+      // arrives in a `video/*` container — so inside the community module a
+      // video MIME means a live photo, never real video.
+      conditions.push(`mime_type LIKE 'video/%'`);
+      conditions.push(`module = $${paramIndex++}`);
+      values.push('community');
+    } else if (params.type) {
       conditions.push(`mime_type LIKE $${paramIndex++}`);
       values.push(`${params.type}/%`);
     }
