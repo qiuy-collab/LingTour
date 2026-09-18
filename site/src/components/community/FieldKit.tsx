@@ -5,6 +5,12 @@ import { Reveal } from "@/components/ui/Reveal";
 import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import { useLocale } from "@/lib/locale-context";
 import { apiClient, ApiRequestError } from "@/lib/api-client";
+import type { CommunityPostMedia } from "@/lib/api-data";
+
+/** 单帖媒体上限，与 API 的 COMMUNITY_POST_MEDIA_LIMIT 对齐。 */
+const FIELD_KIT_MEDIA_LIMIT = 9;
+
+const LIVE_VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime,video/x-m4v";
 
 type FieldKitProps<TChannel extends string> = {
   isOpen: boolean;
@@ -15,7 +21,7 @@ type FieldKitProps<TChannel extends string> = {
     title: string;
     note: string;
     channel: TChannel;
-    image?: string;
+    media?: CommunityPostMedia[];
   }) => void | Promise<void>;
   initialBrief?: {
     title: string;
@@ -26,7 +32,7 @@ type FieldKitProps<TChannel extends string> = {
     title?: string;
     note?: string;
     channel?: TChannel;
-    image?: string;
+    media?: CommunityPostMedia[];
   };
   channels: readonly ["All", ...TChannel[]];
   compact?: boolean;
@@ -47,8 +53,8 @@ export function FieldKit<TChannel extends string>({
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [activeChannel, setActiveChannel] = useState<TChannel>(channels[1]);
-  const [image, setImage] = useState<string | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [media, setMedia] = useState<CommunityPostMedia[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -74,7 +80,7 @@ export function FieldKit<TChannel extends string>({
     }
     setTitle(initialDraft?.title ?? "");
     setNote(initialDraft?.note ?? "");
-    setImage(initialDraft?.image ?? null);
+    setMedia(initialDraft?.media ?? []);
     setError(null);
     setSubmitting(false);
   }, [channels, initialBrief, initialDraft, isOpen]);
@@ -124,7 +130,24 @@ export function FieldKit<TChannel extends string>({
 
   if (!isOpen) return null;
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadOne = async (file: File, kind: "image" | "live") => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const endpoint =
+      kind === "image"
+        ? "/public/community/upload"
+        : "/public/community/upload/video";
+    const data = await apiClient<{ url: string }>(endpoint, {
+      method: "POST",
+      body: formData,
+    });
+    return data.url;
+  };
+
+  const handleMediaUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    kind: "image" | "live",
+  ) => {
     if (locked) {
       const message = AUTH_PROMPTS.connectGoogleToUpload;
       setError(message);
@@ -133,32 +156,35 @@ export function FieldKit<TChannel extends string>({
       return;
     }
 
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files ?? []);
+    event.currentTarget.value = "";
+    if (!files.length) return;
 
-    // Show local preview immediately
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    const room = FIELD_KIT_MEDIA_LIMIT - media.length;
+    if (room <= 0) {
+      setError(`Up to ${FIELD_KIT_MEDIA_LIMIT} photos per note.`);
+      return;
+    }
+    const accepted = files.slice(0, room);
+    if (accepted.length < files.length) {
+      setError(`Up to ${FIELD_KIT_MEDIA_LIMIT} photos per note.`);
+    }
 
-    // Upload to server
-    setImageUploading(true);
+    setMediaUploading(true);
     setError(null);
+    const uploaded: CommunityPostMedia[] = [];
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const data = await apiClient<{ url: string }>("/public/community/upload", {
-        method: "POST",
-        body: formData,
-      });
-      setImage(data.url);
+      // Serial on purpose: the community upload endpoints are throttled to
+      // 10 requests per minute per user, and parallel bursts would trip it.
+      for (const file of accepted) {
+        const url = await uploadOne(file, kind);
+        uploaded.push({ type: kind === "image" ? "image" : "live", url });
+      }
+      setMedia((current) => [...current, ...uploaded].slice(0, FIELD_KIT_MEDIA_LIMIT));
     } catch (uploadError) {
       if (uploadError instanceof ApiRequestError && uploadError.statusCode === 401) {
         setError(AUTH_PROMPTS.connectGoogleToUpload);
         onRequireLogin?.();
-        setImage(null);
         return;
       }
       setError(
@@ -166,14 +192,13 @@ export function FieldKit<TChannel extends string>({
           ? uploadError.message
           : t("community.error.imageUploadFailed"),
       );
-      setImage(null);
     } finally {
-      setImageUploading(false);
+      setMediaUploading(false);
     }
   };
 
   const canPublish = Boolean(
-    !locked && (title.trim() || note.trim() || image) && !imageUploading,
+    !locked && (title.trim() || note.trim() || media.length) && !mediaUploading,
   );
 
   const handlePublish = async () => {
@@ -187,11 +212,11 @@ export function FieldKit<TChannel extends string>({
         title,
         note,
         channel: activeChannel,
-        image: image || undefined,
+        media: media.length ? media : undefined,
       });
       setTitle("");
       setNote("");
-      setImage(null);
+      setMedia([]);
     } catch (publishError) {
       setError(
         publishError instanceof Error
@@ -270,7 +295,7 @@ export function FieldKit<TChannel extends string>({
             </div>
 
             {locked ? (
-              <div className="mb-6 rounded-2xl border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
+              <div className="mb-6 rounded-[var(--radius-sm)] border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
                   {AUTH_PROMPTS.connectGoogleToUpload}
                 </p>
@@ -280,7 +305,7 @@ export function FieldKit<TChannel extends string>({
             {initialBrief ? (
               <div
                 className={`border border-[var(--gold)]/20 bg-[var(--gold)]/10 ${
-                  compact ? "mb-5 rounded-2xl p-4" : "mb-8 rounded-xl p-5 rotate-[-1deg]"
+                  compact ? "mb-5 rounded-[var(--radius-sm)] p-4" : "mb-8 rounded-[var(--radius-sm)] p-5 rotate-[-1deg]"
                 }`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
@@ -354,67 +379,123 @@ export function FieldKit<TChannel extends string>({
                   disabled={locked}
                   onChange={(event) => setNote(event.target.value)}
                   placeholder={t("community.fieldKit.notePlaceholder")}
-                  className={`w-full resize-none rounded-xl border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
+                  className={`w-full resize-none rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-transparent p-4 leading-relaxed outline-none transition-colors focus:border-[var(--gold)] placeholder:opacity-30 handwritten ${
                     locked ? "cursor-not-allowed opacity-50" : ""
                   } ${compact ? "text-base" : "text-lg"}`}
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Photo (optional)
-                </label>
-                <div className="flex gap-4">
-                  <label
-                    className={`group relative flex flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--line)] bg-white/30 backdrop-blur-sm transition-colors ${
-                      locked
-                        ? "cursor-not-allowed opacity-50"
-                        : "cursor-pointer hover:border-[var(--gold)]"
-                    } ${compact ? "h-24 w-24" : "h-32 w-32"}`}
-                  >
-                    {image ? (
-                      <div
-                        className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${image})` }}
+                <div className="mb-2 flex items-baseline justify-between gap-3">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                    Photos &amp; live moments (optional)
+                  </label>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                    {media.length}/{FIELD_KIT_MEDIA_LIMIT}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                  {media.map((item, index) => (
+                    <div
+                      key={`${item.url}-${index}`}
+                      className={`group relative overflow-hidden rounded-[var(--radius-sm)] border border-[var(--line)] bg-white ${
+                        compact ? "aspect-square" : "aspect-square"
+                      }`}
+                    >
+                      {item.type === "live" ? (
+                        <video
+                          src={item.url}
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={item.url}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      )}
+                      {item.type === "live" ? (
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--night)]/78 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+                          Live
+                        </span>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMedia((current) =>
+                            current.filter((_, i) => i !== index),
+                          )
+                        }
+                        disabled={locked || submitting}
+                        aria-label={`Remove media ${index + 1}`}
+                        className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--night)]/60 text-xs text-white transition-colors hover:bg-[var(--cinnabar)]"
                       >
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
-                          <span className="text-[10px] font-bold uppercase text-white">
-                            Change
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  {media.length < FIELD_KIT_MEDIA_LIMIT ? (
+                    <>
+                      <label
+                        className={`group flex flex-col items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-white/30 transition-colors ${
+                          locked
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer hover:border-[var(--gold)]"
+                        } aspect-square`}
+                      >
                         <span className="text-2xl text-[var(--muted)] group-hover:text-[var(--gold)]">
                           +
                         </span>
-                        <span className="mt-2 text-[10px] font-bold uppercase text-[var(--muted)] group-hover:text-[var(--gold)]">
-                          Add Photo
+                        <span className="mt-1 px-2 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
+                          Add photos
                         </span>
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      disabled={locked}
-                      onChange={handleImageUpload}
-                    />
-                  </label>
-                  {image ? (
-                    <button
-                      type="button"
-                      onClick={() => setImage(null)}
-                      className="min-h-11 self-end rounded-full border border-[var(--line)] px-3 text-[10px] font-bold uppercase text-[var(--muted)] transition-all hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
-                    >
-                      Remove
-                    </button>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          multiple
+                          disabled={locked || mediaUploading}
+                          onChange={(event) => handleMediaUpload(event, "image")}
+                        />
+                      </label>
+                      <label
+                        className={`group flex flex-col items-center justify-center overflow-hidden rounded-[var(--radius-sm)] border-2 border-dashed border-[var(--line)] bg-white/30 transition-colors ${
+                          locked
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer hover:border-[var(--gold)]"
+                        } aspect-square`}
+                      >
+                        <span className="rounded-full bg-[var(--night)]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--river-deep)] group-hover:text-[var(--gold)]">
+                          Live
+                        </span>
+                        <span className="mt-1 px-2 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
+                          Add live
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept={LIVE_VIDEO_ACCEPT}
+                          disabled={locked || mediaUploading}
+                          onChange={(event) => handleMediaUpload(event, "live")}
+                        />
+                      </label>
+                    </>
                   ) : null}
                 </div>
+                <p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">
+                  {mediaUploading
+                    ? "Uploading…"
+                    : "Photos up to 10MB each; a live moment is a short video clip (MP4/WebM/MOV, up to 100MB) that plays on tap."}
+                </p>
               </div>
 
               {error ? (
-                <div className="rounded-2xl border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
+                <div className="rounded-[var(--radius-sm)] border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
                   <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
                     {error}
                   </p>
@@ -430,10 +511,10 @@ export function FieldKit<TChannel extends string>({
                     compact ? "py-4 text-base" : "py-5 text-lg"
                   } hover:bg-[var(--cinnabar)]`}
                 >
-                  {submitting ? "POSTING..." : imageUploading ? "UPLOADING PHOTO..." : "POST NOTE"}
+                  {submitting ? "POSTING..." : mediaUploading ? "UPLOADING MEDIA..." : "POST NOTE"}
                 </button>
                 <p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
-                  Publish as an illustrated note, a text note, or a photo
+                  Publish as a text note, a photo set, or with live moments
                 </p>
               </div>
             </div>

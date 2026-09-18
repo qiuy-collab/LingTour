@@ -124,8 +124,6 @@ export const common = {
     "community.post.illustratedNote": "Illustrated note",
     "community.post.photoSignal": "Photo note",
     "community.post.textDispatch": "Text note",
-    "community.replies.label": "Replies",
-    "community.replies.unavailable": "Unavailable",
   }
 
 };

@@ -8,6 +8,7 @@ import {
   fetchCommunityReactionSummary,
   fetchCommunityBriefs,
   type CommunityFeedPost,
+  type CommunityPostMedia,
   type FieldBrief,
 } from "@/lib/api-data";
 import {
@@ -54,7 +55,7 @@ type Draft = {
   route: string;
   mood: string;
   channel: PostChannel;
-  image?: string;
+  media?: CommunityPostMedia[];
 };
 
 const LOCAL_STAMPS_KEY = "culvoy-community-stamps";
@@ -380,7 +381,7 @@ export default function CommunityPage() {
   const resolveVariant = (
     post: CommunityFeedPost,
   ): "image" | "feature" | "text" => {
-    const hasImage = Boolean(post.image);
+    const hasImage = Boolean(post.media.length) || Boolean(post.image);
     const hasText = Boolean(post.excerpt.trim());
 
     if (!hasImage) return "text";
@@ -420,7 +421,7 @@ export default function CommunityPage() {
     title: string;
     note: string;
     channel: PostChannel;
-    image?: string;
+    media?: CommunityPostMedia[];
   }) => {
     const title = kitDraft.title.trim();
     const note = kitDraft.note.trim();
@@ -430,7 +431,7 @@ export default function CommunityPage() {
       title: kitDraft.title,
       note: kitDraft.note,
       channel: kitDraft.channel,
-      image: kitDraft.image,
+      media: kitDraft.media,
     }));
 
     if (!isLoggedIn) {
@@ -438,7 +439,7 @@ export default function CommunityPage() {
       throw new Error(AUTH_PROMPTS.connectGoogleToPublish);
     }
 
-    if (!title && !note && !kitDraft.image) {
+    if (!title && !note && !kitDraft.media?.length) {
       setToast(t("community.error.addContent"));
       throw new Error(t("community.error.addContent"));
     }
@@ -449,7 +450,7 @@ export default function CommunityPage() {
           title,
           note,
           channel: kitDraft.channel,
-          image: kitDraft.image,
+          media: kitDraft.media,
           location: draft.location || selectedBrief?.location || "",
           route: draft.route || selectedBrief?.route || "",
           mood: draft.mood || selectedBrief?.mood || "",
@@ -710,7 +711,7 @@ export default function CommunityPage() {
           title: draft.title,
           note: draft.note,
           channel: draft.channel,
-          image: draft.image,
+          media: draft.media,
         }}
         channels={channels}
       />
@@ -718,6 +719,9 @@ export default function CommunityPage() {
       <PostDetailDialog
         post={selectedPost}
         onClose={() => setSelectedPost(null)}
+        isLoggedIn={isLoggedIn}
+        onRequireLogin={() => setToast(AUTH_PROMPTS.connectGoogleToInteract)}
+        onEngagementChange={updatePostEngagement}
         currentUser={
           user
             ? {

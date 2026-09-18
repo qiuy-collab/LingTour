@@ -908,6 +908,15 @@ export { useApiQuery, type AsyncState } from "./use-api-query";
 
 // ───────────────── Community posts (route detail page) ─────────────────
 
+/**
+ * 帖子媒体项：image 为普通图片；live 为 Live 图（url 指向配套短视频，
+ * 展示层以视频首帧作为静态画面、点击播放）。
+ */
+export type CommunityPostMedia = {
+  type: "image" | "live";
+  url: string;
+};
+
 export type CommunityFeedPost = {
   id: string;
   title: string;
@@ -915,6 +924,7 @@ export type CommunityFeedPost = {
   channel: string;
   user: { name: string; handle?: string; avatar?: string };
   image: string;
+  media: CommunityPostMedia[];
   location: string;
   route: string;
   createdAt: string;
@@ -923,7 +933,6 @@ export type CommunityFeedPost = {
   mood: string;
   tags: string[];
   likes: number;
-  comments: number;
   saves: number;
   liked?: boolean;
   saved?: boolean;
@@ -933,7 +942,7 @@ export type CommunityFeedPost = {
 
 export type RouteCommunityPost = Omit<
   CommunityFeedPost,
-  "date" | "readTime" | "likes" | "comments" | "saves" | "prompt"
+  "date" | "readTime" | "likes" | "saves" | "prompt"
 >;
 
 interface ApiCommunityPost {
@@ -945,15 +954,33 @@ interface ApiCommunityPost {
   excerpt: string;
   tags?: string[];
   image: string | null;
+  media?: { type: string; url: string }[] | null;
   location: string;
   route: string;
   mood: string;
   likes?: number;
-  comments?: number;
   saves?: number;
   liked?: boolean;
   saved?: boolean;
   createdAt: string;
+}
+
+/**
+ * Normalize the API media array (or the legacy single image column) into a
+ * media list. Older posts only carry `image`, so it becomes a single image
+ * item and the presentation layer can rely on `media` alone.
+ */
+function mapCommunityMedia(
+  api: Pick<ApiCommunityPost, "media" | "image">,
+): CommunityPostMedia[] {
+  const items = (api.media ?? []).filter(
+    (item): item is CommunityPostMedia =>
+      Boolean(item?.url) &&
+      (item.type === "image" || item.type === "live"),
+  );
+  if (items.length > 0) return items;
+  if (api.image) return [{ type: "image", url: api.image }];
+  return [];
 }
 
 function formatPostDate(createdAt: string): string {
@@ -963,6 +990,22 @@ function formatPostDate(createdAt: string): string {
     month: "short",
     day: "numeric",
   });
+}
+
+/**
+ * Content is authored once in English, but some legacy/local rows still hold
+ * a `{ en, zh }` object inside the jsonb column. Accept strings verbatim and
+ * unwrap objects to their English value so the presentation layer can rely
+ * on plain strings.
+ */
+function readContentString(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (typeof record.en === "string") return record.en;
+    if (typeof record.EN === "string") return record.EN;
+  }
+  return "";
 }
 
 function normalizeCommunityChannel(channel: string): string {
@@ -983,8 +1026,8 @@ function mapCommunityPost(
   const tags = api.tags ?? [];
   return {
     id: api.id,
-    title: api.title,
-    excerpt: api.excerpt,
+    title: readContentString(api.title),
+    excerpt: readContentString(api.excerpt),
     channel: normalizeCommunityChannel(api.channel),
     user: {
       name: typeof userObj.name === "string" ? userObj.name : "Field Agent",
@@ -992,6 +1035,7 @@ function mapCommunityPost(
       avatar: typeof userObj.avatar === "string" ? userObj.avatar : undefined,
     },
     image: api.image ?? "",
+    media: mapCommunityMedia(api),
     location,
     route,
     createdAt: api.createdAt,
@@ -1000,7 +1044,6 @@ function mapCommunityPost(
     mood: api.mood ?? "",
     tags,
     likes: api.likes ?? 0,
-    comments: api.comments ?? 0,
     saves: api.saves ?? 0,
     liked: api.liked ?? false,
     saved: api.saved ?? false,
@@ -1048,11 +1091,10 @@ export async function fetchRouteCommunityPosts(
         const stopMatches = !stopTarget || location === stopTarget;
         return routeMatches && stopMatches;
       })
-      .map(({ date: _date, readTime: _readTime, likes: _likes, comments: _comments, saves: _saves, prompt: _prompt, ...post }) => {
+      .map(({ date: _date, readTime: _readTime, likes: _likes, saves: _saves, prompt: _prompt, ...post }) => {
         void _date;
         void _readTime;
         void _likes;
-        void _comments;
         void _saves;
         void _prompt;
         return post;
@@ -1128,7 +1170,6 @@ export async function createCommunityPost(
     date: _date,
     readTime: _readTime,
     likes: _likes,
-    comments: _comments,
     saves: _saves,
     prompt: _prompt,
     ...post
@@ -1137,7 +1178,6 @@ export async function createCommunityPost(
   void _date;
   void _readTime;
   void _likes;
-  void _comments;
   void _saves;
   void _prompt;
   return post;
@@ -1198,6 +1238,7 @@ export type CreateCommunityFeedInput = {
   mood: string;
   channel: string;
   image?: string;
+  media?: CommunityPostMedia[];
   user: {
     id?: string;
     email?: string;
@@ -1214,9 +1255,10 @@ export async function createCommunityFeedPost(
     input.title.trim() ||
     input.note.trim().split(/[\n.!?]/)[0]?.trim() ||
     `${input.channel} signal`;
+  const hasVisual = Boolean(input.media?.length) || Boolean(input.image);
   const safeExcerpt =
     input.note.trim() ||
-    (input.image ? "Shared as a visual signal from the field." : safeTitle);
+    (hasVisual ? "Shared as a visual signal from the field." : safeTitle);
 
   const payload = {
     channel: input.channel,
@@ -1230,6 +1272,7 @@ export async function createCommunityFeedPost(
     mood: input.mood,
     tags: [input.channel, input.location, input.route].filter(Boolean),
     image: input.image ?? null,
+    media: input.media ?? [],
   };
 
   const created = await apiPost<ApiCommunityPost>(
@@ -1244,8 +1287,8 @@ export async function createCommunityFeedPost(
 interface ApiCommunityBrief {
   id: string;
   slug: string;
-  title: string;
-  prompt: string;
+  title: string | Record<string, unknown>;
+  prompt: string | Record<string, unknown>;
   channel: string;
   location: string;
   route: string;
@@ -1269,8 +1312,8 @@ function mapBrief(api: ApiCommunityBrief): FieldBrief {
   return {
     id: api.id,
     slug: api.slug,
-    title: api.title,
-    prompt: api.prompt,
+    title: readContentString(api.title),
+    prompt: readContentString(api.prompt),
     channel: api.channel || "Field Notes",
     location: api.location || "",
     route: api.route || "",

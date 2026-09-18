@@ -31,8 +31,10 @@ export function PostCard({
   const [saved, setSaved] = useState(Boolean(post.saved));
   const [likeCount, setLikeCount] = useState(post.likes);
   const [saveCount, setSaveCount] = useState(post.saves);
-  const hasImage = Boolean(post.image);
+  const cover = post.media[0] ?? (post.image ? { type: "image" as const, url: post.image } : null);
+  const hasImage = Boolean(cover);
   const hasText = Boolean(post.excerpt.trim());
+  const isPendingReview = post.status === "pending_review";
 
   useEffect(() => {
     setLiked(Boolean(post.liked));
@@ -110,37 +112,42 @@ export function PostCard({
 
   return (
     <article
-      className={`group relative scrapbook-shadow transition-all duration-500 hover:-translate-y-1 ${variantClasses}`}
+      className={`group relative overflow-hidden rounded-[var(--radius-md)] scrapbook-shadow transition-all duration-500 hover:-translate-y-1 ${variantClasses}`}
       style={{
-        borderRadius:
-          variant === "image"
-            ? "2px 40px 5px 35px"
-            : variant === "feature"
-              ? "1.9rem"
-              : "1.6rem 1.6rem 1.2rem 1.8rem",
         animationDelay: `${index * 60}ms`,
       }}
     >
       <button type="button" onClick={() => onOpen?.(post)} className="block w-full text-left">
-        {hasImage ? (
+        {hasImage && cover ? (
           <div
             className={`relative overflow-hidden ${
               variant === "feature"
                 ? "aspect-[1.12] border-b border-[var(--line)]"
-                : variant === "image"
-                  ? "tape-effect aspect-[1.1] rounded-[4px]"
-                  : "aspect-[1.18] rounded-t-[1.5rem]"
+                : "aspect-[1.1]"
             }`}
           >
-            <img
-              src={post.image}
-              alt={post.title}
-              loading="lazy"
-              decoding="async"
-              className={`absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 ${
-                variant === "image" ? "grayscale-[0.12]" : "grayscale-[0.04]"
-              }`}
-            />
+            {cover.type === "live" ? (
+              <video
+                src={cover.url}
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className={`absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 ${
+                  variant === "image" ? "grayscale-[0.12]" : "grayscale-[0.04]"
+                }`}
+              />
+            ) : (
+              <img
+                src={cover.url}
+                alt={post.title}
+                loading="lazy"
+                decoding="async"
+                className={`absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 ${
+                  variant === "image" ? "grayscale-[0.12]" : "grayscale-[0.04]"
+                }`}
+              />
+            )}
             <div
               className={`absolute inset-0 ${
                 variant === "feature"
@@ -157,6 +164,14 @@ export function PostCard({
             >
               {post.channel}
             </span>
+            {cover.type === "live" ? (
+              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[var(--night)]/62 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                <svg viewBox="0 0 12 12" className="h-2 w-2 fill-current" aria-hidden="true">
+                  <path d="M3 1.5v9l7-4.5-7-4.5z" />
+                </svg>
+                Live
+              </span>
+            ) : null}
             {variant === "feature" ? (
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <p className="font-[family:var(--font-display)] text-3xl leading-[0.95] text-white [text-shadow:0_2px_16px_rgba(17,25,35,0.45)]">
@@ -189,6 +204,17 @@ export function PostCard({
             <span className={`text-sm ${variant === "image" ? "handwritten" : "font-medium"} text-[var(--river-deep)]`}>
               {post.user.name}
             </span>
+            {isPendingReview ? (
+              <span
+                className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--gold)]/45 bg-[var(--gold)]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)]"
+                title="Visible only to you while an editor reviews it"
+              >
+                <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 fill-current" aria-hidden="true">
+                  <path d="M6 1a5 5 0 100 10A5 5 0 006 1zm.5 2v3.2l2.1 1.25-.5.85L5.5 6.7V3h1z" />
+                </svg>
+                Pending review
+              </span>
+            ) : null}
           </div>
 
           {variant !== "feature" ? (

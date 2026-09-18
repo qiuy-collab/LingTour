@@ -8,6 +8,7 @@ import { AUTH_PROMPTS } from "@/lib/auth-prompts";
 import {
   createCommunityPost,
   type CommunityFeedPost,
+  type CommunityPostMedia,
   type RouteCommunityPost,
 } from "@/lib/api-data";
 import {
@@ -106,7 +107,7 @@ export function StickyComposeBar({
     title: string;
     note: string;
     channel: string;
-    image?: string;
+    media?: CommunityPostMedia[];
   }) => {
     const title = draft.title.trim();
     const note = draft.note.trim();
@@ -150,7 +151,6 @@ export function StickyComposeBar({
         }),
         readTime: "1 min",
         likes: 0,
-        comments: 0,
         saves: 0,
         prompt: composeTarget
           ? `Track: Stop ${composeTarget.index + 1} · ${composeTarget.name}`
@@ -172,11 +172,10 @@ export function StickyComposeBar({
 
   const posts = useMemo(() => {
     const routePosts = syncedPosts.map(
-      ({ date: _date, readTime: _readTime, likes: _likes, comments: _comments, saves: _saves, prompt: _prompt, ...post }) => {
+      ({ date: _date, readTime: _readTime, likes: _likes, saves: _saves, prompt: _prompt, ...post }) => {
         void _date;
         void _readTime;
         void _likes;
-        void _comments;
         void _saves;
         void _prompt;
         return post;
