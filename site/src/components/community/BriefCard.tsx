@@ -16,7 +16,7 @@ export function BriefCard({ brief, onSelect, index }: BriefCardProps) {
   return (
     <button
       onClick={() => onSelect(brief)}
-      className={`group w-full border border-[var(--line)] bg-white p-6 text-left scrapbook-shadow transition-all duration-300 hover:z-10 hover:scale-[1.03] hover:border-[var(--gold)]/40 sm:p-8 ${rotation}`}
+      className={`group w-full border border-[var(--line)] bg-[var(--paper)] p-6 text-left scrapbook-shadow transition-[transform,border-color] duration-300 hover:z-10 hover:scale-[1.03] hover:border-[var(--gold)]/40 sm:p-8 ${rotation}`}
     >
       <div className="flex items-start justify-between border-b border-[var(--line)]/50 pb-4 mb-4">
         <div>

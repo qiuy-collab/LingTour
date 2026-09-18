@@ -397,15 +397,36 @@ export default function CommunityPage() {
     setActiveChannel(channel);
   };
 
+  /**
+   * Editorial sequence rather than masonry. The feed runs a repeating
+   * six-item rhythm — a wide feature, its companion, a full-width band, then
+   * three rail cards. 7+5, 12 and 4+4+4 each fill the twelve-column grid
+   * exactly, so no row is left dangling, and DOM order finally matches visual
+   * order, which masonry could not guarantee for keyboard users.
+   */
+  const feedSpanClass = (index: number): string => {
+    switch (index % 6) {
+      case 0:
+        return "lg:col-span-7";
+      case 1:
+        return "lg:col-span-5";
+      case 2:
+        return "lg:col-span-12";
+      default:
+        return "lg:col-span-4";
+    }
+  };
+
   const resolveVariant = (
     post: CommunityFeedPost,
+    index: number,
   ): "image" | "feature" | "text" => {
     const hasImage = Boolean(post.media.length) || Boolean(post.image);
-    const hasText = Boolean(post.excerpt.trim());
-
     if (!hasImage) return "text";
-    if (!hasText || post.excerpt.trim().length < 28) return "feature";
-    return "image";
+    // Position decides the hierarchy, not excerpt length: the lead card of
+    // each rhythm is the feature, the rest stay uniform so the rail reads
+    // calm. An editor's ordering is the hierarchy signal.
+    return index % 6 === 0 ? "feature" : "image";
   };
 
   const handleGoogleLogin = async () => {
@@ -649,12 +670,13 @@ export default function CommunityPage() {
             </button>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-8 space-y-6 sm:space-y-8 pb-6">
+          <div className="grid gap-6 pb-6 sm:gap-8 lg:grid-cols-12">
             {visibleItems.length ? (
               visibleItems.map((item, index) => {
+                const span = feedSpanClass(index);
                 if (item.type === "dispatch") {
                   return (
-                    <div key={item.id} data-community-card className="break-inside-avoid">
+                    <div key={item.id} data-community-card className={span}>
                       <Reveal delay={index * 40}>
                         <DispatchCard
                           stampCount={stampCount}
@@ -669,7 +691,7 @@ export default function CommunityPage() {
 
                 if (item.type === "brief") {
                   return (
-                    <div key={item.data.id} data-community-card className="break-inside-avoid">
+                    <div key={item.data.id} data-community-card className={span}>
                       <Reveal delay={index * 40}>
                         <BriefCard
                           brief={item.data}
@@ -686,12 +708,12 @@ export default function CommunityPage() {
 
                 if (item.type === "post") {
                   return (
-                    <div key={item.data.id} data-community-card className="break-inside-avoid">
+                    <div key={item.data.id} data-community-card className={span}>
                       <Reveal delay={index * 40}>
                         <PostCard
                           post={item.data}
                           index={index}
-                          variant={resolveVariant(item.data)}
+                          variant={resolveVariant(item.data, index)}
                           onOpen={setSelectedPost}
                           isLoggedIn={isLoggedIn}
                           onRequireLogin={() => setToast(AUTH_PROMPTS.connectGoogleToInteract)}
@@ -705,7 +727,7 @@ export default function CommunityPage() {
                 return null;
               })
             ) : (
-              <div className="col-span-full py-20 text-center break-inside-avoid">
+              <div className="py-20 text-center lg:col-span-12">
                 <p className="font-[family:var(--font-display)] text-4xl text-[var(--river-deep)]">
                   {t("community.empty")}
                 </p>
