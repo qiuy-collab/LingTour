@@ -8,8 +8,10 @@ import { PastoralPageMotion } from "@/components/ui/PastoralPageMotion";
 import { Price } from "@/components/ui/Price";
 import {
   clearStoredAuth,
+  confirmCurrentUserEmailChange,
   readStoredUser,
   refreshCurrentUserProfile,
+  requestCurrentUserEmailChange,
   updateCurrentUserProfile,
   uploadCurrentUserAvatar,
   type LocalUser,
@@ -120,6 +122,18 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
   const [message, setMessage] = useState("");
   const [messageKind, setMessageKind] = useState<"success" | "error" | "">("");
   const [fieldError, setFieldError] = useState<"name" | "email" | null>(null);
+  // Code-confirmed email change: step 1 mails a code to the new address,
+  // step 2 confirms it. Kept apart from the profile form, which no longer
+  // touches the email at all.
+  const [emailChange, setEmailChange] = useState({
+    newEmail: "",
+    code: "",
+    codeSent: false,
+    sending: false,
+    confirming: false,
+    error: "",
+    notice: "",
+  });
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -232,6 +246,71 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
     router.replace(`/profile?tab=${tab}`, { scroll: false });
   }
 
+  async function startEmailChange() {
+    const newEmail = emailChange.newEmail.trim();
+    if (!newEmail) return;
+    setEmailChange((current) => ({
+      ...current,
+      sending: true,
+      error: "",
+      notice: "",
+    }));
+    try {
+      await requestCurrentUserEmailChange(newEmail);
+      setEmailChange((current) => ({
+        ...current,
+        sending: false,
+        codeSent: true,
+        notice: `Verification code sent to ${newEmail}. Enter it below to finish the change.`,
+      }));
+    } catch (error) {
+      setEmailChange((current) => ({
+        ...current,
+        sending: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not send the verification code.",
+      }));
+    }
+  }
+
+  async function confirmEmailChange() {
+    const newEmail = emailChange.newEmail.trim();
+    const code = emailChange.code.trim();
+    if (!newEmail || code.length !== 6) return;
+    setEmailChange((current) => ({
+      ...current,
+      confirming: true,
+      error: "",
+      notice: "",
+    }));
+    try {
+      const nextUser = await confirmCurrentUserEmailChange(newEmail, code);
+      if (nextUser) hydrateProfile(nextUser);
+      setEmailChange({
+        newEmail: "",
+        code: "",
+        codeSent: false,
+        sending: false,
+        confirming: false,
+        error: "",
+        notice: "Email address updated.",
+      });
+      setMessageKind("success");
+      setMessage(t("account.profile.saved"));
+    } catch (error) {
+      setEmailChange((current) => ({
+        ...current,
+        confirming: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not confirm the email change.",
+      }));
+    }
+  }
+
   async function saveProfile() {
     if (!form.name.trim()) {
       setFieldError("name");
@@ -239,20 +318,16 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       setMessage(t("account.profile.nameRequired"));
       return;
     }
-    if (!form.email.trim()) {
-      setFieldError("email");
-      setMessageKind("error");
-      setMessage(t("account.profile.emailRequired"));
-      return;
-    }
     setSaving(true);
     setFieldError(null);
     setMessageKind("");
     setMessage("");
     try {
+      // The email is deliberately absent from this payload: changing an
+      // address is a code-confirmed two-step flow (`/auth/me/email/...`), and
+      // the API rejects a plain email patch with a 400.
       const nextUser = await updateCurrentUserProfile({
         name: form.name.trim(),
-        email: form.email.trim(),
         country: form.country,
         homeBase: form.homeBase.trim(),
         travelStyle: form.travelStyle.trim(),
@@ -545,9 +620,99 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
               </label>
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.email")}</span>
-                <input type="email" value={form.email} onChange={(event) => { setFieldError(null); setMessage(""); setMessageKind(""); setForm((current) => ({ ...current, email: event.target.value })); }} className={PROFILE_FIELD_CLASS} autoComplete="email" aria-invalid={fieldError === "email"} aria-describedby={fieldError === "email" ? "profile-email-error" : undefined} />
-                {fieldError === "email" ? <span id="profile-email-error" className="mt-2 block text-sm text-[var(--cinnabar)]">{message}</span> : null}
+                <input
+                  type="email"
+                  value={form.email}
+                  readOnly
+                  aria-readonly="true"
+                  aria-describedby="profile-email-note"
+                  className={`${PROFILE_FIELD_CLASS} cursor-not-allowed opacity-70`}
+                  autoComplete="email"
+                />
+                <span id="profile-email-note" className="mt-2 block text-sm text-[var(--muted)]">
+                  Address changes are confirmed with a code sent to the new one.
+                </span>
               </label>
+
+              <div className="border-t border-[var(--line)] pt-5">
+                <details>
+                  <summary className="min-h-11 cursor-pointer text-sm font-semibold text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/45 underline-offset-4">
+                    Change email address
+                  </summary>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <label className="block">
+                      <span className={PROFILE_LABEL_CLASS}>New email address</span>
+                      <input
+                        type="email"
+                        value={emailChange.newEmail}
+                        onChange={(event) =>
+                          setEmailChange((current) => ({
+                            ...current,
+                            newEmail: event.target.value,
+                            error: "",
+                            notice: "",
+                          }))
+                        }
+                        className={PROFILE_FIELD_CLASS}
+                        autoComplete="email"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      disabled={emailChange.sending || !emailChange.newEmail.trim()}
+                      onClick={() => void startEmailChange()}
+                      className="min-h-11 self-end border border-[var(--line)] px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)] disabled:opacity-40"
+                    >
+                      {emailChange.sending ? "Sending…" : "Send code"}
+                    </button>
+                  </div>
+
+                  {emailChange.codeSent ? (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                      <label className="block">
+                        <span className={PROFILE_LABEL_CLASS}>Verification code</span>
+                        <input
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={emailChange.code}
+                          onChange={(event) =>
+                            setEmailChange((current) => ({
+                              ...current,
+                              code: event.target.value,
+                              error: "",
+                              notice: "",
+                            }))
+                          }
+                          className={PROFILE_FIELD_CLASS}
+                          autoComplete="one-time-code"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        disabled={
+                          emailChange.confirming ||
+                          emailChange.code.trim().length !== 6
+                        }
+                        onClick={() => void confirmEmailChange()}
+                        className="min-h-11 self-end bg-[var(--river-deep)] px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[var(--cinnabar)] disabled:opacity-40"
+                      >
+                        {emailChange.confirming ? "Confirming…" : "Confirm change"}
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {emailChange.notice ? (
+                    <p className="mt-3 text-sm text-[var(--muted)]" role="status">
+                      {emailChange.notice}
+                    </p>
+                  ) : null}
+                  {emailChange.error ? (
+                    <p className="mt-3 text-sm text-[var(--cinnabar)]" role="alert">
+                      {emailChange.error}
+                    </p>
+                  ) : null}
+                </details>
+              </div>
               <label className="block">
                 <span className={PROFILE_LABEL_CLASS}>{t("account.profile.country")}</span>
                 <select value={form.country} onChange={(event) => setForm((current) => ({ ...current, country: event.target.value }))} className={PROFILE_FIELD_CLASS}>

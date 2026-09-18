@@ -179,6 +179,26 @@ export function sendEmailCode(email: string, purpose: EmailCodePurpose = "login"
   return apiPost<EmailCodeResponse>("/auth/email-code/send", { email, purpose });
 }
 
+/**
+ * Forgot-password step 1. The API answers identically whether or not the
+ * address exists, so the caller must never read success as "account found".
+ */
+export function requestPasswordReset(email: string) {
+  return apiPost<{ email: string; expiresInSeconds: number }>(
+    "/auth/password/forgot",
+    { email },
+  );
+}
+
+/** Forgot-password step 2: redeem the emailed code and set the new password. */
+export function resetPasswordWithCode(input: {
+  email: string;
+  code: string;
+  newPassword: string;
+}) {
+  return apiPost<{ ok: boolean }>("/auth/password/reset", input);
+}
+
 export async function verifyEmailCode(input: {
   email: string;
   code: string;
@@ -198,6 +218,26 @@ export async function verifyEmailCode(input: {
 export async function refreshCurrentUserProfile() {
   const user = await apiGet<AuthUser>("/auth/me");
   return persistAuthUser(user);
+}
+
+/** Email change step 1: send a verification code to the NEW address. */
+export function requestCurrentUserEmailChange(newEmail: string) {
+  return apiPost<{ email: string; expiresInSeconds: number }>(
+    "/auth/me/email/change-request",
+    { newEmail },
+  );
+}
+
+/**
+ * Email change step 2: confirm with the code that was sent to the new
+ * address, then refresh the local copy of the account.
+ */
+export async function confirmCurrentUserEmailChange(
+  newEmail: string,
+  code: string,
+) {
+  await apiPost<unknown>("/auth/me/email/confirm", { newEmail, code });
+  return refreshCurrentUserProfile();
 }
 
 export async function updateCurrentUserProfile(input: UpdateProfileInput) {

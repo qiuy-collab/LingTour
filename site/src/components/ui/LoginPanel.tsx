@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { countryOptions } from "@/lib/country-list";
 import { hydrateFavoritesFromServer } from "@/lib/favorites";
@@ -373,6 +374,15 @@ export function LoginPanel() {
                 ? "Use your password instead"
                 : "Email a code instead"}
             </button>
+
+            {isLogin && !usingCode ? (
+              <Link
+                href="/forgot-password"
+                className="min-h-11 px-1 text-left text-sm text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition-colors hover:text-[var(--cinnabar)]"
+              >
+                Forgot your password?
+              </Link>
+            ) : null}
 
             {isLogin && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (
               <button
