@@ -182,4 +182,89 @@ describe('MailerService SMTP resolution', () => {
     );
     expect(delivered).toBe(false);
   });
+
+  it('renders the real event template for an event-level test send', async () => {
+    smtpRepo.findOne!.mockResolvedValue({
+      host: 'db.smtp.example.com',
+      port: 587,
+      username: 'u',
+      password: 'p',
+      fromEmail: 'from@culvoy.com',
+      fromName: '',
+      useTls: true,
+    } as EmailSmtpSettings);
+    templateRepo.findOne!.mockResolvedValue(null);
+
+    const result = await service.sendEventTestEmail(
+      'login_verification',
+      'ops@example.com',
+    );
+
+    expect(result.ok).toBe(true);
+    const transport =
+      nodemailerMock.default.createTransport.mock.results[0].value;
+    // The delivered body is the rendered event template with example
+    // variables — not the hardcoded connectivity probe.
+    expect(transport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'ops@example.com',
+        subject: 'Your Culvoy verification code',
+        html: expect.stringContaining('<!DOCTYPE html>'),
+      }),
+    );
+    expect(transport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining('482913'),
+      }),
+    );
+  });
+
+  it('lets an unsaved draft override the stored template in a test send', async () => {
+    smtpRepo.findOne!.mockResolvedValue({
+      host: 'db.smtp.example.com',
+      port: 587,
+      username: 'u',
+      password: 'p',
+      fromEmail: 'from@culvoy.com',
+      fromName: '',
+      useTls: true,
+    } as EmailSmtpSettings);
+    templateRepo.findOne!.mockResolvedValue({
+      eventKey: 'signup_verification',
+      locale: 'en',
+      subject: 'Stored subject',
+      bodyHtml: '<p>stored body</p>',
+      isActive: true,
+    } as EmailTemplate);
+
+    const result = await service.sendEventTestEmail(
+      'signup_verification',
+      'ops@example.com',
+      undefined,
+      { bodyHtml: '<p>draft body {{code}}</p>' },
+    );
+
+    expect(result.ok).toBe(true);
+    const transport =
+      nodemailerMock.default.createTransport.mock.results[0].value;
+    expect(transport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // An omitted draft subject keeps the stored one.
+        subject: 'Stored subject',
+        html: expect.stringContaining('draft body 482913'),
+      }),
+    );
+  });
+
+  it('refuses an unknown event instead of sending a probe', async () => {
+    smtpRepo.findOne!.mockResolvedValue(null);
+
+    const result = await service.sendEventTestEmail(
+      'not_an_event',
+      'ops@example.com',
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('未知邮件事件');
+  });
 });

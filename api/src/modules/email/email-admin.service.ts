@@ -21,6 +21,7 @@ import {
   PreviewEmailTemplateDto,
   SaveEmailTemplateDto,
   SaveSmtpSettingsDto,
+  SendEventTestEmailDto,
 } from './dto/email-settings.dto';
 
 /**
@@ -52,6 +53,19 @@ export interface TemplateEventView {
     string,
     { subject: string; bodyHtml: string; isActive: boolean; updatedAt: string }
   >;
+}
+
+/**
+ * Rendered preview of one event template. `source` records where the shown
+ * content came from; `storedDisabled` is true when a saved template exists but
+ * is switched off — real delivery ignores such a template and falls back to the
+ * built-in default, and this preview does exactly the same.
+ */
+export interface TemplatePreviewView {
+  subject: string;
+  bodyHtml: string;
+  source: 'draft' | 'stored' | 'default';
+  storedDisabled: boolean;
 }
 
 @Injectable()
@@ -141,6 +155,28 @@ export class EmailAdminService {
     return this.mailerService.sendTestEmail(to, credentials);
   }
 
+  /**
+   * Event-level test send: renders the real event template and delivers it, so
+   * an operator can verify traveller-facing output. Draft subject/body are only
+   * forwarded when present, so an omitted field keeps the stored/default
+   * content instead of blanking it.
+   */
+  async sendEventTestEmail(
+    eventKey: string,
+    dto: SendEventTestEmailDto,
+  ): Promise<{ ok: boolean; message: string }> {
+    const { to, subject, bodyHtml, ...credentials } = dto;
+    const draft: { subject?: string; bodyHtml?: string } = {};
+    if (subject !== undefined) draft.subject = subject;
+    if (bodyHtml !== undefined) draft.bodyHtml = bodyHtml;
+    return this.mailerService.sendEventTestEmail(
+      eventKey,
+      to,
+      credentials,
+      draft,
+    );
+  }
+
   // ─── Email templates ──────────────────────────────────────────────
 
   async listTemplateEvents(): Promise<{ events: TemplateEventView[] }> {
@@ -211,7 +247,7 @@ export class EmailAdminService {
   async previewTemplate(
     eventKey: string,
     dto: PreviewEmailTemplateDto,
-  ): Promise<{ subject: string; bodyHtml: string }> {
+  ): Promise<TemplatePreviewView> {
     const definition = getEmailEvent(eventKey);
     if (!definition) {
       throw new NotFoundException(`Unknown email event: ${eventKey}`);
@@ -220,22 +256,34 @@ export class EmailAdminService {
 
     let subject = definition.defaultSubject;
     let bodyHtml = definition.defaultBodyHtml;
+    let source: TemplatePreviewView['source'] = 'default';
+
     const stored = await this.templateRepository.findOne({
       where: { eventKey, locale },
     });
-    if (stored) {
-      subject = stored.subject;
-      bodyHtml = stored.bodyHtml;
+    // A switched-off template is never used for real delivery (see
+    // MailerService.renderEventEmail, which filters on isActive), so the
+    // preview must not show it either — otherwise the admin sees content that
+    // no traveller will ever receive.
+    if (stored && stored.isActive) {
+      subject = stored.subject || subject;
+      bodyHtml = stored.bodyHtml || bodyHtml;
+      source = 'stored';
     }
     // Draft content from the editor wins over stored/default, so the
     // preview always shows exactly what would be saved.
-    if (dto.subject !== undefined) subject = dto.subject;
-    if (dto.bodyHtml !== undefined) bodyHtml = dto.bodyHtml;
+    if (dto.subject !== undefined || dto.bodyHtml !== undefined) {
+      if (dto.subject !== undefined) subject = dto.subject;
+      if (dto.bodyHtml !== undefined) bodyHtml = dto.bodyHtml;
+      source = 'draft';
+    }
 
     const vars = buildPreviewVars(definition, dto.vars);
     return {
       subject: renderEmailTemplate(subject, vars),
       bodyHtml: renderEmailTemplate(bodyHtml, vars),
+      source,
+      storedDisabled: !!stored && !stored.isActive,
     };
   }
 }

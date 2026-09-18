@@ -7,6 +7,7 @@ import {
   listEmailTemplateEvents,
   previewEmailTemplate,
   saveEmailTemplate,
+  sendEventTemplateTestEmail,
 } from '@/api/email'
 import type { EmailEventView } from '@/types/email'
 import { prefersReducedMotion } from '@/utils/motion'
@@ -25,6 +26,9 @@ const subject = ref('')
 const bodyHtml = ref('')
 const previewSubject = ref('')
 const previewHtml = ref('')
+const previewStoredDisabled = ref(false)
+const testTo = ref('')
+const sendingTest = ref(false)
 let motionContext: ReturnType<typeof gsap.context> | null = null
 
 const selectedEvent = computed(
@@ -110,6 +114,7 @@ async function refreshPreview() {
     })
     previewSubject.value = res.data.data.subject
     previewHtml.value = res.data.data.bodyHtml
+    previewStoredDisabled.value = res.data.data.storedDisabled === true
   } catch (error) {
     const message =
       (error as { response?: { data?: { message?: string } } })?.response?.data
@@ -150,6 +155,40 @@ async function handleSave() {
     ElMessage.error(message)
   } finally {
     saving.value = false
+  }
+}
+
+/**
+ * 按当前事件模板真实发送一封测试邮件。
+ * 与「SMTP 测试邮件」不同：这里走的是事件模板渲染链，收到的就是用户侧效果。
+ */
+async function handleTestSend() {
+  if (!selectedKey.value) return
+  const to = testTo.value.trim()
+  if (!to) {
+    ElMessage.warning('请填写收件人邮箱')
+    return
+  }
+  sendingTest.value = true
+  try {
+    const res = await sendEventTemplateTestEmail(selectedKey.value, {
+      to,
+      subject: subject.value,
+      bodyHtml: bodyHtml.value,
+    })
+    const result = res.data.data
+    if (result.ok) {
+      ElMessage.success(result.message)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch (error) {
+    const message =
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || '测试邮件发送失败，请稍后重试'
+    ElMessage.error(message)
+  } finally {
+    sendingTest.value = false
   }
 }
 
@@ -332,6 +371,9 @@ onBeforeUnmount(() => motionContext?.revert())
               </div>
               <div class="preview-meta">
                 <strong class="preview-subject">{{ previewSubject || subject || '（无主题）' }}</strong>
+                <span v-if="previewStoredDisabled" class="preview-note">
+                  已保存的模板处于停用状态，真实发送会改用系统默认模板
+                </span>
               </div>
               <iframe
                 v-if="previewHtml"
@@ -344,6 +386,34 @@ onBeforeUnmount(() => motionContext?.revert())
             </div>
           </div>
         </el-form>
+
+        <div class="test-send-row">
+          <div class="test-send-copy">
+            <span class="test-send-label">发送测试邮件</span>
+            <small class="test-send-hint">
+              按本事件模板渲染后真实发送，收到的就是用户侧效果（含未保存的修改）。只想验证 SMTP 通道本身时，请用「SMTP 设置」页的测试邮件。
+            </small>
+          </div>
+          <div class="test-send-controls">
+            <el-input
+              v-model="testTo"
+              class="test-send-input"
+              size="small"
+              placeholder="收件人邮箱"
+              aria-label="测试邮件收件人"
+            />
+            <el-button
+              size="small"
+              type="primary"
+              plain
+              :loading="sendingTest"
+              :disabled="!testTo.trim()"
+              @click="handleTestSend"
+            >
+              发送测试
+            </el-button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -619,6 +689,58 @@ onBeforeUnmount(() => motionContext?.revert())
   justify-content: center;
   color: var(--el-text-color-secondary);
   font-size: 13px;
+}
+
+.preview-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--el-color-warning);
+}
+
+.test-send-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+  background: var(--el-fill-color-lighter);
+}
+
+.test-send-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+.test-send-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.test-send-hint {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--el-text-color-secondary);
+}
+
+.test-send-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.test-send-input {
+  width: 220px;
 }
 
 @media (max-width: 1100px) {

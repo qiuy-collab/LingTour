@@ -56,3 +56,19 @@ export function previewEmailTemplate(
 ): Promise<Envelope<EmailTemplatePreview>> {
   return api.post(`/email-settings/templates/${eventKey}/preview`, payload)
 }
+
+/**
+ * 按事件模板真实发送一封测试邮件：后端渲染（已存启用模板优先、系统默认兜底），
+ * 传 subject/bodyHtml 时用当前编辑器内容（含未保存修改）覆盖。
+ * 这是唯一能看到「用户实际收到什么」的入口，与 smtp/test-send 的固定探针不同。
+ */
+export function sendEventTemplateTestEmail(
+  eventKey: string,
+  payload: Partial<SmtpSettingsPayload> & {
+    to: string
+    subject?: string
+    bodyHtml?: string
+  },
+): Promise<Envelope<SmtpTestResult>> {
+  return api.post(`/email-settings/templates/${eventKey}/test-send`, payload)
+}

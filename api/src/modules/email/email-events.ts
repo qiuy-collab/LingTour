@@ -41,8 +41,26 @@ const BRAND_STYLES = {
   hairline: '#e4e7eb',
 };
 
+/**
+ * Wraps an event body in the brand frame. The output is a complete HTML
+ * document — `<!DOCTYPE>`, `<html>`, `<head>` with an explicit utf-8 charset —
+ * because strict mail gateways (some corporate filters, Outlook, several
+ * mainland providers) degrade a bare `<div>` fragment into unstyled text.
+ * Every style stays inline: `<style>` blocks and external sheets are stripped
+ * by many clients, and the plain-text alternative is derived from this markup
+ * by tag-stripping, so a `<style>` block would leak CSS into it.
+ */
 function shell(bodyHtml: string): string {
-  return `<div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: ${BRAND_STYLES.text};">
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="x-apple-disable-message-reformatting" />
+<title>{{siteName}}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+<div style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; color: ${BRAND_STYLES.text};">
   <div style="border-bottom: 2px solid ${BRAND_STYLES.primary}; padding-bottom: 16px; margin-bottom: 24px;">
     <span style="font-size: 20px; font-weight: 700; color: ${BRAND_STYLES.primary}; letter-spacing: 0.08em;">CULVOY</span>
   </div>
@@ -50,7 +68,9 @@ ${bodyHtml}
   <div style="border-top: 1px solid ${BRAND_STYLES.hairline}; padding-top: 16px; margin-top: 24px; font-size: 12px; color: ${BRAND_STYLES.footer};">
     <p style="margin: 0;">{{siteName}} — Guangdong culture, story routes, and interpreting.</p>
   </div>
-</div>`;
+</div>
+</body>
+</html>`;
 }
 
 function codeBody(actionText: string): string {

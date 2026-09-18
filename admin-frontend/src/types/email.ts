@@ -63,4 +63,8 @@ export interface EmailTemplatePayload {
 export interface EmailTemplatePreview {
   subject: string
   bodyHtml: string
+  /** 预览内容来源：草稿（未保存编辑）/ 已存模板 / 系统默认 */
+  source: 'draft' | 'stored' | 'default'
+  /** 已存模板存在但处于停用状态——真实发送会忽略它并使用系统默认模板 */
+  storedDisabled: boolean
 }

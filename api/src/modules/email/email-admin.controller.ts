@@ -10,15 +10,21 @@ import {
   PreviewEmailTemplateDto,
   SaveEmailTemplateDto,
   SaveSmtpSettingsDto,
+  SendEventTestEmailDto,
   SendTestEmailDto,
   TestSmtpConnectionDto,
 } from './dto/email-settings.dto';
 
 /**
  * Admin「邮箱设置」endpoints. SMTP credentials are admin-only: the form
- * round-trips a masked view (never the password itself), and the two POST
- * probes are read-only operations that accept draft form values so the
- * admin can verify a configuration before saving it.
+ * round-trips a masked view (never the password itself), and the POST probes
+ * accept draft form values so the admin can verify a configuration before
+ * saving it.
+ *
+ * Two distinct test sends exist on purpose: `smtp/test-send` proves the relay
+ * itself works with a hardcoded probe, while `templates/:eventKey/test-send`
+ * renders the real event template (active DB template or built-in default) —
+ * the only way to confirm what a traveller actually receives.
  */
 @ApiTags('Email Settings')
 @ApiBearerAuth()
@@ -48,7 +54,7 @@ export class EmailAdminController {
   }
 
   @Post('smtp/test-send')
-  @ApiOperation({ summary: 'Send a test email to verify real deliverability' })
+  @ApiOperation({ summary: 'Send a hardcoded SMTP connectivity probe email' })
   async sendTestEmail(@Body() dto: SendTestEmailDto) {
     return this.emailAdminService.sendTestEmail(dto);
   }
@@ -77,5 +83,17 @@ export class EmailAdminController {
     @Body() dto: PreviewEmailTemplateDto,
   ) {
     return this.emailAdminService.previewTemplate(eventKey, dto);
+  }
+
+  @Post('templates/:eventKey/test-send')
+  @ApiOperation({
+    summary:
+      'Render the real event template and send it, to verify traveller-facing output',
+  })
+  async sendEventTestEmail(
+    @Param('eventKey') eventKey: string,
+    @Body() dto: SendEventTestEmailDto,
+  ) {
+    return this.emailAdminService.sendEventTestEmail(eventKey, dto);
   }
 }

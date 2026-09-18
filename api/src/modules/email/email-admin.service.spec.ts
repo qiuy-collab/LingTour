@@ -24,6 +24,7 @@ describe('EmailAdminService', () => {
     resolveSmtpConfig: jest.Mock;
     verifyConnection: jest.Mock;
     sendTestEmail: jest.Mock;
+    sendEventTestEmail: jest.Mock;
   };
 
   beforeEach(async () => {
@@ -42,6 +43,7 @@ describe('EmailAdminService', () => {
       resolveSmtpConfig: jest.fn(),
       verifyConnection: jest.fn(),
       sendTestEmail: jest.fn(),
+      sendEventTestEmail: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -220,6 +222,67 @@ describe('EmailAdminService', () => {
 
       const stored = await service.previewTemplate('signup_verification', {});
       expect(stored.subject).toBe('Stored subject 482913');
+    });
+
+    it('ignores a switched-off stored template in the preview, matching delivery', async () => {
+      templateRepo.findOne.mockResolvedValue({
+        eventKey: 'signup_verification',
+        locale: 'en',
+        subject: 'Disabled subject',
+        bodyHtml: '<p>disabled body</p>',
+        isActive: false,
+      });
+
+      const preview = await service.previewTemplate(
+        'signup_verification',
+        {},
+      );
+
+      // A disabled template never reaches a traveller, so the preview must not
+      // show it either.
+      expect(preview.storedDisabled).toBe(true);
+      expect(preview.source).toBe('default');
+      expect(preview.subject).toBe('Your Culvoy verification code');
+      expect(preview.bodyHtml).toContain('482913');
+      expect(preview.bodyHtml).not.toContain('disabled body');
+    });
+
+    it('reports the stored template as the source when it is active', async () => {
+      templateRepo.findOne.mockResolvedValue({
+        eventKey: 'signup_verification',
+        locale: 'en',
+        subject: 'Stored {{code}}',
+        bodyHtml: '<p>stored {{code}}</p>',
+        isActive: true,
+      });
+
+      const preview = await service.previewTemplate(
+        'signup_verification',
+        {},
+      );
+
+      expect(preview.source).toBe('stored');
+      expect(preview.storedDisabled).toBe(false);
+      expect(preview.subject).toBe('Stored 482913');
+    });
+
+    it('forwards only the draft fields that are present to the event test send', async () => {
+      mailer.sendEventTestEmail.mockResolvedValue({
+        ok: true,
+        message: 'sent',
+      });
+
+      await service.sendEventTestEmail('signup_verification', {
+        to: 'ops@example.com',
+        subject: 'Draft subject',
+      });
+
+      expect(mailer.sendEventTestEmail).toHaveBeenCalledWith(
+        'signup_verification',
+        'ops@example.com',
+        expect.any(Object),
+        { subject: 'Draft subject' },
+      );
     });
 
     it('marks planned events honestly in the event list', async () => {
