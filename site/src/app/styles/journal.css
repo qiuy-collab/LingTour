@@ -6,14 +6,6 @@
   opacity: 0.98;
 }
 
-.torn-edge {
-  mask-image: linear-gradient(to bottom, black 90%, transparent 100%),
-              radial-gradient(circle at 10px 100%, transparent 8px, black 10px);
-  mask-size: 100% 100%, 20px 20px;
-  mask-repeat: no-repeat, repeat-x;
-  mask-position: 0 0, 0 100%;
-}
-
 .handwritten {
   font-family: "Trebuchet MS", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-style: italic;
@@ -22,11 +14,6 @@
 
 .scrapbook-shadow {
   box-shadow: var(--shadow-soft);
-}
-
-@keyframes tape-stick {
-  0% { transform: scale(1.1) rotate(2deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 .tape-effect {
