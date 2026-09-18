@@ -132,12 +132,14 @@ export class CommunityService {
       excerpt: dto.excerpt,
       tags: dto.tags ?? [],
       image: dto.image ?? null,
+      media: dto.media ?? [],
       location: dto.location ?? '',
       route: dto.route ?? '',
       mood: dto.mood ?? '',
       featured: dto.featured ?? false,
       likes: dto.likes ?? 0,
-      comments: dto.comments ?? 0,
+      // 评论功能已下线：计数列仅为兼容历史数据保留，新帖固定为 0。
+      comments: 0,
       saves: dto.saves ?? 0,
     });
     const saved = await this.postRepo.save(post);
@@ -162,6 +164,7 @@ export class CommunityService {
     if (dto.status) post.status = dto.status;
     if (dto.userId !== undefined) post.userId = dto.userId;
     if (dto.userEmail !== undefined) post.userEmail = dto.userEmail;
+    if (dto.media !== undefined) post.media = dto.media;
     return this.postRepo.save(post);
   }
 

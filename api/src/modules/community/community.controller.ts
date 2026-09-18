@@ -29,6 +29,15 @@ import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CommunityService } from './community.service';
 import { UploadService } from '../upload/upload.service';
+import {
+  MAX_IMAGE_FILE_SIZE,
+  MAX_VIDEO_FILE_SIZE,
+  discardUploadedFile,
+  hasValidUploadSignature,
+  isAllowedImageUpload,
+  isAllowedVideoUpload,
+  readUploadHead,
+} from '../upload/upload-policy';
 import { UpsertCommunityPostDto } from './dto/upsert-community-post.dto';
 import { UpdateCommunityStatusDto } from './dto/update-community-status.dto';
 import { UpsertCommunityBriefDto } from './dto/upsert-community-brief.dto';
@@ -59,6 +68,34 @@ export class CommunityController {
       throw new UnauthorizedException('Missing authenticated user');
     }
     return userId;
+  }
+
+  /**
+   * community 上传与 admin 上传共用同一套媒体安全策略：MIME + 扩展名白名单
+   * 加磁盘文件头签名校验；校验失败时清理 diskStorage 已落盘的文件，不留孤儿。
+   * （Multer 的 fileFilter 在装饰器求值期无法引用实例方法，故放在方法体内。）
+   */
+  private async verifyCommunityUpload(
+    file: Express.Multer.File,
+    kind: 'image' | 'video',
+  ): Promise<void> {
+    const allowed =
+      kind === 'image' ? isAllowedImageUpload(file) : isAllowedVideoUpload(file);
+    if (!allowed) {
+      await discardUploadedFile(file);
+      throw new BadRequestException(
+        kind === 'image'
+          ? 'Only JPEG, PNG, WebP or GIF images are allowed'
+          : 'Only MP4, WebM, MOV or M4V videos are allowed',
+      );
+    }
+    const head = await readUploadHead(file);
+    if (!head || !hasValidUploadSignature({ ...file, buffer: head })) {
+      await discardUploadedFile(file);
+      throw new BadRequestException(
+        'File content does not match its declared type',
+      );
+    }
   }
 
   @Public()
@@ -113,27 +150,52 @@ export class CommunityController {
       // an editorial decision (report P3-3).
       likes: 0,
       saves: 0,
-      comments: 0,
       featured: false,
     });
   }
 
   @Post('public/community/upload')
   @ApiBearerAuth()
-  // Authenticated users can push 5MB per call; without a dedicated throttle
-  // the global 60/min is enough to fill the uploads volume (report P2-C).
+  // Authenticated users can push 10MB per call (same image ceiling as the
+  // admin upload); without a dedicated throttle the global 60/min is enough
+  // to fill the uploads volume (report P2-C).
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Upload image for community post (public)' })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: MAX_IMAGE_FILE_SIZE },
     }),
   )
   async uploadCommunityImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is required');
     }
+    await this.verifyCommunityUpload(file, 'image');
+    const result = await this.uploadService.storeUploadedFile(
+      file,
+      'community',
+    );
+    return { url: result.url };
+  }
+
+  @Post('public/community/upload/video')
+  @ApiBearerAuth()
+  // Live-photo clips share the admin video ceiling (100MB) and the same
+  // per-minute budget as the image endpoint.
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @ApiOperation({ summary: 'Upload live-photo video for community post (public)' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: MAX_VIDEO_FILE_SIZE },
+    }),
+  )
+  async uploadCommunityVideo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    await this.verifyCommunityUpload(file, 'video');
     const result = await this.uploadService.storeUploadedFile(
       file,
       'community',

@@ -22,6 +22,24 @@ export const COMMUNITY_POST_STATUSES = [
 
 export type CommunityPostStatus = (typeof COMMUNITY_POST_STATUSES)[number];
 
+/**
+ * 帖子媒体项。
+ * - image: 普通图片，url 为 /uploads/... 相对路径
+ * - live: Live 图，url 为配套短视频（mp4/webm/mov/m4v）的 /uploads/... 相对路径，
+ *   展示时以 video 首帧作为静态画面，点击播放（muted loop，对齐 Live Photo 体验）
+ */
+export const COMMUNITY_POST_MEDIA_TYPES = ['image', 'live'] as const;
+
+export type CommunityPostMediaType = (typeof COMMUNITY_POST_MEDIA_TYPES)[number];
+
+export interface CommunityPostMediaItem {
+  type: CommunityPostMediaType;
+  url: string;
+}
+
+/** 单帖媒体数量上限，防止滥用上传额度。 */
+export const COMMUNITY_POST_MEDIA_LIMIT = 9;
+
 @Entity('community_posts')
 export class CommunityPost {
   @PrimaryGeneratedColumn('uuid')
@@ -57,6 +75,12 @@ export class CommunityPost {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   image: string | null;
+
+  /**
+   * 多图 / Live 图媒体数组。历史帖子为空数组，展示层回退到单图 image 字段。
+   */
+  @Column({ type: 'jsonb', default: [] })
+  media: CommunityPostMediaItem[];
 
   @Column({ type: 'varchar', length: 200, default: '' })
   location: string;

@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsIn,
@@ -9,12 +12,28 @@ import {
   IsString,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import {
+  COMMUNITY_POST_MEDIA_TYPES,
   COMMUNITY_POST_STATUSES,
+  COMMUNITY_POST_MEDIA_LIMIT,
+  type CommunityPostMediaItem,
   type CommunityPostStatus,
 } from '../entities/community-post.entity';
 import { IsMediaLibraryPath } from '../../../common/validators/media-library.validator';
+
+export class CommunityPostMediaItemDto implements CommunityPostMediaItem {
+  @ApiProperty({ enum: COMMUNITY_POST_MEDIA_TYPES })
+  @IsIn(COMMUNITY_POST_MEDIA_TYPES)
+  type: CommunityPostMediaItem['type'];
+
+  @ApiProperty({ description: '图片或 Live 图视频的 /uploads/... 相对路径' })
+  @IsString()
+  @MaxLength(500)
+  @IsMediaLibraryPath()
+  url: string;
+}
 
 export class UpsertCommunityPostDto {
   @ApiProperty()
@@ -66,6 +85,20 @@ export class UpsertCommunityPostDto {
   @IsMediaLibraryPath()
   image?: string;
 
+  @ApiPropertyOptional({
+    type: [CommunityPostMediaItemDto],
+    maxItems: COMMUNITY_POST_MEDIA_LIMIT,
+    description:
+      '多图 / Live 图媒体数组；type=live 时 url 为配套短视频路径，上限 9 项',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(COMMUNITY_POST_MEDIA_LIMIT)
+  @ValidateNested({ each: true })
+  @Type(() => CommunityPostMediaItemDto)
+  media?: CommunityPostMediaItem[];
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -86,12 +119,6 @@ export class UpsertCommunityPostDto {
   @IsInt()
   @Min(0)
   likes?: number;
-
-  @ApiPropertyOptional({ default: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  comments?: number;
 
   @ApiPropertyOptional({ default: 0 })
   @IsOptional()
