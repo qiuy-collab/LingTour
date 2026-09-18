@@ -47,13 +47,9 @@ docker compose down               # 停止（加 -v 会连卷删除，谨慎）
 
 - api 容器经 `host.docker.internal:5432` 复用宿主机本地 PostgreSQL 与迁移状态（配置来自 `api/.env`，compose 只覆盖 `DB_HOST`）；上传目录 bind mount 到 `api/uploads`。
 - site 浏览器端请求 `http://localhost:8000/api/v1`（构建期注入），SSR 端走容器网络 `http://api:8000/api/v1`；admin 的 `/api/admin` 由其 `server.cjs` 代理到 api 容器。
-- **容器跑的是构建产物，不是热更新 dev server**：改代码后需要 `docker compose up -d --build site`（或 admin/api）重建对应镜像。日常高频迭代改代码时，仍可退回 npm dev 方式：
-
-```bash
-cd site && npm run dev            # http://localhost:3000（热更新；先 docker compose stop site 腾出端口）
-cd admin-frontend && npm run dev  # http://localhost:5173
-cd api && npm run start:dev       # http://localhost:8000
-```
+- **容器跑的是构建产物，不是热更新 dev server**：改代码后需要 `docker compose up -d --build site`（或 admin/api）重建对应镜像；`--build` 会把工作区当前文件（含未提交改动）打进镜像，重建前先确认工作区状态。
+- **只跑 Docker，不在宿主机启动 dev server**（2026-09-18 硬性决定，此前"高频迭代可退回 npm dev"的口径作废）：宿主机 `npm run dev` / `npm run start:dev` 占用 3000/5173/8000，会把映射同名端口的容器挤死（2026-09-18 admin 容器 `Exited(137)` 即此原因）。确需热更新迭代时，先 `docker compose stop <服务>` 腾出端口，用一次性临时端口起 dev server，用完即停，不得长期占用默认端口。
+- **admin 的域名来源以容器为准**：`VITE_API_ORIGIN`（`http://api:8000` 代理）与 `VITE_MEDIA_ORIGIN`（`http://localhost:8000`，浏览器端图片 URL）由 compose 构建参数固定；宿主机 `admin-frontend/.env.local` 只影响手动起的 Vite dev server，不影响容器。勿再因 `.env.local` 指向生产域名而误判本地数据问题。
 
 本地只做 API 相关工作时才启动本地 API；不要为了给 UI 取数据而启动或重置它。PM2 与 `ecosystem.config.js` 已于 2026-09-17 移除，不再是本地启动方式。
 

@@ -170,15 +170,17 @@ Use `useGSAP()` with a scoped root in React. In Vue use `gsap.context()` and `ct
 
 ## 8. Development and validation commands
 
-Local development:
+Local development runs **only through Docker Compose** (hard decision, 2026-09-18). Do not start host-side `npm run dev` / `npm run start:dev` processes: they occupy ports 3000/5173/8000 and kill the containers mapped to the same ports (the 2026-09-18 admin container `Exited(137)` was exactly this). Containers run build artifacts, not hot-reload dev servers — rebuild the touched tier after code changes, and note that `--build` bakes the current working tree (including uncommitted files) into the image.
 
 ```bash
-cd E:/workspace/LingTour/site && npm run dev
-cd E:/workspace/LingTour/admin-frontend && npm run dev
-cd E:/workspace/LingTour/api && npm run start:dev
+cd E:/workspace/LingTour
+docker compose up -d              # site http://localhost:3000 / admin http://localhost:5173 / api http://localhost:8000
+docker compose up -d --build api  # rebuild one tier after code changes (same for site / admin)
+docker compose ps                 # three containers healthy
+docker compose logs -f api        # inspect one service
 ```
 
-Default URLs are site `http://localhost:3000`, admin `http://localhost:5173`, and API `http://localhost:8000`.
+Default URLs are site `http://localhost:3000`, admin `http://localhost:5173`, and API `http://localhost:8000`. The api container reuses the host PostgreSQL via `host.docker.internal:5432` (credentials from `api/.env`, compose only overrides `DB_HOST`), and uploads bind-mount to `api/uploads`, so data and migration state survive rebuilds. Admin's API/media origins come from compose build args (`http://api:8000` proxy, `http://localhost:8000` for browser media); the host-side `admin-frontend/.env.local` only affects a manually started Vite dev server, never the container.
 
 Validate every touched application. Do not repair unrelated pre-existing failures silently.
 
