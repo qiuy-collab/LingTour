@@ -61,14 +61,14 @@ export function FieldPlaceholder({
       {(label || code) && (
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-5">
           {label ? (
-            <span className="self-start font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--river-deep)]/60">
+            <span className="self-start font-mono text-[12px] uppercase tracking-[0.3em] text-[var(--river-deep)]/60">
               ✦ {label}
             </span>
           ) : (
             <span />
           )}
           {code ? (
-            <span className="self-end font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--river-deep)]/55">
+            <span className="self-end font-mono text-[12px] uppercase tracking-[0.3em] text-[var(--river-deep)]/55">
               {code}
             </span>
           ) : null}

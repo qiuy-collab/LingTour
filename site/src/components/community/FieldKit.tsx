@@ -296,7 +296,7 @@ export function FieldKit<TChannel extends string>({
 
             {locked ? (
               <div className="mb-6 rounded-[var(--radius-sm)] border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
+                <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
                   {AUTH_PROMPTS.connectGoogleToUpload}
                 </p>
               </div>
@@ -308,7 +308,7 @@ export function FieldKit<TChannel extends string>({
                   compact ? "mb-5 rounded-[var(--radius-sm)] p-4" : "mb-8 rounded-[var(--radius-sm)] p-5 rotate-[-1deg]"
                 }`}
               >
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--gold)]">
                   Active Brief
                 </p>
                 <p
@@ -326,7 +326,7 @@ export function FieldKit<TChannel extends string>({
 
             <div className={compact ? "grid gap-5" : "space-y-8"}>
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                <label className="mb-2 block text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Category
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -354,7 +354,7 @@ export function FieldKit<TChannel extends string>({
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                <label className="mb-2 block text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Note title
                 </label>
                 <input
@@ -370,7 +370,7 @@ export function FieldKit<TChannel extends string>({
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                <label className="mb-2 block text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Observation Detail
                 </label>
                 <textarea
@@ -387,10 +387,10 @@ export function FieldKit<TChannel extends string>({
 
               <div>
                 <div className="mb-2 flex items-baseline justify-between gap-3">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                  <label className="block text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                     Photos &amp; live moments (optional)
                   </label>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-[var(--muted)]">
                     {media.length}/{FIELD_KIT_MEDIA_LIMIT}
                   </span>
                 </div>
@@ -419,7 +419,7 @@ export function FieldKit<TChannel extends string>({
                         />
                       )}
                       {item.type === "live" ? (
-                        <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--night)]/78 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-[var(--night)]/78 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white">
                           Live
                         </span>
                       ) : null}
@@ -451,7 +451,7 @@ export function FieldKit<TChannel extends string>({
                         <span className="text-2xl text-[var(--muted)] group-hover:text-[var(--gold)]">
                           +
                         </span>
-                        <span className="mt-1 px-2 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
+                        <span className="mt-1 px-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
                           Add photos
                         </span>
                         <input
@@ -470,10 +470,10 @@ export function FieldKit<TChannel extends string>({
                             : "cursor-pointer hover:border-[var(--gold)]"
                         } aspect-square`}
                       >
-                        <span className="rounded-full bg-[var(--night)]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--river-deep)] group-hover:text-[var(--gold)]">
+                        <span className="rounded-full bg-[var(--night)]/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--river-deep)] group-hover:text-[var(--gold)]">
                           Live
                         </span>
-                        <span className="mt-1 px-2 text-center text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
+                        <span className="mt-1 px-2 text-center text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--muted)] group-hover:text-[var(--gold)]">
                           Add live
                         </span>
                         <input
@@ -495,8 +495,12 @@ export function FieldKit<TChannel extends string>({
               </div>
 
               {error ? (
-                <div className="rounded-[var(--radius-sm)] border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
+                <div
+                  role="alert"
+                  aria-live="assertive"
+                  className="rounded-[var(--radius-sm)] border border-[var(--cinnabar)]/25 bg-[var(--cinnabar)]/8 px-4 py-3"
+                >
+                  <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--cinnabar)]">
                     {error}
                   </p>
                 </div>
@@ -513,7 +517,7 @@ export function FieldKit<TChannel extends string>({
                 >
                   {submitting ? "POSTING..." : mediaUploading ? "UPLOADING MEDIA..." : "POST NOTE"}
                 </button>
-                <p className="mt-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                <p className="mt-4 text-center text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Publish as a text note, a photo set, or with live moments
                 </p>
               </div>

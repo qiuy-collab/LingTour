@@ -84,7 +84,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
       <div data-registry-board className="mb-12 rotate-[-0.5deg] border border-[var(--line)] bg-[var(--paper)] bg-grain p-5 scrapbook-shadow sm:mb-16 sm:p-6 lg:p-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_14rem_12rem]">
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Search Registry</span>
+            <span className="text-[12px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Search Registry</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -93,7 +93,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
             />
           </label>
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Collection</span>
+            <span className="text-[12px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Collection</span>
             <select
               value={collection}
               onChange={(event) => setCollection(event.target.value)}
@@ -106,7 +106,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
             </select>
           </label>
           <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Type</span>
+            <span className="text-[12px] font-bold uppercase tracking-widest text-[var(--muted)] mb-2 block">Type</span>
             <select
               value={tag}
               onChange={(event) => setTag(event.target.value)}
@@ -121,7 +121,7 @@ export function AllProductsClient({ products, collections, tags }: AllProductsCl
         </div>
       </div>
 
-      <div data-registry-summary className="mb-10 flex flex-wrap items-center justify-between gap-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] sm:mb-12">
+      <div data-registry-summary className="mb-10 flex flex-wrap items-center justify-between gap-4 text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] sm:mb-12">
         <p>
           Showing {filteredProducts.length} <span className="text-[var(--gold)]">/</span> {products.length} Field Objects
         </p>

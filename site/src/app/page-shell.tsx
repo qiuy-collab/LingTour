@@ -10,7 +10,7 @@ type PageShellProps = {
 
 export function PageShell({ eyebrow, title, description, bullets }: PageShellProps) {
   return (
-    <section className="py-16 lg:py-24">
+    <section className="py-beat">
       <Container>
         <div className="max-w-4xl rounded-[var(--radius-xl)] border border-[var(--line)] bg-[var(--surface)] p-8 lg:p-12">
           <SectionHeading eyebrow={eyebrow} title={title} description={description} />

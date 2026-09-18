@@ -30,7 +30,7 @@ export default function Error({
   return (
     <div className="bg-[var(--paper-deep)] bg-grain min-h-screen text-[var(--river-deep)]">
       <section className="site-container flex min-h-[80vh] flex-col items-center justify-center py-32 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+        <p className="font-mono text-[12px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
           {t("common.error.badge")}
         </p>
         <h1 className="mt-8 font-[family:var(--font-display)] text-6xl leading-[0.9] tracking-[-0.03em] md:text-8xl lg:text-9xl">

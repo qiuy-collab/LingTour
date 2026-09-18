@@ -335,7 +335,7 @@ export function CheckoutClient() {
     return (
       <div className="min-h-screen bg-[var(--paper-deep)] bg-grain px-6 py-16 text-[var(--river-deep)] lg:px-16">
         <div className="mx-auto max-w-xl border border-[var(--line)] bg-[var(--surface-strong)] p-6 shadow-panel sm:p-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
+          <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--cinnabar)]">
             {t("checkout.page.paymentEyebrow")}
           </p>
           <h1 className="mt-4 font-[family:var(--font-display)] text-4xl leading-[0.96] tracking-[-0.04em]">
@@ -354,7 +354,7 @@ export function CheckoutClient() {
           </div>
           <a
             href={orderResult.paypalApprovalUrl}
-            className="mt-8 inline-flex min-h-12 w-full items-center justify-center bg-[var(--river-deep)] px-8 py-4 text-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[var(--cinnabar)] active:scale-[0.985]"
+            className="mt-8 inline-flex min-h-12 w-full items-center justify-center bg-[var(--river-deep)] px-8 py-4 text-center font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[var(--cinnabar)] active:scale-[0.985]"
           >
             {t("checkout.payment.paypalContinue")}
           </a>
@@ -376,7 +376,7 @@ export function CheckoutClient() {
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.orderNo")}
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
@@ -384,7 +384,7 @@ export function CheckoutClient() {
               </p>
             </div>
             <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.status")}
               </p>
               <p className="mt-2 text-lg font-bold capitalize text-[var(--river-deep)]">
@@ -392,7 +392,7 @@ export function CheckoutClient() {
               </p>
             </div>
             <div className="rounded-[var(--radius-sm)] border border-[var(--line)] bg-white/65 p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--muted)]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">
                 {t("checkout.success.total")}
               </p>
               <p className="mt-2 text-lg font-bold text-[var(--river-deep)]">
@@ -415,7 +415,7 @@ export function CheckoutClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain py-10 text-[var(--river-deep)] sm:py-14 lg:py-20">
+    <div className="min-h-screen bg-[var(--paper-deep)] bg-grain py-10 text-[var(--river-deep)] sm:py-beat">
       <div className="site-container grid min-h-screen min-w-0 gap-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.75fr)] lg:gap-16 xl:gap-24">
         <section className="min-w-0">
           <div className="min-w-0">
@@ -433,13 +433,13 @@ export function CheckoutClient() {
 
             <div className="grid min-w-0">
               <section className={CHECKOUT_PANEL_CLASS}>
-                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.contactSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-email" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.email")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.email")}
                     </span>
                     <input
@@ -452,7 +452,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-recipient-name" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.recipientName")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.recipientName")}
                     </span>
                     <input
@@ -465,7 +465,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-phone" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.phone")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.phone")}
                     </span>
                     <input
@@ -477,7 +477,7 @@ export function CheckoutClient() {
                     />
                   </label>
                   <div className="grid gap-2">
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.paymentMethod")}
                     </span>
                     <p className="flex min-h-12 items-center border-b border-[var(--line)] text-base text-[var(--river-deep)] lg:text-sm">
@@ -488,13 +488,13 @@ export function CheckoutClient() {
               </section>
 
               <section className={CHECKOUT_PANEL_CLASS}>
-                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.addressSection")}
                 </p>
                 <div className="mt-6 grid gap-6 sm:grid-cols-2">
                   <label htmlFor="checkout-street" className="grid gap-2 sm:col-span-2">
                     <span className="sr-only">{t("checkout.form.streetAddress")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.streetAddress")}
                     </span>
                     <input
@@ -507,7 +507,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-city" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.city")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.city")}
                     </span>
                     <input
@@ -520,7 +520,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-state" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.state")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.state")}
                     </span>
                     <input
@@ -533,7 +533,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-postal-code" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.postalCode")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.postalCode")}
                     </span>
                     <input
@@ -546,7 +546,7 @@ export function CheckoutClient() {
                   </label>
                   <label htmlFor="checkout-country" className="grid gap-2">
                     <span className="sr-only">{t("checkout.form.country")}</span>
-                    <span aria-hidden="true" className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <span aria-hidden="true" className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                       {t("checkout.form.country")}
                     </span>
                     <input
@@ -561,7 +561,7 @@ export function CheckoutClient() {
               </section>
 
               <section className={CHECKOUT_PANEL_CLASS}>
-                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {t("checkout.form.handlingNote")}
                 </p>
                 <label htmlFor="checkout-note" className="mt-5 block">
@@ -586,7 +586,7 @@ export function CheckoutClient() {
               reached. */}
           <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto overscroll-contain">
             <div className="border-y border-[var(--line)] py-7 sm:py-9">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
                 {t("checkout.summary.title")}
               </p>
               <div className="mt-6">
@@ -603,7 +603,7 @@ export function CheckoutClient() {
                         <p className="truncate text-sm font-bold text-[var(--river-deep)]">
                           {item.name}
                         </p>
-                        <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
+                        <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">
                           {formatStorePrice(item.price * item.quantity, item.currency)}
                         </p>
                       </div>
@@ -671,7 +671,7 @@ export function CheckoutClient() {
                       <button
                         type="button"
                         onClick={() => deleteCartItem(item.slug)}
-                        className="min-h-11 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition hover:text-[var(--cinnabar)]"
+                        className="min-h-11 px-2 text-[12px] font-bold uppercase tracking-[0.14em] text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition hover:text-[var(--cinnabar)]"
                         aria-label={fillTemplate(t("checkout.cart.removeItem"), {
                           item: item.name,
                         })}
@@ -704,7 +704,7 @@ export function CheckoutClient() {
                 </div>
                 <div className="flex items-end justify-between border-t border-[var(--line)] pt-5">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                       {t("checkout.summary.orderTotal")}
                     </p>
                     <p className="mt-2 text-sm text-[var(--muted)]">
@@ -721,7 +721,7 @@ export function CheckoutClient() {
                 type="button"
                 onClick={submitOrder}
                 disabled={!canSubmit || submitting}
-                className={`mt-8 min-h-[3.25rem] w-full border px-8 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.2em] transition ${
+                className={`mt-8 min-h-[3.25rem] w-full border px-8 py-4 font-mono text-[11px] font-bold uppercase tracking-[0.2em] transition ${
                   canSubmit && !submitting
                     ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)]"
                     : "cursor-not-allowed border-[var(--line)] bg-transparent text-[var(--muted)]"

@@ -42,7 +42,7 @@ export function RouteBrief({ route }: Props) {
 
   return (
     <section ref={briefRef} className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
-      <div className="site-container py-7 sm:py-10 lg:py-14">
+      <div className="site-container py-tight">
         <div className="grid min-w-0 items-center gap-6 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
           <figure
             data-route-brief-media

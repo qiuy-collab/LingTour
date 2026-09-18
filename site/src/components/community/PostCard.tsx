@@ -112,7 +112,7 @@ export function PostCard({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-[var(--radius-md)] scrapbook-shadow transition-all duration-500 hover:-translate-y-1 ${variantClasses}`}
+      className={`group relative overflow-hidden rounded-[var(--radius-md)] scrapbook-shadow transition-all duration-500 hover:-translate-y-1.5 ${variantClasses}`}
       style={{
         animationDelay: `${index * 60}ms`,
       }}
@@ -156,7 +156,7 @@ export function PostCard({
               }`}
             />
             <span
-              className={`absolute right-3 top-3 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+              className={`absolute right-3 top-3 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.18em] ${
                 variant === "feature"
                   ? "rounded-full border border-[var(--line)] bg-[var(--paper)]/88 text-[var(--cinnabar)] backdrop-blur-md"
                   : "handwritten rotate-[2deg] bg-white/80 text-[var(--river-deep)] shadow-sm backdrop-blur-sm"
@@ -165,7 +165,7 @@ export function PostCard({
               {post.channel}
             </span>
             {cover.type === "live" ? (
-              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[var(--night)]/62 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[var(--night)]/62 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
                 <svg viewBox="0 0 12 12" className="h-2 w-2 fill-current" aria-hidden="true">
                   <path d="M3 1.5v9l7-4.5-7-4.5z" />
                 </svg>
@@ -183,7 +183,7 @@ export function PostCard({
         ) : (
           <div className="relative overflow-hidden px-6 pb-2 pt-8 sm:px-7">
             <div className="max-w-[13rem] border-l-2 border-[var(--gold)] pl-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">{post.channel}</p>
+              <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">{post.channel}</p>
             </div>
           </div>
         )}
@@ -206,7 +206,7 @@ export function PostCard({
             </span>
             {isPendingReview ? (
               <span
-                className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--gold)]/45 bg-[var(--gold)]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)]"
+                className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border border-[var(--gold)]/45 bg-[var(--gold)]/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)]"
                 title="Visible only to you while an editor reviews it"
               >
                 <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 fill-current" aria-hidden="true">
@@ -245,10 +245,10 @@ export function PostCard({
 
           <div className="mt-4 flex flex-wrap gap-2">
             {post.route ? (
-              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">#{post.route}</span>
+              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)]">#{post.route}</span>
             ) : null}
             {post.location ? (
-              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">@{post.location}</span>
+              <span className="rounded-full bg-[var(--paper-deep)] px-2.5 py-1 text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--gold)]">@{post.location}</span>
             ) : null}
           </div>
         </div>

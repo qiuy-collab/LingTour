@@ -180,7 +180,7 @@ export function ErrorState({
   return (
     <div className="flex min-h-[40vh] items-center justify-center px-6">
       <div className="max-w-md text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+        <p className="font-mono text-[12px] uppercase tracking-[0.4em] text-[var(--cinnabar)]">
           ! {displayTitle}
         </p>
         <p className="mt-4 text-base leading-relaxed text-[var(--muted)] handwritten">

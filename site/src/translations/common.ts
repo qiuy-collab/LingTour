@@ -107,6 +107,7 @@ export const common = {
 
     "community.hero.title": "Field",
     "community.hero.titleAccent": "Notes.",
+    "community.hero.latestNote": "Latest note",
     "community.channel.all": "All",
     "community.channel.fieldNotes": "Field Notes",
     "community.channel.foodMap": "Food Map",

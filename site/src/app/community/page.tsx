@@ -490,6 +490,11 @@ export default function CommunityPage() {
     }
   };
 
+  const latestNote = allPosts[0];
+  const latestNoteCover = latestNote
+    ? latestNote.media[0]?.url ?? latestNote.image ?? ""
+    : "";
+
   return (
     <CommunityJournalMotion
       motionKey={`${activeChannel}:${sortMode}:${query}:${masonryItems
@@ -497,41 +502,69 @@ export default function CommunityPage() {
         .join("|")}`}
     >
     <div className="min-h-screen overflow-clip bg-[var(--paper-deep)] bg-grain text-[var(--river-deep)]">
-      <section data-community-hero className="relative overflow-hidden border-b border-[var(--line)] py-16 sm:py-20 lg:py-32">
-        <div
-          data-community-ink="left"
-          className="pointer-events-none absolute -left-24 top-5 h-72 w-72 rounded-[42%_58%_65%_35%] bg-[var(--cinnabar)]/[0.075] blur-2xl sm:h-96 sm:w-96"
-        />
-        <div
-          data-community-ink="right"
-          className="pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-[61%_39%_42%_58%] bg-[var(--jade)]/[0.13] blur-2xl sm:h-[30rem] sm:w-[30rem]"
-        />
-        <div className="site-container relative text-center">
-          <div>
+      <section data-community-hero className="relative overflow-hidden border-b border-[var(--line)] py-land">
+        <div className="site-container relative grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:items-end lg:gap-16">
+          <div className="min-w-0">
             <h1 className="font-[family:var(--font-display)] text-[clamp(3.25rem,15vw,5rem)] leading-[0.86] tracking-tight md:text-8xl lg:text-[8rem]">
               <span className="block overflow-hidden pb-1"><span data-community-title className="block">{t("community.hero.title")}</span></span>
               <span className="block overflow-hidden pb-3"><span data-community-title className="block italic text-[var(--gold)]">{t("community.hero.titleAccent")}</span></span>
             </h1>
-            <p className="mx-auto mt-8 max-w-xl handwritten text-base leading-7 text-[var(--river-deep)]/85 sm:text-lg">
+            <p className="mt-8 max-w-xl handwritten text-base leading-7 text-[var(--river-deep)]/85 sm:text-lg">
               What travellers noticed on the ground, and what the editors are chasing next.
             </p>
-            <p aria-live="polite" className="mt-6 font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
+            <p aria-live="polite" className="mt-6 font-mono text-[12px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]">
               {allPosts.length} traveller notes · {fieldBriefs.length} editor briefs
             </p>
           </div>
+
+          {/* The community's own newest note is the best possible artwork for this
+              masthead — replacing the two decorative blur blobs that used to sit
+              behind a centred headline. */}
+          {latestNote ? (
+            <button
+              type="button"
+              onClick={() => setSelectedPost(latestNote)}
+              className="group block min-w-0 text-left"
+              aria-label={`${t("community.hero.latestNote")}: ${latestNote.title}`}
+            >
+              <span className="font-mono text-[12px] font-bold uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+                {t("community.hero.latestNote")}
+              </span>
+              <span className="mt-3 block overflow-hidden border border-[var(--line)] bg-white/70 scrapbook-shadow">
+                {latestNoteCover ? (
+                  <span
+                    className="block aspect-[16/10] overflow-hidden bg-[var(--parchment-deep)] bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.04]"
+                    style={{ backgroundImage: `url(${latestNoteCover})` }}
+                  />
+                ) : null}
+                <span className="block p-5">
+                  <span className="block font-[family:var(--font-display)] text-2xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
+                    {latestNote.title}
+                  </span>
+                  <span className="mt-2 line-clamp-2 block text-sm leading-6 text-[var(--muted)]">
+                    {latestNote.excerpt}
+                  </span>
+                  <span className="mt-3 block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+                    {latestNote.user.name}
+                    {latestNote.location ? ` · ${latestNote.location}` : ""}
+                  </span>
+                </span>
+              </span>
+            </button>
+          ) : null}
         </div>
       </section>
 
       <section data-community-toolbar className="sticky top-[4.5rem] z-20 border-b border-[var(--line)] bg-[var(--paper-deep)]/92 bg-grain py-3 backdrop-blur-xl sm:py-4">
         <div className="site-container grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
+          <div className="scroll-fade-x scrollbar-hide flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
             {channels.map((channel) => (
               <button
                 key={channel}
                 type="button"
                 onClick={() => setActiveChannel(channel)}
                 aria-pressed={activeChannel === channel}
-                className={`min-h-11 shrink-0 border px-4 py-2 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors sm:px-5 sm:text-[11px] ${
+                className={`min-h-11 shrink-0 border px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] transition-colors sm:px-5 sm:text-[11px] ${
                   activeChannel === channel
                     ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                     : "border-[var(--line)] bg-transparent text-[var(--river-deep)] hover:border-[var(--river-deep)]"
@@ -561,7 +594,7 @@ export default function CommunityPage() {
                   type="button"
                   onClick={() => setSortMode(mode)}
                   aria-pressed={sortMode === mode}
-                  className={`min-h-11 shrink-0 px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition ${
+                  className={`min-h-11 shrink-0 px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition ${
                     sortMode === mode
                       ? "bg-[var(--river-deep)] text-white"
                       : "text-[var(--muted)] hover:text-[var(--cinnabar)]"
@@ -575,7 +608,7 @@ export default function CommunityPage() {
         </div>
       </section>
 
-      <section className="site-container py-12 lg:py-16">
+      <section className="site-container py-beat">
         {loading && !masonryItems.length ? (
           <div className="py-20 text-center">
             <p className="handwritten text-lg text-[var(--muted)]">
@@ -674,7 +707,7 @@ export default function CommunityPage() {
 
         {hasMore ? (
           <div className="flex flex-col items-center gap-3 pb-20 pt-4">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+            <p className="font-mono text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
               {visibleItems.length} / {masonryItems.length}
             </p>
             <button

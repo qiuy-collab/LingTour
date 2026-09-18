@@ -333,7 +333,7 @@ export function TimeAxisItinerary({ stops, routeStory, routeTitle, routeMap, onA
   const lastStop = stops[stops.length - 1];
 
   return (
-    <section id="itinerary" className="relative py-12 lg:py-16">
+    <section id="itinerary" className="relative py-beat">
       <div className="site-container">
         <div className="mx-auto max-w-6xl">
           <header data-route-header className="mb-10 max-w-3xl text-left lg:mb-12">

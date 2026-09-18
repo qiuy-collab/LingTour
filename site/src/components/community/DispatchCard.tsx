@@ -11,14 +11,14 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
   return (
     <div className="group w-full bg-[var(--night)] p-6 sm:p-8 scrapbook-shadow text-white rotate-1 transition-transform hover:rotate-0">
       <div className="flex items-center justify-between border-b border-white/20 pb-4 mb-6">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[var(--gold-light)]">
+        <p className="font-mono text-[12px] uppercase tracking-[0.3em] text-[var(--gold-light)]">
           Field notes
         </p>
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-6 h-6 rounded-full border border-[var(--gold-light)] text-[var(--gold-light)]">
-            <span className="text-[10px] font-bold">{stampCount}</span>
+            <span className="text-[12px] font-bold">{stampCount}</span>
           </div>
-          <span className="text-[9px] uppercase tracking-widest text-white/70">Posted</span>
+          <span className="text-[11px] uppercase tracking-widest text-white/70">Posted</span>
         </div>
       </div>
 
@@ -52,7 +52,7 @@ export function DispatchCard({ stampCount, onDispatch, isLoggedIn, onLogin }: Di
       </div>
 
       <div className="mt-6 pt-4 border-t border-white/10 text-center">
-        <p className="font-mono text-[9px] text-white/40 uppercase tracking-[0.2em]">
+        <p className="font-mono text-[11px] text-white/40 uppercase tracking-[0.2em]">
           Culvoy community desk
         </p>
       </div>

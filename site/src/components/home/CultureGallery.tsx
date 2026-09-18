@@ -67,7 +67,7 @@ export function CultureGallery({ highlights = [] }: Props) {
   if (!highlights.length) {
     return (
       <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+        <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
           {t("culture.atlas.eyebrow")}
         </p>
         <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
@@ -83,7 +83,7 @@ export function CultureGallery({ highlights = [] }: Props) {
   return (
     <div
       ref={scope}
-      className="flex snap-x snap-mandatory gap-7 overflow-x-auto pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:block md:columns-2 md:gap-10 md:overflow-visible md:pb-0 lg:columns-3 lg:gap-12"
+      className="scroll-fade-x flex snap-x snap-mandatory gap-7 overflow-x-auto pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:block md:columns-2 md:gap-10 md:overflow-visible md:pb-0 lg:columns-3 lg:gap-12"
     >
       {highlights.map((item, idx) => {
         const image = item.image || placeholderFor("hero");
@@ -99,7 +99,7 @@ export function CultureGallery({ highlights = [] }: Props) {
           >
             <Link
               href={item.href ?? `/culture/${item.slug}`}
-              className={`group block transition-transform duration-500 hover:-translate-y-2 ${
+              className={`group block transition-transform duration-500 hover:-translate-y-1.5 ${
                 idx % 2 === 0 ? "md:-rotate-[0.7deg]" : "md:rotate-[0.7deg]"
               }`}
             >
@@ -119,14 +119,14 @@ export function CultureGallery({ highlights = [] }: Props) {
               <div className="mt-6 px-1 sm:mt-7">
                 <div className="flex items-center gap-3">
                   <div className="h-px w-6 bg-[var(--gold)]" />
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                     {place}
                   </p>
                 </div>
                 <h3 className="mt-3 font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                   {item.title}
                 </h3>
-                <div className="mt-4 flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
+                <div className="mt-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
                   <span>{t("culture.atlas.openArchive")}</span>
                   <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </div>

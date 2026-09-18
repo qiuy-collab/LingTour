@@ -192,13 +192,13 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
           <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
               <span className="handwritten text-lg text-[var(--gold)]">Studio dispatch</span>
-              <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/60 sm:text-[10px] sm:tracking-[0.2em]">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)]/60 sm:text-[12px] sm:tracking-[0.2em]">
                 Free route-linked packing for this object.
               </span>
             </div>
             <nav
               aria-label="Product breadcrumb"
-              className="hidden items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40 md:flex"
+              className="hidden items-center gap-2 text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/40 md:flex"
             >
               <Link href="/" className="transition-colors hover:text-[var(--river-deep)]">Home</Link>
               <span>/</span>
@@ -220,7 +220,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                   {collectionLabel}
                 </p>
                 <div className="absolute -right-3 -top-3 grid h-14 w-14 rotate-12 place-items-center rounded-full border-2 border-dashed border-[var(--gold-light)]/50 sm:-right-4 sm:-top-4 sm:h-16 sm:w-16">
-                  <span className="text-center text-[8px] font-bold uppercase tracking-widest text-[var(--gold-light)]/90 sm:text-[9px]">
+                  <span className="text-center text-[11px] font-bold uppercase tracking-widest text-[var(--gold-light)]/90 sm:text-[11px]">
                     Authentic<br />Object
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
 
             <div className="order-4 col-span-1 space-y-5 min-[600px]:col-span-2 sm:space-y-8 lg:order-none lg:mt-10 lg:space-y-10">
               <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Story Summary</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Story Summary</p>
                 <p className="max-w-[34rem] text-[15px] italic leading-7 text-[var(--river-deep)]/80 sm:text-base">
                   &ldquo;{shortStory}&rdquo;
                 </p>
@@ -244,12 +244,12 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
 
               {noteWords.length ? (
                 <div data-product-note className="space-y-3 border-t border-dashed border-[var(--river-deep)]/20 pt-6 sm:pt-8">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Material Logic</p>
+                  <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)]/45 sm:text-[11px]">Material Logic</p>
                   <div className="flex flex-wrap gap-2">
                     {noteWords.map((word) => (
                       <span
                         key={word}
-                        className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] sm:text-[10px]"
+                        className="border border-[var(--river-deep)]/20 bg-white/50 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)] sm:text-[12px]"
                       >
                         {word}
                       </span>
@@ -265,10 +265,10 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                 the catalogue gesture, not a fourth polaroid. */}
             <div ref={plateRef} className="relative flex aspect-[4/5] w-full flex-col border border-[var(--line)] bg-white p-5 scrapbook-shadow transform-gpu sm:p-7 xl:p-9">
               <div className="mb-4 flex shrink-0 items-center justify-between gap-4 border-b border-[var(--river-deep)]/15 pb-3">
-                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)]/55">
+                <span className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--river-deep)]/55">
                   Object file
                 </span>
-                <span className="max-w-[11rem] truncate font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+                <span className="max-w-[11rem] truncate font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
                   {collectionLabel}
                 </span>
               </div>
@@ -341,7 +341,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               </p>
 
               <fieldset className="space-y-4">
-                <legend className="text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]/45 italic sm:text-[11px]">Select Finish</legend>
+                <legend className="text-[12px] font-bold uppercase tracking-widest text-[var(--river-deep)]/45 italic sm:text-[11px]">Select Finish</legend>
                 <div className="grid gap-2">
                   {["Collector finish", "Daily use finish"].map((option) => (
                     <button
@@ -355,7 +355,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                           : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/65 hover:border-[var(--river-deep)]/30"
                       }`}
                     >
-                      <span className="text-[10px] font-bold uppercase tracking-[0.16em] sm:text-xs sm:tracking-widest">{option}</span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.16em] sm:text-xs sm:tracking-widest">{option}</span>
                       {finish === option ? <span className="handwritten text-lg text-[var(--gold-light)]">Picked</span> : null}
                     </button>
                   ))}
@@ -363,7 +363,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               </fieldset>
 
               <fieldset className="space-y-4 pt-1">
-                <legend className="text-[10px] font-bold uppercase tracking-widest text-[var(--river-deep)]/45 italic sm:text-[11px]">Choose Edition</legend>
+                <legend className="text-[12px] font-bold uppercase tracking-widest text-[var(--river-deep)]/45 italic sm:text-[11px]">Choose Edition</legend>
                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {["Single object", "Gift set"].map((option) => (
                     <button
@@ -371,7 +371,7 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
                       type="button"
                       onClick={() => setEdition(option)}
                       aria-pressed={edition === option}
-                      className={`min-h-12 border-2 px-2 py-3 text-[9px] font-bold uppercase tracking-[0.14em] transition-all sm:text-[10px] sm:tracking-widest ${
+                      className={`min-h-12 border-2 px-2 py-3 text-[11px] font-bold uppercase tracking-[0.14em] transition-all sm:text-[12px] sm:tracking-widest ${
                         edition === option
                           ? "border-[var(--gold-light)] bg-[var(--gold-light)] text-[var(--night)]"
                           : "border-[var(--river-deep)]/10 text-[var(--river-deep)]/65 hover:border-[var(--river-deep)]/30"
@@ -388,19 +388,19 @@ export function ProductDetailHero({ product }: { product: StoreProduct }) {
               <div className="grid gap-3 border-t border-dashed border-[var(--river-deep)]/18 pt-5">
                 <Link
                   href="/routes"
-                  className="inline-flex min-h-11 items-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
+                  className="inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[12px] sm:tracking-[0.24em]"
                 >
                   Trace the route behind this object
                 </Link>
                 <Link
                   href={`/community?compose=1&channel=Culture%20Desk&title=${encodeURIComponent(product.name)}&note=${encodeURIComponent(`Object note: ${product.name} belongs in the field archive because `)}`}
-                  className="inline-flex min-h-11 items-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[10px] sm:tracking-[0.24em]"
+                  className="inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] underline-offset-4 hover:text-[var(--cinnabar)] hover:underline sm:text-[12px] sm:tracking-[0.24em]"
                 >
                   Send this object to the community desk
                 </Link>
               </div>
 
-              <div className="flex items-center gap-3 pt-2 text-[8px] font-bold uppercase tracking-widest text-[var(--river-deep)]/35 italic sm:gap-4 sm:text-[10px]">
+              <div className="flex items-center gap-3 pt-2 text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)]/35 italic sm:gap-4 sm:text-[12px]">
                 <div className="h-px flex-1 bg-[var(--river-deep)]/10" />
                 <span className="shrink-0">Registry #LT-{product.slug.slice(0, 4).toUpperCase()}</span>
                 <div className="h-px flex-1 bg-[var(--river-deep)]/10" />

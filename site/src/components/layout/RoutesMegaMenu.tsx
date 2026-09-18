@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import {
   getMapFeatures,
@@ -26,8 +25,7 @@ const initialFeatures = getMapFeatures();
 
 export function RoutesMegaMenu({ active }: { active: boolean }) {
   const { t } = useLocale();
-  const reduceMotion = useReducedMotion();
-  const rootRef = useRef<HTMLDivElement | null>(null);
+    const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [routes, setRoutes] = useState<StoryRoute[]>([]);
@@ -141,12 +139,12 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
         >
           <div className="mx-auto max-w-[82rem] px-6 py-8 lg:px-10 lg:py-12">
             <div className="mb-8 flex items-center justify-between gap-8 border-b border-black/5 pb-7 lg:mb-12 lg:pb-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+              <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                 {t("common.nav.routesMega.eyebrow")}
               </p>
               <Link
                 href="/routes"
-                className="inline-flex min-h-11 shrink-0 items-center px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-colors hover:bg-[var(--river-deep)] hover:text-white"
+                className="inline-flex min-h-11 shrink-0 items-center px-5 py-3 text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--river-deep)] transition-colors hover:bg-[var(--river-deep)] hover:text-white"
                 onClick={closeMenu}
               >
                 {t("common.nav.routesMega.viewAll")}
@@ -162,24 +160,11 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                 const regionNote = region.note;
 
                 return (
-                  <motion.div
+                  <div
                     key={region.key}
-                    className="group/region min-w-0"
-                    animate={
-                      reduceMotion
-                        ? undefined
-                        : {
-                            scale: activeRegion === region.key ? 1.015 : 1,
-                            opacity:
-                              activeRegion && activeRegion !== region.key
-                                ? 0.58
-                                : 1,
-                          }
-                    }
-                    transition={{
-                      duration: reduceMotion ? 0 : 0.3,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
+                    className={`group/region min-w-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                      activeRegion === region.key ? "scale-[1.015]" : "scale-100"
+                    } ${activeRegion && activeRegion !== region.key ? "opacity-[0.58]" : "opacity-100"}`}
                     onMouseEnter={() => setActiveRegion(region.key)}
                     onMouseLeave={() => setActiveRegion(null)}
                     onFocusCapture={() => setActiveRegion(region.key)}
@@ -233,7 +218,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                       <h3 className="mt-5 text-lg font-bold text-[var(--river-deep)] transition group-hover/region:text-[var(--cinnabar)]">
                         {regionTitle}
                       </h3>
-                      <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                      <p className="mt-2 text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                         {regionNote}
                       </p>
                     </Link>
@@ -258,7 +243,7 @@ export function RoutesMegaMenu({ active }: { active: boolean }) {
                         </p>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>

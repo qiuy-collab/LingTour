@@ -42,10 +42,10 @@ const PROFILE_FIELD_CLASS =
   "mt-2 min-h-12 w-full border border-[var(--line)] bg-[var(--background)] px-4 py-3 text-base text-[var(--river-deep)] outline-none transition focus:border-[var(--river-deep)] focus:shadow-[0_0_0_3px_rgba(20,52,61,0.08)]";
 
 const PROFILE_LABEL_CLASS =
-  "text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
+  "text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]";
 
 const ARCHIVE_ACTION_CLASS =
-  "btn-outline flex min-h-12 w-full items-center justify-center text-[10px] leading-none sm:inline-flex sm:w-auto";
+  "btn-outline flex min-h-12 w-full items-center justify-center text-[12px] leading-none sm:inline-flex sm:w-auto";
 
 function readFavorites(): FavoriteItem[] {
   try {
@@ -85,7 +85,7 @@ function formatBookingDate(value: string) {
 function EmptyArchive({ title, body, href, cta }: { title: string; body: string; href: string; cta: string }) {
   return (
     <section data-pastoral-card className="mx-auto max-w-3xl border-y border-[var(--line)] px-1 py-9 sm:py-12">
-      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">Culvoy field archive</p>
       <h2 className="mt-4 max-w-[20ch] font-[family:var(--font-display)] text-3xl leading-[1.02] text-[var(--river-deep)] sm:text-4xl">{title}</h2>
       <p className="mt-4 max-w-xl handwritten text-sm leading-7 text-[var(--muted)] sm:text-base">{body}</p>
       <Link
@@ -304,7 +304,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       className="min-h-[100dvh] bg-[var(--background)] bg-grain pb-28 text-[var(--river-deep)] sm:pb-20"
       motionKey={`${activeTab}:${collectionItems.length}:${savedNotes.length}`}
     >
-      <header className="border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain py-10 sm:py-12 lg:py-16">
+      <header className="border-b border-[var(--line)] bg-[var(--paper-deep)] bg-grain py-10 sm:py-beat">
         <div className="site-container grid min-w-0 gap-8 md:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)] md:items-end md:gap-12 lg:gap-16">
           <div className="flex min-w-0 flex-col gap-7 sm:flex-row sm:items-center">
             <button type="button" onClick={() => avatarInputRef.current?.click()} className="group relative w-fit shrink-0 rounded-full" aria-label={t("account.profile.changeAvatar")}>
@@ -316,7 +316,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                 shape="round"
                 ringClassName="border-2 border-[var(--paper)]"
               />
-              <span className="absolute -bottom-3 -right-3 bg-[var(--gold)] px-3 py-2 text-[9px] font-bold uppercase tracking-[0.16em] text-white transition-transform group-hover:-translate-y-1">
+              <span className="absolute -bottom-3 -right-3 bg-[var(--gold)] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white transition-transform group-hover:-translate-y-1.5">
                 {uploading ? t("account.profile.uploading") : t("account.profile.editPhoto")}
               </span>
             </button>
@@ -331,7 +331,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
               <button
                 type="button"
                 onClick={() => selectTab("settings")}
-                className="mt-5 inline-flex min-h-11 items-center gap-3 border border-[var(--line)] px-4 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)] transition-colors hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
+                className="mt-5 inline-flex min-h-11 items-center gap-3 border border-[var(--line)] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)] transition-colors hover:border-[var(--cinnabar)] hover:text-[var(--cinnabar)]"
               >
                 {t("account.profile.edit")}
                 <span aria-hidden>→</span>
@@ -353,13 +353,13 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
           <div data-pastoral-stamp className="min-w-0 border-t border-[var(--line)] pt-5 text-sm text-[var(--muted)] md:border md:p-5">
             <p>{countryName(user.country) || t("account.profile.locationUnset")}</p>
             <p className="mt-2">{user.homeBase || user.email}</p>
-            <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
+            <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">
               {t("account.profile.completion").replace("{number}", String(profileCompletion(user)))}
             </p>
             <button
               type="button"
               onClick={logout}
-              className="mt-5 flex w-full items-center justify-between border-t border-[var(--line)] pt-4 text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)] transition-colors hover:text-[var(--cinnabar)]"
+              className="mt-5 flex w-full items-center justify-between border-t border-[var(--line)] pt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--river-deep)] transition-colors hover:text-[var(--cinnabar)]"
             >
               {t("common.nav.logout")}
               <span aria-hidden="true">↗</span>
@@ -388,7 +388,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
               aria-selected={activeTab === tab.key}
               aria-controls="profile-panel"
               tabIndex={activeTab === tab.key ? 0 : -1}
-              className={`min-h-11 shrink-0 border-b-2 px-3 pb-2 pt-3 text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+              className={`min-h-11 shrink-0 border-b-2 px-3 pb-2 pt-3 text-[11px] font-bold uppercase tracking-[0.16em] transition ${
                 activeTab === tab.key
                   ? "border-[var(--cinnabar)] text-[var(--river-deep)]"
                   : "border-transparent text-[var(--muted)] hover:text-[var(--river-deep)]"
@@ -400,7 +400,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
         </nav>
       </div>
 
-      <div className="site-container min-w-0 py-8 sm:py-12 lg:py-16">
+      <div className="site-container min-w-0 py-beat">
         <div
           id="profile-panel"
           role="tabpanel"
@@ -412,10 +412,10 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
           savedNotes.length ? (
             <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {savedNotes.map((note) => (
-                <Link data-pastoral-card key={note.id} href={`/community?post=${note.id}`} className="group block min-w-0 overflow-hidden border-t border-[var(--line)] pb-5 pt-3 transition hover:-translate-y-1">
+                <Link data-pastoral-card key={note.id} href={`/community?post=${note.id}`} className="group block min-w-0 overflow-hidden border-t border-[var(--line)] pb-5 pt-3 transition hover:-translate-y-1.5">
                   {note.image ? <img src={note.image} alt="" className="aspect-[4/3] w-full bg-[var(--paper)] object-cover" /> : null}
                   <div className="pt-4">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{note.channel}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)]">{note.channel}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl leading-tight transition-colors group-hover:text-[var(--cinnabar)]">{note.title}</h2>
                   <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--muted)]">{note.excerpt}</p>
                   </div>
@@ -431,10 +431,10 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
           savedRoutes.length ? (
             <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {savedRoutes.map((item) => (
-                <Link data-pastoral-card key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group min-w-0 border-t border-[var(--line)] py-6 transition hover:-translate-y-1">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.type}</p>
+                <Link data-pastoral-card key={`${item.type}-${item.id}`} href={favoriteHref(item)} className="group min-w-0 border-t border-[var(--line)] py-6 transition hover:-translate-y-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">{item.type}</p>
                   <h2 className="mt-3 font-[family:var(--font-display)] text-2xl transition-colors group-hover:text-[var(--cinnabar)]">{item.title}</h2>
-                  <span className="mt-6 inline-flex text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">{t("account.profile.openRecord")} →</span>
+                  <span className="mt-6 inline-flex text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)]">{t("account.profile.openRecord")} →</span>
                 </Link>
               ))}
             </section>
@@ -451,7 +451,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                   data-pastoral-card
                   key={`${item.slug}-${index}`}
                   href={`/shop/products/${item.slug}`}
-                  className="group grid min-w-0 grid-cols-[minmax(6rem,7.5rem)_minmax(0,1fr)] border border-[var(--line)] bg-[var(--background)] p-3 transition-transform duration-500 hover:-translate-y-1 sm:grid-cols-[9rem_minmax(0,1fr)] sm:p-4"
+                  className="group grid min-w-0 grid-cols-[minmax(6rem,7.5rem)_minmax(0,1fr)] border border-[var(--line)] bg-[var(--background)] p-3 transition-transform duration-500 hover:-translate-y-1.5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:p-4"
                 >
                   <div className="relative aspect-square overflow-hidden bg-[var(--paper)]">
                     {item.image ? (
@@ -459,7 +459,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                     ) : (
                       <div className="grid h-full place-items-center border border-dashed border-[var(--line)] bg-[var(--paper)] font-[family:var(--font-display)] text-5xl italic text-[var(--gold)]/55">L</div>
                     )}
-                    <span className="absolute left-2 top-2 bg-[var(--paper)] px-2 py-1 text-[8px] font-bold tracking-[0.16em] text-[var(--river-deep)]">
+                    <span className="absolute left-2 top-2 bg-[var(--paper)] px-2 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--river-deep)]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                   </div>
@@ -495,7 +495,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                   <article data-pastoral-card key={booking.id} className="border-t border-[var(--line)] py-6 sm:py-8">
                     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--line)] pb-5">
                       <div>
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                           {t(`account.profile.bookingStatus.${booking.status}`)}
                         </p>
                         <h2 className="mt-3 font-[family:var(--font-display)] text-3xl leading-none text-[var(--river-deep)]">
@@ -508,16 +508,16 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                     </div>
                     <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
                       <div>
-                        <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingMode")}</dt>
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingMode")}</dt>
                         <dd className="mt-2 text-[var(--ink)]">{booking.supportMode}</dd>
                       </div>
                       <div>
-                        <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingGroup")}</dt>
+                        <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingGroup")}</dt>
                         <dd className="mt-2 text-[var(--ink)]">{booking.groupSize || t("account.profile.bookingPending")}</dd>
                       </div>
                       {booking.assignedInterpreterName ? (
                         <div className="sm:col-span-2">
-                          <dt className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingInterpreter")}</dt>
+                          <dt className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("account.profile.bookingInterpreter")}</dt>
                           <dd className="mt-2 text-[var(--ink)]">{booking.assignedInterpreterName}</dd>
                         </div>
                       ) : null}
@@ -578,7 +578,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
                 </select>
               </label>
               {message && !fieldError ? <p className={`text-sm ${messageKind === "success" ? "text-[var(--river-deep)]" : "text-[var(--cinnabar)]"}`} role={messageKind === "error" ? "alert" : "status"}>{message}</p> : null}
-              <button type="button" onClick={() => void saveProfile()} disabled={saving} className="inline-flex min-h-12 items-center justify-center bg-[var(--river-deep)] px-8 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)] disabled:opacity-50">
+              <button type="button" onClick={() => void saveProfile()} disabled={saving} className="inline-flex min-h-12 items-center justify-center bg-[var(--river-deep)] px-8 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[var(--cinnabar)] disabled:opacity-50">
                 {saving ? t("account.profile.saving") : t("account.profile.save")}
               </button>
             </div>
@@ -593,7 +593,7 @@ export function ProfilePageClient({ initialUser }: { initialUser: LocalUser }) {
       </div>
 
       {activeTab !== "settings" ? (
-        <button type="button" onClick={() => selectTab("settings")} className="fixed bottom-4 left-4 right-4 z-40 min-h-12 bg-[var(--river-deep)] px-6 py-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white shadow-lift sm:hidden">
+        <button type="button" onClick={() => selectTab("settings")} className="fixed bottom-4 left-4 right-4 z-40 min-h-12 bg-[var(--river-deep)] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-lift sm:hidden">
           {t("account.profile.edit")}
         </button>
       ) : null}

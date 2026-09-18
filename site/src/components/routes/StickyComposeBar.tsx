@@ -231,7 +231,7 @@ export function StickyComposeBar({
         >
           <div className="flex min-w-0 items-center gap-3">
             <span aria-hidden="true" className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--cinnabar)]" />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)]">
+            <span className="font-mono text-[12px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)]">
               Field Drop
             </span>
             <span className="hidden truncate text-[13px] italic text-[var(--muted)] sm:inline">
@@ -244,10 +244,10 @@ export function StickyComposeBar({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[9px] uppercase tracking-[0.24em] text-[var(--muted)]/80">
+            <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--muted)]/80">
               {posts.length} {posts.length === 1 ? "note" : "notes"}
             </span>
-            <span className="inline-flex items-center gap-2 bg-[var(--cinnabar)] px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.26em] text-white">
+            <span className="inline-flex items-center gap-2 bg-[var(--cinnabar)] px-3.5 py-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.26em] text-white">
               {isLoggedIn ? "Leave Note" : "Log in to note"}
               <span aria-hidden>↗</span>
             </span>
@@ -257,7 +257,7 @@ export function StickyComposeBar({
         {error ? (
           <div className="border-t border-[var(--line)] bg-[var(--paper-deep)]/95">
             <div className="site-container py-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+              <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                 {error}
               </p>
             </div>

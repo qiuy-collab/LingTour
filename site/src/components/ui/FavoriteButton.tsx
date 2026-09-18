@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FAVORITES_EVENT,
   pushFavorite,
@@ -19,6 +19,8 @@ type FavoriteButtonProps = {
 
 export function FavoriteButton({ id, type, title, image, variant = "light" }: FavoriteButtonProps) {
   const [saved, setSaved] = useState(false);
+  const [pending, setPending] = useState(false);
+  const pendingRef = useRef(false);
   const isDark = variant === "dark";
 
   useEffect(() => {
@@ -36,7 +38,10 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
     };
   }, [id, type]);
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
+    // A rapid double-click would otherwise fire two conflicting pushes; the
+    // local list is optimistic, so guard the sync instead of the UI.
+    if (pendingRef.current) return;
     const favorites = readFavorites();
     const exists = favorites.some((item) => item.id === id && item.type === type);
     const next = exists
@@ -45,13 +50,26 @@ export function FavoriteButton({ id, type, title, image, variant = "light" }: Fa
     writeFavorites(next);
 
     // Signed-out visitors keep a local-only list; the account merges on sign-in.
-    void pushFavorite(exists ? "remove" : "add", { id, type, title, image });
+    pendingRef.current = true;
+    setPending(true);
+    try {
+      await pushFavorite(exists ? "remove" : "add", { id, type, title, image });
+    } catch (error) {
+      // The local list already holds the change, so the visitor's own device is
+      // correct; only the account sync failed. Surface it instead of swallowing
+      // it, and let the next sign-in merge reconcile.
+      console.warn("Favorite sync failed; kept the change locally.", error);
+    } finally {
+      pendingRef.current = false;
+      setPending(false);
+    }
   }, [id, type, title, image]);
 
   return (
     <button
       type="button"
       aria-pressed={saved}
+      aria-busy={pending || undefined}
       data-favorite-button="true"
       data-react-favorite="true"
       data-favorite-id={id}

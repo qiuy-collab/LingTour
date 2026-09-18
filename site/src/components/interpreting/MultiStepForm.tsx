@@ -356,7 +356,7 @@ function MultiStepFormInner({
 
                     <div className="mb-1 grid grid-cols-7">
                       {weekdays.map((d) => (
-                        <p key={d} className="text-center text-[10px] uppercase tracking-[0.12em] text-[var(--muted)]">{d}</p>
+                        <p key={d} className="text-center text-[12px] uppercase tracking-[0.12em] text-[var(--muted)]">{d}</p>
                       ))}
                     </div>
 
@@ -461,19 +461,19 @@ function MultiStepFormInner({
 
                 <div className="mt-5 grid gap-3 rounded-sm border border-[var(--line)] bg-white/80 p-4 text-sm text-[var(--muted)] md:grid-cols-2">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.depositFor")}</p>
+                    <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.depositFor")}</p>
                     <p className="mt-1 text-[var(--ink)]">{depositSession.deposit.paymentLabel}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.orderNo")}</p>
+                    <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.orderNo")}</p>
                     <p className="mt-1 text-[var(--ink)]">{depositSession.deposit.orderNo}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.contactShort")}</p>
+                    <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.contactShort")}</p>
                     <p className="mt-1 text-[var(--ink)]">{form.contact}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.serviceDate")}</p>
+                    <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">{t("interpreting.flow.serviceDate")}</p>
                     <p className="mt-1 text-[var(--ink)]">{formatDate(form.date || getLocalDateKey())}</p>
                   </div>
                 </div>

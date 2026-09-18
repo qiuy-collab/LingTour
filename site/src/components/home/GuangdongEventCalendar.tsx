@@ -196,7 +196,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
             {dayNames.map((name) => (
               <div
                 key={name}
-                className="py-4 text-center text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] opacity-40"
+                className="py-4 text-center text-[12px] font-bold uppercase tracking-widest text-[var(--muted)] opacity-40"
               >
                 {name}
               </div>
@@ -298,10 +298,10 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
 
                   <div className="min-w-0 space-y-3 lg:space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="border border-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase text-[var(--gold)]">
+                      <span className="border border-[var(--gold)] px-3 py-1 text-[11px] font-bold uppercase text-[var(--gold)]">
                         {t("home.calendar.verifiedRoute")}
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                      <span className="text-[12px] font-bold uppercase tracking-widest text-[var(--muted)]">
                         {relatedRoute.duration}
                       </span>
                     </div>
@@ -312,7 +312,7 @@ export function GuangdongEventCalendar({ events = [], routes = [] }: Props) {
                       {relatedRoute.summary}
                     </p>
                     <div className="flex items-center justify-between border-t border-[var(--line)] pt-3 text-[var(--cinnabar)] lg:pt-6">
-                      <span className="text-[10px] font-bold uppercase tracking-widest">
+                      <span className="text-[12px] font-bold uppercase tracking-widest">
                         {t("home.calendar.exploreRoute")}
                       </span>
                       <svg

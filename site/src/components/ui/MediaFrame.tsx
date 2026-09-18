@@ -120,7 +120,7 @@ export function MediaFrame({
           <div className="grid justify-items-center gap-3">
             <span aria-hidden="true" className="h-px w-14 animate-pulse bg-[var(--gold)]/55" />
             {eager ? (
-              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]/70">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--muted)]/70">
                 Opening field media
               </span>
             ) : null}
@@ -167,8 +167,8 @@ export function MediaFrame({
         />
       )}
       {asset?.type === "video" && showPosterOnly && poster ? (
-        <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/68 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm">
-          <span aria-hidden className="text-[8px]">▶</span>
+        <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/68 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm">
+          <span aria-hidden className="text-[11px]">▶</span>
           Video
         </span>
       ) : null}

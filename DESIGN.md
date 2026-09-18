@@ -191,7 +191,10 @@ This is a **layered, tactile** system. Surfaces lift on hover with shadow and di
 
 **Character:** Archival, not generic. Cards use white/paper bg, 1px line border, and scrapbook-shadow. Hover lifts the card (-2px in Y, slight scale-up) and shifts border toward gold. Image-first cards use white border frames (0.5–1rem) with slight rotation (±2°), mimicking a physical photo album.
 
-- **Corner Style:** Soft-radius scale — `--radius-sm` 0.5rem, `--radius-md` 0.9rem, `--radius-lg` 1.4rem, `--radius-xl` 2rem. Glass `.lt-surface` panels use `--radius-lg`, stepping down to `--radius-md` below 768px. Chips and tags keep the 9999px pill. Pure 0px remains valid for framed, flat, or deliberately editorial cards — pick one vocabulary per component, don't mix within a component.
+The card dialect is **creative** (owner decision D1, 2026-09-18), matching the canvas: one radius family and three shadow steps (`--shadow-rest` / `--shadow-lift` / `--shadow-panel`). A fourth arbitrary shadow value is a bug; map it into one of the three steps. Brand-coloured and focus-ring shadows are deliberate exceptions to the steps.
+
+- **Corner Style:** Soft-radius scale — `--radius-sm` 0.5rem, `--radius-md` 0.9rem, `--radius-lg` 1.4rem, `--radius-xl` 2rem. Chips and tags keep the 9999px pill. Pure 0px remains valid for framed, flat, or deliberately editorial cards — pick one vocabulary per component, don't mix within a component.
+- **Lift:** two steps only — controls `-2px`, cards `-6px`.
 - **Background:** paper / white at 70–94% opacity.
 - **Shadow:** scrapbook-shadow at rest; deepens on hover.
 - **Hover:** `translateY(-2px) scale(1.01)`, shadow expands, border shifts to gold/50.
@@ -236,7 +239,7 @@ A follow-mouse radial gradient effect on `.spotlight-panel`. A cinnabar-tinted r
 
 - **Don't** use cream/sand/beige body backgrounds — paper-deep is chroma-neutral. "Warmth" comes from accent + type + imagery.
 - **Don't** use gradient text (`background-clip: text`) — prohibited. Use a single solid color; emphasis via weight or size.
-- **Don't** use glassmorphism as a default surface treatment. Backdrop-blur is a controlled vocabulary with five sanctioned forms: (1) sticky navigation/toolbar frost — paper-deep at 48–92% opacity with blur-xl (SiteHeader states, mega menu, mobile sticky bars); (2) glass panels — `.lt-surface` with 18px blur, which drops the blur and steps the radius down below 768px; (3) dialog scrims — night at ~42% with ≤3px blur; (4) controls and badges sitting on imagery — ghost-dark buttons, video controls, photo captions; (5) 1–3px tape/paper-scrap accents. Anything else — especially blurring content-heavy cards on light backgrounds for polish — is prohibited.
+- **Don't** use glassmorphism as a default surface treatment. Backdrop-blur is a controlled vocabulary with four sanctioned forms: (1) sticky navigation/toolbar frost — paper-deep at 48–92% opacity with blur-xl (SiteHeader states, mega menu, mobile sticky bars); (2) dialog scrims — night at ~42% with ≤3px blur; (3) controls and badges sitting on imagery — ghost-dark buttons, video controls, photo captions; (4) 1–3px tape/paper-scrap accents. Anything else — especially blurring content-heavy cards on light backgrounds for polish — is prohibited.
 - **Don't** use the hero-metric template (big number, small label, gradient accent). This is a SaaS cliché, not a field journal.
 - **Don't** use identical-card grids. Vary card shapes, rotations, and layouts — the scrapbook is hand-assembled, not factory-stamped.
 - **Don't** put an eyebrow label above every section heading. One deliberate kicker is voice; every section is AI grammar.

@@ -31,43 +31,17 @@
   transition: opacity 420ms ease;
 }
 
-.spotlight-panel:hover::before {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .spotlight-panel:hover::before {
+    opacity: 1;
+  }
 }
+
 
 .spotlight-panel-dark::before {
   background:
     radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(124, 155, 134, 0.28), transparent 28rem),
     linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
-}
-
-.lux-card {
-  position: relative;
-  transform: translateY(0) scale(1);
-  transition:
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 520ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 520ms ease,
-    background 520ms ease;
-}
-
-.lux-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 420ms ease;
-}
-
-.lux-card:hover {
-  transform: translateY(-0.45rem) scale(1.01);
-  box-shadow: 0 28px 90px rgba(17, 25, 35, 0.18);
-}
-
-.lux-card:hover::after {
-  opacity: 1;
 }
 
 .kinetic-link {
@@ -89,9 +63,12 @@
   z-index: -1;
 }
 
-.kinetic-link:hover::before {
-  transform: translateX(120%);
+@media (hover: hover) and (pointer: fine) {
+  .kinetic-link:hover::before {
+    transform: translateX(120%);
+  }
 }
+
 
 /* Button padding and tracking are fluid rather than fixed because this file
    is unlayered: Tailwind v4 puts utilities in a cascade layer, and unlayered
@@ -114,11 +91,14 @@
   box-shadow: 0 4px 12px rgba(20, 52, 61, 0.15);
 }
 
-.btn-primary:hover {
-  background-color: var(--cinnabar);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(182, 66, 53, 0.25);
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background-color: var(--cinnabar);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(182, 66, 53, 0.25);
+  }
 }
+
 
 .btn-primary-compact {
   background-color: var(--cinnabar);
@@ -128,9 +108,12 @@
   box-shadow: 0 8px 22px rgba(182, 66, 53, 0.18);
 }
 
-.btn-primary-compact:hover {
-  background-color: var(--cinnabar-deep);
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary-compact:hover {
+    background-color: var(--cinnabar-deep);
+  }
 }
+
 
 /* High-visibility gold button */
 .btn-gold {
@@ -147,11 +130,14 @@
   box-shadow: 0 4px 12px rgba(185, 138, 70, 0.15);
 }
 
-.btn-gold:hover {
-  background-color: var(--river-deep);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(20, 52, 61, 0.2);
+@media (hover: hover) and (pointer: fine) {
+  .btn-gold:hover {
+    background-color: var(--river-deep);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(20, 52, 61, 0.2);
+  }
 }
+
 
 /* High-visibility outline button */
 .btn-outline {
@@ -165,11 +151,14 @@
   background: transparent;
 }
 
-.btn-outline:hover {
-  background: var(--river-deep);
-  color: #ffffff !important;
-  box-shadow: 0 8px 25px rgba(20, 52, 61, 0.15);
+@media (hover: hover) and (pointer: fine) {
+  .btn-outline:hover {
+    background: var(--river-deep);
+    color: #ffffff !important;
+    box-shadow: 0 8px 25px rgba(20, 52, 61, 0.15);
+  }
 }
+
 
 .btn-paper {
   border: 1px solid rgba(20, 52, 61, 0.16);
@@ -183,12 +172,15 @@
   box-shadow: 0 10px 28px rgba(20, 52, 61, 0.08);
 }
 
-.btn-paper:hover {
-  border-color: var(--river-deep);
-  background: #ffffff;
-  box-shadow: 0 14px 34px rgba(20, 52, 61, 0.12);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-paper:hover {
+    border-color: var(--river-deep);
+    background: #ffffff;
+    box-shadow: 0 14px 34px rgba(20, 52, 61, 0.12);
+    transform: translateY(-2px);
+  }
 }
+
 
 .btn-paper-compact {
   border: 1px solid rgba(20, 52, 61, 0.16);
@@ -199,10 +191,13 @@
   box-shadow: 0 8px 22px rgba(20, 52, 61, 0.08);
 }
 
-.btn-paper-compact:hover {
-  border-color: var(--river-deep);
-  background: #ffffff;
+@media (hover: hover) and (pointer: fine) {
+  .btn-paper-compact:hover {
+    border-color: var(--river-deep);
+    background: #ffffff;
+  }
 }
+
 
 .btn-ghost-dark {
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -216,11 +211,14 @@
   box-shadow: 0 10px 30px rgba(17, 25, 35, 0.22);
 }
 
-.btn-ghost-dark:hover {
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--night) !important;
-  border-color: rgba(255, 255, 255, 0.96);
+@media (hover: hover) and (pointer: fine) {
+  .btn-ghost-dark:hover {
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--night) !important;
+    border-color: rgba(255, 255, 255, 0.96);
+  }
 }
+
 
 .btn-icon-dark {
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -231,10 +229,13 @@
   transition: all 0.3s ease;
 }
 
-.btn-icon-dark:hover {
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--night) !important;
+@media (hover: hover) and (pointer: fine) {
+  .btn-icon-dark:hover {
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--night) !important;
+  }
 }
+
 
 .btn-primary:focus-visible,
 .btn-primary-compact:focus-visible,
@@ -271,6 +272,30 @@
   display: none;
 }
 
+/* Mobile horizontal scrollers hide their scrollbar, so the first screen reads
+   as a static row with no hint that more sits to the right. A right-edge mask
+   restores that affordance; it is switched off at the width where the same
+   container stops being a scroller and becomes a grid. */
+.scroll-fade-x,
+.scroll-fade-x-lg {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+}
+
+@media (min-width: 768px) {
+  .scroll-fade-x {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .scroll-fade-x-lg {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
 /* Grain texture overlay — the Field Journal paper surface, used site-wide. */
 .bg-grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -278,8 +303,3 @@
   background-size: 256px 256px;
 }
 
-@media (max-width: 640px) {
-  .lux-card:hover {
-    transform: none;
-  }
-}

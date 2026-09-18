@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import { fetchCities } from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
@@ -78,7 +77,7 @@ export default function CulturePageClient({
           <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(8.5rem,0.85fr)] items-start gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(12rem,0.75fr)] sm:items-center sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
-                <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
+                <p data-pastoral-kicker className="mb-6 text-[12px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
                   {t("culture.atlas.eyebrow")}
                 </p>
                 <h1 className="font-[family:var(--font-display)] text-[clamp(1.8rem,7vw,6rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)]">
@@ -110,7 +109,7 @@ export default function CulturePageClient({
         </div>
       </section>
 
-      <section className="site-container py-10 lg:py-20">
+      <section className="site-container py-tight">
         {cultures.length > 0 ? (
           <ArchiveFilterBar
             searchValue={search}
@@ -146,7 +145,7 @@ export default function CulturePageClient({
         ) : null}
         {cultures.length === 0 ? (
           <div className="scrapbook-shadow mx-auto max-w-2xl rotate-1 border border-[var(--line)] bg-white/70 p-10">
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+            <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
               {t("culture.atlas.eyebrow")}
             </p>
             <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
@@ -171,25 +170,19 @@ export default function CulturePageClient({
                 setRegion("");
                 setTag("");
               }}
-              className="mt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] underline underline-offset-4"
+              className="mt-7 text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] underline underline-offset-4"
             >
               {t("culture.filter.clear")}
             </button>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-16 md:overflow-visible md:px-0 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-20">
-            <AnimatePresence initial={false} mode="popLayout">
-              {filteredCultures.map((city) => {
+          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-14 md:gap-y-16 md:overflow-visible md:px-0 md:pb-0 lg:gap-x-24 lg:gap-y-24">
+            {filteredCultures.map((city, idx) => {
                 const cardImage = city.image || placeholderFor("square");
                 return (
-                  <motion.div
+                  <div
                     key={city.slug}
-                    className="h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none"
-                    layout
-                    initial={false}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className={`h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none ${idx % 2 === 1 ? "md:pt-16 lg:pt-24" : ""}`}
                   >
                     <Link href={`/culture/${city.slug}`} className="group block h-full" data-pastoral-card>
                       <article className="flex h-full min-w-0 flex-col">
@@ -202,7 +195,7 @@ export default function CulturePageClient({
                         </div>
 
                         <div className="mt-5 flex min-w-0 flex-1 flex-col border-t border-[var(--line)] pt-4 sm:mt-6 sm:pt-5">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                          <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                             {city.label}
                           </p>
                           <h2 className="mt-2 font-[family:var(--font-display)] text-3xl leading-[0.98] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
@@ -213,21 +206,20 @@ export default function CulturePageClient({
                           </p>
                           <div className="mt-5 flex items-end justify-between gap-4">
                             {city.tags.length > 0 ? (
-                              <p className="min-w-0 truncate text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--muted)]">
+                              <p className="min-w-0 truncate text-[12px] font-bold uppercase tracking-[0.15em] text-[var(--muted)]">
                                 {city.tags.slice(0, 2).join(" / ")}
                               </p>
                             ) : <span />}
-                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/45 underline-offset-4">
+                            <span className="shrink-0 text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/45 underline-offset-4">
                               Read city
                             </span>
                           </div>
                         </div>
                       </article>
                     </Link>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
           </div>
         )}
       </section>
@@ -241,7 +233,7 @@ export default function CulturePageClient({
             />
             <div className="relative z-10 mx-auto max-w-2xl">
               <Reveal>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold-light)]">
+                <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--gold-light)]">
                   {t("culture.cta.eyebrow")}
                 </p>
                 <h2 className="mt-8 font-[family:var(--font-display)] text-3xl leading-tight sm:text-4xl md:text-6xl">

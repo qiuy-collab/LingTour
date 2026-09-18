@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { useLocale } from "@/lib/locale-context";
 import { fetchRoutes } from "@/lib/api-data";
 import { useApiQuery, LoadingSpinner, ErrorState } from "@/lib/use-api-query";
@@ -82,7 +81,7 @@ export default function RoutesPageClient({
           <div className="grid grid-cols-1 items-center gap-10 sm:gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="z-10 min-w-0 max-w-3xl lg:col-span-7">
               <Reveal>
-                <p data-pastoral-kicker className="mb-6 text-[10px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
+                <p data-pastoral-kicker className="mb-6 text-[12px] font-bold uppercase tracking-[0.32em] text-[var(--cinnabar)] sm:mb-8">
                   {t("routes.atlas.eyebrow")}
                 </p>
                 <h1 className="font-[family:var(--font-display)] text-[clamp(2.25rem,7vw,6rem)] leading-[0.92] tracking-[-0.04em] text-[var(--river-deep)]">
@@ -106,10 +105,10 @@ export default function RoutesPageClient({
                     always states what is actually on file. */}
                 <div className="relative border border-[var(--line)] bg-[var(--paper)] scrapbook-shadow">
                   <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-3.5">
-                    <p className="font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]/70">
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--river-deep)]/70">
                       Route manifest
                     </p>
-                    <p className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                       GD-{String(storyRoutes.length).padStart(2, "0")}
                     </p>
                   </div>
@@ -122,7 +121,7 @@ export default function RoutesPageClient({
 
                   <dl className="px-5">
                     <div className="flex items-baseline justify-between gap-6 border-b border-[var(--line)] py-4">
-                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      <dt className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
                         Routes on file
                       </dt>
                       <dd className="text-right font-[family:var(--font-display)] text-2xl leading-none text-[var(--river-deep)]">
@@ -130,7 +129,7 @@ export default function RoutesPageClient({
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-6 border-b border-[var(--line)] py-4">
-                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      <dt className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
                         Ground covered
                       </dt>
                       <dd className="min-w-0 text-right font-[family:var(--font-display)] text-lg leading-snug text-[var(--river-deep)]">
@@ -138,7 +137,7 @@ export default function RoutesPageClient({
                       </dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-6 py-4">
-                      <dt className="shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      <dt className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
                         Time on the road
                       </dt>
                       <dd className="min-w-0 text-right font-[family:var(--font-display)] text-lg leading-snug text-[var(--river-deep)]">
@@ -156,7 +155,7 @@ export default function RoutesPageClient({
                       data-pastoral-stamp
                       className="grid h-16 w-16 rotate-6 place-items-center rounded-full border-2 border-[var(--cinnabar)]/60 text-center"
                     >
-                      <span className="px-1 font-mono text-[7px] font-bold uppercase leading-[1.5] tracking-[0.14em] text-[var(--cinnabar)]">
+                      <span className="px-1 font-mono text-[11px] font-bold uppercase leading-[1.5] tracking-[0.14em] text-[var(--cinnabar)]">
                         Guangdong
                         <br />
                         field transit
@@ -243,21 +242,12 @@ export default function RoutesPageClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-10 pb-8 md:grid-cols-2 md:gap-x-10 md:gap-y-14 lg:gap-x-20 lg:gap-y-20">
-            <AnimatePresence initial={false} mode="popLayout">
-              {filteredRoutes.map((route, index) => {
+            {filteredRoutes.map((route, index) => {
                 const cardImage = route.image || placeholderFor("hero");
                 return (
-                  <motion.div
-                    key={route.slug}
-                    className="min-w-0"
-                    layout
-                    initial={false}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  >
+                  <div key={route.slug} className="min-w-0">
                     <Link href={`/routes/${route.slug}`} className="group block" data-pastoral-card>
-                      <article className={`flex h-full flex-col transition-transform duration-500 motion-reduce:transform-none hover:-translate-y-2 ${index % 2 === 0 ? "sm:rotate-[0.7deg]" : "sm:-rotate-[0.7deg]"}`}>
+                      <article className={`flex h-full flex-col transition-transform duration-500 motion-reduce:transform-none hover:-translate-y-1.5 ${index % 2 === 0 ? "sm:rotate-[0.7deg]" : "sm:-rotate-[0.7deg]"}`}>
                         <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.85rem]">
                           <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 motion-reduce:transform-none group-hover:scale-105"
@@ -291,10 +281,9 @@ export default function RoutesPageClient({
                         </div>
                       </article>
                     </Link>
-                  </motion.div>
+                  </div>
                 );
               })}
-            </AnimatePresence>
           </div>
         )}
       </section>

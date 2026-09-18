@@ -36,11 +36,15 @@
   --radius-md: 0.9rem;
   --radius-lg: 1.4rem;
   --radius-xl: 2rem;
-  --space-section: clamp(4rem, 8vw, 8.5rem);
+  /* Semantic section rhythm. `beat` is the standard section gap: it sits on the
+     endpoints of the old 64/80/112px staircase and flows between them, so the
+     two historical jumps at 640px and 1024px are gone. `tight` is for a section
+     that belongs to its neighbour (a filter bar sitting on its own grid);
+     `land` is a full-width closing statement. */
+  --space-tight: clamp(2rem, 4.5vw, 3.5rem);
+  --space-beat: clamp(4rem, 7vw, 7rem);
+  --space-land: clamp(5rem, 9vw, 9rem);
   --space-gutter: clamp(1rem, 3vw, 2.5rem);
-  --display-size: clamp(3rem, 8vw, 7.5rem);
-  --title-size: clamp(2.25rem, 5vw, 5rem);
-  --body-measure: 68ch;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Parchment scale — archival book & journal textures */
@@ -70,6 +74,28 @@
   --shadow-rest: 0 2px 10px rgba(17, 25, 35, 0.05);
   --shadow-lift: 0 10px 32px rgba(17, 25, 35, 0.09);
   --shadow-panel: 0 24px 80px rgba(17, 25, 35, 0.12);
+
+  /* Section rhythm as utilities: py-beat / py-tight / py-land, plus mt-*, gap-*. */
+  --spacing-tight: var(--space-tight);
+  --spacing-beat: var(--space-beat);
+  --spacing-land: var(--space-land);
+
+  /* Entrance for elements that mount after an interaction (filtered cards, the
+     mega-menu panel, the hover read-out). Replaces framer-motion's enter
+     animation with a compositor-only CSS one. */
+  --animate-rise: lt-rise-in 280ms var(--ease-out-expo) both;
+}
+
+@keyframes lt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 * {
@@ -145,60 +171,6 @@ main > #profile-panel {
   padding-inline: 1rem;
 }
 
-.lt-section {
-  padding-block: var(--space-section);
-}
-
-.lt-kicker {
-  color: var(--cinnabar);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-}
-
-.lt-display {
-  max-width: 13ch;
-  font-family: Georgia, "Noto Serif CJK SC", "Songti SC", serif;
-  font-size: var(--display-size);
-  font-weight: 500;
-  letter-spacing: -0.055em;
-  line-height: 0.9;
-  text-wrap: balance;
-}
-
-.lt-title {
-  max-width: 18ch;
-  font-family: Georgia, "Noto Serif CJK SC", "Songti SC", serif;
-  font-size: var(--title-size);
-  font-weight: 500;
-  letter-spacing: -0.04em;
-  line-height: 0.98;
-  text-wrap: balance;
-}
-
-.lt-copy {
-  max-width: var(--body-measure);
-  color: var(--muted);
-  font-size: clamp(1rem, 1.6vw, 1.15rem);
-  line-height: 1.75;
-}
-
-.lt-surface {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: 0 24px 80px rgba(17, 25, 35, 0.08);
-  backdrop-filter: blur(18px);
-}
-
-.lt-grid-auto {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  gap: clamp(1rem, 2vw, 1.75rem);
-}
-
 .lt-action {
   display: inline-flex;
   min-height: 3rem;
@@ -207,7 +179,7 @@ main > #profile-panel {
   gap: 0.65rem;
   border-radius: 999px;
   padding: 0.75rem 1.25rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -218,18 +190,24 @@ main > #profile-panel {
     border-color 200ms ease;
 }
 
-.lt-action:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .lt-action:hover {
+    transform: translateY(-2px);
+  }
 }
+
 
 .lt-action-primary {
   background: var(--river-deep);
   color: #fff !important;
 }
 
-.lt-action-primary:hover {
-  background: var(--cinnabar);
+@media (hover: hover) and (pointer: fine) {
+  .lt-action-primary:hover {
+    background: var(--cinnabar);
+  }
 }
+
 
 .lt-action-secondary {
   border: 1px solid var(--line);
@@ -237,18 +215,24 @@ main > #profile-panel {
   color: var(--river-deep) !important;
 }
 
-.lt-action-secondary:hover {
-  border-color: var(--river-deep);
+@media (hover: hover) and (pointer: fine) {
+  .lt-action-secondary:hover {
+    border-color: var(--river-deep);
+  }
 }
+
 
 .lt-action-gold {
   background: var(--gold);
   color: var(--night) !important;
 }
 
-.lt-action-gold:hover {
-  background: #fff;
+@media (hover: hover) and (pointer: fine) {
+  .lt-action-gold:hover {
+    background: #fff;
+  }
 }
+
 
 .home-entry-track {
   scrollbar-width: none;
@@ -259,7 +243,7 @@ main > #profile-panel {
 }
 
 .text-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -276,7 +260,6 @@ main > #profile-panel {
 
 @media (max-width: 640px) {
   .text-label {
-    font-size: 0.66rem;
     letter-spacing: 0.18em;
   }
 }
@@ -298,15 +281,6 @@ main > #profile-panel {
     padding-inline: max(1rem, env(safe-area-inset-left));
   }
 
-  .lt-section {
-    padding-block: clamp(3.5rem, 14vw, 5.5rem);
-  }
-
-  .lt-surface {
-    border-radius: var(--radius-md);
-    backdrop-filter: none;
-  }
-
   /* Prevent images from blowing out of their containers */
   img {
     max-width: 100%;
@@ -323,10 +297,6 @@ main > #profile-panel {
 
 /* ── Touch-friendly hover resets ──────────────────────────── */
 @media (hover: none) {
-  .lux-card:hover {
-    transform: none;
-  }
-
   .scrapbook-shadow:hover {
     transform: none;
   }

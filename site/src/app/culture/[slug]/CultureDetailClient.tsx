@@ -75,7 +75,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
   return (
     <div className="min-h-[100dvh] overflow-hidden bg-[var(--background)] bg-grain text-[var(--river-deep)]">
       <header id="section-masthead" className="relative border-b border-[var(--line)] bg-[var(--background)] bg-grain">
-        <div className="site-container py-7 sm:py-10 lg:py-14">
+        <div className="site-container py-tight">
           <div className="grid min-w-0 items-center gap-6 min-[620px]:grid-cols-[minmax(13rem,0.78fr)_minmax(0,1.1fr)] min-[620px]:gap-10 lg:grid-cols-[minmax(20rem,0.84fr)_minmax(0,1.16fr)] lg:gap-16">
             {mastheadMedia ? (
               <figure
@@ -87,7 +87,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
             ) : null}
 
             <div className={briefTextClassName}>
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
+              <p className="text-[12px] font-bold uppercase tracking-[0.28em] text-[var(--cinnabar)]">
                 {activeCity.label}
               </p>
               <h1
@@ -117,7 +117,7 @@ export function CultureDetailClient({ slug, initialCity, initialCityCultures, in
         </div>
       </header>
 
-      <article id="section-chapters" aria-label={`${activeCity.name} city article`} className="relative py-12 sm:py-16 lg:py-24">
+      <article id="section-chapters" aria-label={`${activeCity.name} city article`} className="relative py-beat">
         <div className="relative site-container">
           <MarkdownRenderer content={activeCity.contentMarkdown ?? ""} />
         </div>

@@ -178,13 +178,13 @@ export default function HomeClient({
         </div>
 
         {/* 4. SHOP: THE COLLECTOR'S SHELF */}
-        <section id="home-shop" className="site-container py-16 sm:py-20 lg:py-28">
+        <section id="home-shop" className="site-container py-beat">
           <div className="mb-10 flex flex-col justify-between gap-6 md:mb-20 md:flex-row md:items-end md:gap-12">
             <div className="max-w-2xl">
               <Reveal>
                 <div className="mb-5 flex items-center gap-4 md:mb-6">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                  <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("shop.page.title")}
                   </p>
                 </div>
@@ -203,7 +203,7 @@ export default function HomeClient({
           </div>
 
           {storeProducts.length > 0 ? (
-            <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-8 md:mx-auto md:grid md:max-w-[69rem] md:grid-cols-2 md:gap-x-20 md:gap-y-20 md:overflow-visible md:px-0 md:pb-10 lg:gap-x-28 lg:pb-16">
+            <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-8 md:mx-auto md:grid md:max-w-[69rem] md:grid-cols-2 md:gap-x-20 md:gap-y-20 md:overflow-visible md:px-0 md:pb-10 lg:gap-x-28 lg:pb-16">
               {storeProducts.slice(0, 6).map((product, idx) => (
                 <div
                   key={product.slug}
@@ -217,7 +217,7 @@ export default function HomeClient({
             </div>
           ) : (
             <div className="max-w-2xl rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--surface-strong)] p-8 shadow-lift sm:p-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
+              <p className="text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--gold)]">
                 {t("shop.page.title")}
               </p>
               <h3 className="mt-4 font-[family:var(--font-display)] text-3xl text-[var(--river-deep)]">
@@ -236,13 +236,13 @@ export default function HomeClient({
         </div>
 
         {/* 5. INTERPRETING: THE FIELD NOTES */}
-        <section className="site-container py-16 sm:py-20 lg:py-28">
+        <section className="site-container py-beat">
           <div className="grid grid-cols-1 gap-10 min-[620px]:grid-cols-[minmax(0,1.15fr)_minmax(13rem,0.85fr)] min-[620px]:items-start min-[620px]:gap-7 lg:grid-cols-12 lg:items-center lg:gap-16">
             <div className="min-w-0 max-w-2xl lg:col-span-5">
               <Reveal>
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-10 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+                  <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                     {t("interpreting.page.title")}
                   </p>
                 </div>
@@ -317,7 +317,7 @@ export default function HomeClient({
               <Reveal>
                 <div className="mb-10 flex items-center gap-4 opacity-70">
                   <span className="h-px w-10 bg-[var(--gold-light)]" />
-                  <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--gold-light)]">
+                  <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--gold-light)]">
                     {t("home.cta.eyebrow")}
                   </p>
                 </div>

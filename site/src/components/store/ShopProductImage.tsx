@@ -53,7 +53,7 @@ export function ShopProductImage({
             <p className="mt-4 font-[family:var(--font-display)] text-lg italic leading-snug text-[var(--river-deep)]">
               {t("shop.image.pending")}
             </p>
-            <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
               {t("shop.image.catalogueNote")}
             </p>
           </div>

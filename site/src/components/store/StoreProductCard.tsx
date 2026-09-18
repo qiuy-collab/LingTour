@@ -22,7 +22,7 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
         className={[
           "group relative overflow-hidden bg-white shadow-2xl transition-all duration-700 md:aspect-[4/5] md:overflow-visible",
           index % 2 === 0 ? "md:rotate-[-1deg]" : "md:rotate-[1deg]",
-          "md:hover:-translate-y-4 md:hover:rotate-0"
+          "md:hover:-translate-y-1.5 md:hover:rotate-0"
         ].join(" ")}
       >
         {/* Physical Tag Attachment */}
@@ -62,15 +62,15 @@ export function StoreProductCard({ product, index = 0 }: StoreProductCardProps) 
 
             <div className="flex justify-between items-end">
               <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold)]">{product.tag}</p>
-                <p className="text-[10px] font-bold text-[var(--river-deep)]">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--gold)]">{product.tag}</p>
+                <p className="text-[12px] font-bold text-[var(--river-deep)]">
                   <Price amount={product.price} currency={product.currency} />
                 </p>
               </div>
 
               <Link
                 href={`/shop/products/${product.slug}`}
-                className="lt-action-primary inline-flex min-h-11 shrink-0 items-center gap-2 border border-[var(--river-deep)] px-3 font-mono text-[8px] font-bold uppercase tracking-[0.14em] transition-colors"
+                className="lt-action-primary inline-flex min-h-11 shrink-0 items-center gap-2 border border-[var(--river-deep)] px-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] transition-colors"
               >
                 {t("common.btn.enter")}
                 <span aria-hidden>→</span>

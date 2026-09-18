@@ -19,7 +19,7 @@ function safeNextPath(value: string | null) {
 }
 
 const fieldClass = "min-h-12 w-full border-b border-[var(--line)] bg-transparent px-0 py-3 text-base text-[var(--river-deep)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--river-deep)] lg:text-sm";
-const labelClass = "grid gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]";
+const labelClass = "grid gap-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]";
 
 type Mode = "login" | "signup";
 type SignInMethod = "password" | "code";
@@ -240,7 +240,7 @@ export function LoginPanel() {
         <div className="relative flex min-h-[100dvh] flex-col justify-between px-[clamp(2.5rem,7vw,7rem)] py-12">
           <div className="leading-none">
             <p className="font-[Georgia,'Times_New_Roman',serif] text-[clamp(2.25rem,4vw,4.5rem)] tracking-[-0.05em]">Culvoy</p>
-            <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.28em] text-white/72">Guangdong</p>
+            <p className="mt-3 text-[12px] font-bold uppercase tracking-[0.28em] text-white/72">Guangdong</p>
           </div>
           <div className="w-14 self-center border-t border-[var(--cinnabar)]" aria-hidden="true" />
         </div>
@@ -298,7 +298,7 @@ export function LoginPanel() {
                     type="button"
                     onClick={() => void handleSendCode()}
                     disabled={sendingCode}
-                    className="min-h-12 border border-[var(--line)] bg-white/60 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)]/40 hover:bg-white disabled:opacity-50"
+                    className="min-h-12 border border-[var(--line)] bg-white/60 px-5 py-3 text-[12px] font-bold uppercase tracking-[0.14em] text-[var(--river-deep)] transition-colors hover:border-[var(--river-deep)]/40 hover:bg-white disabled:opacity-50"
                   >
                     {sendingCode ? "Sending..." : codeSent ? "Send again" : "Send code"}
                   </button>
@@ -319,7 +319,7 @@ export function LoginPanel() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((visible) => !visible)}
-                    className="absolute right-0 top-1/2 min-h-11 min-w-11 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)]"
+                    className="absolute right-0 top-1/2 min-h-11 min-w-11 -translate-y-1/2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] transition-colors hover:text-[var(--cinnabar)]"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? "Hide" : "Show"}
@@ -348,7 +348,7 @@ export function LoginPanel() {
             <button
               type="submit"
               disabled={loading}
-              className="min-h-12 w-full bg-[var(--river-deep)] px-6 py-3 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white transition-[background-color,transform] duration-300 hover:bg-[var(--cinnabar)] active:translate-y-px disabled:opacity-50"
+              className="min-h-12 w-full bg-[var(--river-deep)] px-6 py-3 font-mono text-[12px] font-bold uppercase tracking-[0.18em] text-white transition-[background-color,transform] duration-300 hover:bg-[var(--cinnabar)] active:translate-y-px disabled:opacity-50"
             >
               {loading
                 ? "Processing..."

@@ -65,7 +65,7 @@ function LiveMediaFrame({ url, title }: { url: string; title: string }) {
         }`}
       />
       {!playing ? (
-        <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--night)]/62 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+        <span className="pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--night)]/62 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
           <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 fill-current" aria-hidden="true">
             <path d="M3 1.5v9l7-4.5-7-4.5z" />
           </svg>
@@ -274,7 +274,7 @@ export function PostDetailDialog({
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-4 sm:px-8">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[var(--cinnabar)]">
+            <p className="font-mono text-[12px] uppercase tracking-[0.24em] text-[var(--cinnabar)]">
               Field Record
             </p>
             <p className="mt-1 text-sm text-[var(--muted)]">{metaLine}</p>
@@ -368,7 +368,7 @@ export function PostDetailDialog({
             ) : null}
 
             <div className={hasMedia ? "mt-6" : ""}>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--gold)]">
+              <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--gold)]">
                 {hasMedia && hasText
                   ? t("community.post.illustratedNote")
                   : hasMedia
@@ -404,7 +404,7 @@ export function PostDetailDialog({
           <aside className="border-t border-[var(--line)] bg-white/45 px-5 py-5 lg:border-l lg:border-t-0">
             <div className="space-y-5">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                <p className="font-mono text-[12px] uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   Filed by
                 </p>
                 <div className="mt-3 flex items-center gap-3">
@@ -429,7 +429,7 @@ export function PostDetailDialog({
               </div>
 
               <div className="rounded-[var(--radius-lg)] border border-[var(--line)] bg-[var(--paper)] p-4">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--gold)]">
+                <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-[var(--gold)]">
                   Prompt trail
                 </p>
                 <p className="mt-2 text-sm leading-6 text-[var(--river-deep)]/82">
@@ -448,7 +448,7 @@ export function PostDetailDialog({
                       : "border-[var(--line)] bg-white/70 hover:border-[var(--cinnabar)]/40"
                   } ${isLoggedIn ? "" : "opacity-70"}`}
                 >
-                  <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                  <span className="flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--muted)]">
                     <svg viewBox="0 0 20 20" className={`h-3.5 w-3.5 ${liked ? "fill-[var(--cinnabar)]" : "fill-current"}`} aria-hidden="true">
                       <path d="M10 18s-7-4.35-7-9.5A4.5 4.5 0 0 1 10 5a4.5 4.5 0 0 1 7 3.5C17 13.65 10 18 10 18z" />
                     </svg>
@@ -468,7 +468,7 @@ export function PostDetailDialog({
                       : "border-[var(--line)] bg-white/70 hover:border-[var(--gold)]/40"
                   } ${isLoggedIn ? "" : "opacity-70"}`}
                 >
-                  <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                  <span className="flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.18em] text-[var(--muted)]">
                     <svg viewBox="0 0 20 20" className={`h-3.5 w-3.5 ${saved ? "fill-[var(--gold)]" : "fill-current"}`} aria-hidden="true">
                       <path d="M5 3h10a1 1 0 0 1 1 1v13l-6-4-6 4V4a1 1 0 0 1 1-1z" />
                     </svg>

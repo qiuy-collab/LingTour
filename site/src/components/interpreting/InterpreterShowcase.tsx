@@ -40,7 +40,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
   };
 
   return (
-    <section className="site-container py-16 lg:py-24">
+    <section className="site-container py-beat">
       <div className="mb-8 opacity-60">
         <Reveal>
           <h2 className="whitespace-nowrap font-[family:var(--font-display)] text-2xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-3xl md:text-4xl">
@@ -49,7 +49,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
         </Reveal>
       </div>
 
-      <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
+      <div className="scroll-fade-x-lg scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
         {profiles.map((profile, index) => {
           const isSelected = selectedProfileId === profile.id;
 
@@ -61,7 +61,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                   index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1",
                   isSelected
                     ? "border-[var(--cinnabar)] ring-1 ring-[var(--cinnabar)]/20"
-                    : "hover:-translate-y-2 hover:rotate-0",
+                    : "hover:-translate-y-1.5 hover:rotate-0",
                 ].join(" ")}
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
@@ -83,13 +83,13 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                   <div className="absolute inset-0 bg-gradient-to-t from-[var(--river-deep)]/80 via-transparent to-transparent opacity-60" />
 
                   <div className="absolute top-4 left-4 z-10">
-                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-bold uppercase tracking-[0.2em] text-white">
+                    <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
                       {profile.level ?? profile.levelZh}
                     </span>
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-1 handwritten">
+                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-1 handwritten">
                       {profile.specialty}
                     </p>
                     <h3 className="font-[family:var(--font-display)] text-3xl text-white leading-tight">
@@ -106,7 +106,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                       </p>
                       <div className="flex items-center gap-2">
                         <div aria-hidden="true" className="w-1 h-1 rounded-full bg-[var(--cinnabar)] animate-pulse" />
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
+                        <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--cinnabar)]">
                           Ready to match
                         </p>
                       </div>
@@ -125,7 +125,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                     type="button"
                     onClick={() => handleSelect(profile)}
                     className={[
-                      "btn-primary w-full py-4 text-[10px] flex items-center justify-between group/btn",
+                      "btn-primary w-full py-4 text-[12px] flex items-center justify-between group/btn",
                       isSelected ? "bg-[var(--cinnabar)]" : ""
                     ].join(" ")}
                   >

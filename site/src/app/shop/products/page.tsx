@@ -15,7 +15,7 @@ export default async function ProductsPage() {
 
   return (
     <div>
-      <section className="border-b border-[var(--line)] py-16 sm:py-20 lg:py-28">
+      <section className="border-b border-[var(--line)] py-beat">
         <Reveal>
           <EditorialIntro
             eyebrow={`${String(products.length).padStart(2, "0")} field objects / All products`}
@@ -28,7 +28,7 @@ export default async function ProductsPage() {
                 </p>
                 <Link
                   href="/shop"
-                  className="mt-6 inline-flex min-h-11 items-center font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] transition hover:translate-x-1 hover:text-[var(--river-deep)]"
+                  className="mt-6 inline-flex min-h-11 items-center font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)] transition hover:translate-x-1 hover:text-[var(--river-deep)]"
                 >
                   Back to store →
                 </Link>
@@ -38,7 +38,7 @@ export default async function ProductsPage() {
         </Reveal>
       </section>
 
-      <section className="bg-[var(--paper-deep)] bg-grain py-12 sm:py-16 lg:py-24">
+      <section className="bg-[var(--paper-deep)] bg-grain py-beat">
         <div className="site-container">
           <AllProductsClient products={products} collections={collections} tags={tags} />
         </div>

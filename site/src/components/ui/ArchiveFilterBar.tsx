@@ -70,7 +70,7 @@ export function ArchiveFilterBar({
             <button
               type="button"
               onClick={onClear}
-              className="inline-flex min-h-11 items-center px-2 font-[family:var(--font-body)] text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
+              className="inline-flex min-h-11 items-center px-2 font-[family:var(--font-body)] text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4"
             >
               {clearLabel}
             </button>
@@ -80,14 +80,14 @@ export function ArchiveFilterBar({
             onClick={() => setFiltersExpanded((current) => !current)}
             aria-expanded={filtersExpanded}
             aria-controls={filterPanelId}
-            className="inline-flex min-h-12 items-center gap-2 border border-[var(--river-deep)] bg-[var(--river-deep)] px-5 py-3 font-[family:var(--font-body)] text-[10px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)]"
+            className="inline-flex min-h-12 items-center gap-2 border border-[var(--river-deep)] bg-[var(--river-deep)] px-5 py-3 font-[family:var(--font-body)] text-[12px] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:border-[var(--cinnabar)] hover:bg-[var(--cinnabar)]"
           >
             <svg aria-hidden width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M4 7h16M7 12h10M10 17h4" strokeLinecap="round" />
             </svg>
             {filterLabel}
             {activeFilterCount ? (
-              <span className="grid h-5 min-w-5 place-items-center border border-white/70 bg-white px-1 text-[9px] text-[var(--river-deep)]">
+              <span className="grid h-5 min-w-5 place-items-center border border-white/70 bg-white px-1 text-[11px] text-[var(--river-deep)]">
                 {activeFilterCount}
               </span>
             ) : null}
@@ -111,7 +111,7 @@ export function ArchiveFilterBar({
         <div id={filterPanelId} className="mt-5 space-y-5 border-t border-[var(--line)] pt-5">
           {groups.map((group) => (
             <div key={group.label} className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <p className="w-24 shrink-0 pt-2.5 font-[family:var(--font-body)] text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--river-deep)]">
+              <p className="w-24 shrink-0 pt-2.5 font-[family:var(--font-body)] text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--river-deep)]">
                 {group.label}
               </p>
               <div className="scrollbar-hide flex min-w-0 gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
@@ -119,7 +119,7 @@ export function ArchiveFilterBar({
                   type="button"
                   onClick={() => group.onChange("")}
                   aria-pressed={!group.value}
-                  className={`min-h-11 shrink-0 border px-4 py-2 font-[family:var(--font-body)] text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                  className={`min-h-11 shrink-0 border px-4 py-2 font-[family:var(--font-body)] text-[12px] font-bold uppercase tracking-[0.14em] transition-colors ${
                     !group.value
                       ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                       : "border-[var(--line)] bg-transparent text-[var(--river-deep)] hover:border-[var(--river-deep)]"
@@ -133,7 +133,7 @@ export function ArchiveFilterBar({
                     type="button"
                     onClick={() => group.onChange(option.value)}
                     aria-pressed={group.value === option.value}
-                    className={`min-h-11 shrink-0 border px-4 py-2 font-[family:var(--font-body)] text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+                    className={`min-h-11 shrink-0 border px-4 py-2 font-[family:var(--font-body)] text-[12px] font-bold uppercase tracking-[0.14em] transition-colors ${
                       group.value === option.value
                         ? "border-[var(--river-deep)] bg-[var(--river-deep)] text-white"
                         : "border-[var(--line)] bg-transparent text-[var(--river-deep)] hover:border-[var(--river-deep)]"

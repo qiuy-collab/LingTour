@@ -298,7 +298,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           <Reveal>
             <div className="mb-6 flex items-center gap-4">
               <div className="h-px w-10 bg-[var(--cinnabar)]" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
+              <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
                 {t("home.map.eyebrow")}
               </p>
             </div>
@@ -337,7 +337,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
 
               <div className="space-y-3 md:space-y-4">
                 <div>
-                  <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                  <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                     {panelEyebrow}
                   </p>
                   <h3 className="font-[family:var(--font-display)] text-[1.75rem] italic leading-none text-[var(--river-deep)] md:text-2xl">
@@ -356,13 +356,13 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                 <div className="grid grid-cols-2 gap-2 pt-1 md:pt-2">
                   <Link
                     href={`/culture/${activeCity.slug}`}
-                    className="grid min-h-11 place-items-center border border-[var(--river-deep)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white md:py-3"
+                    className="grid min-h-11 place-items-center border border-[var(--river-deep)] py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-[var(--river-deep)] transition-all hover:bg-[var(--river-deep)] hover:text-white md:py-3"
                   >
                     Story
                   </Link>
                   <Link
                     href={`/interpreting?city=${activeCity.slug}`}
-                    className="grid min-h-11 place-items-center bg-[var(--cinnabar)] py-2.5 text-center text-[9px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)] md:py-3"
+                    className="grid min-h-11 place-items-center bg-[var(--cinnabar)] py-2.5 text-center text-[11px] font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:bg-[var(--cinnabar-deep)] md:py-3"
                   >
                     Book
                   </Link>
@@ -501,7 +501,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         <text
                           x={x + dotRadius + 5}
                           y={y + labelSize / 3}
-                          className={`pointer-events-none select-none font-[family:var(--font-display)] italic transition-all duration-500 ${
+                          className={`pointer-events-none select-none font-[family:var(--font-display)] italic transition-[opacity,transform] duration-500 ${
                             isActive
                               ? "opacity-100 translate-x-2"
                               : "opacity-0 -translate-x-2"
@@ -545,7 +545,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
             </Link>
 
             <div className="flex min-w-0 flex-col justify-center py-0.5">
-              <p className="truncate text-[8px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+              <p className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                 {panelEyebrow}
               </p>
               <div className="mt-1 flex min-w-0 items-baseline justify-between gap-2">
@@ -567,7 +567,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
           </div>
 
           {showcase.length > 1 ? (
-            <div className="scrollbar-hide -mx-4 mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 lg:hidden">
+            <div className="scroll-fade-x-lg scrollbar-hide -mx-4 mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 lg:hidden">
               {showcase.map((city, index) => {
                 const isActive = city.adcode === resolvedActiveCode;
                 return (
@@ -582,7 +582,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
                         : "border-[var(--line)] text-[var(--muted)]"
                     }`}
                   >
-                    <span className="mr-2 text-[8px] font-bold tracking-[0.18em] text-[var(--gold)]">
+                    <span className="mr-2 text-[11px] font-bold tracking-[0.18em] text-[var(--gold)]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span className="font-[family:var(--font-display)] text-base italic">

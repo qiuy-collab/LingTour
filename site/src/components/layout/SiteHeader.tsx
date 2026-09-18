@@ -185,7 +185,7 @@ export function SiteHeader() {
           <AccountNavLink />
           <Link
             href="/interpreting#interpreting-booking"
-            className="ml-1 inline-flex min-h-11 min-w-[5.8rem] items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
+            className="ml-1 inline-flex min-h-11 min-w-[5.8rem] items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-2 text-[12px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
           >
             {t("common.nav.planTrip")}
           </Link>
@@ -227,7 +227,7 @@ export function SiteHeader() {
         >
           <Container className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <p className="px-1 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+              <p className="px-1 text-[12px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
                 {t("common.nav.mobile.explore")}
               </p>
               {siteNavigation.map((item) => {
@@ -254,7 +254,7 @@ export function SiteHeader() {
             <div className="grid grid-cols-1 gap-2 border-t border-[var(--line)] pt-4">
               <Link
                 href="/interpreting#interpreting-booking"
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--river-deep)] px-4 py-3 text-center text-[12px] font-bold uppercase tracking-[0.2em] text-white transition-colors hover:bg-[var(--cinnabar)]"
                 onClick={() => setIsOpen(false)}
               >
                 {t("common.nav.planTrip")}

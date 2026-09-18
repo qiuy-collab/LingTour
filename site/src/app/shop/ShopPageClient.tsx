@@ -120,10 +120,10 @@ export default function ShopPageClient({
                     />
                   </div>
                   <figcaption className="flex items-center justify-between px-1 pb-1 pt-2.5">
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]/60">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]/60">
                       The Lingnan shelf
                     </span>
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--gold)]">
                       Plate 01
                     </span>
                   </figcaption>
@@ -134,7 +134,7 @@ export default function ShopPageClient({
         </div>
       </section>
 
-      <section className="site-container py-10 lg:py-20">
+      <section className="site-container py-tight">
         <Reveal>
           <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
             {t("shop.atlas.collectionsTitle")}
@@ -151,20 +151,20 @@ export default function ShopPageClient({
             </p>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-3">
+          <div className="scroll-fade-x scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-3">
             {collections.map((collection, i) => {
               const cardImage = collection.image || placeholderFor("portrait");
               return (
                 <Reveal key={collection.title} delay={i * 100} className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none">
                   <Link href={collection.href} className="group block">
-                    <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-2">
+                    <article className="relative flex h-full flex-col transition-all duration-500 hover:-translate-y-1.5">
                       <div className="relative aspect-[16/10] overflow-hidden border-[0.7rem] border-white bg-white scrapbook-shadow lg:aspect-[3/4] lg:border-[0.9rem]">
                         <div
                           className="absolute inset-0 bg-cover bg-center transition duration-1000 group-hover:scale-105"
                           style={{ backgroundImage: `url(${cardImage})` }}
                         />
                         <div className="absolute inset-0 bg-black/5" />
-                        <div className="absolute left-4 top-4 bg-[var(--gold)] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
+                        <div className="absolute left-4 top-4 bg-[var(--gold)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-lg">
                           {collection.route}
                         </div>
                       </div>
@@ -175,7 +175,7 @@ export default function ShopPageClient({
                         <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)]">
                           {collection.body}
                         </p>
-                        <div className="mt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
+                        <div className="mt-6 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">
                           <span>{t("common.btn.enter")}</span>
                           <div className="h-px w-8 bg-[var(--gold)] transition-all duration-300 group-hover:w-12" />
                         </div>
@@ -189,7 +189,7 @@ export default function ShopPageClient({
         )}
       </section>
 
-      <section className="site-container py-10 lg:py-20">
+      <section className="site-container py-tight">
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <h2 className="font-[family:var(--font-display)] text-3xl text-[var(--river-deep)] md:text-4xl">
@@ -214,7 +214,7 @@ export default function ShopPageClient({
             </p>
           </div>
         ) : (
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:px-0 lg:grid-cols-3">
+          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-8 md:overflow-visible md:px-0 lg:grid-cols-3">
             {products.slice(0, 3).map((product, i) => (
               <div key={product.slug} className="w-[82vw] max-w-[24rem] shrink-0 snap-start md:w-auto md:max-w-none md:shrink md:snap-none">
                 <StoreProductCard product={product} index={i} />

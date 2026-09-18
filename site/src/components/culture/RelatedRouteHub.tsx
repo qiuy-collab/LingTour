@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
 import type { StoryRoute } from "@/data/routes";
 import { Reveal } from "@/components/ui/Reveal";
@@ -66,14 +65,14 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props)
                 />
               </div>
               <div className="min-w-0 py-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                   {route.culture}
                 </p>
                 <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-[1.02] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
                   {route.title}
                 </h3>
                 <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">{route.summary}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold uppercase tracking-[0.16em]">
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-bold uppercase tracking-[0.16em]">
                   <span className="text-[var(--muted)]">{route.duration}</span>
                   <span className="text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4">
                     {t("culture.detail.readRoute")}
@@ -120,19 +119,14 @@ export function RelatedRouteHub({ routes, cityAdcode, cityName, cities }: Props)
                 </svg>
 
                 {hoveredRouteIdx !== null && routes[hoveredRouteIdx] ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="mt-3 border-t border-[var(--line)] pt-3"
-                  >
+                  <div className="mt-3 animate-rise border-t border-[var(--line)] pt-3">
                     <p className="font-[family:var(--font-display)] text-lg leading-tight text-[var(--river-deep)]">
                       {routes[hoveredRouteIdx].title}
                     </p>
                     <p className="mt-1 text-xs text-[var(--muted)]">
                       {routes[hoveredRouteIdx].itinerary.length} stops / {routes[hoveredRouteIdx].duration}
                     </p>
-                  </motion.div>
+                  </div>
                 ) : null}
               </div>
             ) : (

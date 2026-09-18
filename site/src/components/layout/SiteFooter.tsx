@@ -37,7 +37,7 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col gap-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">{t("common.nav.routes")}</p>
+          <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold-light)]">{t("common.nav.routes")}</p>
           <div className="grid grid-cols-2 gap-x-8 text-sm font-medium text-white/70">
             {siteNavigation.slice(1).map((item) => (
               <Link
@@ -61,7 +61,7 @@ export function SiteFooter() {
             </a>
             <p className="handwritten text-white/70">{t("common.footer.locations")}</p>
           </div>
-          <div className="pt-8 border-t border-white/10 text-[10px] uppercase tracking-widest text-white/60">
+          <div className="pt-8 border-t border-white/10 text-[12px] uppercase tracking-widest text-white/60">
             {t("common.site.footer.rights").replace("{year}", String(new Date().getFullYear()))}
           </div>
         </div>

@@ -59,7 +59,7 @@ export function ProductDetailClient({ slug, initialProduct, initialProducts }: P
       <ProductNarrative product={activeProduct} />
 
       {relatedProducts.length > 0 && (
-        <section className="site-container py-16 sm:py-20 lg:py-28 xl:py-32">
+        <section className="site-container py-beat xl:py-32">
           <Reveal>
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div className="max-w-xl">

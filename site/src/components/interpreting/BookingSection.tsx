@@ -128,10 +128,10 @@ export function BookingSection({ prefillNeeds }: Props) {
           <aside className="min-w-0 lg:border-r lg:border-[var(--line)] lg:pr-10">
             <div className="px-1 sm:px-0">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--cinnabar)]">
                   {"Request summary"}
                 </p>
-                <span className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+                <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                   <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
                   {bookingFastTrack ? "Fast track" : `${String(bookingStep + 1).padStart(2, "0")} / 04`}
                 </span>
@@ -178,7 +178,7 @@ export function BookingSection({ prefillNeeds }: Props) {
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-[8px] font-bold uppercase leading-tight tracking-[0.08em] text-[var(--river-deep)] sm:text-[9px] lg:font-[family:var(--font-display)] lg:text-xl lg:font-normal lg:normal-case lg:leading-none lg:tracking-normal">
+                      <span className="block text-[11px] font-bold uppercase leading-tight tracking-[0.08em] text-[var(--river-deep)] sm:text-[11px] lg:font-[family:var(--font-display)] lg:text-xl lg:font-normal lg:normal-case lg:leading-none lg:tracking-normal">
                         {item.title}
                       </span>
                       <span className="mt-2 hidden handwritten text-[11px] italic leading-5 text-[var(--muted)] lg:block">
@@ -198,7 +198,7 @@ export function BookingSection({ prefillNeeds }: Props) {
                   {"Your request"}
                 </h3>
               </div>
-              <span className="hidden text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--gold)] sm:block">
+              <span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)] sm:block">
                 {"About 3 minutes"}
               </span>
             </div>

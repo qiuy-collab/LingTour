@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { Reveal } from "@/components/ui/Reveal";
 import { getMapFeatures, buildProjection, featureToPath, type CityFeature } from "@/lib/map-projection";
 import type { CityCulture } from "@/data/culture";
@@ -82,7 +81,7 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
                   />
                 </div>
                 <div className="min-w-0 py-1">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                  <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                     {city.label}
                   </p>
                   <h3 className="mt-2 font-[family:var(--font-display)] text-2xl leading-[1.02] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-3xl">
@@ -91,7 +90,7 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
                   <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
                     {city.summary}
                   </p>
-                  <span className="mt-4 inline-block text-[10px] font-bold uppercase tracking-[0.17em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4">
+                  <span className="mt-4 inline-block text-[12px] font-bold uppercase tracking-[0.17em] text-[var(--cinnabar)] underline decoration-[var(--cinnabar)]/40 underline-offset-4">
                     Read city
                   </span>
                 </div>
@@ -137,13 +136,9 @@ export function RelatedCitiesHub({ allCities, currentCity }: Props) {
                   })}
                 </svg>
 
-                <motion.p
-                  initial={{ opacity: 0.9, y: 0 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 border-t border-[var(--line)] pt-3 text-sm text-[var(--muted)]"
-                >
+                <p className="mt-3 animate-rise border-t border-[var(--line)] pt-3 text-sm text-[var(--muted)]">
                   {currentCity.name} and {relatedCities.length} linked {relatedCities.length === 1 ? "city" : "cities"}.
-                </motion.p>
+                </p>
               </div>
             ) : (
               <div className="grid h-48 place-items-center text-xs text-[var(--muted)]">Map</div>

@@ -345,7 +345,7 @@ export default function InterpretingPageClient({
         </div>
       </section>
 
-      <section id="service-types" className="site-container py-16 lg:py-24">
+      <section id="service-types" className="site-container py-beat">
         <div className="mb-8">
           <Reveal>
             <h2 className="font-[family:var(--font-display)] text-3xl leading-[1.05] tracking-[-0.02em] text-[var(--river-deep)] sm:text-4xl md:text-5xl">
@@ -354,11 +354,11 @@ export default function InterpretingPageClient({
           </Reveal>
         </div>
 
-        <div className="scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
+        <div className="scroll-fade-x-lg scrollbar-hide -mx-4 mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:px-0">
           {serviceTypes.map((item, index) => (
             <Reveal key={item.id} delay={index * 100} className="h-full w-[82vw] max-w-[24rem] shrink-0 snap-start lg:w-auto lg:max-w-none lg:shrink lg:snap-none">
               <article
-                className={`group relative flex h-full min-h-[380px] flex-col bg-white p-6 scrapbook-shadow transition-all duration-500 hover:-translate-y-2 sm:min-h-[420px] sm:p-8 ${
+                className={`group relative flex h-full min-h-[380px] flex-col bg-white p-6 scrapbook-shadow transition-all duration-500 hover:-translate-y-1.5 sm:min-h-[420px] sm:p-8 ${
                   index % 2 === 0 ? "sm:rotate-1" : "sm:-rotate-1"
                 }`}
               >
@@ -368,7 +368,7 @@ export default function InterpretingPageClient({
 
                 <div className="relative z-10 flex h-full flex-col">
                   <div className="mb-6 border-b border-[var(--line)] pb-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
+                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--cinnabar)]">
                       {t("interpreting.atlas.from")}
                     </p>
                     <div className="mt-2 flex items-baseline">
@@ -391,14 +391,14 @@ export default function InterpretingPageClient({
                   </div>
 
                   <div className="space-y-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">
+                    <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">
                       {t("interpreting.atlas.includes")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-sm border border-[var(--line)] bg-[var(--paper-deep)]/30 px-3 py-1 text-[10px] font-bold uppercase text-[var(--river-deep)]"
+                          className="rounded-sm border border-[var(--line)] bg-[var(--paper-deep)]/30 px-3 py-1 text-[12px] font-bold uppercase text-[var(--river-deep)]"
                         >
                           {tag}
                         </span>
@@ -407,7 +407,7 @@ export default function InterpretingPageClient({
 
                     <a
                       href="#interpreting-booking"
-                      className="btn-outline mt-6 block w-full py-4 text-center text-[10px] leading-none"
+                      className="btn-outline mt-6 block w-full py-4 text-center text-[12px] leading-none"
                     >
                       {"Request support"}
                     </a>
@@ -437,7 +437,7 @@ export default function InterpretingPageClient({
 
             <div>
               <div className="space-y-4">
-                <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] px-5 pb-4 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
+                <div className="hidden grid-cols-[1.2fr_repeat(3,1fr)] border-b border-[var(--line)] px-5 pb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--muted)] md:grid">
                   <div className="p-4">{"Service"}</div>
                   <div className="text-center">
                     {t("interpreting.levels.junior")}
@@ -452,10 +452,10 @@ export default function InterpretingPageClient({
                 {matrix.map((row, rowIndex) => (
                   <div
                     key={row.service}
-                    className={`group grid grid-cols-1 border border-[var(--line)] bg-white/88 text-sm text-[var(--muted)] scrapbook-shadow transition-transform duration-500 hover:-translate-y-1 md:grid-cols-[1.2fr_repeat(3,1fr)] ${rowIndex === 1 ? "md:translate-x-3" : rowIndex === 2 ? "md:-translate-x-2" : ""}`}
+                    className={`group grid grid-cols-1 border border-[var(--line)] bg-white/88 text-sm text-[var(--muted)] scrapbook-shadow transition-transform duration-500 hover:-translate-y-1.5 md:grid-cols-[1.2fr_repeat(3,1fr)] ${rowIndex === 1 ? "md:translate-x-3" : rowIndex === 2 ? "md:-translate-x-2" : ""}`}
                   >
                     <div className="flex items-center gap-4 p-5 sm:p-6">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center border border-[var(--gold)]/35 bg-[var(--paper)] text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--gold)] transition-colors group-hover:bg-[var(--gold)] group-hover:text-white">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center border border-[var(--gold)]/35 bg-[var(--paper)] text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--gold)] transition-colors group-hover:bg-[var(--gold)] group-hover:text-white">
                         {row.icon}
                       </span>
                       <div>
@@ -480,7 +480,7 @@ export default function InterpretingPageClient({
                         },
                       ].map((tier) => (
                         <div key={tier.label} className="text-center">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                          <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--muted)]">
                             {tier.label}
                           </p>
                           <p className="mt-2 font-[family:var(--font-display)] text-[1.3rem] leading-none text-[var(--river-deep)]">

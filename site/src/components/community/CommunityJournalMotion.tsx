@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useRef } from "react";
-import { gsap, motionEase, motionMedia, useGSAP } from "@/lib/motion";
+import { gsap, motionDuration, motionEase, motionMedia, useGSAP } from "@/lib/motion";
 
 type CommunityJournalMotionProps = {
   children: ReactNode;
@@ -24,58 +24,23 @@ export function CommunityJournalMotion({ children, motionKey }: CommunityJournal
         },
         (context) => {
           const { animate } = context.conditions ?? {};
-          const animatedElements = root.querySelectorAll(
-            "[data-community-kicker], [data-community-title], [data-community-subtitle], [data-community-stamp], [data-community-ink]",
-          );
+          const animatedElements = root.querySelectorAll("[data-community-title]");
 
           if (!animate) {
             gsap.set(animatedElements, { clearProps: "all" });
             return;
           }
 
-          const intro = gsap.timeline({ defaults: { ease: motionEase.emphasized } });
-          intro
-            .from("[data-community-kicker]", { autoAlpha: 0, y: 14, duration: 0.55 })
-            .from(
-              "[data-community-title]",
-              { autoAlpha: 0, yPercent: 115, rotation: 2.5, duration: 1.05, stagger: 0.12 },
-              "-=0.25",
-            )
-            .from(
-              "[data-community-subtitle]",
-              { autoAlpha: 0, y: 22, duration: 0.7 },
-              "-=0.52",
-            )
-            .from(
-              "[data-community-stamp]",
-              { autoAlpha: 0, scale: 0.72, rotation: -28, duration: 0.9 },
-              "-=0.72",
-            );
-
-          gsap.to("[data-community-ink='left']", {
-            yPercent: 26,
-            xPercent: -5,
-            rotation: -7,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "[data-community-hero]",
-              start: "top top",
-              end: "bottom top",
-              scrub: 0.8,
-            },
-          });
-
-          gsap.to("[data-community-ink='right']", {
-            yPercent: -18,
-            xPercent: 7,
-            rotation: 9,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "[data-community-hero]",
-              start: "top top",
-              end: "bottom top",
-              scrub: 0.9,
-            },
+          // The hero renders two title lines and nothing else from this hook.
+          // kicker / subtitle / stamp were queried here but never rendered on
+          // the page — dead scaffolding of the same kind as the pastoral titles.
+          gsap.from("[data-community-title]", {
+            autoAlpha: 0,
+            yPercent: 115,
+            rotation: 2.5,
+            duration: motionDuration.cinematic,
+            stagger: 0.12,
+            ease: motionEase.emphasized,
           });
 
           gsap.from("[data-community-toolbar]", {
