@@ -62,3 +62,7 @@ next-env.d.ts
 
 # Impeccable machine-local state
 .impeccable/
+
+# Local reference material — not part of the product
+/lingtour-frontend-documentation/
+/review/
