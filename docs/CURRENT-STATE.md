@@ -705,7 +705,7 @@ Owner authorized "按照这个计划优化当前项目，改完分类提交，�
 | `bf223de` | `refactor(site): unify design tokens, elevation and the motion system` (33 files) |
 | `615d372` | `chore(site): remove five dead components and two dead stylesheets` (10 files) |
 
-**Blocking discovery — the local database does not match the English-only contract.** Every page except `/` and `/community` returned HTTP 500 locally with `Objects are not valid as a React child (found: object with keys {en, zh})`. Read-only inspection: migration `EnglishOnlyContent1762300000000` **is** recorded as applied, but `cities.name` is still `{"en":"Zhanjiang","zh":"湛江"}` and `cities` holds exactly 1 row. Production serves 200 on the same routes, so this is a local-data problem, not a code one. No migration, seed or reset was run. Browser verification was instead performed with the site container's `INTERNAL_API_ORIGIN` pointed at `https://api.culvoy.com/api/v1` (read-only, per AGENT.md §6), via a compose override that lived outside the workspace and was deleted afterwards. **This local defect is unresolved and will block local visual work for the next task too.**
+**Blocking discovery — the local database does not match the English-only contract.** Every page except `/` and `/community` returned HTTP 500 locally with `Objects are not valid as a React child (found: object with keys {en, zh})`. Read-only inspection: migration `EnglishOnlyContent1762300000000` **is** recorded as applied, but `cities.name` is still `{"en":"Zhanjiang","zh":"湛江"}` and `cities` holds exactly 1 row. Production serves 200 on the same routes, so this is a local-data problem, not a code one. No migration, seed or reset was run. Browser verification was instead performed with the site container's `INTERNAL_API_ORIGIN` pointed at `https://api.culvoy.com/api/v1` (read-only, per AGENT.md §6), via a compose override that lived outside the workspace and was deleted afterwards. **This local defect is unresolved and will block local visual work for the next task too.** *(Resolved 2026-09-19 — see §48.)*
 
 **Verified** (tsc, eslint 0 errors, vitest 105/105, next build, plus a real browser pass at 1023/1024/1025 and 390px on both localhost and production):
 
@@ -785,3 +785,28 @@ Owner authorized "按之前确定的计划继续执行剩余任务，直至全�
 - `admin.culvoy.com` returns 200 with the Vue app mounted, the Chinese login form intact and **zero console errors**. The signed-in admin flows (delivery log, event re-send, community moderation) were **not** re-run: this session holds no admin credentials, so §46's human pass remains the evidence for those screens.
 
 **Still open**: the local-database English-only defect from §45 (local `cities` still holds one `{ en, zh }` row, so local pages 500 outside `/` and `/community`); the stale empty `migrations` table; admin views not exercised across the nine widths; `email_logs` now exists in production but holds no rows until real mail flows run.
+
+## 48. 2026-09-19 local-database English-only contract repaired (no code change, no deploy)
+
+Owner authorized "可以 修复" against §45's blocking discovery and §47's first still-open item. Pure local-data repair: zero code changes, nothing committed to source, pushed or deployed.
+
+**Root cause, corrected.** §45 read the defect as "the migration is recorded but the data was never converted". Precise inspection of the live local database shows the migration side was never the problem: `typeorm_migrations` holds **35 rows against 35 migration files**, so the local schema is fully migrated and in step with the code, `email_logs` included. The real cause is `api/src/database/seeds/seed-local-preview.ts` (deliberately untracked per §47) having been re-run **after** `EnglishOnlyContent1762300000000` was applied, writing the retired `{ en, zh }` JSONB shape back into every content table. The seeder is the defect, not the migration.
+
+**Read-only survey before the fix.** A column-by-column scan of every jsonb column found **53 (table, column) pairs** still carrying a `zh` key. All of them fall inside the 68-entry column list of `EnglishOnlyContent1762300000000`. The only column outside that list, `audit_logs.new_values` (16 rows), is non-content audit data and was deliberately left untouched, exactly as that migration's own comment prescribes.
+
+**Repair.** The migration's conversion was replayed verbatim rather than reinvented: `CREATE OR REPLACE FUNCTION lingtour_english_content(jsonb)` (the same IMMUTABLE recursive collapser), a `DO` block iterating the migration's full 68-column list behind an `information_schema` existence guard (**0 columns skipped**), then `DROP FUNCTION` — all in one transaction. The function is idempotent (an already-collapsed scalar falls through to `ELSE value`), so a re-run is a no-op.
+
+**Backup** (taken first, per AGENT.md §6): `.local-backups/lingtour-local-20260919-pre-englishonly.dump` (109,421 bytes, PGDMP header verified), produced by a `postgres:16-alpine` container because the host has no psql/pg_dump/pg_restore.
+
+**Result**: the residue list collapsed from 53 columns to `audit_logs.new_values` alone; `cities.name` is now the JSON string `"Zhanjiang"`.
+
+**Verified**:
+
+- Routes before → after: `/culture`, `/routes`, `/shop`, `/interpreting` were **500** (`Objects are not valid as a React child (found: object with keys {en, zh})`) and are now **200**; `/`, `/community`, `/login`, `/profile`, `/forgot-password` held 200 throughout.
+- Detail pages with real local slugs: `/culture/zhanjiang` ("Zhanjiang"), `/routes/southern-sea-table` ("A Southern Sea Table"), `/shop/products/zhuni-teapot` ("Chaozhou Zhuni Teapot"), zero bilingual residue in the served HTML. `/shop/collections/coastal-life-kit` is 404 by design — no such route exists.
+- Real browser (Playwright, 390px): **9 routes, 0 non-200, 0 horizontal overflow, 0 console errors**, one `<main>` per page.
+- Public API endpoints all 200 (home, cities, city detail, routes, route detail, shop products, product detail, community posts, events, interpreting); `/health` 200. `/public/interpreting/faqs` does not exist — only the guarded `admin/interpreting/faqs` does.
+- Quality gates re-run on the untouched tree: site `tsc` 0 errors, `eslint` **0 errors** (1083 warnings, baseline-consistent), vitest **105/105 / 19 files**, `next build` ok; api `tsc` 0 errors, **155 tests / 25 suites**, `nest build` ok; admin `vite build` ok.
+- `git diff` empty in the root repository, admin repository clean — a data repair, not a code change.
+
+**Boundaries**: this restores the English-only **contract**, not the content **volume** — the local database still holds a single preview city, one route, two products and five posts, so local pages render correctly but thinly. Production was not touched and nothing was deployed. The stale empty `migrations` table noted in §47 is still present. The `.local-backups/` directory is gitignored (§47) and must not be committed.
