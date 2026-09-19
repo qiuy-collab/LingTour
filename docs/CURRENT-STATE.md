@@ -810,3 +810,112 @@ Owner authorized "可以 修复" against §45's blocking discovery and §47's fi
 - `git diff` empty in the root repository, admin repository clean — a data repair, not a code change.
 
 **Boundaries**: this restores the English-only **contract**, not the content **volume** — the local database still holds a single preview city, one route, two products and five posts, so local pages render correctly but thinly. Production was not touched and nothing was deployed. The stale empty `migrations` table noted in §47 is still present. The `.local-backups/` directory is gitignored (§47) and must not be committed.
+
+## 49. 2026-09-19 admin media-library delete and in-article portrait height (Q1/Q2 fixed, not deployed)
+
+Owner raised three issues — (Q1) the admin media library fails to delete images,
+(Q2) a portrait image uploaded into a city article takes up a lot of space,
+(Q3) the city detail page leaves large side margins — and asked for all three as
+read-only investigations first. Q1 and Q2 are now fixed, committed and verified
+locally; Q3 is still read-only, with a plan document added.
+
+### Q1 — media-library delete 404s (two independent defects)
+
+The list is `GET /api/admin/upload/media` (`queryMediaFiles`, a `media_files`
+query); the delete is `DELETE /api/admin/upload/files/:filename` (`deleteFile`).
+Both defects were reproduced locally.
+
+**Defect A — nginx decoded `%2F` (production-only).** The admin server block
+forwarded `/api/admin/*` with `rewrite ^/api/admin/(.*)$ /api/v1/admin/$1 break`.
+nginx matches that regex against the *percent-decoded* URI, so an encoded `%2F`
+became a real `/` and turned `files/cities%2Fxxx.jpg` into
+`files/cities/xxx.jpg`, which `@Delete('files/:filename')` cannot match. A static
+`proxy_pass` URI does **not** fix it — nginx normalises the URI for that form too
+(measured: still 404). The fix builds the upstream URI through a **variable** from
+a `map` over `$request_uri` (the raw request line), which skips normalisation;
+`^~` keeps the regex locations from re-decoding it. Applied to both deployment
+files: `nginx.docker.conf` (production) and `nginx.conf` (local `gateway`
+profile).
+
+Reproduced and verified by running each config in a real nginx container:
+`cities%2Fxxx` and `entry%2Fxxx` go **404 → 401** (route matches), a bare
+filename stays 401, other admin paths stay 401, and the site block still 200.
+Local reproduction was possible because `nginx.conf` carries the identical defect
+and the `gateway` compose profile can be started on demand.
+
+**Defect B — the upload whitelist was applied to stored paths.** `ALLOWED_MODULES`
+gates what *new* uploads may write, but `normalizeStoredRelativePath` routed
+stored paths through it too. Any file under a retired module name — `entry/`,
+`preview/`, `interpreters/` (**13 files** in the local tree) — threw
+`BadRequestException`, which `deleteFile` swallowed into a plain `false`. The same
+mistake hid those files from the `listFiles`/orphan scans
+(`upload.service.ts` subdir loops) and rejected the module filter in
+`queryMediaFiles`.
+
+Fixed by splitting the concerns: a new `sanitizeStoredModule` validates a stored
+module segment for path safety only, while the whitelist stays in force for
+writes (`buildStoredUploadPath`, multer destination, `storeFile`). Traversal is
+still refused — `resolveStoredUploadPath` independently re-checks that the
+resolved path stays inside the upload root.
+
+### Q2 — portrait images in a city article
+
+`upload-policy.ts` enforces **no aspect-ratio or dimension constraint** at all:
+only the MIME whitelist and a 10 MB ceiling, with the original bytes stored
+verbatim (no sharp, no resize). The space blow-up is a rendering issue:
+`.prose img` was width-limited only (`max-width: 100%`), so in the ~648px reading
+column a 9:16 phone shot rendered ~1150px tall, about 3× the landscape images
+beside it.
+
+Fixed by capping the height (`max-height: min(75dvh, 42rem)`). The "16:9 only"
+rule that was floated was deliberately **not** adopted: forcing landscape would
+discard legitimate vertical work rather than lay it out. This is a rendering fix,
+not an upload-policy change — no existing image is re-encoded or rejected.
+
+Measured in a real browser (1440×900): 9:16 goes 648×1152 → **378×672**, 3:4 goes
+648×864 → **504×672**, 16:9 stays 648×364, console clean.
+
+### Q3 — city-detail chapter layout (read-only, still open)
+
+The supplied design (side image + chapter number + title + status line + breath
+quote) maps **field for field** onto the existing `city_culture_sections` table,
+and the data is already live in production:
+`/api/v1/public/cities/chaozhou` returns `sections: 3` with
+`title: "Guangji Bridge"`. The API returns it (`relations: ['sections']`) and the
+frontend data layer already maps it (`lib/api-data.ts:351`,
+`lib/server-data.ts:439`) — only the **render** is missing:
+`CultureDetailClient.tsx:120-124` renders `contentMarkdown` and never reads
+`sections`. Separately the wide margins come from two nested narrowings
+(`--site-max-width: 82rem`, then `.prose { max-width: 65ch }`), about 650px of
+chrome at 1920px.
+
+Written up (no code) in `docs/city-detail-chapter-layout-plan.md`, including the
+two decisions still open: whether sections replace or accompany the markdown, and
+the standing cost of leaving `admin-frontend/src/views/CityEdit.vue`'s
+`never send … legacy sections` allowlist in place — sections would then only be
+maintainable by writing the database directly. Owner chose "不动 admin" and
+"先出实施方案不落代码".
+
+### Verification (all actually run, 2026-09-19)
+
+- api: `tsc --noEmit` 0 errors, **159 tests / 25 suites** (+4 new regression tests
+  in `upload-path.spec.ts`), `nest build` ok. A real-filesystem run confirmed
+  `entry/` and `preview/` files resolve and delete while `../` and new `entry/`
+  uploads stay rejected.
+- site: `tsc --noEmit` 0 errors, `eslint` **0 errors** (1083 warnings,
+  baseline-consistent), vitest **105/105 / 19 files**, `next build` ok; the
+  `min(75dvh, 42rem)` rule is present in the built CSS bundle.
+- nginx: both configs pass `nginx -t` and were exercised in real containers (see
+  Defect A).
+- `git diff --check` clean. Commits: `800aeda` `fix(api)`, `d6ab366`
+  `fix(infra)`, `d9d95ea` `fix(site)`. The admin repository is untouched, so no
+  mirror commit; no migration was added.
+
+### Boundaries
+
+Nothing was pushed or deployed. The signed-in HTTP delete was **not** exercised:
+this session holds no admin credentials, so Defect A was proven with URI probes
+(404 vs 401 against a non-existent filename, no side effects) and Defect B with
+unit tests plus a real-filesystem run. The Q2 change was verified by injecting
+portrait images at runtime, not by editing content. The local `gateway` nginx
+container started for verification was stopped again afterwards.
