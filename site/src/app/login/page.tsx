@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { LoginPanel } from "@/components/ui/LoginPanel";
 
 export const metadata: Metadata = {
@@ -8,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-[100dvh] bg-[var(--paper-deep)]" />}>
-      <LoginPanel />
-    </Suspense>
-  );
+  return <LoginPanel />;
 }

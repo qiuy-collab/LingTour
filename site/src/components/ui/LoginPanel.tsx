@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { countryOptions } from "@/lib/country-list";
 import { hydrateFavoritesFromServer } from "@/lib/favorites";
 import { getGoogleIdentityApi, requestGoogleCredential } from "@/lib/google-identity";
@@ -17,6 +17,15 @@ import {
 
 function safeNextPath(value: string | null) {
   return value && value.startsWith("/") && !value.startsWith("//") ? value : "/profile?tab=notes";
+}
+
+// Read `?next=` from the location at submit time instead of via useSearchParams().
+// useSearchParams() suspends the whole panel during prerendering, so the server
+// shipped an empty fallback and the form only existed after hydration — a blank
+// login page on slow networks or when JavaScript fails.
+function currentNextPath() {
+  if (typeof window === "undefined") return safeNextPath(null);
+  return safeNextPath(new URLSearchParams(window.location.search).get("next"));
 }
 
 const fieldClass = "min-h-12 w-full border-b border-[var(--line)] bg-transparent px-0 py-3 text-base text-[var(--river-deep)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--river-deep)] lg:text-sm";
@@ -151,7 +160,6 @@ function SelectField({
 
 export function LoginPanel() {
   const router = useRouter();
-  const params = useSearchParams();
   const countries = useMemo(() => countryOptions(), []);
   const [mode, setMode] = useState<Mode>("login");
   const [signInMethod, setSignInMethod] = useState<SignInMethod>("password");
@@ -163,7 +171,6 @@ export function LoginPanel() {
   const [showPassword, setShowPassword] = useState(false);
   const [country, setCountry] = useState("SG");
   const [travelStyle, setTravelStyle] = useState("Culture routes and food walks");
-  const nextPath = safeNextPath(params.get("next"));
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -190,7 +197,7 @@ export function LoginPanel() {
         }
       }
       void hydrateFavoritesFromServer();
-      router.replace(nextPath); router.refresh();
+      router.replace(currentNextPath()); router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : "An unexpected error occurred."); }
     finally { setLoading(false); }
   }
@@ -220,7 +227,7 @@ export function LoginPanel() {
       if (!clientId) throw new Error("Google sign-in is currently unavailable. Please use email sign-in.");
       if (!getGoogleIdentityApi()) throw new Error("Google Sign-In script not loaded.");
       await signInWithGoogle(await requestGoogleCredential(clientId));
-      void hydrateFavoritesFromServer(); router.replace(nextPath); router.refresh();
+      void hydrateFavoritesFromServer(); router.replace(currentNextPath()); router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : "An unexpected error occurred."); }
     finally { setLoading(false); }
   }
