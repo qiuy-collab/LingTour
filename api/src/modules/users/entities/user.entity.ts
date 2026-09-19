@@ -21,8 +21,14 @@ export class User {
   @Column({ type: 'varchar', length: 255, name: 'password_hash' })
   passwordHash: string;
 
+  /**
+   * One or more roles joined with commas (`traveler`, `admin`,
+   * `admin,traveler`). A staff member who also uses the public site keeps both
+   * roles on this single row instead of needing a second account.
+   * Parse and compare through `src/common/auth/roles.ts`, never by equality.
+   */
   @Column({ type: 'varchar', length: 50, default: 'traveler' })
-  role: 'admin' | 'editor' | 'traveler';
+  role: string;
 
   @Index()
   @Column({ type: 'varchar', length: 20, default: 'active' })

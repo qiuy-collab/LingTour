@@ -17,7 +17,10 @@ export class DashboardService {
       pendingBookings,
       pendingOrders,
     ] = await Promise.all([
-      this.countTable('users', "role = 'traveler'"),
+      // Counts every account that holds the traveler identity, including a
+      // staff account that also uses the public site, so this figure keeps
+      // matching the traveler list in user management.
+      this.countTable('users', "(',' || role || ',') LIKE '%,traveler,%'"),
       this.countTable('cities', 'published = true'),
       this.countTable('story_routes', 'published = true'),
       this.countTable('store_products', 'published = true'),

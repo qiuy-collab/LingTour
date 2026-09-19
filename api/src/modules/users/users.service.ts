@@ -14,6 +14,14 @@ import { UserFavorite } from './entities/user-favorite.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UpdateStaffAccountDto } from './dto/update-staff-account.dto';
+import {
+  hasRole,
+  isStaff,
+  parseRoles,
+  primaryRole,
+  roleSetLike,
+  serializeRoles,
+} from '../../common/auth/roles';
 import * as bcrypt from 'bcrypt';
 
 interface ManagedUserStats {
@@ -76,7 +84,11 @@ export class UsersService {
     const { page, limit: pageSize } = clampPagination(pageInput, pageSizeInput, 20, 100);
     const qb = this.userRepository
       .createQueryBuilder('u')
-      .where('u.role = :travelerRole', { travelerRole: 'traveler' });
+      // An account may hold several roles, so a staff member who also uses the
+      // public site must still appear in user management.
+      .where(`(',' || u.role || ',') LIKE :travelerRole`, {
+        travelerRole: roleSetLike('traveler'),
+      });
     if (keyword) {
       qb.andWhere('(u.email ILIKE :keyword OR u.name ILIKE :keyword)', {
         keyword: `%${keyword}%`,
@@ -110,16 +122,23 @@ export class UsersService {
     const safePageSize = Math.min(Math.max(Number(pageSize) || 20, 1), 100);
     const qb = this.userRepository
       .createQueryBuilder('u')
-      .where('u.role IN (:...staffRoles)', {
-        staffRoles: ['admin', 'editor'],
-      });
+      .where(
+        `((',' || u.role || ',') LIKE :adminRole OR (',' || u.role || ',') LIKE :editorRole)`,
+        {
+          adminRole: roleSetLike('admin'),
+          editorRole: roleSetLike('editor'),
+        },
+      );
 
     if (keyword?.trim()) {
       qb.andWhere('(u.email ILIKE :keyword OR u.name ILIKE :keyword)', {
         keyword: `%${keyword.trim()}%`,
       });
     }
-    if (role) qb.andWhere('u.role = :role', { role });
+    if (role)
+      qb.andWhere(`(',' || u.role || ',') LIKE :role`, {
+        role: roleSetLike(role),
+      });
     if (status) qb.andWhere('u.status = :status', { status });
 
     const [accounts, total] = await qb
@@ -146,7 +165,9 @@ export class UsersService {
     const account = this.userRepository.create({
       email,
       passwordHash: await bcrypt.hash(dto.password, 12),
-      role: dto.role,
+      role: serializeRoles(
+        dto.alsoTraveler ? [dto.role, 'traveler'] : [dto.role],
+      ),
       status: dto.status ?? 'active',
       name: dto.name.trim(),
       provider: 'staff',
@@ -157,10 +178,18 @@ export class UsersService {
 
   async updateStaff(id: string, dto: UpdateStaffAccountDto, actorId: string) {
     const account = await this.findStaffByIdOrFail(id);
-    const nextRole = dto.role ?? account.role;
+    const keepsTraveler = hasRole(account.role, 'traveler');
+    const nextStaffRole = dto.role ?? primaryRole(account.role) ?? 'editor';
+    const alsoTraveler = dto.alsoTraveler ?? keepsTraveler;
+    const nextRole = serializeRoles(
+      alsoTraveler ? [nextStaffRole, 'traveler'] : [nextStaffRole],
+    );
     const nextStatus = dto.status ?? account.status;
 
-    if (id === actorId && (nextRole !== 'admin' || nextStatus !== 'active')) {
+    if (
+      id === actorId &&
+      (!hasRole(nextRole, 'admin') || nextStatus !== 'active')
+    ) {
       throw new BadRequestException(
         'You cannot remove your own active administrator access',
       );
@@ -176,7 +205,8 @@ export class UsersService {
       account.email = email;
     }
     if (dto.name !== undefined) account.name = dto.name.trim();
-    if (dto.role !== undefined) account.role = dto.role;
+    if (dto.role !== undefined || dto.alsoTraveler !== undefined)
+      account.role = nextRole;
     if (dto.status !== undefined) account.status = dto.status;
     if (dto.password)
       account.passwordHash = await bcrypt.hash(dto.password, 12);
@@ -184,11 +214,55 @@ export class UsersService {
     return this.toStaffAccount(await this.userRepository.save(account));
   }
 
+  /**
+   * Grants or revokes back-office access for an existing account, which is how
+   * one email can be an administrator and a traveler at the same time. Revoking
+   * keeps the traveler identity (and its orders, favorites and bookings) rather
+   * than deleting the account.
+   */
+  async setStaffAccess(
+    id: string,
+    access: 'admin' | 'editor' | 'none',
+    actorId: string,
+  ) {
+    const account = await this.findByIdOrFail(id);
+    if (!hasRole(account.role, 'traveler')) {
+      throw new BadRequestException(
+        'Only traveler accounts can gain back-office access here; manage existing staff accounts under 管理员账号',
+      );
+    }
+
+    if (access === 'none') {
+      if (id === actorId) {
+        throw new BadRequestException(
+          'You cannot remove your own back-office access',
+        );
+      }
+      const nextRole = serializeRoles(['traveler']);
+      await this.assertAdminContinuity(account, nextRole, account.status);
+      account.role = nextRole;
+      return this.toManagedUser(await this.userRepository.save(account));
+    }
+
+    // The account is known to hold the traveler role here, so the granted
+    // staff role is added on top of it. Demoting an existing admin to editor
+    // still goes through the continuity check.
+    const nextRole = serializeRoles([access, 'traveler']);
+    await this.assertAdminContinuity(account, nextRole, account.status);
+    account.role = nextRole;
+    return this.toManagedUser(await this.userRepository.save(account));
+  }
+
   async deleteStaff(id: string, actorId: string) {
     if (id === actorId) {
       throw new BadRequestException('You cannot delete your own account');
     }
     const account = await this.findStaffByIdOrFail(id);
+    if (hasRole(account.role, 'traveler')) {
+      throw new ConflictException(
+        'This account also holds a traveler identity with its own records; remove the back-office access instead of deleting it',
+      );
+    }
     await this.assertAdminContinuity(account, 'traveler', 'banned');
 
     try {
@@ -289,7 +363,7 @@ export class UsersService {
    */
   async deleteTravelerAccount(id: string) {
     const user = await this.findByIdOrFail(id);
-    if (user.role !== 'traveler') {
+    if (!hasRole(user.role, 'traveler') || isStaff(user.role)) {
       throw new ForbiddenException(
         'Staff accounts cannot be self-deleted; contact an administrator',
       );
@@ -317,7 +391,7 @@ export class UsersService {
   async create(
     email: string,
     passwordHash: string,
-    role: 'admin' | 'editor' | 'traveler' = 'traveler',
+    role: string = 'traveler',
     name?: string,
     overrides: Partial<User> = {},
   ): Promise<User> {
@@ -343,7 +417,7 @@ export class UsersService {
 
   private async findStaffByIdOrFail(id: string) {
     const account = await this.findByIdOrFail(id);
-    if (account.role !== 'admin' && account.role !== 'editor') {
+    if (!isStaff(account.role)) {
       throw new NotFoundException('Staff account not found');
     }
     return account;
@@ -351,18 +425,22 @@ export class UsersService {
 
   private async assertAdminContinuity(
     current: User,
-    nextRole: User['role'],
+    nextRole: string,
     nextStatus: User['status'],
   ) {
     const removesActiveAdmin =
-      current.role === 'admin' &&
+      hasRole(current.role, 'admin') &&
       current.status === 'active' &&
-      (nextRole !== 'admin' || nextStatus !== 'active');
+      !(hasRole(nextRole, 'admin') && nextStatus === 'active');
     if (!removesActiveAdmin) return;
 
-    const activeAdmins = await this.userRepository.count({
-      where: { role: 'admin', status: 'active' },
-    });
+    const activeAdmins = await this.userRepository
+      .createQueryBuilder('u')
+      .where(`(',' || u.role || ',') LIKE :adminRole`, {
+        adminRole: roleSetLike('admin'),
+      })
+      .andWhere('u.status = :status', { status: 'active' })
+      .getCount();
     if (activeAdmins <= 1) {
       throw new ConflictException(
         'At least one active administrator is required',
@@ -375,7 +453,11 @@ export class UsersService {
       id: account.id,
       email: account.email,
       name: account.name || account.email.split('@')[0],
-      role: account.role,
+      // `role` stays the single staff role the admin shell renders; `roles`
+      // carries the whole set so the UI can show "also a traveler".
+      role: primaryRole(account.role) ?? account.role,
+      roles: parseRoles(account.role),
+      alsoTraveler: hasRole(account.role, 'traveler'),
       status: account.status,
       createdAt: account.createdAt,
       updatedAt: account.updatedAt,
@@ -415,7 +497,8 @@ export class UsersService {
         image: f.targetImage,
         savedAt: f.createdAt,
       })),
-      role: user.role,
+      role: primaryRole(user.role) ?? user.role,
+      roles: parseRoles(user.role),
       provider: user.provider || '',
       country: user.country || '',
       homeBase: user.homeBase || '',

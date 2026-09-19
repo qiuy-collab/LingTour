@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
   IsIn,
   IsOptional,
@@ -43,4 +44,14 @@ export class CreateStaffAccountDto {
   @IsOptional()
   @IsIn(USER_STATUSES)
   status?: 'active' | 'banned';
+
+  /**
+   * Also keep the traveler identity on this account, so one email can be an
+   * administrator and a traveler at the same time (owner decision "A",
+   * 2026-09-19).
+   */
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  alsoTraveler?: boolean;
 }

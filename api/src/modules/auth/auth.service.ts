@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtExpiration } from '../../common/auth/jwt-config';
+import { parseRoles, primaryRole } from '../../common/auth/roles';
 import { OAuth2Client } from 'google-auth-library';
 import { randomBytes, randomUUID } from 'crypto';
 import { EmailVerificationService } from './email-verification.service';
@@ -59,7 +60,8 @@ export class AuthService {
   private buildAuthResponse(user: {
     id: string;
     email: string;
-    role: 'admin' | 'editor' | 'traveler';
+    /** Stored role set; may be a comma-separated value (`admin,traveler`). */
+    role: string;
     name: string | null;
     avatarUrl?: string;
     country?: string;
@@ -72,6 +74,7 @@ export class AuthService {
   }) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const expiresIn = resolveJwtExpiration(this.configService);
+    const roles = parseRoles(user.role);
 
     return {
       access_token: this.jwtService.sign(payload, { expiresIn }),
@@ -81,7 +84,11 @@ export class AuthService {
         accountId: this.formatAccountId(user.id),
         email: user.email,
         name: user.name,
-        role: user.role,
+        // `role` stays single-valued for existing clients (an account holding
+        // both roles must still satisfy the admin shell's check), while
+        // `roles` exposes the full set.
+        role: primaryRole(user.role) ?? user.role,
+        roles,
         avatarUrl: user.avatarUrl ?? '',
         country: user.country ?? '',
         homeBase: user.homeBase ?? '',

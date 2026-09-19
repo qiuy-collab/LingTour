@@ -8,11 +8,13 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { ROLES_KEY, AppRole } from '../decorators/roles.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { hasAnyRole } from '../auth/roles';
 
 interface AuthenticatedUser {
   sub: string;
   email: string;
-  role: AppRole;
+  /** Stored role value; may be a comma-separated set (e.g. `admin,traveler`). */
+  role: string;
 }
 
 /**
@@ -70,7 +72,9 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Access denied: missing role');
     }
 
-    if (!requiredRoles.includes(user.role)) {
+    // `user.role` may hold several roles at once (`admin,traveler`), so check
+    // membership of the set rather than equality with a single value.
+    if (!hasAnyRole(user.role, requiredRoles)) {
       throw new ForbiddenException(
         `Access denied: requires one of [${requiredRoles.join(', ')}]`,
       );

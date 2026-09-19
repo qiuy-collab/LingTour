@@ -16,6 +16,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateStaffAccountDto } from './dto/create-staff-account.dto';
 import { UpdateStaffAccountDto } from './dto/update-staff-account.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { UpdateUserStaffAccessDto } from './dto/update-user-staff-access.dto';
 import type { Request } from 'express';
 
 @ApiTags('Users')
@@ -104,5 +105,19 @@ export class UsersController {
     @Body() dto: UpdateUserStatusDto,
   ) {
     return this.usersService.updateStatus(id, dto.status);
+  }
+
+  @Roles('admin')
+  @Patch(':id/staff-access')
+  @ApiOperation({
+    summary: 'Grant or revoke back-office access for a traveler account',
+  })
+  async setStaffAccess(
+    @Req() request: Request,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserStaffAccessDto,
+  ) {
+    const actor = request['user'] as { sub?: string };
+    return this.usersService.setStaffAccess(id, dto.role, actor.sub as string);
   }
 }

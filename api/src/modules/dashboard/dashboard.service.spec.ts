@@ -1,7 +1,7 @@
 import { DashboardService } from './dashboard.service';
 
 describe('DashboardService', () => {
-  it('counts travelers only for the user total shown by user management', async () => {
+  it('counts traveler-held accounts for the user total shown by user management', async () => {
     const dataSource = {
       query: jest.fn(async (sql: string) => {
         if (sql.includes('generate_series')) return [];
@@ -16,7 +16,7 @@ describe('DashboardService', () => {
     await service.getDashboardStats();
 
     expect(dataSource.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*)::int AS count FROM "users" WHERE role = \'traveler\'',
+      'SELECT COUNT(*)::int AS count FROM "users" WHERE (\',\' || role || \',\') LIKE \'%,traveler,%\'',
     );
   });
 });
