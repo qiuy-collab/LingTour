@@ -64,7 +64,7 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                     : "hover:-translate-y-1.5 hover:rotate-0",
                 ].join(" ")}
               >
-                <div className="relative aspect-[4/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
+                <div className="relative aspect-[2/3] overflow-hidden bg-[var(--paper-deep)] border-b border-[var(--line)] lg:aspect-[4/5]">
                   <img
                     src={profile.image || placeholderFor("portrait")}
                     alt={`${profile.name}, Culvoy interpreter`}
@@ -89,10 +89,10 @@ export function InterpreterShowcase({ profiles, onSelectGuide }: Props) {
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)] mb-1 handwritten">
+                    <p className="mb-1 line-clamp-2 text-[11px] font-bold uppercase leading-snug tracking-[0.16em] text-[var(--gold)] handwritten sm:text-[12px] sm:tracking-[0.2em]">
                       {profile.specialty}
                     </p>
-                    <h3 className="font-[family:var(--font-display)] text-3xl text-white leading-tight">
+                    <h3 className="font-[family:var(--font-display)] text-2xl leading-tight text-white sm:text-3xl">
                       {profile.name}
                     </h3>
                   </div>
