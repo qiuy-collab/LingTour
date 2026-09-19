@@ -303,16 +303,6 @@ watch(() => route.fullPath, closeMobileMenu)
         </span>
       </button>
 
-      <div
-        v-if="!isCollapse || isMobile"
-        class="sidebar-status"
-        aria-label="当前使用线上接口数据"
-      >
-        <span class="status-dot" />
-        <span>线上数据</span>
-        <small>实时接口</small>
-      </div>
-
       <el-menu
         :default-active="activeMenu"
         :collapse="isCollapse && !isMobile"
@@ -375,10 +365,6 @@ watch(() => route.fullPath, closeMobileMenu)
           </div>
         </div>
         <div class="header-right">
-          <div class="api-status hide-on-mobile">
-            <span class="status-dot" />
-            <span>线上数据</span>
-          </div>
           <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
             <button
               type="button"
@@ -538,37 +524,6 @@ watch(() => route.fullPath, closeMobileMenu)
   text-transform: uppercase;
 }
 
-.sidebar-status {
-  display: grid;
-  grid-template-columns: 8px 1fr;
-  align-items: center;
-  column-gap: 9px;
-  margin: 0 14px 8px;
-  padding: 11px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.035);
-  color: #dbe6e0;
-  font-size: 12px;
-}
-
-.sidebar-status small {
-  grid-column: 2;
-  margin-top: 2px;
-  color: rgba(219, 230, 224, 0.45);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: #7fd7a5;
-  box-shadow: 0 0 0 4px rgba(127, 215, 165, 0.12);
-}
-
 .admin-header {
   position: sticky;
   top: 0;
@@ -631,19 +586,6 @@ watch(() => route.fullPath, closeMobileMenu)
   align-items: center;
   min-width: 0;
   gap: 8px;
-}
-
-.api-status {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 9px;
-  padding: 0 12px;
-  border: 1px solid var(--lt-border-light);
-  border-radius: 999px;
-  color: var(--lt-text-secondary);
-  font-size: 11px;
-  font-weight: 600;
 }
 
 .editor-locale-switch {
