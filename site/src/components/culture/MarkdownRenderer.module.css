@@ -47,6 +47,11 @@
 .prose img {
   display: block;
   max-width: 100%;
+  /* A portrait shot (3:4, 9:16) would otherwise render about 3x taller than the
+     landscape images beside it and swamp the reading column. Capping the height
+     keeps tall images legible without letting them dominate the page; wide
+     images are already width-limited, so this leaves them untouched. */
+  max-height: min(75dvh, 42rem);
   height: auto;
   margin-inline: auto;
 }
