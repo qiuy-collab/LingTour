@@ -21,6 +21,7 @@ import {
   normalizeUploadOriginalName,
   resolveStoredRelativePath,
   resolveStoredUploadPath,
+  sanitizeStoredModule,
   sanitizeUploadModule,
 } from './upload-path';
 
@@ -213,7 +214,7 @@ export class UploadService {
    */
   async listFiles(page = 1, limit = 30, module?: string) {
     try {
-      const safeModule = sanitizeUploadModule(module);
+      const safeModule = sanitizeStoredModule(module);
       const safePage = this.normalizePage(page);
       const safeLimit = this.normalizeLimit(limit);
       const directories = safeModule ? [safeModule] : [''];
@@ -241,7 +242,7 @@ export class UploadService {
           for (const subdir of subdirs) {
             let safeSubdir: string | undefined;
             try {
-              safeSubdir = sanitizeUploadModule(subdir.name);
+              safeSubdir = sanitizeStoredModule(subdir.name);
             } catch {
               continue;
             }
@@ -354,7 +355,7 @@ export class UploadService {
   }> {
     const page = this.normalizePage(params.page);
     const limit = this.normalizeLimit(params.limit);
-    const module = sanitizeUploadModule(params.module);
+    const module = sanitizeStoredModule(params.module);
     const search = params.search?.trim();
     const conditions: string[] = [];
     const values: unknown[] = [];
@@ -507,7 +508,7 @@ export class UploadService {
     for (const subdir of subdirs) {
       let safeSubdir: string | undefined;
       try {
-        safeSubdir = sanitizeUploadModule(subdir.name);
+        safeSubdir = sanitizeStoredModule(subdir.name);
       } catch {
         continue;
       }

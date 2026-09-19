@@ -52,6 +52,38 @@ export function sanitizeUploadModule(module?: string): string | undefined {
   return normalized;
 }
 
+/**
+ * Validate the module segment of an ALREADY-STORED path.
+ *
+ * Deliberately does NOT consult ALLOWED_MODULES. That set gates what NEW
+ * uploads may write; stored paths are historical data, so a file under
+ * `entry/`, `preview/` or `interpreters/` is legitimate even though those
+ * names are no longer upload targets. Routing them through the upload
+ * whitelist made every such file impossible to list, serve or delete.
+ * Path safety is enforced independently: `resolveStoredUploadPath` re-checks
+ * that the resolved path stays inside the upload root.
+ */
+export function sanitizeStoredModule(module?: string): string | undefined {
+  if (!module) {
+    return undefined;
+  }
+
+  const normalized = module.trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  if (
+    normalized.includes('/') ||
+    normalized.includes('\\') ||
+    normalized.includes('..')
+  ) {
+    throw new BadRequestException('Invalid upload module');
+  }
+
+  return normalized;
+}
+
 export function buildStoredUploadPath(
   filename: string,
   module?: string,
@@ -77,7 +109,7 @@ export function normalizeStoredRelativePath(
   }
 
   if (!module && segments.length >= 2) {
-    const safeModule = sanitizeUploadModule(segments[0]);
+    const safeModule = sanitizeStoredModule(segments[0]);
     if (safeModule) {
       return posix.join(safeModule, basename(segments[segments.length - 1]));
     }

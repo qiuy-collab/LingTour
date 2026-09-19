@@ -1,8 +1,10 @@
 import { join, resolve, sep } from 'path';
 import {
   buildStoredUploadPath,
+  normalizeStoredRelativePath,
   normalizeUploadOriginalName,
   resolveStoredRelativePath,
+  resolveStoredUploadPath,
   sanitizeUploadModule,
 } from './upload-path';
 
@@ -60,5 +62,41 @@ describe('stored path resolution', () => {
     expect(
       resolveStoredRelativePath(uploadRoot, join(uploadRoot, 'a', 'b', 'c.jpg')),
     ).toBeNull();
+  });
+});
+
+describe('stored module validation', () => {
+  it('accepts stored module names that are no longer upload targets', () => {
+    // `entry/`, `preview/` and `interpreters/` exist in the deployed uploads
+    // tree but are absent from ALLOWED_MODULES. Resolution must not route them
+    // through the upload whitelist, or those files can never be listed, served
+    // or deleted — which is exactly the media-library delete failure (Q1).
+    expect(normalizeStoredRelativePath('entry/a.jpg')).toBe('entry/a.jpg');
+    expect(normalizeStoredRelativePath('preview/b.png')).toBe('preview/b.png');
+    expect(normalizeStoredRelativePath('interpreters/c.webp')).toBe(
+      'interpreters/c.webp',
+    );
+  });
+
+  it('still rejects traversal and over-nested stored paths', () => {
+    expect(() => normalizeStoredRelativePath('../secret.jpg')).toThrow();
+    expect(() => normalizeStoredRelativePath('a/b/c.jpg')).toThrow();
+  });
+
+  it('keeps the whitelist in force for NEW uploads', () => {
+    // The relaxation above is deliberately one-directional: writing a new file
+    // into a retired module directory stays rejected.
+    expect(() => sanitizeUploadModule('entry')).toThrow();
+  });
+
+  it('resolves a retired-module stored path for deletion (deleteFile entry)', () => {
+    // `deleteFile` goes through resolveStoredUploadPath; before the fix this
+    // threw for every `entry/…`, `preview/…` and `interpreters/…` file, and
+    // the service swallowed it into a plain "false".
+    const root = resolve(sep, 'app', 'uploads');
+    expect(resolveStoredUploadPath(root, 'entry/a.jpg')).toBe(
+      join(root, 'entry', 'a.jpg'),
+    );
+    expect(() => resolveStoredUploadPath(root, '../secret.jpg')).toThrow();
   });
 });
