@@ -4,7 +4,7 @@
 
 ## 1. Production baseline
 
-- Production deployed application commit: `6804818` (2026-09-19, motion-web plan committed, local-only paths ignored, plus the email-log / password-reset / community batches, deploy run `35381348838`, §47). Previous deployed commits: `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, deploy run `35336870377`, §45), `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44), `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
+- Production deployed application commit: `47053c1` (2026-09-19, three admin-shell fixes from the Feishu todo run, deploy run `35428056422`, §51). Previous deployed commits: `8f5859b` (2026-09-19, container health-check fix, run `35424962836`, §50), `6804818` (2026-09-19, motion-web plan committed, local-only paths ignored, plus the email-log / password-reset / community batches, deploy run `35381348838`, §47), `615d372` (2026-09-18, public-site motion-web optimisation batches A–E, deploy run `35336870377`, §45), `b9db5ea` (2026-09-18, admin email-settings module + template-driven verification mail, deploy run `35321449463`, §44), `003071e` (2026-09-18 community overhaul, §42), `bb5d18b` (review/09-17-B security fixes, run `35243331878`, §39), `c7fe7ce` (upload path fix, run `35205670356`), `ed014cb` (media-library index rebuild) and `a522c77` (§36).
 - Server path: `/root/LingTour`.
 - Production mode: Docker Compose (`docker-compose.prod.yml`).
 - `lingtour-api`, `lingtour-site`, `lingtour-admin`, `lingtour-nginx`, and Redis are healthy after the 2026-09-17 deployment; re-verified healthy after the `ed014cb` deployment (§38).
@@ -988,3 +988,79 @@ the design image still needs a re-upload before any pixel work. The local
 `docs/lark-base-handoff.md` were **not** authored by this session and were
 deliberately left uncommitted: a concurrent session is working on them. They are
 still uncommitted in the working tree.
+
+## 51. 2026-09-19 Feishu todo run: three admin-shell fixes committed, pushed and deployed
+
+First execution of the Feishu 待办事项 loop (`AGENT.md` §13). The 项目 table's
+`recvvE2U7q5Mu9` (Culvoy) carried eight `待 Agent 处理` rows and the 协作对话
+table was empty; no row needed 人工意见 intake.
+
+Buckets: 待 Agent 处理 8, 人工已回复 0, 需人工介入 0, 协作完成 0. Three rows were
+automatable and were shipped (the run cap); five were handed back.
+
+### Delivered (all admin-frontend, admin repo commit first, root mirror second)
+
+| Todo | admin | root |
+| --- | --- | --- |
+| `recvvE72wHDOUi` inline markdown image loading | `5d67c6b` | `fc5f957` |
+| `recvvE72wHfUgn` remove 「线上数据 / 实时接口」 | `928ace7` | `15efae0` |
+| `recvvE72wHuFgN` brand app icon | `6602566` | `47053c1` |
+
+Root cause of the editor defect: data-layer imported bodies spell images as
+`![alt](</uploads/...>)` (CommonMark angle-bracket destination) while the
+CodeMirror inline-image regex only accepted bare destinations, so `<`/`>` were
+folded into the src and the editor requested
+`https://admin.culvoy.com/%3C/uploads/...`. The public site uses react-markdown
+(CommonMark) and rendered the same markdown correctly — which is exactly the
+"broken in the editor, fine on the site" report. Verified against the real
+production bodies of all five cities: **31/31 images broken before, 31/31
+resolved to `https://api.culvoy.com/uploads/...` after**, with the bare,
+`%28`/`%29`-escaped and titled forms regression-free.
+
+The status copy removed was static in both the sidebar card and the header pill
+— never wired to a health check — so the run removed it rather than rewording a
+claim it could not substantiate. The brand icon was taken from assets already in
+the repo (`site/src/app/favicon.ico`, `site/public/icon-192.png`), not invented.
+
+`favicon.svg` (purple placeholder) is left on disk unreferenced: deleting files
+is outside this loop's standing authorization.
+
+### Pre-deploy gate
+
+No migration change (`git diff --name-only 8f5859b..HEAD --
+api/src/database/migrations/` is empty); `typeorm_migrations` stayed at **35**.
+No new database backup was taken for this batch — the changes are admin-frontend
+only and touch no schema; §50's `culvoy-20260919-pre-8f5859b.dump` remains the
+last dump.
+
+### Deploy and smoke
+
+Run `35428056422` succeeded in 1m33s. Server HEAD `47053c1`; all five containers
+healthy. `api.culvoy.com/health` 200, `culvoy.com` 200, `admin.culvoy.com` 200;
+production `/favicon.ico` 200 `image/x-icon` 114396 B and `/icon-192.png` 200
+`image/png` 40436 B, decoding as 256×256 and 192×192. Real Chrome against
+production: zero console errors, no 4xx, no horizontal overflow at 320/375/430/
+768/1280/1440, and the removed copy is absent from the shipped bundle.
+
+### Handed back (需人工介入, question appended to each row)
+
+- `recvvE72wHBZfx`, `recvvE7CLiJiHW`, `recvvE7CLiRMCS`, `recvvE7CLi1QGz` — the four
+  content-rewrite rows. One shared question: coverage (5 cities / 5 routes / 2
+  products / 3 FAQs, all or a sample), delivery form (in-repo doc vs. writing the
+  production CMS — production business-data writes are not authorized), image
+  source, and who judges "not AI-flavoured".
+- `recvvE72wHT5XP` — admin/user account coexistence. Grounded in code: `users` is
+  a single table with a unique `email` and a single-valued `role`. Options A (one
+  account, several roles), B (one email, two accounts — needs a migration, which
+  this loop will not author), C (open the login paths only) were put to the owner.
+
+### Boundaries
+
+- No admin credentials exist in this session, so the signed-in admin UI is still
+  not visually verified. The editor fix is evidenced by real-content parsing
+  tests plus the built bundle; the icon and copy changes are verified on the
+  served production login page.
+- The built-in browser tool returned 404 for every URL; verification used
+  Playwright (root `node_modules`) against the installed Chrome instead.
+- `AGENT.md` (modified) and `docs/lark-base-handoff.md` (untracked) are still the
+  concurrent session's work and were left untouched.
