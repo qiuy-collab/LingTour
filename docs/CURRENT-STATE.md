@@ -919,3 +919,72 @@ this session holds no admin credentials, so Defect A was proven with URI probes
 unit tests plus a real-filesystem run. The Q2 change was verified by injecting
 portrait images at runtime, not by editing content. The local `gateway` nginx
 container started for verification was stopped again afterwards.
+
+## 50. 2026-09-19 Q1/Q2 + healthcheck pushed and deployed (production live at 8f5859b)
+
+Owner authorized "修（本地对齐生产）" for the health-check defect and "推送并部署"
+for the whole batch. Six commits went to `origin/main` (`3e53cc0..8f5859b`).
+
+### Container health checks (new fix, found during the pre-deploy sweep)
+
+`site` had reported `unhealthy` for over 12 hours while serving 200 in ~150 ms.
+The probe was not reporting a slow site: the script only called `process.exit` on
+failure, so on success node never exited and undici's keep-alive connection held
+the event loop for ~7 s — past the 5 s timeout. Measured inside the container: the
+old form took **7.69 s**, the explicit-exit form takes **1.05 s**.
+
+`docker-compose.prod.yml` already used the correct form for site; the local file
+did not, and api/admin carried the old form in both files. All six probes now use
+`process.exit(response.ok ? 0 : 1)`. `docker compose up -d` rebuilt the containers
+and all three report **healthy** — site for the first time.
+
+Commit `8f5859b` `fix(infra)`.
+
+### Pre-deploy gate
+
+No migration change in this batch (`git diff --name-only 3e53cc0..HEAD --
+api/src/database/migrations/` is empty). Backup
+`/root/db-backups/culvoy-20260919-pre-8f5859b.dump` (139,737 bytes) taken with
+`pg_dump -Fc`. Note for the next session: `host.docker.internal` does **not**
+resolve in a plain `docker run` on this host, and the host PostgreSQL is not
+reachable over the docker bridge (`172.17.0.1:5432` times out) — the backup
+container must share the host network and dial `127.0.0.1:5432`. Read-only check
+before deploy: `typeorm_migrations` = **35**, latest `AddEmailLogs1762800000000`
+(unchanged, as expected).
+
+### Deploy
+
+Run `35424962836` succeeded in **2m15s**. Server HEAD `8f5859b`; five containers
+healthy (redis, nginx, api, site, admin).
+
+### Production smoke (real browser + probes, 2026-09-19)
+
+- **Q1 confirmed live**: `admin.culvoy.com/api/admin/upload/files/cities%2F<x>.jpg`
+  and `.../entry%2F<x>.jpg` now return **401** (route matches) where they used to
+  return **404**; a bare filename stays 401, other admin paths stay 401, and
+  `api.culvoy.com` direct stays 401. Probes used a non-existent filename, so no
+  file was touched.
+- **Q2 confirmed live**: the `min(75dvh, 42rem)` rule is present in the shipped
+  chunk `0eicbp7uvyg~c.css`, and the browser measures `max-height: 672px` with
+  9:16 → 378×672, 3:4 → 504×672, 16:9 → 648×364 — identical to the local run.
+- Routes 200: `/`, `/culture`, `/routes`, `/shop`, `/community`,
+  `/culture/chaozhou`, `/login`, `/routes/southern-sea-table`, `/shop/products`,
+  `/interpreting`; `admin.culvoy.com` 200; `api.culvoy.com/health` 200.
+- Browser at nine widths (320…1920): **zero horizontal overflow**, one `<main>` per
+  page, **zero console errors**.
+- `typeorm_migrations` still **35** after deploy.
+
+### Boundaries
+
+The signed-in HTTP delete is still **not** exercised (no admin credentials in this
+session); Defect A is evidenced by URI probes and Defect B by unit tests plus a
+real-filesystem run. Q3 remains read-only (§49) — no render change was made, and
+the design image still needs a re-upload before any pixel work. The local
+`gateway` nginx container used for reproduction is stopped again.
+
+### Unrelated working-tree changes present at hand-off
+
+`AGENT.md` (a new "## 13. Feishu task Base" section) and an untracked
+`docs/lark-base-handoff.md` were **not** authored by this session and were
+deliberately left uncommitted: a concurrent session is working on them. They are
+still uncommitted in the working tree.
