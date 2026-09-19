@@ -241,11 +241,11 @@ export default function RoutesPageClient({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-10 pb-8 md:grid-cols-2 md:gap-x-10 md:gap-y-14 lg:gap-x-20 lg:gap-y-20">
+          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-14 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
             {filteredRoutes.map((route, index) => {
                 const cardImage = route.image || placeholderFor("hero");
                 return (
-                  <div key={route.slug} className="min-w-0">
+                  <div key={route.slug} className="h-full min-w-0 w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none">
                     <Link href={`/routes/${route.slug}`} className="group block" data-pastoral-card>
                       <article className={`flex h-full flex-col transition-transform duration-500 motion-reduce:transform-none hover:-translate-y-1.5 ${index % 2 === 0 ? "sm:rotate-[0.7deg]" : "sm:-rotate-[0.7deg]"}`}>
                         <div className="relative aspect-[16/10] overflow-hidden border-[0.55rem] border-white bg-white scrapbook-shadow sm:border-[0.85rem]">
