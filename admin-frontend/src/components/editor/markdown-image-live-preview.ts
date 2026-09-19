@@ -42,10 +42,20 @@ export interface MarkdownImageHost {
 }
 
 /**
- * Markdown 图片语法：`![alt](url "title")`。
- * 地址里不含空白与括号——编辑器插入图片时会把括号转义成 %28 / %29。
+ * Markdown 图片语法：`![alt](url "title")`，兼容 CommonMark 的尖括号地址写法
+ * `![alt](<url>)`。
+ *
+ * 两种写法都要认：编辑器插入图片时会把括号转义成 %28 / %29，走的是裸地址分支；
+ * 而数据层直接导入的正文沿用 CommonMark 的 `<...>` 目标写法（地址里允许空格），
+ * 若把它并入 src，`<`/`>` 会让地址解析失效，编辑器里就只剩裂图。
  */
-const IMAGE_SYNTAX = /!\[([^\]\n]*)\]\(([^()\s]+)(?:\s+"[^"]*")?\)/g
+const IMAGE_SYNTAX =
+  /!\[([^\]\n]*)\]\([ \t]*(?:<([^<>\n]*)>|([^()\s]+))(?:[ \t]+"[^"]*")?[ \t]*\)/g
+
+/** 取图片地址：尖括号写法落在第 2 组，裸地址写法落在第 3 组。 */
+function readImageSrc(match: RegExpMatchArray): string {
+  return match[2] ?? match[3] ?? ''
+}
 
 export interface MarkdownImageMatch {
   from: number
@@ -63,7 +73,7 @@ export function matchImages(text: string): MarkdownImageMatch[] {
     matches.push({
       from,
       to: from + match[0].length,
-      src: match[2],
+      src: readImageSrc(match),
       alt: match[1],
     })
   }
@@ -174,7 +184,7 @@ function buildDecorations(
       const target: EditorImageTarget = {
         from: start,
         to: end,
-        src: match[2],
+        src: readImageSrc(match),
         alt: match[1],
       }
 
