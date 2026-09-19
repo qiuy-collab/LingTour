@@ -48,6 +48,14 @@ const latestDispatchLabel = computed(() => {
   return formatDateTime(user.value.latestDispatchAt)
 })
 
+/** 该账号同时拥有的后台角色；没有则只显示旅行者。 */
+const staffRoleLabel = computed(() => {
+  const roles = user.value?.roles ?? (user.value?.role ? [user.value.role] : [])
+  if (roles.includes('admin')) return '管理员'
+  if (roles.includes('editor')) return '内容编辑'
+  return ''
+})
+
 function applyForm(nextUser: ManagedUser) {
   form.name = nextUser.name || ''
   form.avatarUrl = nextUser.avatar || ''
@@ -163,9 +171,10 @@ onMounted(() => {
               <el-tag :type="UserStatusColorMap[user.status] as any" size="small">
                 {{ UserStatusMap[user.status] }}
               </el-tag>
-              <el-tag size="small" type="info">
-                {{ user.role || 'editor' }}
+              <el-tag v-if="staffRoleLabel" size="small" type="warning" effect="plain">
+                {{ staffRoleLabel }}
               </el-tag>
+              <el-tag size="small" type="info">旅行者</el-tag>
             </div>
           </el-col>
           <el-col :xs="24" :sm="18">

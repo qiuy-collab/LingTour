@@ -12,7 +12,9 @@ export interface ManagedUser {
   bookingsCount: number
   ordersCount: number
   favorites: string[]
-  role?: 'admin' | 'editor'
+  role?: 'admin' | 'editor' | 'traveler'
+  /** 完整角色集合，用于显示该用户是否同时拥有后台权限 */
+  roles?: string[]
   provider?: string
   country?: string
   homeBase?: string

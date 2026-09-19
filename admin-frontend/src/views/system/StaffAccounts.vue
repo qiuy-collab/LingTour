@@ -23,6 +23,7 @@ import type {
 import { formatDateTime } from '@/utils/format'
 import { extractErrorMessage } from '@/utils/errors'
 import { useAuthStore } from '@/store/auth'
+import { setUserStaffAccess } from '@/api/users'
 
 const authStore = useAuthStore()
 const listRef = ref<HTMLElement | null>(null)
@@ -50,6 +51,7 @@ const form = reactive<StaffAccountPayload>({
   role: 'editor',
   status: 'active',
   password: '',
+  alsoTraveler: false,
 })
 
 let listAnimation: ReturnType<typeof gsap.context> | null = null
@@ -143,6 +145,7 @@ function resetForm() {
     role: 'editor',
     status: 'active',
     password: '',
+    alsoTraveler: false,
   })
   formRef.value?.clearValidate()
 }
@@ -160,6 +163,7 @@ function openEdit(account: StaffAccount) {
     role: account.role,
     status: account.status,
     password: '',
+    alsoTraveler: account.alsoTraveler ?? false,
   })
   dialogVisible.value = true
 }
@@ -173,6 +177,7 @@ async function submitForm() {
       name: form.name.trim(),
       role: form.role,
       status: form.status,
+      alsoTraveler: Boolean(form.alsoTraveler),
       ...(form.password ? { password: form.password } : {}),
     }
     if (editingId.value) {
@@ -192,6 +197,24 @@ async function submitForm() {
 }
 
 async function removeAccount(account: StaffAccount) {
+  // 同时拥有旅行者身份的账号不能整账号删除：那会连带丢掉它的订单、收藏与预约。
+  if (account.alsoTraveler) {
+    try {
+      await ElMessageBox.confirm(
+        `“${account.name}”同时是旅行者账号，无法整账号删除。改为移除后台权限？移除后该账号仍是旅行者，记录全部保留。`,
+        '移除后台权限',
+        { type: 'warning', confirmButtonText: '移除后台权限', cancelButtonText: '取消' },
+      )
+      await setUserStaffAccess(account.id, 'none')
+      ElMessage.success('已移除后台权限，该账号保留为旅行者')
+      await fetchAccounts()
+    } catch (error: any) {
+      if (error === 'cancel' || error?.toString?.().includes('cancel')) return
+      ElMessage.error(extractErrorMessage(error, '移除失败'))
+    }
+    return
+  }
+
   try {
     await ElMessageBox.confirm(
       `确定删除“${account.name}”的后台账号？此操作不可恢复。`,
@@ -284,6 +307,9 @@ onBeforeUnmount(() => listAnimation?.revert())
           ><el-tag effect="plain">{{
             account.role === 'admin' ? '管理员' : '内容编辑'
           }}</el-tag>
+          <el-tag v-if="account.alsoTraveler" class="traveler-tag" type="success" effect="plain"
+            >同时为旅行者</el-tag
+          >
         </div>
         <div>
           <span class="mobile-label">状态</span
@@ -351,6 +377,15 @@ onBeforeUnmount(() => listAnimation?.revert())
             </el-select>
           </el-form-item>
         </div>
+        <el-form-item label="账号身份">
+          <el-switch
+            v-model="form.alsoTraveler"
+            active-text="同时保留旅行者身份"
+          />
+          <p class="identity-hint">
+            开启后，同一邮箱既能登录后台，也能登录前台使用个人页、收藏与预约。关闭则只是后台账号。
+          </p>
+        </el-form-item>
         <el-form-item
           :label="isEditing ? '重置密码（选填）' : '初始密码'"
           prop="password"
@@ -494,6 +529,15 @@ onBeforeUnmount(() => listAnimation?.revert())
   margin: 6px 0 0;
   color: var(--lt-text-secondary);
   font-size: 12px;
+}
+.traveler-tag {
+  margin-left: 6px;
+}
+.identity-hint {
+  margin: 6px 0 0;
+  color: var(--lt-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 @media (max-width: 980px) {

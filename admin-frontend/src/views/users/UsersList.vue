@@ -1,14 +1,38 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUsers, banUser, unbanUser } from '@/api/users'
+import {
+  getUsers,
+  banUser,
+  unbanUser,
+  setUserStaffAccess,
+} from '@/api/users'
 import type { ManagedUser, UserStatus } from '@/types/user'
 import { UserStatusMap, UserStatusColorMap, LocaleMap } from '@/types/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatDate } from '@/utils/format'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { useAuthStore } from '@/store/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.currentUser?.role === 'admin')
+
+/** 该账号是否同时拥有后台权限（管理员账号与用户账号共存）。 */
+function staffRoleOf(user: ManagedUser): 'admin' | 'editor' | null {
+  const roles = user.roles ?? (user.role ? [user.role] : [])
+  if (roles.includes('admin')) return 'admin'
+  if (roles.includes('editor')) return 'editor'
+  return null
+}
+
+function staffRoleLabel(user: ManagedUser): string {
+  const role = staffRoleOf(user)
+  if (role === 'admin') return '管理员'
+  if (role === 'editor') return '内容编辑'
+  return ''
+}
 
 // ─── 列表数据 (useListPage) ─────────────
 const {
@@ -52,13 +76,50 @@ async function handleUnban(user: ManagedUser) {
     if (err?.response) ElMessage.error(err.response.data?.message || '解封失败')
   }
 }
+
+/**
+ * 授予/移除后台权限。账号本身不会被删除：移除后它仍然是用户管理里的旅行者，
+ * 订单、收藏与预约记录都保留。
+ */
+async function handleGrantStaffAccess(user: ManagedUser, role: 'admin' | 'editor') {
+  const label = role === 'admin' ? '管理员' : '内容编辑'
+  try {
+    await ElMessageBox.confirm(
+      `确定授予用户「${user.name}」${label}后台权限?该账号将同时是旅行者与${label}，登录后台时使用同一邮箱和密码。`,
+      '授予后台权限',
+      { confirmButtonText: '确定授予', cancelButtonText: '取消', type: 'warning' },
+    )
+    await setUserStaffAccess(user.id, role)
+    ElMessage.success(`已授予「${user.name}」${label}权限`)
+    fetchList()
+  } catch (err: any) {
+    if (err === 'cancel' || err?.toString?.().includes('cancel')) return
+    if (err?.response) ElMessage.error(err.response.data?.message || '授予失败')
+  }
+}
+
+async function handleRevokeStaffAccess(user: ManagedUser) {
+  try {
+    await ElMessageBox.confirm(
+      `确定移除用户「${user.name}」的后台权限?该账号仍是旅行者，订单、收藏与预约记录都会保留。`,
+      '移除后台权限',
+      { confirmButtonText: '确定移除', cancelButtonText: '取消', type: 'warning' },
+    )
+    await setUserStaffAccess(user.id, 'none')
+    ElMessage.success(`已移除「${user.name}」的后台权限`)
+    fetchList()
+  } catch (err: any) {
+    if (err === 'cancel' || err?.toString?.().includes('cancel')) return
+    if (err?.response) ElMessage.error(err.response.data?.message || '移除失败')
+  }
+}
 </script>
 
 <template>
   <div class="users-page">
     <div class="page-header">
       <h2>用户管理</h2>
-      <span class="page-desc">管理系统注册用户，查看用户详情，进行封禁/解封操作</span>
+      <span class="page-desc">管理系统注册用户，查看用户详情，进行封禁/解封操作；也可为某个用户授予或移除后台权限，该账号将同时保留旅行者身份</span>
     </div>
 
     <!-- 筛选栏 -->
@@ -114,11 +175,42 @@ async function handleUnban(user: ManagedUser) {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" align="center" fixed="right">
+        <el-table-column label="后台权限" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="staffRoleOf(row)" type="warning" size="small" effect="plain">
+              {{ staffRoleLabel(row) }}
+            </el-tag>
+            <span v-else class="staff-none">无</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="260" align="center" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" link @click="handleViewDetail(row)">
               详情
             </el-button>
+            <template v-if="isAdmin">
+              <el-dropdown
+                v-if="staffRoleOf(row)"
+                trigger="click"
+                @command="() => handleRevokeStaffAccess(row)"
+              >
+                <el-button size="small" type="warning" link>后台权限</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>移除后台权限</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-dropdown v-else trigger="click" @command="(cmd: 'admin' | 'editor') => handleGrantStaffAccess(row, cmd)">
+                <el-button size="small" type="warning" link>授予后台权限</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="admin">授予管理员</el-dropdown-item>
+                    <el-dropdown-item command="editor">授予内容编辑</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
             <template v-if="row.status === 'active'">
               <el-button size="small" type="danger" link @click="handleBan(row)">封禁</el-button>
             </template>
@@ -179,5 +271,10 @@ async function handleUnban(user: ManagedUser) {
   font-size: 12px;
   color: var(--lt-text-secondary, #909399);
   margin-top: 2px;
+}
+
+.staff-none {
+  font-size: 12px;
+  color: var(--lt-text-secondary, #909399);
 }
 </style>

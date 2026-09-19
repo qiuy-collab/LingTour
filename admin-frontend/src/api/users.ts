@@ -37,3 +37,14 @@ export function updateUserProfile(
 ): Promise<{ data: { code: number; data: ManagedUser; message: string } }> {
   return api.patch(`/users/${id}/profile`, payload)
 }
+
+/**
+ * 授予或移除某个账号的后台权限。
+ * role='none' 只收回后台权限，账号本身与其旅行者记录（订单、收藏、预约）保留。
+ */
+export function setUserStaffAccess(
+  id: string,
+  role: 'admin' | 'editor' | 'none',
+): Promise<{ data: { code: number; data: ManagedUser; message: string } }> {
+  return api.patch(`/users/${id}/staff-access`, { role })
+}
