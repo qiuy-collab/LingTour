@@ -1064,3 +1064,90 @@ production: zero console errors, no 4xx, no horizontal overflow at 320/375/430/
   Playwright (root `node_modules`) against the installed Chrome instead.
 - `AGENT.md` (modified) and `docs/lark-base-handoff.md` (untracked) are still the
   concurrent session's work and were left untouched.
+
+## 52. 2026-09-19 Feishu todo run: administrator/traveler coexistence implemented, deployed, and the city copy staged
+
+Second run of the same loop on 2026-09-19. Two rows carried the owner's answer in
+`协作对话·人工回复 fldg34yYVW` (`recvvEcmUEzOUJ` "选A", `recvvEcmUEj44N` five
+cities, all rewritten, images welcome, straight to production, no review); three
+rows (`recvvE7CLiJiHW`, `recvvE7CLiRMCS`, `recvvE7CLi1QGz`) are still 需人工介入
+with an unanswered question and were not touched.
+
+### Implemented: 「后台管理员账号与用户账号支持共存」 (`recvvE72wHT5XP`, answer "选A")
+
+`users.role` (VARCHAR(50)) now carries a comma-separated role set
+(`admin,traveler`) instead of a single value, so one email is simultaneously a
+back-office account and a traveler. **No migration**: the column width already
+holds the value, and every historical single value keeps its exact meaning.
+`api/src/common/auth/roles.ts` is the only parser; `RolesGuard` now tests set
+membership rather than equality.
+
+| Concern | Change |
+| --- | --- |
+| Login response | `role` = primary role (admin > editor > traveler) for existing clients, plus a new `roles` array |
+| User management | lists any account holding the traveler role; new 后台权限 column and 授予/移除后台权限 action |
+| Staff list | matches admin/editor anywhere in the set; 同时为旅行者 tag; create/edit takes `alsoTraveler` |
+| Dashboard | user total uses the same traveler predicate |
+| New endpoint | `PATCH /api/v1/admin/users/:id/staff-access` — grants `admin`/`editor` or `none` |
+
+Revoking keeps the traveler identity and its orders, favorites and bookings; an
+account that still holds that identity can no longer be hard-deleted through
+`DELETE /users/staff/:id`, and the last active administrator is protected by the
+same continuity check as before.
+
+`users.service.ts` previously compared roles with `!==` / `=`, so its list
+queries, filters, staff lookup, self-delete guard and admin-continuity count were
+all moved onto the role set. `DashboardService`'s traveler count predicate was
+updated to match, and its regression test's expected SQL was updated with it —
+the test's intent ("the figure matches user management") is unchanged.
+
+### Staged, not published: the city copy (`recvvE72wHBZfx`)
+
+Rewritten English copy for all five cities is committed under
+[`content/city-copy-2026-09-19/`](content/city-copy-2026-09-19/README.md), with
+the image records, pull quotes, slugs, tags and every non-copy field preserved
+byte-identically (verified by script: images 6/6, 6/6, 8/8, 7/7, 4/4; quotes
+3/3 each). It is **not** written to production: that is a production
+business-data write, outside this loop's standing authorization, so the row was
+handed back with the exact authorization needed. Images stay as published —
+adding media is a second production write, and no new photography exists in this
+workspace.
+
+### Pre-deploy gate
+
+`api/src/database/migrations/` is byte-identical to the server's copy (35 files,
+`diff` of both listings is empty), so `migration:run` in the deploy has nothing
+to apply. No database backup was taken: this batch touches no schema and no
+migration.
+
+### Deploy and smoke
+
+| Item | Value |
+| --- | --- |
+| Independent admin commit | `9bc1196` |
+| Root commits | `b1ef3d2` (api), `53f66e5` (admin mirror) |
+| Deploy run | `35434417403`, success in 2m2s |
+| Server HEAD | `53f66e5`, `lingtour-{site,api,admin,nginx}` up, `lingtour-api-1` and `lingtour-site-1` healthy |
+
+`api.culvoy.com/health` 200 with `database: up`; `culvoy.com` 200;
+`admin.culvoy.com` 200; `/culture` 308→200. `PATCH /api/v1/admin/users/:id/staff-access`
+and `GET /api/v1/admin/users/staff` both answer **401** unauthenticated (route
+registered), and `POST /api/v1/auth/login` still answers 401 for a bad password,
+so the changed login path is alive. The production admin bundle carries the new
+UI: `users-D5i-D6ab.js` contains `staff-access`, `UsersList-BDakJQ1g.js` and
+`StaffAccounts-DoXePMeY.js` contain the new Chinese labels and `alsoTraveler`.
+
+### Local verification
+
+- api: `tsc` clean, **28 suites / 178 tests** pass (4 new spec files), `nest build` clean.
+- site: `tsc` clean, `eslint` 0 errors (1083 pre-existing warnings), **19 files / 105 tests** pass, `next build` clean. No site file changed.
+- admin: `npm run build` clean.
+- `git diff --check` clean in both repositories; the admin trees differ only by the known `.vscode/extensions.json`.
+
+### Boundaries
+
+- No admin credentials exist in this session, so 授予后台权限 was **not** clicked
+  through in a signed-in browser; it is evidenced by the shipped bundle, the
+  route's 401, the unit tests, and the build. A logged-in pass is still owed.
+- The docs commit that carries this section is not deployed: it changes no
+  application code, so `53f66e5` remains the deployed application commit.
