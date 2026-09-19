@@ -1151,3 +1151,74 @@ UI: `users-D5i-D6ab.js` contains `staff-access`, `UsersList-BDakJQ1g.js` and
   route's 401, the unit tests, and the build. A logged-in pass is still owed.
 - The docs commit that carries this section is not deployed: it changes no
   application code, so `53f66e5` remains the deployed application commit.
+
+
+## 53. 2026-09-19 Feishu todo run: the interpreter showcase fix deployed, five rows held behind concurrent WIP
+
+Third run of the same loop on 2026-09-19. The tables held 17 待办事项 and 26
+协作对话 rows at the snapshot: 9 rows were 待 Agent 处理, 1 carried an owner
+answer, 4 were 需人工介入 and 4 were 协作完成. One row was delivered, one was
+handed back, one was refreshed; the rest were left untouched, most of them
+because an uncommitted concurrent change already occupies their target files.
+
+### Delivered: 「移动端口译员头像显示不完全 + 卡片内容挤压」 (`recvvF3JfpWrZL`)
+
+Verified against production before touching anything: both published avatars are
+`1200x1800` (2:3) and render with `object-cover object-center`, but the card
+framed them at `aspect-[4/3]` below `lg`. Measured in real Chrome at 390px, the
+frame was `318x238`, so roughly half of each portrait was cut away vertically,
+and the absolutely positioned caption layer (a 118-131 character uppercase
+specialty plus a `text-3xl` name) covered 61.5% and 77.2% of the two images.
+
+The frame is now `aspect-[2/3]` below `lg` (the `lg` 4:5 frame is unchanged) and
+the caption is clamped to two lines, with an 11px mobile specialty and a 24px
+mobile name.
+
+| Viewport | Frame | Ratio | Portrait render | Caption share of image |
+| --- | --- | --- | --- | --- |
+| 320 | 260x391 | 0.667 | native 2:3, no crop | 18.6% / 26.2% |
+| 375 | 306x458 | 0.667 | native 2:3, no crop | 15.8% |
+| 390 | 318x477 | 0.667 | native 2:3, no crop | 15.2% (was 61.5% / 77.2%) |
+| 430 | 351x526 | 0.667 | native 2:3, no crop | 13.8% |
+
+No page-level horizontal overflow and no console errors at any of the four
+widths; 1280 and 1440 keep the 4:5 frame with no regression. Root commit
+`a4b81af`, deployed with run `35442130552` (server HEAD `a4b81af`, five
+containers healthy, `api.culvoy.com/health` 200 `database: up`). Local gate:
+`tsc` clean, `eslint` 0 errors (1083 pre-existing warnings), 19 files / 105 tests
+pass, `next build` clean, `git diff --check` clean.
+
+### Held: concurrent uncommitted work occupies five rows
+
+Six tracked files and one untracked doc were modified between 19:04 and 19:16 by
+a session other than this loop, and they implement three of the open rows almost
+exactly: `routes/RoutesPageClient.tsx` (horizontal snap track, `recvvEMlEStnhD`),
+`login/page.tsx` + `components/ui/LoginPanel.tsx` (dropping `useSearchParams`,
+`recvvER7KfoeQ0`), and `culture|interpreting|shop PageClient.tsx` (mobile hero
+single column, `recvvF3JfpE66K`). `AGENT.md` and `docs/lark-base-handoff.md`
+belong to the same session and were already off limits.
+
+This loop neither wrote nor committed any of them: adopting another session's
+unfinished work as its own would be a false attribution, and committing it would
+risk shipping a half-finished change. `recvvEMlEStnhD` was handed back with a
+question naming all three rows and offering take-over (through this loop's full
+verification gate) as an explicit option. `recvvER7KfoeQ0`, `recvvF3JfpE66K`,
+`recvvEMvneaM3N` and `recvvF3JfpoBQe` were deferred under the three-row cap.
+
+### Refreshed: the city copy (`recvvE72wHBZfx`)
+
+The owner answer ("五条全部重写 / 可新增图片 / 直接改到线上 / 无需审核") had already
+arrived, so this row was processed first. Writing the rewritten copy to the
+production CMS still needs an administrator credential, and `LINGTOUR_ADMIN_EMAIL`,
+`LINGTOUR_ADMIN_PASSWORD` and `LINGTOUR_ADMIN_TOKEN` are all unset in this
+environment; adding images is a second production write and no new photography
+exists in this workspace. The row keeps its unanswered question
+(`recvvENwX3WyaB`); only its 最新对话 was refreshed, so the unanswered ball was
+not thrown twice.
+
+### Pre-deploy gate and smoke
+
+`api/src/database/migrations/` is byte-identical to the server's copy (35 files,
+`diff` empty), so `migration:run` had nothing to apply and no database backup was
+needed. `api.culvoy.com/health` 200, `culvoy.com` 200, `/interpreting/` 200 and
+`admin.culvoy.com` 200 after the deploy.
