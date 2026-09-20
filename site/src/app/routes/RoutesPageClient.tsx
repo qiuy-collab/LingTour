@@ -261,7 +261,7 @@ export default function RoutesPageClient({
                           <h2 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.03] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                             {route.title}
                           </h2>
-                          <p className="mt-4 max-w-[37ch] text-pretty text-sm leading-7 text-[var(--muted)] sm:text-base">
+                          <p className="mt-4 max-w-[37ch] text-pretty text-sm leading-7 text-[var(--muted)] line-clamp-3 sm:text-base sm:line-clamp-none">
                             {route.summary}
                           </p>
                           <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-2 border-t border-[var(--line)] pt-5 text-sm leading-6 text-[var(--river-deep)]">

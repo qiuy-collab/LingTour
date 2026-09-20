@@ -296,12 +296,6 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
       <div className="site-container relative z-10">
         <div className="mb-8 sm:mb-12 lg:mb-20">
           <Reveal>
-            <div className="mb-6 flex items-center gap-4">
-              <div className="h-px w-10 bg-[var(--cinnabar)]" />
-              <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                {t("home.map.eyebrow")}
-              </p>
-            </div>
             <h2 className="max-w-4xl font-[family:var(--font-display)] text-[clamp(2.5rem,11vw,3.6rem)] leading-[0.94] tracking-[-0.04em] text-[var(--river-deep)] md:text-7xl lg:text-8xl">
               {t("home.map.heading")}
             </h2>

@@ -172,7 +172,7 @@ export default function ShopPageClient({
                         <h3 className="font-[family:var(--font-display)] text-3xl leading-tight text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)]">
                           {collection.title}
                         </h3>
-                        <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)]">
+                        <p className="mt-4 handwritten text-sm leading-7 text-[var(--muted)] line-clamp-3 sm:line-clamp-none">
                           {collection.body}
                         </p>
                         <div className="mt-6 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.22em] text-[var(--river-deep)]">

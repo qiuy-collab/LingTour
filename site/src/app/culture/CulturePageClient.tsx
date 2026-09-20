@@ -201,7 +201,7 @@ export default function CulturePageClient({
                           <h2 className="mt-2 font-[family:var(--font-display)] text-3xl leading-[0.98] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
                             {city.name}
                           </h2>
-                          <p className="handwritten mt-3 flex-1 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+                          <p className="handwritten mt-3 flex-1 text-sm leading-relaxed text-[var(--muted)] line-clamp-3 sm:text-base sm:line-clamp-none">
                             {city.narrative}
                           </p>
                           <div className="mt-5 flex items-end justify-between gap-4">

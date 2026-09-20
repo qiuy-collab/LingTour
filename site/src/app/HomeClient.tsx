@@ -240,12 +240,6 @@ export default function HomeClient({
           <div className="grid grid-cols-1 gap-10 min-[620px]:grid-cols-[minmax(0,1.15fr)_minmax(13rem,0.85fr)] min-[620px]:items-start min-[620px]:gap-7 lg:grid-cols-12 lg:items-center lg:gap-16">
             <div className="min-w-0 max-w-2xl lg:col-span-5">
               <Reveal>
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-10 h-px bg-[var(--cinnabar)]" />
-                  <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-[var(--cinnabar)]">
-                    {t("interpreting.page.title")}
-                  </p>
-                </div>
                 <h2 className="mb-6 font-[family:var(--font-display)] text-[clamp(2.5rem,8vw,3.5rem)] leading-[0.92] text-[var(--river-deep)] sm:mb-10 lg:mb-12 lg:text-7xl">
                   {t("home.interpreting.title")}
                 </h2>
