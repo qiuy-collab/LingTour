@@ -1,6 +1,20 @@
 import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
 
-const QUERY = '(max-width: 767px)'
+/**
+ * The admin breakpoint scale, in one place. Media queries in
+ * src/styles/responsive.css, src/styles/theme.css (`--lt-bp-*`, documentation
+ * only — CSS media queries cannot read custom properties) and the individual
+ * component styles all follow this scale. `md` is the mobile/desktop split:
+ * "mobile" means `<= md`, i.e. `(max-width: 768px)`.
+ */
+export const ADMIN_BREAKPOINTS = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+} as const
+
+const QUERY = `(max-width: ${ADMIN_BREAKPOINTS.md}px)`
 
 /**
  * 移动端断点检测（与 AdminLayout 的 ≤768px 口径对齐）。

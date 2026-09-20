@@ -130,7 +130,7 @@ function handleReset() {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .list-toolbar {
     grid-template-columns: 1fr;
     padding: 10px;

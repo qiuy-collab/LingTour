@@ -10,6 +10,9 @@ import { resolveMediaUrl } from '@/utils/media'
 import { extractErrorMessage } from '@/utils/errors'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 const changingId = ref('')
@@ -205,7 +208,7 @@ function regionColor(region: string) {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="245" fixed="right">
+        <el-table-column label="操作" width="245" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button link size="small" :disabled="Boolean(changingId) && changingId !== row.id" :loading="changingId === row.id" @click="togglePublished(row)">
               {{ row.published ? '撤回发布' : '发布' }}

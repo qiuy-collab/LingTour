@@ -7,6 +7,9 @@ import type { FAQ } from '@/types/interpreting'
 import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -148,7 +151,7 @@ async function handleMoveDown(index: number) {
             <el-tag size="small">{{ (FAQCategoryMap as Record<string, string>)[row.category] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="240" :fixed="isMobile ? false : 'right'">
           <template #default="{ row, $index }">
             <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
             <el-button type="primary" link size="small" @click="handleMoveUp($index)" :disabled="$index === 0">上移</el-button>

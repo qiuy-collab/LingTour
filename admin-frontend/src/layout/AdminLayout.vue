@@ -10,6 +10,7 @@ import NotificationBell from '@/components/NotificationBell.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { getAdminOnboardingStorageKey } from '@/constants/onboarding'
+import { ADMIN_BREAKPOINTS } from '@/composables/useIsMobile'
 import { animateRouteEnter, animateRouteLeave } from '@/utils/motion'
 import {
   DataAnalysis,
@@ -93,7 +94,7 @@ watch(
 
 // Responsive detection
 function checkMobile() {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = window.innerWidth <= ADMIN_BREAKPOINTS.md
   if (!isMobile.value) {
     mobileMenuOpen.value = false
   }

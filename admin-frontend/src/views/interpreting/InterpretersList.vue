@@ -7,6 +7,9 @@ import { InterpreterStatusMap, InterpreterStatusColorMap } from '@/types/interpr
 import { readContentValue } from '@/types/common'
 import type { Interpreter } from '@/types/interpreting'
 import { resolveMediaUrl } from '@/utils/media'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -163,7 +166,7 @@ async function handleEnable(row: Interpreter) {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right">
+      <el-table-column label="操作" width="240" :fixed="isMobile ? false : 'right'">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
           <template v-if="row.status === 'pending_review'">

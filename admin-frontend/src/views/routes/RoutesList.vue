@@ -10,6 +10,9 @@ import { formatRouteTagLabel, normalizeRouteTag } from '@/constants/guangdongReg
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 import { resolveMediaUrl } from '@/utils/media'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -187,7 +190,7 @@ async function handleToggleStatus(routeItem: Route) {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="200" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button
               type="primary"

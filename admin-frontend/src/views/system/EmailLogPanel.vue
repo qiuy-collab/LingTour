@@ -10,6 +10,9 @@ import {
   resendEmailLog,
 } from '@/api/email'
 import type { EmailEventView, EmailLogDetail, EmailLogView } from '@/types/email'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 type LogStatus = 'sent' | 'failed' | 'skipped'
 
@@ -194,7 +197,7 @@ onMounted(async () => {
       <el-button type="primary" @click="applyFilters">筛选</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="rows" class="log-table" empty-text="暂无发送记录">
+    <el-table v-loading="loading" :data="rows" class="log-table table-card" empty-text="暂无发送记录">
       <el-table-column label="时间" width="180">
         <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
       </el-table-column>
@@ -215,7 +218,7 @@ onMounted(async () => {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="170" fixed="right">
+      <el-table-column label="操作" width="170" :fixed="isMobile ? false : 'right'">
         <template #default="{ row }">
           <el-button link type="primary" :icon="View" @click="openDetail(row)">详情</el-button>
           <el-button
@@ -378,6 +381,17 @@ onMounted(async () => {
 
 .filter-recipient {
   width: 260px;
+}
+
+/* Narrow screens: a 150/220/260px filter row wraps into a ragged column, so
+   every control takes the full width instead. */
+@media (max-width: 768px) {
+  .filter-status,
+  .filter-event,
+  .filter-recipient,
+  .filter-row > .el-button {
+    width: 100%;
+  }
 }
 
 .event-cell {

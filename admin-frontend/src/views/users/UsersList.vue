@@ -14,6 +14,9 @@ import { formatDate } from '@/utils/format'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 import { useAuthStore } from '@/store/auth'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -183,7 +186,7 @@ async function handleRevokeStaffAccess(user: ManagedUser) {
             <span v-else class="staff-none">无</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" align="center" fixed="right">
+        <el-table-column label="操作" width="260" align="center" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button size="small" type="primary" link @click="handleViewDetail(row)">
               详情

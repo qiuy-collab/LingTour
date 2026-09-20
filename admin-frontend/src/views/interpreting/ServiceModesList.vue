@@ -5,6 +5,9 @@ import { modesApi } from '@/api/modes'
 import type { ServiceMode } from '@/types/interpreting'
 import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -123,7 +126,7 @@ function getAccentLabel(accent: string) {
         <el-table-column label="适用场景" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">{{ readContentValue(row.bestFor) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="240" :fixed="isMobile ? false : 'right'">
           <template #default="{ row, $index }">
             <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
             <el-button type="primary" link size="small" @click="handleMoveUp($index)" :disabled="$index === 0">上移</el-button>

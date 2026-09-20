@@ -199,7 +199,7 @@ const emit = defineEmits<{
   min-height: 240px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .workspace-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;

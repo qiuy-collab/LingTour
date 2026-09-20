@@ -308,7 +308,7 @@ select {
   box-shadow: var(--lt-shadow-sm);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .page-header {
     align-items: stretch;
     flex-direction: column;

@@ -242,4 +242,12 @@ async function handleSave() {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 10px;
 }
+
+/* Narrow screens: the third column is the remove button, so the row collapses
+   to a single column instead of squeezing both inputs. */
+@media (max-width: 768px) {
+  .tag-input-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 </style>

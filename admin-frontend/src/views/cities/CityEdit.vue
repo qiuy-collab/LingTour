@@ -355,7 +355,7 @@ async function handleUnpublish() {
 .editor-alert { margin-bottom: 16px; }
 .load-error, .options-error { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .options-error { color: var(--lt-text-secondary); font-size: 13px; margin-bottom: 16px; }
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .metadata-section { padding: 16px; }
   .metadata-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .culture-editor :deep(.el-button) { min-height: 44px; }

@@ -215,7 +215,7 @@ function getBookingStatusLabel(status: string): string {
             <span v-else style="color: #c0c4cc">未分配</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="270" fixed="right">
+        <el-table-column label="操作" width="270" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="openDrawer(row)">详情</el-button>
             <el-button

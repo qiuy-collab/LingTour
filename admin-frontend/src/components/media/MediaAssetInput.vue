@@ -207,7 +207,7 @@ const posterUrl = computed({
   font-size: 12px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .media-type-switch {
     width: 100%;
   }

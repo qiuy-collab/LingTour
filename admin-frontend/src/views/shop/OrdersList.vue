@@ -9,6 +9,9 @@ import { formatDateTime } from '@/utils/format'
 import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -198,7 +201,7 @@ function itemsSummary(items: Order['items']) {
           {{ formatDateTime(row.createdAt) }}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="200" :fixed="isMobile ? false : 'right'">
         <template #default="{ row }">
           <el-button type="primary" link size="small" @click="handleViewDetail(row.id)">详情</el-button>
           <el-button

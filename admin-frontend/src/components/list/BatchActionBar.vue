@@ -85,7 +85,7 @@ const show = computed(() => {
   transform: translateY(20px);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .batch-action-bar {
     display: grid;
     grid-template-columns: 1fr auto;

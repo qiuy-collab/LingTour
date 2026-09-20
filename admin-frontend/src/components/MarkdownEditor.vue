@@ -387,7 +387,7 @@ onMounted(() => {
   .mode-split { grid-template-columns: minmax(0, 1fr); }
   .preview-pane { position: static; }
 }
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .source-pane :deep(.cm-content) { font-size: 16px; }
   .source-pane :deep(.md-editor-toolbar-item) { min-width: 44px; min-height: 44px; }
   .source-pane :deep(.cm-live-image__action) { min-height: 44px; }

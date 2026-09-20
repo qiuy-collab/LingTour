@@ -36,7 +36,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .edit-page {
     padding-bottom: 80px; /* space for sticky save bar */
   }

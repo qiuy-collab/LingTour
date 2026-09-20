@@ -14,6 +14,15 @@
   --lt-scrollbar-radius: var(--lt-radius-sm);
   --lt-z-onboarding: 4000;
 
+  /* Breakpoints — documentation only: CSS media queries cannot read custom
+     properties. The authoritative scale lives in src/composables/useIsMobile.ts
+     (ADMIN_BREAKPOINTS) and must be kept in sync with the media queries in
+     src/styles/responsive.css. "mobile" means <= --lt-bp-md. */
+  --lt-bp-sm: 640px;
+  --lt-bp-md: 768px;
+  --lt-bp-lg: 1024px;
+  --lt-bp-xl: 1280px;
+
   /* Brand */
   --lt-primary: #236554;
   --lt-primary-light: #4c8475;
@@ -102,6 +111,15 @@ html.dark {
   --lt-radius-xl: 24px;
   --lt-scrollbar-radius: var(--lt-radius-sm);
   --lt-z-onboarding: 4000;
+
+  /* Breakpoints — documentation only: CSS media queries cannot read custom
+     properties. The authoritative scale lives in src/composables/useIsMobile.ts
+     (ADMIN_BREAKPOINTS) and must be kept in sync with the media queries in
+     src/styles/responsive.css. "mobile" means <= --lt-bp-md. */
+  --lt-bp-sm: 640px;
+  --lt-bp-md: 768px;
+  --lt-bp-lg: 1024px;
+  --lt-bp-xl: 1280px;
 
   /* Brand */
   --lt-primary: #6faf9d;

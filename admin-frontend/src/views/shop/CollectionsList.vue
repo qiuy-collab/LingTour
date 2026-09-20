@@ -6,6 +6,9 @@ import { readContentValue } from '@/types/common'
 import { useListPage } from '@/composables/useListPage'
 import { ListToolbar } from '@/components/list'
 import { resolveMediaUrl } from '@/utils/media'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -86,7 +89,7 @@ function handleEdit(id: string) {
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="200" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
             <el-button type="danger" link size="small" @click="handleDeleteCollection(row)">删除</el-button>

@@ -5,6 +5,9 @@ import { CircleCheckFilled, WarningFilled, RefreshRight, DocumentChecked } from 
 import { ElMessage } from 'element-plus'
 import type { AuditIssue, AuditReport } from '@/utils/contentAudit'
 import { runContentAudit } from '@/utils/contentAudit'
+import { useIsMobile } from '@/composables/useIsMobile'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 const loading = ref(false)
@@ -144,7 +147,7 @@ onMounted(loadReport)
       :image-size="80"
     />
 
-    <el-card v-else shadow="never">
+    <el-card v-else shadow="never" class="table-card">
       <el-table :data="filteredIssues" stripe>
         <el-table-column label="级别" width="110">
           <template #default="{ row }">
@@ -159,7 +162,7 @@ onMounted(loadReport)
         <el-table-column prop="entityTitle" label="对象" min-width="180" />
         <el-table-column prop="message" label="问题" min-width="220" />
         <el-table-column prop="suggestion" label="建议处理" min-width="260" />
-        <el-table-column label="操作" width="110" fixed="right">
+        <el-table-column label="操作" width="110" :fixed="isMobile ? false : 'right'">
           <template #default="{ row }">
             <el-button type="primary" link @click="openIssue(row)">前往处理</el-button>
           </template>

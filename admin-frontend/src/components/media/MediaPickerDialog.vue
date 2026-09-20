@@ -154,7 +154,7 @@ function handleSelectionChange(files: Array<{ url: string }>) {
   color: var(--lt-text-secondary);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .dialog-intro {
     align-items: flex-start;
   }

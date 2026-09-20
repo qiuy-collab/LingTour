@@ -1,7 +1,9 @@
 /* ═══ Culvoy Admin Responsive System ═══ */
-/* Breakpoints:
+/* Breakpoints (ADMIN_BREAKPOINTS in src/composables/useIsMobile.ts, mirrored as
+   `--lt-bp-*` in theme.css):
    sm: 640px  (large phone)
-   md: 768px  (tablet portrait)
+   md: 768px  (tablet portrait) — mobile means <= 768px, so the mobile rules are
+              `max-width: 768px` and the tablet rules start at `min-width: 769px`
    lg: 1024px (tablet landscape)
    xl: 1280px (desktop)
 */
@@ -71,6 +73,17 @@
     text-align: left;
     padding-bottom: 4px;
   }
+  /* Left-labelled forms (Settings) otherwise keep their fixed 140px label
+     column — Element Plus renders .el-form-item as flex, so the input is
+     squeezed instead of the label stacking. Stack them like top labels. */
+  .el-form--label-left .el-form-item {
+    display: block !important;
+  }
+  .el-form--label-left .el-form-item__label {
+    width: auto !important;
+    padding-right: 0;
+    justify-content: flex-start !important;
+  }
 
   /* Editor shell → single column */
   .editor-shell {
@@ -109,21 +122,11 @@
   .editor-shell {
     grid-template-columns: 1fr !important;
   }
-  .hide-on-tablet {
-    display: none !important;
-  }
 }
 
 /* ── Desktop large ── */
 @media (min-width: 1280px) {
   .admin-main {
     padding: 24px;
-  }
-}
-
-/* ── Utility: hide on desktop ── */
-@media (min-width: 769px) {
-  .hide-on-desktop {
-    display: none !important;
   }
 }

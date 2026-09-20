@@ -695,4 +695,12 @@ async function handleSave() {
   gap: 10px;
   align-items: start;
 }
+
+/* Narrow screens: the second column is the delete button, so the detail row
+   stacks and the input keeps its full width. */
+@media (max-width: 768px) {
+  .detail-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 </style>
