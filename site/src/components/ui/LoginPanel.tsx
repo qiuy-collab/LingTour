@@ -313,10 +313,26 @@ export function LoginPanel() {
                 </span>
               </label>
             ) : (
-              <label className={labelClass}>
-                Password
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label
+                    htmlFor="login-password"
+                    className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+                  >
+                    Password
+                  </label>
+                  {isLogin ? (
+                    <Link
+                      href="/forgot-password"
+                      className="-my-2 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--river-deep)] underline decoration-[var(--line)] underline-offset-4 transition-colors hover:text-[var(--cinnabar)]"
+                    >
+                      Forgot password?
+                    </Link>
+                  ) : null}
+                </div>
                 <span className="relative block">
                   <input
+                    id="login-password"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete={isLogin ? "current-password" : "new-password"}
@@ -333,7 +349,7 @@ export function LoginPanel() {
                     {showPassword ? "Hide" : "Show"}
                   </button>
                 </span>
-              </label>
+              </div>
             )}
 
             {usingCode && devCode ? (
@@ -381,15 +397,6 @@ export function LoginPanel() {
                 ? "Use your password instead"
                 : "Email a code instead"}
             </button>
-
-            {isLogin && !usingCode ? (
-              <Link
-                href="/forgot-password"
-                className="min-h-11 px-1 text-left text-sm text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition-colors hover:text-[var(--cinnabar)]"
-              >
-                Forgot your password?
-              </Link>
-            ) : null}
 
             {isLogin && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? (
               <button
