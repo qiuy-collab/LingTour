@@ -16,6 +16,7 @@ import ContentInput from "@/components/ContentInput.vue";
 import ContentMarkdownEditor from "@/components/ContentMarkdownEditor.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import MediaAssetInput from "@/components/media/MediaAssetInput.vue";
+import RouteStopMapPicker from "@/components/routes/RouteStopMapPicker.vue";
 import FrontendPagePreview from "@/components/FrontendPagePreview.vue";
 import FrontendPreviewDrawer from "@/components/editor/FrontendPreviewDrawer.vue";
 import EditorPageHeader from "@/components/editor/EditorPageHeader.vue";
@@ -155,6 +156,22 @@ function addDetail(stop: any) {
 
 function removeDetail(stop: any, index: number | string) {
   stop.details.splice(Number(index), 1);
+}
+
+function applyStopCoordinates(payload: {
+  index: number;
+  lat: number;
+  lng: number;
+}) {
+  const stop = form.stops[payload.index];
+  if (!stop) return;
+  stop.lat = payload.lat;
+  stop.lng = payload.lng;
+}
+
+function selectStopFromMap(index: number) {
+  if (index < 0 || index >= form.stops.length) return;
+  activeWorkspace.value = `stop-${index}`;
 }
 
 const workspaceTabs = computed<EditorWorkspaceTab[]>(() => [
@@ -578,6 +595,15 @@ async function handleSave() {
                 multiple
                 :limit="10"
                 module="routes"
+              />
+            </el-form-item>
+            <el-form-item label="地图打点">
+              <RouteStopMapPicker
+                :stops="form.stops"
+                :active-index="activeStopIndex"
+                :height="320"
+                @select="selectStopFromMap"
+                @update:coordinates="applyStopCoordinates"
               />
             </el-form-item>
             <el-row :gutter="16">
