@@ -15,7 +15,7 @@
 
 以上 api 修复均为防御性收紧，对正常客户端行为无变化。admin-frontend 本批无新代码；后台路线站点地图打点编辑器为 admin `02f8805`（root `aa8adfe`），随本次部署首次上线。
 
-部署：上一部署 run `35480814536`（root `9aa37b4`）之后至本批无新迁移文件，`migration:run` 为空操作，未触发数据库备份前置条件。部署 run ID 与服务器 HEAD 在部署完成后回填于 `docs/CURRENT-STATE.md` §56。
+部署：上一部署 run `35480814536`（root `9aa37b4`）之后至本批无新迁移文件，`migration:run` 为空操作，未触发数据库备份前置条件。`Deploy LingTour Docker Stack` run `35693892146` 一次成功（约 3 分半）；服务器 root HEAD `3c5fc1d`；api/site/admin/nginx 四容器 healthy。生产冒烟：API health `database: up`；`culvoy.com`、`admin.culvoy.com` 均 200；生产 `RouteEdit-CF2b3nnv.js` chunk 检索到地图打点组件文案，确认新编辑器已上线。
 
 ## 2026-09-18 — 首页旧版区块清理上线（root `791cff0`）
 

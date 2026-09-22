@@ -1387,4 +1387,6 @@ Both tasks (每日多维 Review `task-1789827138584-3y1zyp`, 轮询代办 `task-
 
 ### Git
 
-root `1a25fa5` (api fixes) + the docs commit immediately after it (deploy HEAD); admin `02f8805` unchanged (no admin code in this batch). Deploy run ID and server HEAD are backfilled below after the deploy.
+root `1a25fa5` (api fixes) + the docs commit immediately after it (deploy HEAD); admin `02f8805` unchanged (no admin code in this batch).
+
+**Deploy backfill:** `Deploy LingTour Docker Stack` run `35693892146` succeeded in ~3.5 min; server root HEAD `3c5fc1d`; api/site/admin/nginx all healthy; production `culvoy.com`, `admin.culvoy.com`, `api.culvoy.com/health` all 200 (`database: up`). The route-edit map picker was verified in the live bundle — public chunk `RouteEdit-CF2b3nnv.js` contains the picker copy. All 10 Feishu writes were verified `"ok": true` at the CLI response level and re-read from the tables. Final Feishu state: 19 todos (17 已完成/协作完成, 2 需人工介入 awaiting the owner's A/B/C choice on the auth-defect threads) and 10 opportunities (4 已完成, 6 已采纳).
