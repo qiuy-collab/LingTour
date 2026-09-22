@@ -63,7 +63,7 @@ CI（`.github/workflows/ci.yml`）：api（tsc + test + build，含 Postgres 16 
 ## 6. 回滚
 
 - 代码回滚：在服务器上把仓库切回上一个已验证 SHA 后重新执行 `tools/deploy-docker.sh`。执行前确认服务器工作区已备份（含未跟踪产物），由运维执行，不在本地仓库演示危险命令。
-- 数据回滚：迁移不提供 down；以发布前数据库备份（宿主机 `pg_dump -Fc` 产物）恢复，且必须先停写。
+- 数据回滚：迁移不提供 down；以发布前数据库备份（宿主机 `pg_dump -Fc` 产物）恢复，且必须先停写。注意两个**有意不可回滚**的数据迁移：`1762300000000-EnglishOnlyContent`（中文值已折叠为英文，down 为空、无法重建）与 `1740600000000-FixRouteRegionsEncoding`（原始乱码字节有意丢弃）；涉及相关表的部署前必须先做 `pg_dump -Fc` 备份。
 - 任何回滚都在 `docs/CURRENT-STATE.md` 记录原因与结果。
 
 ## 7. 生产环境变量

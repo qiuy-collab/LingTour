@@ -1292,7 +1292,7 @@ Each of the four rows got one 协作对话 row (`消息类型=状态变更`, `�
 `轮次=4`) and a todo patch to `协作状态=协作完成` + `状态=已完成`, with the summary and
 the defect note in 备注. No lookup field and no owner slot was written.
 
-## 53. 2026-09-19 Scheduled multi-dimensional review system stood up (not committed)
+## 55. 2026-09-19 Scheduled multi-dimensional review system stood up (committed 2026-09-22 as 3c36014)
 
 The owner asked for a scheduled, multi-dimensional review that feeds the Feishu tracker, with two scheduled tasks and non-overlapping times. What was actually built:
 
@@ -1304,7 +1304,7 @@ The owner asked for a scheduled, multi-dimensional review that feeds the Feishu 
 | Review 机会表 | `tblWaouVm5tyBxSe` (view `vewzHazqBd`) | 10 — opportunities, kept out of the todo table |
 | 待办事项·来源指纹 | `fldyA8gI70` | text dedup key added to `tbl21w4yWuCJ9wEs` (rev 93→94) |
 
-The Base now holds 5 tables. Both new tables are **empty** — the dimension pool has not been filled yet, so the review task will report "no enabled dimensions" and exit until it is.
+The Base now holds 5 tables. *(2026-09-22 correction: the "both empty" claim above was stale within a day — the 17-dimension pool was filled on 2026-09-19, and the 2026-09-21 06:00 review run created 10 opportunity rows plus 2 defect todos; see §56.)*
 
 ### Scheduled tasks (NewMax, this workspace)
 
@@ -1352,3 +1352,39 @@ Cross-checked the live Feishu schema ↔ `AGENT.md` §13 ↔ both task prompts, 
 Also corrected: §13.3's stale "(all 8 live rows are still 轮次=1)" note, and the review prompt's self-contradiction between "may write 来源指纹" and "never rewrite 来源指纹" (now: written once at creation, never rewritten).
 
 **Verified after the fixes:** both tasks report 已启用 with correct 下次执行 timestamps; `fldzYLGHcb` is consistent across `AGENT.md` and the design doc with no `fldYLGHcb` left in either; `git diff --check` clean. The `enabled: true` mitigation (§13.5 pitfall) held — both prompt updates kept their tasks enabled.
+
+## 56. 2026-09-22 Goal-mode wrap-up: three api defensive fixes deployed, four todos resolved, ten opportunities classified
+
+The owner issued a goal: process every open Feishu todo/opportunity, commit by category, deploy, and stop. End-of-run state:
+
+### Code (api, three defensive fixes — commit `1a25fa5`)
+
+- `community.controller.ts`: the post restore endpoint now carries explicit `@Roles('admin','editor')`, aligned with its delete sibling (it previously relied on the `/admin/` path fallback, i.e. admin only).
+- `email-verification.service.ts`: codes are consumed with a conditional UPDATE (`consumedAt IS NULL` guard); two concurrent correct submissions can no longer both mint a session/reset.
+- `auth.service.ts`: `refreshToken` rejects signed tokens without an `exp` claim instead of silently skipping the grace-window check.
+
+Verified: api tsc clean, 28 suites / 178 tests passed, build ok. No migration files in this batch — `migration:run` on this deploy is a no-op, so §13.6 guard 1 (database backup) was not triggered.
+
+### Feishu todos (4 open → resolved)
+
+- `recvvEMz2P4YyF` route-stop map picker — the work was already committed (admin `02f8805` / root `aa8adfe`); closed 协作完成/已完成 once this deploy shipped it.
+- `recvvER7KfmaQv` admin mobile 320/375/390 read-only testing — the 2026-09-21 19:00 runner round performed the testing the way the owner's chat reply authorized (self-served credentials from the local DB): dashboard at three widths, `overflowDoc=0`, zero console errors, login OK; report at `tmp/_admin_3vp_report.json`. Closed 已完成 with that scope stated honestly (dashboard only, not every admin page).
+- `recvvPqZULzix5` unverified-registration email grabbing — handed back 需人工介入: every fix changes the registration flow (remove password registration / verified-code-first / accept the risk). Product decision, not a code patch.
+- `recvvPqZULkmn3` no JWT revocation on password change — handed back 需人工介入: a token-version/revocation mechanism requires a migration plus an explicit product call (all sessions drop on password change). Bundle candidate with the JWT iss/aud opportunity.
+
+### Feishu opportunities (10 待评估 → classified)
+
+- **已完成 (4)**: restore `@Roles`, verification-code race, refresh exp guard, release.md non-reversible-migration note (all in this batch).
+- **已采纳 (6)**: JWT iss/aud binding (bundle with the JWT-revocation decision), per-account login lockout, APPROVED-order server-side capture fallback, admin cancel-paid-order refund warning, PayPal webhook endpoint, server-driven handling-fee display.
+
+### Docs
+
+`CHANGELOG.md` gained the 2026-09-22 section; `release.md` §6 now names the two intentionally non-reversible migrations; the duplicate §53 numbering was fixed (the review-system section above is now §55; this is §56).
+
+### Scheduled tasks
+
+Both tasks (每日多维 Review `task-1789827138584-3y1zyp`, 轮询代办 `task-1789799700737-xq9uh1`) remain **disabled**, exactly as the owner set on 2026-09-22; this wrap-up did not re-enable them.
+
+### Git
+
+root `1a25fa5` (api fixes) + the docs commit immediately after it (deploy HEAD); admin `02f8805` unchanged (no admin code in this batch). Deploy run ID and server HEAD are backfilled below after the deploy.

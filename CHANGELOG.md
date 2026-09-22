@@ -4,6 +4,19 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。`1.0.0` 基线之后本项目采用 `workflow_dispatch` 滚动部署且不使用 git tag，因此已发布变更按**生产部署日期**分节（最新在上），每节以当时的根仓库 HEAD SHA 为锚点；admin-frontend 独立仓库的对应提交随各条目一并生效，双仓库对应关系见 `docs/CURRENT-STATE.md`。
 
+## 2026-09-22 — 认证防御修复与自动化收尾部署（root `1a25fa5`）
+
+### Changed
+
+- api: 社区帖 restore 端点补显式 `@Roles('admin','editor')`，与同文件 delete 端点对齐（此前仅靠 `/admin/` 路径 fallback 要求 admin，editor 无法恢复软删帖）。
+- api: 邮箱验证码消费改为条件 UPDATE（`consumedAt IS NULL` 守卫）——两个并发正确提交只有第一个能铸会话/重置，第二个收到「验证码无效」。
+- api: `refreshToken` 拒绝无 `exp` 声明的已签名 token——此前 1 小时宽限窗口检查会被静默跳过，此类 token 可无限续期。
+- docs: `release.md` §6 点名两个**有意不可回滚**的数据迁移（`1762300000000-EnglishOnlyContent`、`1740600000000-FixRouteRegionsEncoding`），涉及相关表的部署前必须 `pg_dump -Fc` 备份。
+
+以上 api 修复均为防御性收紧，对正常客户端行为无变化。admin-frontend 本批无新代码；后台路线站点地图打点编辑器为 admin `02f8805`（root `aa8adfe`），随本次部署首次上线。
+
+部署：上一部署 run `35480814536`（root `9aa37b4`）之后至本批无新迁移文件，`migration:run` 为空操作，未触发数据库备份前置条件。部署 run ID 与服务器 HEAD 在部署完成后回填于 `docs/CURRENT-STATE.md` §56。
+
 ## 2026-09-18 — 首页旧版区块清理上线（root `791cff0`）
 
 ### Removed
