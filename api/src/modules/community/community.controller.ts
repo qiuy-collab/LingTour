@@ -386,6 +386,7 @@ export class CommunityController {
     return this.communityService.remove(id);
   }
 
+  @Roles('admin', 'editor')
   @Post('admin/community/posts/:id/restore')
   @ApiBearerAuth()
   @UseInterceptors(AuditLogInterceptor)

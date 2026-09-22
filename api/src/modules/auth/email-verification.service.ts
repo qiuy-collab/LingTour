@@ -185,8 +185,16 @@ export class EmailVerificationService {
       throw new UnauthorizedException('Verification code is invalid or expired');
     }
 
-    record.consumedAt = new Date();
-    await this.codeRepository.save(record);
+    // Consume the code with a conditional update. Two concurrent correct
+    // submissions can both pass the findOne above; only the first must win
+    // and mint a session/reset, the loser must see the code as consumed.
+    const consumed = await this.codeRepository.update(
+      { id: record.id, consumedAt: IsNull() },
+      { consumedAt: new Date() },
+    );
+    if ((consumed.affected ?? 0) === 0) {
+      throw new UnauthorizedException('Verification code is invalid or expired');
+    }
     return { email, purpose };
   }
 

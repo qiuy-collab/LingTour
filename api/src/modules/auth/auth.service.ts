@@ -352,15 +352,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    // 2. Enforce a 1-hour grace window after expiry
+    // 2. Enforce a 1-hour grace window after expiry. A signed token without
+    // an exp claim must never be refreshed: the grace check would silently
+    // be skipped and such a token would live forever.
     const GRACE_PERIOD_SECONDS = 60 * 60; // 1 hour
-    if (decoded.exp) {
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      if (nowSeconds - decoded.exp > GRACE_PERIOD_SECONDS) {
-        throw new UnauthorizedException(
-          'Token has expired beyond the refresh window',
-        );
-      }
+    if (!decoded.exp) {
+      throw new UnauthorizedException(
+        'Token has no expiry and cannot be refreshed',
+      );
+    }
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    if (nowSeconds - decoded.exp > GRACE_PERIOD_SECONDS) {
+      throw new UnauthorizedException(
+        'Token has expired beyond the refresh window',
+      );
     }
 
     // 3. Re-check account status before issuing a fresh token.
