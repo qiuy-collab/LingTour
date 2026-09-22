@@ -1291,3 +1291,64 @@ previously held site work (`fe2db23` login prerender, `be2af54` mobile hero stac
 Each of the four rows got one 协作对话 row (`消息类型=状态变更`, `说话方=Agent`,
 `轮次=4`) and a todo patch to `协作状态=协作完成` + `状态=已完成`, with the summary and
 the defect note in 备注. No lookup field and no owner slot was written.
+
+## 53. 2026-09-19 Scheduled multi-dimensional review system stood up (not committed)
+
+The owner asked for a scheduled, multi-dimensional review that feeds the Feishu tracker, with two scheduled tasks and non-overlapping times. What was actually built:
+
+### Feishu structures created (additive only — no field renamed, no record deleted)
+
+| Structure | `table_id` | Fields |
+| --- | --- | --- |
+| Review 维度表 | `tbl09fwzfA6WHkzk` (view `vewJdz30NQ`) | 8 — dimension pool, owner-maintained |
+| Review 机会表 | `tblWaouVm5tyBxSe` (view `vewzHazqBd`) | 10 — opportunities, kept out of the todo table |
+| 待办事项·来源指纹 | `fldyA8gI70` | text dedup key added to `tbl21w4yWuCJ9wEs` (rev 93→94) |
+
+The Base now holds 5 tables. Both new tables are **empty** — the dimension pool has not been filled yet, so the review task will report "no enabled dimensions" and exit until it is.
+
+### Scheduled tasks (NewMax, this workspace)
+
+| Task | ID | Trigger | State |
+| --- | --- | --- | --- |
+| 每日多维 Review | `task-1789827138584-3y1zyp` | daily 06:00 | enabled |
+| 轮询代办 (runner) | `task-1789799700737-xq9uh1` | daily 09:00 / 14:00 / 19:00 | enabled |
+
+Ordering is deliberate: review produces at 06:00, the runner first consumes at 09:00 — a 3-hour gap, and review's chain (read + Feishu write) is far lighter than the runner's (implement → verify → deploy).
+
+### Runner changes
+
+- **Frequency 24 → 3 per day.** Was `00:00–23:59` every 60 min; now `09:00–20:00` every 300 min. That is a ~8× cut in the per-round fixed cost, which is dominated by re-reading `AGENT.md` (38.7 KB) **plus `CURRENT-STATE.md` (151 KB, 80 % of the total) on every single run**.
+- **Empty-round early exit added.** The prompt buckets first and exits *before* reading any document when nothing is actionable — most rounds should exit there. When there is work, the full read is kept: red-line visibility was deliberately not traded for tokens.
+- **Per-round cap 3 → 5** (§13.3 and §13.6 both updated), matching the review task's 5-new-defect cap so the queue stays level.
+- **New red line: never write 来源指纹 `fldyA8gI70`** — it is the review task's dedup key; rewriting it makes review re-create its own rows.
+
+Throughput note: 3 rounds × 5 = 15 actionable todos/day, against 24 × 3 = 72 before. The drop is intentional (cost) and sufficient unless real todo volume exceeds 15/day.
+
+### Documentation
+
+- `AGENT.md` — new **§13.7** (binding review spec), §13.1 field row, §13.4 `T_DIM`/`T_OPP`, §13 table list, §13.3 + §13.6 cap 3→5, and a new §13.5 pitfall.
+- `docs/review-system-design.md` — all IDs backfilled, §10 collapsed into "decided / still open", §11 turned into a progress table, status line changed to "partially landed".
+- **New pitfall recorded (§13.5):** `mcp__scheduled-tasks__update_scheduled_task` **silently disabled the runner** when called with only `prompt` — the stated "unpassed fields stay unchanged" contract does not hold for `enabled`, and the 下次执行 line vanished. It was re-enabled and verified. Anyone updating either task's prompt must pass `enabled: true` explicitly and re-read the task afterwards.
+
+### Git
+
+`AGENT.md` is modified and `docs/review-system-design.md` is untracked; **nothing is committed or pushed** from this run. `git diff --check` is clean. The admin repository was not touched. Root HEAD remains `d976ca9`.
+
+### Open / next
+
+1. **The dimension pool is filled** — all 17 dimensions from design §9 were written to `tbl09fwzfA6WHkzk` on 2026-09-19 with 状态=启用 and an empty 上次审查 (the LRU planner reads empty as "never reviewed", so the first rounds sweep all of them). Cycle ≈ 17 ÷ 3 ≈ 6 days. **Still missing: the design's "one month of report-only, no rows" trial (§11 step 6) is not implemented in the task prompt** — the review task writes defect rows directly, so its first run can create up to 5 todos plus opportunity rows.
+2. Neither scheduled task's prompt has version history — both live in NewMax's `scheduled-tasks.db`, outside Git.
+3. Design §10 still lists three open questions (pool size / N, report schema, whether project-state input includes production).
+
+### Consistency audit (2026-09-19, after the build) — four defects found and fixed
+
+Cross-checked the live Feishu schema ↔ `AGENT.md` §13 ↔ both task prompts, field by field and option by option.
+
+1. **`AGENT.md` §13.7 carried a wrong field id.** 成本 was written as `fldYLGHcb`; the live id is `fldzYLGHcb` (one missing `z`). Both prompts had it right, so only the document was wrong — the worse direction, because agents are told to trust the document. Fixed.
+2. **The review task's auto-close would have silently cancelled human hand-backs.** Its close condition was "状态≠已完成 and carries 来源指纹". A todo the runner has just handed back sits at 协作状态=需人工介入 with 状态=待处理 — which matches that condition. Review would have closed it as 已完成/协作完成 while Ravi was still expected to answer, and the 待我处理 inbox would have quietly lost the item. Now restricted to **协作状态=待 Agent 处理** only, with 需人工介入 / 人工已回复 / 进行中 explicitly excluded.
+3. **Review had no project record id.** Its prompt said "link the Culvoy record" without providing one, so first-run todos could have arrived unlinked. Culvoy `recvvE2U7q5Mu9` (Autoflow `recvvE2U7qq4FA`) are now inline, with a fallback to re-read the project table if the ids ever change.
+4. **The runner's prompt never said *which* five.** The per-round cap was stated, but the selection rule ("highest priority first") lived only in `AGENT.md` §13.3 — which the runner does read, but only after the empty-round gate. Now stated inline, plus a requirement to list deferred items and their reason in the briefing.
+
+Also corrected: §13.3's stale "(all 8 live rows are still 轮次=1)" note, and the review prompt's self-contradiction between "may write 来源指纹" and "never rewrite 来源指纹" (now: written once at creation, never rewritten).
+
+**Verified after the fixes:** both tasks report 已启用 with correct 下次执行 timestamps; `fldzYLGHcb` is consistent across `AGENT.md` and the design doc with no `fldYLGHcb` left in either; `git diff --check` clean. The `enabled: true` mitigation (§13.5 pitfall) held — both prompt updates kept their tasks enabled.

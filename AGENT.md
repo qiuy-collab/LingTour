@@ -302,7 +302,7 @@ Delivery tracking for this workspace lives in a Feishu Base, not in this reposit
 | URL | `https://mcnolxrqwlqo.feishu.cn/base/PWLpbO2Y0aqDrhsdcjicBoDIn9m` |
 | Timezone | Asia/Shanghai |
 
-Tables: `项目` `tblVHHfoMJBfQFQ5` (项目名称 text primary `fld3FRavHI`, 项目状态 select 未开始/进行中/已暂停/已完成/已取消 `fld7Pgli8z`, 项目描述 text `fldNhBjSjV`, 开始日期 `fldlqtjkrL` and 截止日期 `fldy2SIlMV` datetime, 相关待办 link reverse `fldO73rOZf` — 2 records on 2026-09-19: Culvoy 进行中, Autoflow 未开始); `待办事项` `tbl21w4yWuCJ9wEs` (11 fields, §13.1); `协作对话` `tblyVHclbUfXIy33` (8 fields, §13.2). Live record counts on 2026-09-19 after the second remodel: 待办事项 8 (3 协作完成/已完成, 5 需人工介入/待处理), 协作对话 8 (3 状态变更, 5 提问). That snapshot aged within the same day — by the evening of 2026-09-19 the live Base held 待办事项 17 (5 协作完成, 4 需人工介入, 7 待 Agent 处理, 1 人工已回复) and 协作对话 36 (14 状态变更, 14 提问, 8 审核结论). The tracker is in real use, so a populated table is normal and **every count in this section is a timestamp, not a spec** — re-read it. An empty table is still a valid state, not a broken read.
+Tables: `项目` `tblVHHfoMJBfQFQ5` (项目名称 text primary `fld3FRavHI`, 项目状态 select 未开始/进行中/已暂停/已完成/已取消 `fld7Pgli8z`, 项目描述 text `fldNhBjSjV`, 开始日期 `fldlqtjkrL` and 截止日期 `fldy2SIlMV` datetime, 相关待办 link reverse `fldO73rOZf` — 2 records on 2026-09-19: Culvoy 进行中, Autoflow 未开始); `待办事项` `tbl21w4yWuCJ9wEs` (12 fields, §13.1); `协作对话` `tblyVHclbUfXIy33` (8 fields, §13.2); `Review 维度表` `tbl09fwzfA6WHkzk` (8 fields, §13.7); `Review 机会表` `tblWaouVm5tyBxSe` (10 fields, §13.7). Live record counts on 2026-09-19 after the second remodel: 待办事项 8 (3 协作完成/已完成, 5 需人工介入/待处理), 协作对话 8 (3 状态变更, 5 提问). That snapshot aged within the same day — by the evening of 2026-09-19 the live Base held 待办事项 17 (5 协作完成, 4 需人工介入, 7 待 Agent 处理, 1 人工已回复) and 协作对话 36 (14 状态变更, 14 提问, 8 审核结论). The tracker is in real use, so a populated table is normal and **every count in this section is a timestamp, not a spec** — re-read it. An empty table is still a valid state, not a broken read.
 
 ### 13.1 待办事项 fields and views
 
@@ -319,6 +319,7 @@ Tables: `项目` `tblVHHfoMJBfQFQ5` (项目名称 text primary `fld3FRavHI`, 项
 | 人工回复 | `flddDWY5eY` | lookup ← `协作对话` | **read-only derived field** — field definition re-read 2026-09-19: `select: "人工回复"`, i.e. it projects the linked chat row's 人工回复 `fldg34yYVW`, **not** 对话内容 (an earlier version of this section claimed 对话内容; that was wrong and misled a review). Consequence: this column is empty for every thread the owner has not answered yet, and non-empty exactly where the owner filled the chat row's reply slot. The agent must never write it; the API rejects/ignores writes to lookups. |
 | 最新对话 | `fldV2iNREZ` | text | one-line summary of the latest message in the thread |
 | 对话记录 | `fldd0jcMKH` | link → `tblyVHclbUfXIy33` | `[{"id":"rec_xxx"}]`; bidirectional, reverse field 所属待办 `fldQ5MGCcI` |
+| 来源指纹 | `fldyA8gI70` | text | dedup key written by the review task (§13.7): `sha1(维度名 + 文件路径 + 行号 + 问题签名)`. Free text; the API enforces no format. The unattended runner (§13.6) inherits whatever the review task wrote and must not rewrite it. |
 
 Views: 表格 `vewiODnqdM` (grid, default), 按状态看板 `vewNQtFWZe` (kanban, grouped by 状态 `fldQEHZYKR`), 待我处理 `vewlMV8QYB` (grid, filter 协作状态 == 需人工介入 — the owner's inbox), 协作看板 `vewn1NMlVj` (kanban, grouped by 协作状态 `fldIxIGjyY`).
 
@@ -360,8 +361,8 @@ flowchart LR
 - Handing back: append a 协作对话 row (消息类型=提问, 说话方=Agent, 轮次=max+1, 时间, 对话内容) and set the todo's 协作状态=需人工介入 + 最新对话; leave 人工回复 empty — that is the owner's slot.
 - Completing: only when the work was really implemented, verified, committed and deployed. Append a 协作对话 row (消息类型=状态变更 or 审核结论) and set 协作状态=协作完成 together with 状态=已完成.
 - Writing a 协作对话 row's 所属待办 is enough — the reverse 对话记录 link on the todo row fills itself; do not write both sides. An empty 待办事项 table is a valid state: exit gracefully, do not error.
-- 轮次 is not auto-incremented: read the thread's current max 轮次 for that todo and write max+1 (all 8 live rows are still 轮次=1).
-- **Per-round work cap: at most 3 待办事项 records per run.** When more than three todos are actionable (协作状态 == 待 Agent 处理, or a thread carrying a non-empty 人工回复), take the highest-priority three and carry only those to completion or hand-back; leave the rest untouched for later runs and state in the reply which todos were deferred. Read-only inspection of the table and the current-state refresh are not counted against the cap — only todos the agent actually acts on are. If all actionable todos are smaller than the cap, do not pad the round.
+- 轮次 is not auto-incremented: read the thread's current max 轮次 for that todo and write max+1.
+- **Per-round work cap: at most 5 待办事项 records per run.** When more than five todos are actionable (协作状态 == 待 Agent 处理, or a thread carrying a non-empty 人工回复), take the highest-priority five and carry only those to completion or hand-back; leave the rest untouched for later runs and state in the reply which todos were deferred. Read-only inspection of the table and the current-state refresh are not counted against the cap — only todos the agent actually acts on are. If all actionable todos are smaller than the cap, do not pad the round.
 
 ### 13.4 Command templates
 
@@ -370,6 +371,8 @@ BT=PWLpbO2Y0aqDrhsdcjicBoDIn9m      # base_token
 T_PROJ=tblVHHfoMJBfQFQ5             # 项目
 T_TODO=tbl21w4yWuCJ9wEs             # 待办事项
 T_CHAT=tblyVHclbUfXIy33             # 协作对话
+T_DIM=tbl09fwzfA6WHkzk              # Review 维度表 (§13.7)
+T_OPP=tblWaouVm5tyBxSe              # Review 机会表 (§13.7)
 ```
 
 Read (risk: read):
@@ -441,6 +444,7 @@ lark-cli base +view-set-group --as user --base-token "$BT" --table-id "$T_TODO" 
 - The owner's OAuth token needs re-login roughly around 2026-09-25. `lark-cli whoami` reports `tokenStatus`; when it is not `ready`, re-authorize before writing instead of retrying blindly.
 - The 待办事项 table held 17 records and 协作对话 36 as of the evening of 2026-09-19 (5 协作完成 / 4 需人工介入 / 7 待 Agent 处理 / 1 人工已回复); a populated table is normal, and an empty one must still read as normal rather than as a failed read. Treat any count in this section as a timestamp — concurrent runs move it within the hour.
 - `tools/deploy-docker.sh` — the authoritative deploy path — backs up **only** the server Git state, to `/root/backups/lingtour-docker-predeploy-<timestamp>` (status, unstaged and staged diffs), then runs `git reset --hard HEAD` on the server checkout. It performs **no database backup** and does not prompt. Two consequences that bear directly on authority: (a) it runs `npx typeorm migration:run` on every deploy, so **authorizing a deploy authorizes a schema migration**; (b) "the deploy is reversible" is true for code (redeploy the previous commit) and false for data — an applied migration or a production CMS write is not recoverable from that Git backup.
+- **NewMax scheduled-task `update` silently disables the task.** Observed 2026-09-19: calling `mcp__scheduled-tasks__update_scheduled_task` with only `prompt` (no `enabled`) flipped 轮询代办 from 已启用 to 已禁用, and its 下次执行 line disappeared — despite the tool's stated contract that unpassed fields stay unchanged. A chain that stops this way fails **silently**, with no error. Whenever you update any scheduled task's prompt, pass `enabled: true` explicitly in the same call, then re-read the task to confirm 状态=已启用 **and** that a 下次执行 timestamp is present. Applies to both 轮询代办 and 每日多维 Review.
 - Source notes for this section: `docs/lark-base-handoff.md` (an earlier handoff that predates both 2026-09-19 remodels; its record-level sample data is illustrative and stale—the spec above was re-verified against the live Base after the second remodel).
 
 ### 13.6 Standing authorization for the unattended runner (2026-09-19)
@@ -473,4 +477,39 @@ Granted — the runner may do these without asking on each run:
 2. **Migration gate.** Because `deploy-docker.sh` runs `migration:run` automatically, granting deploy grants migrations. Additive-only migrations (new table, new nullable column) may ride the deploy. Any migration containing `DROP` / `TRUNCATE` / `DELETE` or a destructive column-type change stops the run: back up, then hand back as 需人工介入 instead of applying it.
 3. **Deploy mutual exclusion.** Concurrent runs are real (§13.5), and two authorized runners pushing and deploying at once corrupt each other. Before push: `git fetch` and confirm the branch is still even with `origin/main`; abort and re-read on divergence. Before deploy: check for an in-flight deploy workflow run and skip if one exists. Never re-run a failed deploy automatically.
 
-The per-run cap still applies — at most 3 待办事项 per run. Widened authority is not widened blast radius.
+The per-run cap still applies — at most 5 待办事项 per run (§13.3). Widened authority is not widened blast radius.
+
+### 13.7 Multi-dimensional review system (2026-09-19)
+
+A scheduled review pass *produces* work; the unattended runner (§13.6) *consumes* it. Full design rationale lives in [`docs/review-system-design.md`](review-system-design.md). **The runner does not need this section** — it consumes todos without caring where they came from.
+
+**Division of labour.** The review task creates 待办事项 rows (协作状态=待 Agent 处理), opportunity rows and one report row. It never implements, commits, deploys or touches production content, so its authority is far narrower than §13.6: **Feishu write only**.
+
+| Structure | `table_id` | Notes |
+| --- | --- | --- |
+| Review 维度表 | `tbl09fwzfA6WHkzk` | grid `vewJdz30NQ`; owner-maintained dimension pool |
+| Review 机会表 | `tblWaouVm5tyBxSe` | grid `vewzHazqBd`; suggestions, never defects |
+| 待办事项·来源指纹 | `fldyA8gI70` | text dedup key added to `tbl21w4yWuCJ9wEs` |
+
+**Three layers, three owners.** The protocol layer — role, output schema, verdict rules, dedup, write path — is a prompt template fixed in the repository and **never rewritten per run**; rewriting it daily destroys comparability between runs. The dimension layer (what to review) lives in Review 维度表 and is edited by the owner, occasionally. The selection layer (which dimensions run today) is computed per run and never stored.
+
+Review 维度表 fields: 维度名称 `fld8HLwLmt` (primary) · 检查要点 `fldpK7kAnW` · 分类 `fldz040oKl` · 关注路径 `fld7ivAZe1` · 状态 `fldR9JT9Zd` · 优先级 `fldpwZpGrh` · 上次审查 `fldRCFG7cq` · 上次结论 `fldQmEMKtV`.
+
+The review task may only **update** existing 维度表 rows (the planner writes `上次审查`). It must never insert dimension rows, and no model may invent dimensions — dimension choice is a judgement call and the owner holds the enable switch. Days per full cycle ≈ pool size ÷ N per run, so growth costs coverage; prefer editing a row's 检查要点 over adding a new dimension.
+
+**Defects and opportunities never share a table.** A defect ("broken, must fix") becomes a 待办事项. An opportunity ("could be better") goes to Review 机会表 and is scored on 价值/成本 instead of a priority. Mixing them buries real defects under suggestions within a week.
+
+Review 机会表 fields: 机会标题 `fldHSfBhx2` (primary) · 来源维度 `fldP3XuH8j` · 机会说明 `fld36hpGJv` · 分类 `fldomua3cg` · 价值 `fldlmi9vyZ` · 成本 `fldzYLGHcb` · 状态 `fldYo1XrGS` (待评估/已采纳/已排期/已完成/已驳回) · 来源指纹 `fldXV0Dfgu` · 发现日期 `fld6aFVFgy` · 关联待办 `fldc9wvprs` (link → `tbl21w4yWuCJ9wEs`).
+
+**One scheduled task, two phases — never two crons.** Execution runs after planning inside the *same* task. Split into two independent schedules, phase 2 can read rows phase 1 has not finished writing, and §13.5 documents that concurrent Feishu writes really do happen. Order matters, not concurrency.
+
+1. **Planner.** Filter 状态=启用 → sort by `上次审查` ascending (LRU, so full coverage needs no human scheduling) → promote any dimension whose 关注路径 matches yesterday's `git diff --name-only` → take the top N → write `上次审查`=today.
+2. **Executor.** Assemble input from `git diff`, the relevant CURRENT-STATE section and the existing fingerprints — **not** the whole repository. Investigate each dimension, label every finding defect or opportunity with evidence (file, line, source), dedup, write back, close the loop.
+
+**Dedup is what keeps the tables alive.** Fingerprint = `sha1(维度名 + 文件路径 + 行号 + 问题签名)`, with counts and timestamps stripped from the signature. Look up existing fingerprints *before* writing: a hit updates that row, a miss creates one. Re-running the same day must be idempotent.
+
+**Auto-close.** A todo keeps its 来源指纹; when a later round no longer reproduces it, treat it as fixed and close it (状态=已完成 + 协作状态=协作完成 + a 状态变更 chat row). An append-only table dies of noise — this loop is what prevents it.
+
+**Volume cap: 5 new defect rows per run**, matched to the runner's per-round cap (§13.3) so the queue stays level. Findings beyond the cap go into the report only, or become opportunity rows. Opportunities are uncapped — they accumulate harmlessly.
+
+**Write boundary.** The review task may write 待办事项 协作状态 / 状态 / 最新对话 / 备注 / 来源指纹, new 协作对话 rows, and 维度表 / 机会表 rows. It may **not** write either read-only lookup (待办·人工回复 `flddDWY5eY`, 对话·协作状态 `fld0tEDzpN`), may not write 协作对话·人工回复 `fldg34yYVW`, may not touch any 协作对话 row whose 说话方 is 人工（Ravi）, and may not delete anything (§13.6 red line).
