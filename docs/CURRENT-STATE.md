@@ -1390,3 +1390,16 @@ Both tasks (每日多维 Review `task-1789827138584-3y1zyp`, 轮询代办 `task-
 root `1a25fa5` (api fixes) + the docs commit immediately after it (deploy HEAD); admin `02f8805` unchanged (no admin code in this batch).
 
 **Deploy backfill:** `Deploy LingTour Docker Stack` run `35693892146` succeeded in ~3.5 min; server root HEAD `3c5fc1d`; api/site/admin/nginx all healthy; production `culvoy.com`, `admin.culvoy.com`, `api.culvoy.com/health` all 200 (`database: up`). The route-edit map picker was verified in the live bundle — public chunk `RouteEdit-CF2b3nnv.js` contains the picker copy. All 10 Feishu writes were verified `"ok": true` at the CLI response level and re-read from the tables. Final Feishu state: 19 todos (17 已完成/协作完成, 2 需人工介入 awaiting the owner's A/B/C choice on the auth-defect threads) and 10 opportunities (4 已完成, 6 已采纳).
+
+## 57. 2026-09-22 Site visual fixes deployed: map card visibility + lg grids (deploy HEAD 76f1552)
+
+Two owner-reported site regressions fixed and deployed:
+
+- **Home floating map intro card was invisible at every viewport.** Root cause: `GuangdongMapSection.tsx` desktop card carried `hidden ... lg:absolute` — `lg:absolute` changes position only, never display, so the card stayed `display:none` everywhere. `12a483e` (mobile-first pass) had moved the md breakpoint to lg and dropped `md:block` without a replacement. Fix: one line, `lg:block` added (commit `0ddbfc5`).
+- **Culture/Routes lists read as an endless vertical stack on wide screens.** Five editorial cards in a fixed 2-column lg grid wrap to three rows with a lonely last card. Fix: `lg:grid-cols-3`, tightened `lg:gap-x/y`, culture stagger offset removed, display titles scaled to `text-3xl` for the narrower columns; md stays 2-col, mobile carousel untouched (commit `76f1552`).
+
+**Verification:** site `tsc` + `lint` (0 errors) + `test:ci` 105/105 + `build` all green; local 3100 preview confirmed 5/5 cards and new classes in SSR HTML; deployed via run `35712133222`; server root HEAD `76f1552`, all four containers healthy; production CSS `0x.koedo4.13k.css` contains `.lg\:block{display:block}` inside `@media (min-width:64rem)` and the `lg:grid-cols-3` rules; live `/culture/` HTML carries the new class.
+
+**Home video checked and NOT broken:** owner asked whether the home film was affected. Verified live in the built-in browser: section renders, mp4 + poster both 200, video plays (`opacity:1`, `currentTime` advancing, 1600×900). The film only fades in after its top edge crosses the 88%-viewport ScrollTrigger line — below that it sits invisible-but-playing by design; reduced-motion / save-data users get the static poster with manual play. No code change.
+
+**Scheduled tasks:** both remain disabled (owner's 2026-09-22 stop), untouched by this deploy.
