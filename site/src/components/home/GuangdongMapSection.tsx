@@ -307,7 +307,7 @@ export function GuangdongMapSection({ cities, events = [] }: Props) {
               hills, no showcased city), which is the intended scrapbook layer.
               At md that same overlap swallows 31% including Zhanjiang and
               Maoming, so the card stays in flow until there is room for it. */}
-          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm lg:absolute lg:left-0 lg:top-0 lg:w-52 lg:border-8 lg:p-4">
+          <div className="scrapbook-shadow relative z-30 hidden border-white bg-white/95 backdrop-blur-sm lg:absolute lg:block lg:left-0 lg:top-0 lg:w-52 lg:border-8 lg:p-4">
             <Reveal delay={400}>
               <Link
                 href={`/culture/${activeCity.slug}`}
