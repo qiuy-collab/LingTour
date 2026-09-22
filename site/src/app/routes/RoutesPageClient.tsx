@@ -241,7 +241,7 @@ export default function RoutesPageClient({
             </button>
           </div>
         ) : (
-          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-14 md:overflow-visible md:px-0 lg:gap-x-20 lg:gap-y-20">
+          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-10 md:gap-y-14 md:overflow-visible md:px-0 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-14">
             {filteredRoutes.map((route, index) => {
                 const cardImage = route.image || placeholderFor("hero");
                 return (
@@ -258,7 +258,7 @@ export default function RoutesPageClient({
                         </div>
 
                         <div className="flex flex-1 flex-col px-1 pb-1 pt-6 sm:px-4 sm:pt-8">
-                          <h2 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.03] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
+                          <h2 className="text-balance font-[family:var(--font-display)] text-3xl leading-[1.03] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl lg:text-3xl">
                             {route.title}
                           </h2>
                           <p className="mt-4 max-w-[37ch] text-pretty text-sm leading-7 text-[var(--muted)] line-clamp-3 sm:text-base sm:line-clamp-none">

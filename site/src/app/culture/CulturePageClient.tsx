@@ -176,13 +176,13 @@ export default function CulturePageClient({
             </button>
           </div>
         ) : (
-          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-14 md:gap-y-16 md:overflow-visible md:px-0 md:pb-0 lg:gap-x-24 lg:gap-y-24">
+          <div className="scroll-fade-x scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-14 md:gap-y-16 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-14">
             {filteredCultures.map((city, idx) => {
                 const cardImage = city.image || placeholderFor("square");
                 return (
                   <div
                     key={city.slug}
-                    className={`h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none ${idx % 2 === 1 ? "md:pt-16 lg:pt-24" : ""}`}
+                    className={`h-full w-[82vw] max-w-[24rem] shrink-0 snap-start md:h-auto md:w-auto md:max-w-none md:shrink md:snap-none ${idx % 2 === 1 ? "md:pt-16" : ""}`}
                   >
                     <Link href={`/culture/${city.slug}`} className="group block h-full" data-pastoral-card>
                       <article className="flex h-full min-w-0 flex-col">
@@ -198,7 +198,7 @@ export default function CulturePageClient({
                           <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                             {city.label}
                           </p>
-                          <h2 className="mt-2 font-[family:var(--font-display)] text-3xl leading-[0.98] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl">
+                          <h2 className="mt-2 font-[family:var(--font-display)] text-3xl leading-[0.98] text-[var(--river-deep)] transition-colors group-hover:text-[var(--cinnabar)] sm:text-4xl lg:text-3xl">
                             {city.name}
                           </h2>
                           <p className="handwritten mt-3 flex-1 text-sm leading-relaxed text-[var(--muted)] line-clamp-3 sm:text-base sm:line-clamp-none">
